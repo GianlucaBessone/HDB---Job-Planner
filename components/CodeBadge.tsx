@@ -16,9 +16,9 @@ const VARIANT_STYLES = {
 };
 
 const SIZE_STYLES = {
-    sm: 'text-[9px] min-h-[1.5rem] px-2 py-0.5 gap-1.5 tracking-wider',
-    md: 'text-[11px] min-h-[1.75rem] px-3 py-1 gap-1.5 tracking-widest',
-    lg: 'text-xs min-h-[2rem] px-4 py-1.5 gap-2 tracking-[0.1em]',
+    sm: 'text-[11px] min-h-[1.5rem] px-2 py-0.5 gap-1.5 tracking-wider',
+    md: 'text-[11px] min-h-[1.75rem] px-3 py-1 gap-1.5 tracking-wider',
+    lg: 'text-xs min-h-[2rem] px-4 py-1.5 gap-2 tracking-wider',
 };
 
 export default function CodeBadge({
@@ -43,7 +43,7 @@ export default function CodeBadge({
             onClick={showCopy ? handleCopy : undefined}
             className={`
                 inline-flex items-center justify-center font-mono font-bold border rounded-full transition-all 
-                ${showCopy ? 'cursor-pointer active:scale-95' : ''}
+                ${showCopy ? 'cursor-pointer' : ''}
                 ${VARIANT_STYLES[variant]} 
                 ${SIZE_STYLES[size]} 
                 ${className}
@@ -56,7 +56,7 @@ export default function CodeBadge({
             {showCopy && (
                 <div className="shrink-0 flex items-center justify-center">
                     {copied
-                        ? <Check className="w-3 h-3 text-emerald-500 animate-in zoom-in duration-300" />
+                        ? <Check className="w-3 h-3 text-emerald-500 animate-in zoom-in duration-200" />
                         : <Copy className="w-3 h-3 opacity-40 group-hover:opacity-100 transition-opacity" />
                     }
                 </div>

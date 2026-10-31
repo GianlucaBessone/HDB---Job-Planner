@@ -180,7 +180,7 @@ export default function SearchableSelect({
                   setHighlightedIndex(0);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full h-8 pl-8 pr-7 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-medium focus:outline-none focus:ring-1 focus:ring-primary shadow-inner"
+                className="w-full h-8 pl-8 pr-7 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-xs font-medium focus:outline-none focus:ring-1 focus:ring-primary shadow-inner"
               />
               {search && (
                 <button

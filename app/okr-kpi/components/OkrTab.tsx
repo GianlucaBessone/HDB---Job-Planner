@@ -62,7 +62,7 @@ export default function OkrTab({ user, isActive = true, onNavigateToKpi }: { use
                     <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Objetivos Estratégicos (OKR)</h2>
                     <p className="text-sm text-slate-400">Gestión de OKRs alineados con ISO 9001:2015</p>
                 </div>
-                <button onClick={() => { setEditingOkr(null); setShowModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700 transition-all shadow-sm">
+                <button onClick={() => { setEditingOkr(null); setShowModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700 transition-all">
                     <Plus className="w-4 h-4" /> Nuevo OKR
                 </button>
             </div>
@@ -79,9 +79,9 @@ export default function OkrTab({ user, isActive = true, onNavigateToKpi }: { use
                         <div key={okr.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden group">
                             <div className="p-4 flex-1">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md uppercase tracking-wider">{okr.codigoOkr}</span>
+                                    <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md uppercase tracking-wider">{okr.codigoOkr}</span>
                                     <div className="flex items-center gap-1.5">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase ${
+                                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md uppercase ${
                                             okr.estado === 'Activo' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
                                             okr.estado === 'Cerrado' ? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300' :
                                             'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'
@@ -165,7 +165,7 @@ function OkrFormModal({ okr, operators, onClose, onSave }: {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-start justify-center pt-[5vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-950/50 z-[200] flex items-start justify-center pt-[5vh] overflow-y-auto">
             <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-2xl mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{okr ? 'Editar OKR' : 'Nuevo OKR'}</h2>
@@ -173,21 +173,21 @@ function OkrFormModal({ okr, operators, onClose, onSave }: {
                 </div>
                 <form onSubmit={handleSubmit} className="p-5 space-y-4">
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre *</label>
-                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" placeholder="Ej: Mejorar la satisfacción del cliente" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Nombre *</label>
+                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" placeholder="Ej: Mejorar la satisfacción del cliente" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
-                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción</label>
+                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Área Responsable</label>
-                            <input value={form.areaResponsable} onChange={e => setForm(p => ({ ...p, areaResponsable: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Área Responsable</label>
+                            <input value={form.areaResponsable} onChange={e => setForm(p => ({ ...p, areaResponsable: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Responsable</label>
-                            <select value={form.responsableId} onChange={e => setForm(p => ({ ...p, responsableId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Responsable</label>
+                            <select value={form.responsableId} onChange={e => setForm(p => ({ ...p, responsableId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none">
                                 <option value="">Seleccionar...</option>
                                 {operators.map(op => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
                             </select>
@@ -195,18 +195,18 @@ function OkrFormModal({ okr, operators, onClose, onSave }: {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Inicio</label>
-                            <input type="date" value={form.fechaInicio} onChange={e => setForm(p => ({ ...p, fechaInicio: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Inicio</label>
+                            <input type="date" value={form.fechaInicio} onChange={e => setForm(p => ({ ...p, fechaInicio: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Fin</label>
-                            <input type="date" value={form.fechaFin} onChange={e => setForm(p => ({ ...p, fechaFin: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Fin</label>
+                            <input type="date" value={form.fechaFin} onChange={e => setForm(p => ({ ...p, fechaFin: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none" />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Frecuencia Revisión</label>
-                            <select value={form.frecuenciaRevision} onChange={e => setForm(p => ({ ...p, frecuenciaRevision: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Frecuencia Revisión</label>
+                            <select value={form.frecuenciaRevision} onChange={e => setForm(p => ({ ...p, frecuenciaRevision: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none">
                                 <option value="">Seleccionar...</option>
                                 <option value="Mensual">Mensual</option>
                                 <option value="Trimestral">Trimestral</option>
@@ -216,8 +216,8 @@ function OkrFormModal({ okr, operators, onClose, onSave }: {
                         </div>
                         {okr && (
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado</label>
-                                <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none">
+                                <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
+                                <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none">
                                     <option value="Activo">Activo</option>
                                     <option value="Cerrado">Cerrado</option>
                                     <option value="Cancelado">Cancelado</option>
@@ -226,16 +226,16 @@ function OkrFormModal({ okr, operators, onClose, onSave }: {
                         )}
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Meta Global</label>
-                        <textarea value={form.metaGlobal} onChange={e => setForm(p => ({ ...p, metaGlobal: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none" placeholder="Descripción de la meta global del OKR" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Meta Global</label>
+                        <textarea value={form.metaGlobal} onChange={e => setForm(p => ({ ...p, metaGlobal: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none" placeholder="Descripción de la meta global del OKR" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Observaciones</label>
-                        <textarea value={form.observaciones} onChange={e => setForm(p => ({ ...p, observaciones: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Observaciones</label>
+                        <textarea value={form.observaciones} onChange={e => setForm(p => ({ ...p, observaciones: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none resize-none" />
                     </div>
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>
-                        <button type="submit" disabled={saving || !form.nombre} className="h-10 px-6 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 shadow-sm transition-all">
+                        <button type="submit" disabled={saving || !form.nombre} className="h-10 px-6 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 transition-all">
                             {saving ? 'Guardando...' : okr ? 'Actualizar' : 'Crear OKR'}
                         </button>
                     </div>

@@ -329,12 +329,12 @@ export default function FichadasAdminPage() {
     }, [registerCommand, unregisterCommand]);
 
     return (
-        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <h2 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg">
                             <Clock className="w-6 h-6" />
                         </div>
                         Monitoreo de Fichadas
@@ -345,21 +345,21 @@ export default function FichadasAdminPage() {
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <button 
                         onClick={loadEntries}
-                        className="p-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm"
+                        className="p-3 bg-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-300 transition-all shadow-sm"
                         title="Refrescar"
                     >
                         <RefreshCcw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
                     </button>
                     <button
                         onClick={() => setIsCruceOpen(true)}
-                        className="flex-1 md:flex-none bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all text-sm"
+                        className="flex-1 md:flex-none bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all text-sm"
                     >
                         <GitCompareArrows className="w-4 h-4" />
                         Verificar Cruce
                     </button>
                     <button
                         onClick={exportToExcel}
-                        className="flex-1 md:flex-none bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all text-sm"
+                        className="flex-1 md:flex-none bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all text-sm"
                     >
                         <FileSpreadsheet className="w-4 h-4" />
                         Exportar Excel
@@ -368,29 +368,29 @@ export default function FichadasAdminPage() {
             </div>
 
             {/* Filters Bar */}
-            <div className="bg-card text-card-foreground rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 items-end">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 items-end">
                 <div className="space-y-1.5 flex-1 min-w-[150px]">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Desde</label>
+                    <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Desde</label>
                     <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                         <input 
                             type="date"
                             value={filterDateFrom}
                             onChange={e => setFilterDateFrom(e.target.value)}
-                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                         />
                     </div>
                 </div>
 
                 <div className="space-y-1.5 flex-1 min-w-[150px]">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Hasta</label>
+                    <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Hasta</label>
                     <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                         <input 
                             type="date"
                             value={filterDateTo}
                             onChange={e => setFilterDateTo(e.target.value)}
-                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                         />
                     </div>
                 </div>
@@ -421,10 +421,10 @@ export default function FichadasAdminPage() {
                 <div className="flex-none">
                     <button
                         onClick={() => setFilterSuspicious(!filterSuspicious)}
-                        className={`h-[42px] px-5 rounded-xl font-bold transition-all active:scale-95 text-xs flex items-center gap-2 ${
+                        className={`h-[42px] px-5 rounded-xl font-bold transition-all text-xs flex items-center gap-2 ${
                             filterSuspicious 
                             ? 'bg-rose-100 text-rose-700 border-2 border-rose-500' 
-                            : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'
+                            : 'bg-background text-foreground text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'
                         }`}
                     >
                         <AlertTriangle className={`w-4 h-4 ${filterSuspicious ? 'animate-pulse' : ''}`} />
@@ -434,16 +434,16 @@ export default function FichadasAdminPage() {
             </div>
 
             {/* List Table */}
-            <div className="bg-card text-card-foreground rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="bg-card text-card-foreground rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100 dark:border-slate-800">
-                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Información de Jornada</th>
-                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
-                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Horarios</th>
-                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Audit trail</th>
-                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Acciones</th>
+                                <th className="p-5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Información de Jornada</th>
+                                <th className="p-5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operador</th>
+                                <th className="p-5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-center">Horarios</th>
+                                <th className="p-5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-center">Audit trail</th>
+                                <th className="p-5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -457,7 +457,7 @@ export default function FichadasAdminPage() {
                             ) : entries.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="p-20 text-center">
-                                        <div className="mx-auto w-16 h-16 bg-background text-foreground/50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                                        <div className="mx-auto w-16 h-16 bg-background text-foreground rounded-2xl flex items-center justify-center text-slate-300 mb-4">
                                             <Search className="w-8 h-8" />
                                         </div>
                                         <p className="font-bold text-slate-400 dark:text-slate-500">No se encontraron fichadas con estos filtros</p>
@@ -469,11 +469,11 @@ export default function FichadasAdminPage() {
                                         <td className="p-5">
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight">{formatDate(entry.fecha)}</span>
-                                                    {entry.isExtra && <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded uppercase tracking-widest">Extra</span>}
+                                                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tight">{formatDate(entry.fecha)}</span>
+                                                    {entry.isExtra && <span className="text-[11px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded uppercase tracking-wider">Extra</span>}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm leading-tight">{entry.project?.nombre || 'Base / Empresa'}</h4>
+                                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{entry.project?.nombre || 'Base / Empresa'}</h4>
                                                     {entry.project?.codigoProyecto && (
                                                         <div className="mt-1">
                                                             <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />
@@ -487,24 +487,24 @@ export default function FichadasAdminPage() {
                                                 <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 font-bold text-xs">
                                                     {entry.operator.nombreCompleto.charAt(0)}
                                                 </div>
-                                                <span className="text-sm font-black text-slate-700 dark:text-slate-200">{entry.operator.nombreCompleto}</span>
+                                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{entry.operator.nombreCompleto}</span>
                                             </div>
                                         </td>
                                         <td className="p-5">
                                             <div className="flex flex-col items-center gap-1.5">
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex flex-col items-center">
-                                                        <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ingreso</span>
-                                                        <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">{entry.horaIngreso || '--:--'}</span>
+                                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Ingreso</span>
+                                                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">{entry.horaIngreso || '--:--'}</span>
                                                     </div>
                                                     <div className="text-slate-300">→</div>
                                                     <div className="flex flex-col items-center">
-                                                        <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Egreso</span>
-                                                        <span className="text-xs font-black text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">{entry.horaEgreso || '--:--'}</span>
+                                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Egreso</span>
+                                                        <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">{entry.horaEgreso || '--:--'}</span>
                                                     </div>
                                                 </div>
                                                 {entry.horasTrabajadas > 0 && (
-                                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 px-2 py-0.5 rounded-full">{entry.horasTrabajadas}h trabajadas</span>
+                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-muted px-2 py-0.5 rounded-full">{entry.horasTrabajadas}h trabajadas</span>
                                                 )}
                                             </div>
                                         </td>
@@ -512,11 +512,11 @@ export default function FichadasAdminPage() {
                                             <div className="flex flex-col items-center gap-2">
                                                 <div className="flex items-center gap-2">
                                                     {entry.isSuspicious ? (
-                                                        <div className="flex items-center gap-1 bg-rose-100 text-rose-600 px-2 py-1 rounded-lg text-xs font-black animate-pulse" title={entry.validationFlags || ''}>
+                                                        <div className="flex items-center gap-1 bg-rose-100 text-rose-600 px-2 py-1 rounded-lg text-xs font-bold animate-pulse" title={entry.validationFlags || ''}>
                                                             <AlertTriangle className="w-4 h-4" /> Validaciones con alerta
                                                         </div>
                                                     ) : (
-                                                        <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg text-[10px] font-black">
+                                                        <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg text-[11px] font-bold">
                                                             <CheckCircle2 className="w-3.5 h-3.5" /> Verificado
                                                         </div>
                                                     )}
@@ -524,7 +524,7 @@ export default function FichadasAdminPage() {
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     {entry.deviceId && (
-                                                        <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400 dark:text-slate-500">
+                                                        <div className="flex items-center gap-1 text-[11px] font-bold text-slate-400 dark:text-slate-500">
                                                             <Smartphone className="w-3 h-3" /> {entry.deviceId.slice(0, 8)}...
                                                         </div>
                                                     )}
@@ -532,7 +532,7 @@ export default function FichadasAdminPage() {
                                                         <a 
                                                             href={`https://www.google.com/maps?q=${entry.latitude},${entry.longitude}`}
                                                             target="_blank"
-                                                            className="flex items-center gap-1 text-[9px] font-bold text-indigo-500 hover:underline"
+                                                            className="flex items-center gap-1 text-[11px] font-bold text-indigo-500 hover:underline"
                                                         >
                                                             <MapIcon className="w-3 h-3" /> Ver mapa
                                                         </a>
@@ -544,7 +544,7 @@ export default function FichadasAdminPage() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button 
                                                     onClick={() => { setSelectedEntry(entry); setIsModalOpen(true); }}
-                                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 hover:text-indigo-500 transition-all active:scale-95"
+                                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 hover:text-indigo-500 transition-all"
                                                 >
                                                     <ExternalLink className="w-4 h-4" />
                                                 </button>
@@ -561,17 +561,17 @@ export default function FichadasAdminPage() {
             {/* Audit Detail Modal */}
             {isModalOpen && selectedEntry && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsModalOpen(false)} />
-                    <div className="relative bg-card text-card-foreground w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsModalOpen(false)} />
+                    <div className="relative bg-card text-card-foreground w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
                         <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg">
                                     <ShieldAlert className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Ficha Auditada</h3>
-                                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{formatDate(selectedEntry.fecha)} — {selectedEntry.operator.nombreCompleto}</p>
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Ficha Auditada</h3>
+                                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{formatDate(selectedEntry.fecha)} — {selectedEntry.operator.nombreCompleto}</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl text-slate-400 dark:text-slate-500 transition-colors">
@@ -583,17 +583,17 @@ export default function FichadasAdminPage() {
                         <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
                             {/* Summary Cards */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-background text-foreground/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
-                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Destino Declarado</p>
-                                    <h4 className="font-extrabold text-slate-800 dark:text-slate-100 leading-tight">{selectedEntry.project?.nombre || 'Base / Empresa'}</h4>
+                                <div className="bg-background text-foreground p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                    <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Destino Declarado</p>
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight">{selectedEntry.project?.nombre || 'Base / Empresa'}</h4>
                                     {selectedEntry.project?.cliente && <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">{selectedEntry.project.cliente}</p>}
                                 </div>
-                                <div className="bg-background text-foreground/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
-                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Horario Registrado</p>
+                                <div className="bg-background text-foreground p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                    <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Horario Registrado</p>
                                     <div className="flex items-center gap-3">
-                                        <span className="text-lg font-black text-indigo-600">{selectedEntry.horaIngreso || '--:--'}</span>
+                                        <span className="text-lg font-bold text-indigo-600">{selectedEntry.horaIngreso || '--:--'}</span>
                                         <span className="text-slate-300">→</span>
-                                        <span className="text-lg font-black text-rose-500">{selectedEntry.horaEgreso || '--:--'}</span>
+                                        <span className="text-lg font-bold text-rose-500">{selectedEntry.horaEgreso || '--:--'}</span>
                                     </div>
                                     <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">{selectedEntry.horasTrabajadas} horas totales</p>
                                 </div>
@@ -601,18 +601,18 @@ export default function FichadasAdminPage() {
 
                             {/* Validation Flags Section */}
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <h4 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
                                     <AlertTriangle className="w-3.5 h-3.5" /> Resultados de Validación Digital
                                 </h4>
                                 <div className="space-y-2">
                                     {selectedEntry.validationFlags ? (
                                         JSON.parse(selectedEntry.validationFlags).map((flag: string, idx: number) => (
-                                            <div key={idx} className="flex items-center gap-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 animate-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${idx * 100}ms` }}>
+                                            <div key={idx} className="flex items-center gap-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 animate-in slide-in-from-left-2 duration-200" style={{ animationDelay: `${idx * 100}ms` }}>
                                                 <div className="w-8 h-8 rounded-xl bg-card text-card-foreground flex items-center justify-center text-rose-500 shadow-sm">
                                                     <AlertTriangle className="w-4 h-4" />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-xs font-black text-rose-900 leading-none mb-1">{flag}</p>
+                                                    <p className="text-xs font-bold text-rose-900 leading-none mb-1">{flag}</p>
                                                     <p className="text-[11px] font-bold text-rose-700/70">{getFlagDescription(flag)}</p>
                                                 </div>
                                             </div>
@@ -623,7 +623,7 @@ export default function FichadasAdminPage() {
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-xs font-black text-emerald-900 leading-none mb-1">Cero Alertas</p>
+                                                <p className="text-xs font-bold text-emerald-900 leading-none mb-1">Cero Alertas</p>
                                                 <p className="text-[11px] font-bold text-emerald-700/70">Todas las validaciones digitales de GPS, dispositivo y QR pasaron correctamente.</p>
                                             </div>
                                         </div>
@@ -634,62 +634,62 @@ export default function FichadasAdminPage() {
                             {/* Technical Rastro */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                    <h4 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
                                         <Smartphone className="w-3.5 h-3.5" /> Identidad del Dispositivo
                                     </h4>
                                     <div className="bg-muted text-muted-foreground/50 p-5 rounded-3xl border border-slate-200 dark:border-slate-700">
-                                        <code className="text-[10px] font-bold text-slate-600 dark:text-slate-300 block break-all mb-2">ID: {selectedEntry.deviceId || 'N/A'}</code>
-                                        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-tight">Este ID es único por instalación y se utiliza para evitar que un operario fiche desde múltiples teléfonos no autorizados.</p>
+                                        <code className="text-[11px] font-bold text-slate-600 dark:text-slate-300 block break-all mb-2">ID: {selectedEntry.deviceId || 'N/A'}</code>
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-tight">Este ID es único por instalación y se utiliza para evitar que un operario fiche desde múltiples teléfonos no autorizados.</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                    <h4 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
                                         <MapPin className="w-3.5 h-3.5" /> Posicionamiento GPS
                                     </h4>
                                     {/* Entry Location */}
                                     <div className="space-y-2">
-                                        <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
+                                        <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider flex items-center gap-1">
                                             <ArrowUpRight className="w-3 h-3" /> Ubicación de Ingreso
                                         </p>
                                         {selectedEntry.latitude ? (
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <div className="px-3 py-1.5 bg-muted text-muted-foreground/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {selectedEntry.latitude.toFixed(6)}</div>
-                                                    <div className="px-3 py-1.5 bg-muted text-muted-foreground/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {selectedEntry.longitude?.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-muted rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {selectedEntry.latitude.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-muted rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {selectedEntry.longitude?.toFixed(6)}</div>
                                                 </div>
                                                 <a 
                                                     href={`https://www.google.com/maps?q=${selectedEntry.latitude},${selectedEntry.longitude}`}
                                                     target="_blank"
-                                                    className="w-full bg-emerald-600 text-white py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
+                                                    className="w-full bg-emerald-600 text-white py-2 rounded-xl font-semibold uppercase tracking-wider text-[11px] flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"
                                                 >
                                                     <MapIcon className="w-3.5 h-3.5" /> Ver Ingreso en Maps
                                                 </a>
                                             </div>
                                         ) : (
-                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic">Sin ubicación de ingreso</p>
+                                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 italic">Sin ubicación de ingreso</p>
                                         )}
                                     </div>
                                     {/* Exit Location */}
                                     <div className="space-y-2">
-                                        <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest flex items-center gap-1">
+                                        <p className="text-[11px] font-semibold text-rose-600 uppercase tracking-wider flex items-center gap-1">
                                             <ArrowDownLeft className="w-3 h-3" /> Ubicación de Egreso
                                         </p>
                                         {(selectedEntry as any).latitudeEgreso ? (
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <div className="px-3 py-1.5 bg-muted text-muted-foreground/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {(selectedEntry as any).latitudeEgreso.toFixed(6)}</div>
-                                                    <div className="px-3 py-1.5 bg-muted text-muted-foreground/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {(selectedEntry as any).longitudeEgreso?.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-muted rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {(selectedEntry as any).latitudeEgreso.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-muted rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {(selectedEntry as any).longitudeEgreso?.toFixed(6)}</div>
                                                 </div>
                                                 <a 
                                                     href={`https://www.google.com/maps?q=${(selectedEntry as any).latitudeEgreso},${(selectedEntry as any).longitudeEgreso}`}
                                                     target="_blank"
-                                                    className="w-full bg-rose-600 text-white py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-rose-700 shadow-lg shadow-rose-600/20 active:scale-95 transition-all"
+                                                    className="w-full bg-rose-600 text-white py-2 rounded-xl font-semibold uppercase tracking-wider text-[11px] flex items-center justify-center gap-2 hover:bg-rose-700 transition-all"
                                                 >
                                                     <MapIcon className="w-3.5 h-3.5" /> Ver Egreso en Maps
                                                 </a>
                                             </div>
                                         ) : (
-                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic">{selectedEntry.horaEgreso ? 'Sin ubicación de egreso' : 'Jornada aún activa'}</p>
+                                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 italic">{selectedEntry.horaEgreso ? 'Sin ubicación de egreso' : 'Jornada aún activa'}</p>
                                         )}
                                     </div>
                                 </div>
@@ -698,7 +698,7 @@ export default function FichadasAdminPage() {
 
                         {/* Modal Footer */}
                         <div className="p-6 bg-slate-50/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar Detalle </button>
+                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-card border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar Detalle </button>
                         </div>
                     </div>
                 </div>
@@ -707,17 +707,17 @@ export default function FichadasAdminPage() {
             {/* Verificar Cruce Modal */}
             {isCruceOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 overflow-hidden">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsCruceOpen(false)} />
-                    <div className="relative bg-card text-card-foreground w-full max-w-7xl h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsCruceOpen(false)} />
+                    <div className="relative bg-card text-card-foreground w-full max-w-7xl h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/20">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
                                     <GitCompareArrows className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Verificación y Cruce de Horas</h3>
-                                    <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Compara fichadas de GPS/QR con los registros manuales cargados por operarios</p>
+                                    <h3 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Verificación y Cruce de Horas</h3>
+                                    <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">Compara fichadas de GPS/QR con los registros manuales cargados por operarios</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsCruceOpen(false)} className="p-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-2xl text-slate-400 dark:text-slate-500 transition-colors">
@@ -728,27 +728,27 @@ export default function FichadasAdminPage() {
                         {/* Search and Filters Bar */}
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/20 dark:bg-slate-900/10 flex flex-wrap gap-4 items-end">
                             <div className="space-y-1.5 flex-1 min-w-[150px]">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Desde</label>
+                                <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Desde</label>
                                 <div className="relative">
                                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                                     <input 
                                         type="date"
                                         value={cruceFrom}
                                         onChange={e => setCruceFrom(e.target.value)}
-                                        className="w-full bg-secondary text-secondary-foreground border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                                        className="w-full bg-secondary border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-1.5 flex-1 min-w-[150px]">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Hasta</label>
+                                <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Hasta</label>
                                 <div className="relative">
                                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                                     <input 
                                         type="date"
                                         value={cruceTo}
                                         onChange={e => setCruceTo(e.target.value)}
-                                        className="w-full bg-secondary text-secondary-foreground border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                                        className="w-full bg-secondary border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                                     />
                                 </div>
                             </div>
@@ -767,7 +767,7 @@ export default function FichadasAdminPage() {
                                 <button
                                     onClick={loadCruce}
                                     disabled={cruceLoading}
-                                    className="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-55"
+                                    className="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-55"
                                 >
                                     {cruceLoading ? (
                                         <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
@@ -780,7 +780,7 @@ export default function FichadasAdminPage() {
                                 <button
                                     onClick={exportCruceToExcel}
                                     disabled={cruceRows.length === 0}
-                                    className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-55 disabled:shadow-none"
+                                    className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-55 disabled:shadow-none"
                                 >
                                     <FileSpreadsheet className="w-4 h-4" />
                                     Exportar Excel
@@ -795,44 +795,44 @@ export default function FichadasAdminPage() {
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <div 
                                         onClick={() => setCruceStatusFilter(null)}
-                                        className={`bg-card text-card-foreground p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === null ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md scale-[1.02]' : 'border-slate-100 dark:border-slate-800'}`}
+                                        className={`bg-card text-card-foreground p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${cruceStatusFilter === null ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md scale-[1.02]' : 'border-slate-100 dark:border-slate-800'}`}
                                     >
-                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Días Evaluados</span>
-                                        <span className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{cruceRows.length}</span>
+                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Días Evaluados</span>
+                                        <span className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-2">{cruceRows.length}</span>
                                     </div>
                                     <div 
                                         onClick={() => setCruceStatusFilter(cruceStatusFilter === 'OK' ? null : 'OK')}
-                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === 'OK' ? 'bg-emerald-500/10 border-emerald-500 ring-2 ring-emerald-500/20 shadow-md scale-[1.02]' : 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40'}`}
+                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${cruceStatusFilter === 'OK' ? 'bg-emerald-500/10 border-emerald-500 ring-2 ring-emerald-500/20 shadow-md scale-[1.02]' : 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40'}`}
                                     >
-                                        <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Correctos (OK)</span>
-                                        <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">
+                                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Correctos (OK)</span>
+                                        <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">
                                             {cruceRows.filter(r => r.status === 'OK').length}
                                         </span>
                                     </div>
                                     <div 
                                         onClick={() => setCruceStatusFilter(cruceStatusFilter === 'ALERTA' ? null : 'ALERTA')}
-                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === 'ALERTA' ? 'bg-rose-500/10 border-rose-500 ring-2 ring-rose-500/20 shadow-md scale-[1.02]' : 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/40'}`}
+                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${cruceStatusFilter === 'ALERTA' ? 'bg-rose-500/10 border-rose-500 ring-2 ring-rose-500/20 shadow-md scale-[1.02]' : 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/40'}`}
                                     >
-                                        <span className="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest">Alertas / Desvíos</span>
-                                        <span className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2">
+                                        <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Alertas / Desvíos</span>
+                                        <span className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-2">
                                             {cruceRows.filter(r => r.status === 'ALERTA').length}
                                         </span>
                                     </div>
                                     <div 
                                         onClick={() => setCruceStatusFilter(cruceStatusFilter === 'SIN_FICHADA' ? null : 'SIN_FICHADA')}
-                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === 'SIN_FICHADA' ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/20 shadow-md scale-[1.02]' : 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/40'}`}
+                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${cruceStatusFilter === 'SIN_FICHADA' ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/20 shadow-md scale-[1.02]' : 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/40'}`}
                                     >
-                                        <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">Sin Fichada (Manual)</span>
-                                        <span className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">
+                                        <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Sin Fichada (Manual)</span>
+                                        <span className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-2">
                                             {cruceRows.filter(r => r.status === 'SIN_FICHADA').length}
                                         </span>
                                     </div>
                                     <div 
                                         onClick={() => setCruceStatusFilter(cruceStatusFilter === 'SIN_MANUAL' ? null : 'SIN_MANUAL')}
-                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === 'SIN_MANUAL' ? 'bg-blue-500/10 border-blue-500 ring-2 ring-blue-500/20 shadow-md scale-[1.02]' : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/40'}`}
+                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${cruceStatusFilter === 'SIN_MANUAL' ? 'bg-blue-500/10 border-blue-500 ring-2 ring-blue-500/20 shadow-md scale-[1.02]' : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/40'}`}
                                     >
-                                        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sin Registro Manual</span>
-                                        <span className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-2">
+                                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Sin Registro Manual</span>
+                                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2">
                                             {cruceRows.filter(r => r.status === 'SIN_MANUAL').length}
                                         </span>
                                     </div>
@@ -840,7 +840,7 @@ export default function FichadasAdminPage() {
                             )}
 
                             {/* Table */}
-                            <div className="bg-card text-card-foreground rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                            <div className="bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                 {cruceLoading ? (
                                     <div className="p-20 text-center space-y-3">
                                         <div className="inline-block w-8 h-8 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
@@ -857,11 +857,11 @@ export default function FichadasAdminPage() {
                                         <table className="w-full text-left border-collapse text-xs">
                                             <thead>
                                                 <tr className="bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
-                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider">Estado</th>
-                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider">Operador</th>
-                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider text-center">Registro Manual (Declarado)</th>
-                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider text-center">Fichada Digital (Auditoría)</th>
-                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider text-center">Resultado Cruce</th>
+                                                    <th className="p-4 font-semibold uppercase text-slate-400 tracking-wider">Estado</th>
+                                                    <th className="p-4 font-semibold uppercase text-slate-400 tracking-wider">Operador</th>
+                                                    <th className="p-4 font-semibold uppercase text-slate-400 tracking-wider text-center">Registro Manual (Declarado)</th>
+                                                    <th className="p-4 font-semibold uppercase text-slate-400 tracking-wider text-center">Fichada Digital (Auditoría)</th>
+                                                    <th className="p-4 font-semibold uppercase text-slate-400 tracking-wider text-center">Resultado Cruce</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -882,13 +882,13 @@ export default function FichadasAdminPage() {
                                                     return (
                                                         <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                                                             <td className="p-4 font-medium">
-                                                                <span className={`px-2 py-1 rounded-lg border font-black text-[9px] tracking-wide ${statusThemes[r.status]}`}>
+                                                                <span className={`px-2 py-1 rounded-lg border font-bold text-[11px] tracking-wide ${statusThemes[r.status]}`}>
                                                                     {statusLabel[r.status]}
                                                                 </span>
                                                             </td>
                                                             <td className="p-4">
                                                                 <div className="font-bold text-slate-800 dark:text-slate-200">{r.operatorName}</div>
-                                                                <div className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{formatDate(r.fecha)}</div>
+                                                                <div className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold">{formatDate(r.fecha)}</div>
                                                             </td>
                                                             <td className="p-4 bg-slate-50/30 dark:bg-slate-900/20">
                                                                 {r.manualRegistros > 0 ? (
@@ -898,7 +898,7 @@ export default function FichadasAdminPage() {
                                                                             <span className="text-slate-300">→</span>
                                                                             <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded font-mono font-bold">{r.manualUltimaSalida ?? '--:--'}</span>
                                                                         </div>
-                                                                        <div className="text-[10px] text-slate-500 font-semibold">{r.manualHoras} hs en {r.manualRegistros} registro(s)</div>
+                                                                        <div className="text-[11px] text-slate-500 font-semibold">{r.manualHoras} hs en {r.manualRegistros} registro(s)</div>
                                                                     </div>
                                                                 ) : (
                                                                     <div className="text-center italic text-slate-400">Sin carga manual</div>
@@ -915,10 +915,10 @@ export default function FichadasAdminPage() {
                                                                                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" title="Fichada abierta actualmente" />
                                                                             )}
                                                                         </div>
-                                                                        <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1.5">
+                                                                        <div className="text-[11px] text-slate-500 font-semibold flex items-center gap-1.5">
                                                                             <span>{r.fichadaHoras} hs en {r.fichadaCantidad} fichada(s)</span>
                                                                             {r.fichadaAutoCerrada && (
-                                                                                <span className="bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 px-1 rounded text-[8px] font-black uppercase">AutoCorte 16h</span>
+                                                                                <span className="bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 px-1 rounded text-[11px] font-semibold uppercase">AutoCorte 16h</span>
                                                                             )}
                                                                         </div>
                                                                     </div>
@@ -928,34 +928,34 @@ export default function FichadasAdminPage() {
                                                             </td>
                                                             <td className="p-4 text-center">
                                                                 {r.status === 'SIN_FICHADA' && (
-                                                                    <div className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2.5 py-1 rounded-xl border border-amber-200 dark:border-amber-900/40 text-[10px] font-bold">
+                                                                    <div className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2.5 py-1 rounded-xl border border-amber-200 dark:border-amber-900/40 text-[11px] font-bold">
                                                                         <AlertTriangle className="w-3.5 h-3.5" /> No Fichó
                                                                     </div>
                                                                 )}
                                                                 {r.status === 'SIN_MANUAL' && (
-                                                                    <div className="inline-flex items-center gap-1 text-blue-600 bg-blue-50 dark:bg-blue-950/20 px-2.5 py-1 rounded-xl border border-blue-200 dark:border-blue-900/40 text-[10px] font-bold">
+                                                                    <div className="inline-flex items-center gap-1 text-blue-600 bg-blue-50 dark:bg-blue-950/20 px-2.5 py-1 rounded-xl border border-blue-200 dark:border-blue-900/40 text-[11px] font-bold">
                                                                         <AlertTriangle className="w-3.5 h-3.5" /> No Declaró Horas
                                                                     </div>
                                                                 )}
                                                                 {r.status === 'OK' && (
-                                                                    <div className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-900/40 text-[10px] font-bold">
+                                                                    <div className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-900/40 text-[11px] font-bold">
                                                                         <CheckCircle2 className="w-3.5 h-3.5" /> Todo OK
                                                                     </div>
                                                                 )}
                                                                 {r.status === 'ALERTA' && (
                                                                     <div className="flex flex-col gap-1 items-center">
                                                                         {r.entradaOk === false && (
-                                                                            <span className="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                                                            <span className="text-[11px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
                                                                                 <TrendingDown className="w-3 h-3" /> Fichó Tarde (Ingreso Fichado: {r.fichadaPrimeraEntrada} &gt; Manual: {r.manualPrimeraEntrada})
                                                                             </span>
                                                                         )}
                                                                         {r.salidaOk === false && (
-                                                                            <span className="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                                                            <span className="text-[11px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
                                                                                 <TrendingUp className="w-3 h-3" /> Fichó Temprano (Egreso Fichado: {r.fichadaUltimaSalida} &lt; Manual: {r.manualUltimaSalida})
                                                                             </span>
                                                                         )}
                                                                         {r.horasOk === false && (
-                                                                            <span className="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                                                            <span className="text-[11px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
                                                                                 <Minus className="w-3 h-3" /> Diferencia Horas (Fichado: {r.fichadaHoras}h &lt; Manual: {r.manualHoras}h)
                                                                             </span>
                                                                         )}
@@ -974,7 +974,7 @@ export default function FichadasAdminPage() {
 
                         {/* Footer */}
                         <div className="p-6 bg-background text-foreground/40 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                            <button onClick={() => setIsCruceOpen(false)} className="px-6 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar </button>
+                            <button onClick={() => setIsCruceOpen(false)} className="px-6 py-2.5 bg-card border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar </button>
                         </div>
                     </div>
                 </div>

@@ -212,7 +212,7 @@ export default function VisualBuilder({
                 <select 
                     value={mainTable} 
                     onChange={e => setMainTable(e.target.value)}
-                    className="w-full max-w-md h-10 px-3 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                    className="w-full max-w-md h-10 px-3 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 >
                     <option value="">-- Seleccionar Tabla Base --</option>
                     {tablas.map(t => (
@@ -266,7 +266,7 @@ export default function VisualBuilder({
                                     <select 
                                         value={rel.tablaDestino || ''} 
                                         onChange={e => updateRelacion(idx, 'tablaDestino', e.target.value)} 
-                                        className="h-8 px-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs outline-none font-semibold text-slate-700 dark:text-slate-200"
+                                        className="h-8 px-2 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs outline-none font-semibold text-slate-700 dark:text-slate-200"
                                     >
                                         <option value="">- Tabla Destino -</option>
                                         {tablas.filter(t => t.nombreTabla !== mainTable).map(t => (
@@ -344,7 +344,7 @@ export default function VisualBuilder({
                                 <button
                                     type="button"
                                     onClick={() => onChange({ ...def, campos: [] })}
-                                    className="text-[10px] text-slate-400 hover:text-rose-500 transition-colors font-medium"
+                                    className="text-[11px] text-slate-400 hover:text-rose-500 transition-colors font-medium"
                                 >
                                     Quitar todas
                                 </button>
@@ -355,15 +355,15 @@ export default function VisualBuilder({
                                         key={idx}
                                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-card text-foreground border border-slate-200 dark:border-slate-700 shadow-xs"
                                     >
-                                        <span className="text-slate-400 text-[10px] font-mono">{c.tabla}.</span>
+                                        <span className="text-slate-400 text-[11px] font-mono">{c.tabla}.</span>
                                         <span>{c.nombreCampo}</span>
                                         {c.funcion && (
-                                            <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold uppercase font-mono">
+                                            <span className="text-[11px] px-1 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold uppercase font-mono">
                                                 {c.funcion}
                                             </span>
                                         )}
                                         {c.alias && (
-                                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
+                                            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
                                                 → {c.alias}
                                             </span>
                                         )}
@@ -392,10 +392,10 @@ export default function VisualBuilder({
                             <div key={tablaInfo.id} className="mb-6 last:mb-0 p-4 rounded-xl bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800">
                                 <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-800 flex-wrap gap-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">
+                                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
                                             {tablaInfo.nombreTabla}
                                         </span>
-                                        <span className="text-[10px] font-bold text-slate-400 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                                        <span className="text-[11px] font-bold text-slate-400 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-full">
                                             {selectedInTable.length} de {tablaInfo.campos?.length || 0}
                                         </span>
                                     </div>
@@ -414,14 +414,14 @@ export default function VisualBuilder({
                                         <button 
                                             type="button" 
                                             onClick={() => selectAllCampos(tablaInfo.nombreTabla)}
-                                            className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 px-2 py-1 rounded transition-colors"
+                                            className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 px-2 py-1 rounded transition-colors"
                                         >
                                             Todos
                                         </button>
                                         <button 
                                             type="button" 
                                             onClick={() => deselectAllCampos(tablaInfo.nombreTabla)}
-                                            className="text-[10px] font-bold text-slate-400 hover:text-slate-600 px-2 py-1 rounded transition-colors"
+                                            className="text-[11px] font-bold text-slate-400 hover:text-slate-600 px-2 py-1 rounded transition-colors"
                                         >
                                             Limpiar
                                         </button>
@@ -452,7 +452,7 @@ export default function VisualBuilder({
                                                         <div className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate" title={c.nombreCampo}>
                                                             {c.nombreCampo}
                                                         </div>
-                                                        <div className="text-[10px] text-slate-400 uppercase font-mono">
+                                                        <div className="text-[11px] text-slate-400 uppercase font-mono">
                                                             {c.tipoDato}
                                                         </div>
                                                     </div>
@@ -463,7 +463,7 @@ export default function VisualBuilder({
                                                         <select 
                                                             value={campoSeleccionado.funcion || ''}
                                                             onChange={(e) => updateCampoFuncion(tablaInfo.nombreTabla, c.nombreCampo, e.target.value)}
-                                                            className="h-6 w-full px-1.5 text-[10px] font-semibold bg-background border border-slate-200 dark:border-slate-700 rounded outline-none text-slate-700 dark:text-slate-300"
+                                                            className="h-6 w-full px-1.5 text-[11px] font-semibold bg-background border border-slate-200 dark:border-slate-700 rounded outline-none text-slate-700 dark:text-slate-300"
                                                         >
                                                             <option value="">(Sin función - Directo)</option>
                                                             <option value="COUNT">COUNT - Contar</option>
@@ -479,7 +479,7 @@ export default function VisualBuilder({
                                                             value={campoSeleccionado.alias || ''}
                                                             onChange={e => updateCampoAlias(tablaInfo.nombreTabla, c.nombreCampo, e.target.value)}
                                                             placeholder={campoSeleccionado.funcion ? `Alias (ej: ${c.nombreCampo}_${campoSeleccionado.funcion.toLowerCase()})` : 'Alias opcional...'}
-                                                            className="h-6 px-1.5 text-[10px] bg-background border border-slate-200 dark:border-slate-700 rounded outline-none text-slate-700 dark:text-slate-300 focus:border-indigo-500"
+                                                            className="h-6 px-1.5 text-[11px] bg-background border border-slate-200 dark:border-slate-700 rounded outline-none text-slate-700 dark:text-slate-300 focus:border-indigo-500"
                                                         />
                                                     </div>
                                                 )}
@@ -523,14 +523,14 @@ export default function VisualBuilder({
                                         <select 
                                             value={f.conector || 'AND'} 
                                             onChange={e => updateFiltro(idx, 'conector', e.target.value)} 
-                                            className="h-8 px-2 bg-card text-xs font-black text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 rounded-lg outline-none"
+                                            className="h-8 px-2 bg-card text-xs font-bold text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 rounded-lg outline-none"
                                         >
                                             <option value="AND">Y (AND)</option>
                                             <option value="OR">O (OR)</option>
                                         </select>
                                     )}
                                     {idx === 0 && (
-                                        <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 w-16 text-center">
+                                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 w-16 text-center">
                                             DONDE
                                         </span>
                                     )}
@@ -549,7 +549,7 @@ export default function VisualBuilder({
                                     <select 
                                         value={f.operador || 'EQUAL'} 
                                         onChange={e => updateFiltro(idx, 'operador', e.target.value)} 
-                                        className="h-8 px-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs outline-none font-semibold text-slate-700 dark:text-slate-300"
+                                        className="h-8 px-2.5 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs outline-none font-semibold text-slate-700 dark:text-slate-300"
                                     >
                                         <option value="EQUAL">Igual a (=)</option>
                                         <option value="NOT_EQUAL">Distinto a (!=)</option>
@@ -591,13 +591,13 @@ export default function VisualBuilder({
                                                 )}
                                             </div>
                                             <div className="flex flex-wrap items-center gap-1">
-                                                <span className="text-[9px] text-slate-400 font-bold uppercase">Insertar:</span>
+                                                <span className="text-[11px] text-slate-400 font-bold uppercase">Insertar:</span>
                                                 {['{{FECHA_ACTUAL}}', '{{INICIO_MES}}', '{{FIN_MES}}', '{{AYER}}', '{{HACE_7_DIAS}}'].map(v => (
                                                     <button
                                                         key={v}
                                                         type="button"
                                                         onClick={() => updateFiltro(idx, 'valor', v)}
-                                                        className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-950 transition-colors"
+                                                        className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-indigo-950 transition-colors"
                                                     >
                                                         {v}
                                                     </button>

@@ -35,7 +35,7 @@ export default function NuevaVacantePage() {
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto p-4 md:p-6 animate-in fade-in">
+        <div className="w-full max-w-4xl mx-auto">
             <ModuleHeader
                 title="Nueva Vacante"
                 description="Crear una nueva búsqueda laboral"
@@ -124,7 +124,7 @@ export default function NuevaVacantePage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg shadow-sm transition-colors disabled:opacity-50"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors disabled:opacity-50"
                     >
                         {isLoading ? 'Guardando...' : 'Crear Vacante'}
                     </button>

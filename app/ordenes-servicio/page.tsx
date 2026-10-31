@@ -62,7 +62,7 @@ function QRImage({ url }: { url: string }) {
     return (
         <div className="flex flex-col items-center gap-2">
             <img src={qrUrl} alt="QR Code" className="w-36 h-36 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" />
-            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 text-center max-w-[160px] break-all">{url}</p>
+            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 text-center max-w-[160px] break-all">{url}</p>
         </div>
     );
 }
@@ -224,13 +224,13 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
     };
 
     return (
-        <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-2xl rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[92vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+            <div className="bg-card text-card-foreground w-full max-w-2xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200 max-h-[92vh] flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="p-5 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-1">
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                            <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wider ${
                                 os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700' :
                                 os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700' :
                                 os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700' :
@@ -243,7 +243,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                  os.estado === 'pendiente' ? 'Pendiente de firma' : 'Cancelada'}
                             </span>
                         </div>
-                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 flex-wrap">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 flex-wrap">
                             {(os as any).codigoOS ? (
                                 <span className="text-emerald-700 font-mono">{(os as any).codigoOS} |</span>
                             ) : (
@@ -263,7 +263,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handlePrint}
-                            className="p-2.5 bg-muted text-muted-foreground/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
+                            className="p-2.5 bg-muted hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
                             title="Imprimir (Ajustar hojas en navegador)"
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -272,7 +272,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         </button>
                         <button
                             onClick={handleDownload}
-                            className="p-2.5 bg-muted text-muted-foreground/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
+                            className="p-2.5 bg-muted hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
                             title="Descargar PDF Original"
                         >
                             <Download className="w-4 h-4" />
@@ -288,12 +288,12 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     {/* Info */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Fecha de emisión</p>
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Fecha de emisión</p>
                             <p className="font-bold text-slate-700 dark:text-slate-200">{formatDate(os.fechaCreacion)}</p>
                         </div>
                         {os.project.responsableUser && (
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Responsable</p>
+                                <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Responsable</p>
                                 <p className="font-bold text-slate-700 dark:text-slate-200">{os.project.responsableUser.nombreCompleto}</p>
                             </div>
                         )}
@@ -301,34 +301,34 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
                     {/* Reporte */}
                     <div className="space-y-2">
-                        <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                             <FileText className="w-3.5 h-3.5 text-blue-500" /> Reporte del Trabajo
                         </h4>
-                        <div className="bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                        <div className="bg-background text-foreground rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                             <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{os.reporte}</p>
                         </div>
                     </div>
 
                     {/* Operadores */}
                     <div className="space-y-2">
-                        <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                             <User className="w-3.5 h-3.5 text-indigo-500" /> Operadores
                         </h4>
                         <div className="divide-y divide-slate-50 border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                             {os.operadores.map(op => (
                                 <div key={op.id} className="flex items-center justify-between px-4 py-3">
                                     <div className="flex items-center gap-2.5">
-                                        <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xs">
+                                        <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
                                             {op.operador.nombreCompleto.charAt(0)}
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{op.operador.nombreCompleto}</span>
                                             {op.isExtra && (
-                                                <span className="text-[10px] text-amber-600 font-black uppercase tracking-tight">Horas Extras</span>
+                                                <span className="text-[11px] text-amber-600 font-semibold uppercase tracking-tight">Horas Extras</span>
                                             )}
                                         </div>
                                     </div>
-                                    <span className="text-sm font-black text-indigo-600">{op.horas}h</span>
+                                    <span className="text-sm font-bold text-indigo-600">{op.horas}h</span>
                                 </div>
                             ))}
                         </div>
@@ -337,16 +337,16 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     {/* Materiales */}
                     {os.materiales.length > 0 && (
                         <div className="space-y-2">
-                            <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                            <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                                 <Package className="w-3.5 h-3.5 text-amber-500" /> Materiales
                             </h4>
                             <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                                 <table className="w-full text-sm">
-                                    <thead className="border-b border-slate-100 dark:border-slate-800 bg-background text-foreground/50">
+                                    <thead className="border-b border-slate-100 dark:border-slate-800 bg-background text-foreground">
                                         <tr>
-                                            <th className="text-left px-4 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Material</th>
-                                            <th className="text-right px-4 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cant.</th>
-                                            <th className="text-right px-4 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Unidad</th>
+                                            <th className="text-left px-4 py-2.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Material</th>
+                                            <th className="text-right px-4 py-2.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Cant.</th>
+                                            <th className="text-right px-4 py-2.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Unidad</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
@@ -355,7 +355,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                                 <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-200">{m.material}</td>
                                                 <td className="px-4 py-3 text-right font-bold text-slate-800 dark:text-slate-100">{m.cantidad}</td>
                                                 <td className="px-4 py-3 text-right">
-                                                    <span className="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-100 uppercase">{m.unidadMedida}</span>
+                                                    <span className="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[11px] font-semibold border border-amber-100 uppercase">{m.unidadMedida}</span>
                                                 </td>
                                             </tr>
                                         ))}
@@ -367,10 +367,10 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
                     {os.comentario && (
                         <div className="space-y-2">
-                            <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                            <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                                 <MessageSquare className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Comentario Adicional
                             </h4>
-                            <div className="bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                            <div className="bg-background text-foreground rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                                 <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
                             </div>
                         </div>
@@ -378,7 +378,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
                     {os.notaInterna && (
                         <div className="space-y-2">
-                            <h4 className="text-xs font-black text-amber-600 uppercase tracking-widest flex items-center gap-1.5">
+                            <h4 className="text-xs font-semibold text-amber-600 uppercase tracking-wider flex items-center gap-1.5">
                                 <StickyNote className="w-3.5 h-3.5 text-amber-500" /> Nota Interna (Privada)
                             </h4>
                             <div className="bg-amber-50/50 dark:bg-amber-500/5 rounded-2xl p-4 border border-amber-100 dark:border-amber-950/30">
@@ -389,10 +389,10 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
                     {/* QR + Link */}
                     <div className="space-y-2">
-                        <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                             <QrCode className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Link y QR Público
                         </h4>
-                        <div className="bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-4">
+                        <div className="bg-background text-foreground rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-4">
                             <QRImage url={publicUrl} />
                             <div className="flex-1 space-y-2 w-full">
                                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">El cliente puede escanear el QR o usar el link para ver y firmar la OS.</p>
@@ -400,11 +400,11 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                     <input
                                         readOnly
                                         value={publicUrl}
-                                        className="flex-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 outline-none truncate"
+                                        className="flex-1 bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 outline-none truncate"
                                     />
                                     <button
                                         onClick={copyLink}
-                                        className="px-3 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition-all whitespace-nowrap"
+                                        className="px-3 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-hover transition-all whitespace-nowrap"
                                     >
                                         Copiar
                                     </button>
@@ -416,26 +416,26 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     {/* Firma */}
                     {isFirmada && os.firma ? (
                         <div className="space-y-2">
-                            <h4 className="text-xs font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+                            <h4 className="text-xs font-semibold text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
                                 <CheckCircle2 className="w-3.5 h-3.5" /> Firma del Cliente
                             </h4>
                             <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-200 space-y-3">
                                 <div className="grid grid-cols-3 gap-3 text-sm">
                                     <div>
-                                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">Nombre</p>
+                                        <p className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-0.5">Nombre</p>
                                         <p className="font-bold text-slate-700 dark:text-slate-200">{os.firma.nombre}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">DNI</p>
+                                        <p className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-0.5">DNI</p>
                                         <p className="font-bold text-slate-700 dark:text-slate-200">{os.firma.dni}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">Fecha</p>
+                                        <p className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-0.5">Fecha</p>
                                         <p className="font-bold text-slate-700 dark:text-slate-200">{formatDate(os.firma.fechaFirma)}</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">Firma</p>
+                                    <p className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider mb-2">Firma</p>
                                     <div className="bg-card text-card-foreground rounded-xl border border-emerald-100 p-2 flex items-center justify-center min-w-[150px] min-h-[80px] w-fit">
                                         {loadingFirma ? (
                                             <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
@@ -463,7 +463,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 shrink-0">
                     <button
                         onClick={handlePrint}
-                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-2xl font-black text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
+                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-2xl font-bold text-sm hover:bg-primary-hover transition-all"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -471,7 +471,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     </button>
                     <button
                         onClick={handleDownload}
-                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
+                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-700 transition-all"
                     >
                         <Download className="w-4 h-4" /> Bajar PDF
                     </button>
@@ -480,7 +480,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                             href={`/api/ordenes-servicio/${os.id}/cobro/pdf`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] text-center"
+                            className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-all text-center"
                         >
                             <FileText className="w-4 h-4" /> Ver Cobro
                         </a>
@@ -488,14 +488,14 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     {!isFirmada && (
                         <Link
                             href={`/ordenes-servicio/qr/${os.id}`}
-                            className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
+                            className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-all"
                         >
                             <Smartphone className="w-4 h-4" /> Ver QR
                         </Link>
                     )}
                     <button
                         onClick={onClose}
-                        className="px-6 py-3 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all active:scale-95"
+                        className="px-6 py-3 bg-muted text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
                     >
                         Cerrar
                     </button>
@@ -675,11 +675,11 @@ function OrdenesServicioContent() {
 
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 space-y-6">
             {/* Header */}
             <div className="space-y-1">
-                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                    <FileSignature className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                    <FileSignature className="w-5 h-5 text-brand-600 dark:text-brand-300" />
                     Órdenes de Servicio
                 </h2>
                 <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-700 mt-4">
@@ -734,16 +734,16 @@ function OrdenesServicioContent() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
                 <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm text-center">
-                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{ordenes.length}</p>
-                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total</p>
+                    <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{ordenes.length}</p>
+                    <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total</p>
                 </div>
                 <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 shadow-sm text-center">
-                    <p className="text-2xl font-black text-emerald-700">{ordenes.filter(o => o.estado === 'firmada').length}</p>
-                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Firmadas</p>
+                    <p className="text-2xl font-bold text-emerald-700">{ordenes.filter(o => o.estado === 'firmada').length}</p>
+                    <p className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider">Firmadas</p>
                 </div>
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm text-center">
-                    <p className="text-2xl font-black text-amber-700">{ordenes.filter(o => o.estado === 'pendiente').length}</p>
-                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Pendientes</p>
+                    <p className="text-2xl font-bold text-amber-700">{ordenes.filter(o => o.estado === 'pendiente').length}</p>
+                    <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wider">Pendientes</p>
                 </div>
             </div>
 
@@ -753,7 +753,7 @@ function OrdenesServicioContent() {
                     {[1, 2, 3].map(i => <div key={i} className="h-20 bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />)}
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="py-20 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
+                <div className="py-20 flex flex-col items-center justify-center bg-card border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
                     <FileSignature className="w-12 h-12 mb-4 opacity-20" />
                     <p className="font-semibold text-slate-600 dark:text-slate-300">No se encontraron órdenes de servicio</p>
                 </div>
@@ -781,7 +781,7 @@ function OrdenesServicioContent() {
                                     {/* Main info */}
                                     <div className="flex-1 min-w-0 space-y-1">
                                         <div className="flex items-center gap-2 flex-wrap text-sm">
-                                            <p className="font-black text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5">
+                                            <p className="font-bold text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5">
                                                 {(os as any).codigoOS ? (
                                                     <span className="text-emerald-700 font-mono">{(os as any).codigoOS} |</span>
                                                 ) : (
@@ -806,12 +806,12 @@ function OrdenesServicioContent() {
                                     </div>
 
                                     {/* Estado badge */}
-                                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 ${
+                                    <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wider shrink-0 ${
                                         os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
                                         os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                                         os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
                                         os.estado === 'pagada' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                        'bg-muted text-muted-foreground/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+                                        'bg-muted text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                                     }`}>
                                         {os.estado === 'firmada' ? '✓ Firmada' : 
                                          os.estado === 'cobrada' ? 'OC Emitida' :
@@ -828,7 +828,7 @@ function OrdenesServicioContent() {
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-blue-600 border border-blue-200 bg-blue-50 hover:bg-primary hover:text-white transition-all shadow-sm"
+                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 border border-blue-200 bg-blue-50 hover:bg-primary hover:text-white transition-all"
                                             >
                                                 <FileText className="w-3.5 h-3.5" /> PDF Cobro
                                             </a>
@@ -839,7 +839,7 @@ function OrdenesServicioContent() {
                                                     e.stopPropagation();
                                                     setOsToPay(os);
                                                 }}
-                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-emerald-600 border border-emerald-200 bg-emerald-50 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-600 border border-emerald-200 bg-emerald-50 hover:bg-emerald-600 hover:text-white transition-all"
                                             >
                                                 <CheckCircle2 className="w-3.5 h-3.5" /> Pagada
                                             </button>
@@ -848,7 +848,7 @@ function OrdenesServicioContent() {
                                             <>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); setOsCobroToOpen(os); }}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all"
                                                 >
                                                     <Calculator className="w-3.5 h-3.5" /> {os.cobroGenerado ? 'Ver Cobro' : 'Generar Cobro'}
                                                 </button>
@@ -857,7 +857,7 @@ function OrdenesServicioContent() {
                                                         e.stopPropagation();
                                                         setOsToCancel(os);
                                                     }}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-background text-foreground/50 hover:bg-slate-200 hover:text-slate-600 transition-all shadow-sm"
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-background text-foreground hover:bg-slate-200 hover:text-slate-600 transition-all shadow-sm"
                                                     title="Cancelar orden"
                                                 >
                                                     <X className="w-3.5 h-3.5" /> Cancelar
@@ -869,10 +869,10 @@ function OrdenesServicioContent() {
                                                 e.stopPropagation();
                                                 setOsNoteToEdit(os);
                                             }}
-                                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black transition-all shadow-sm ${
+                                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
                                                 os.notaInterna
                                                     ? 'text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600'
-                                                    : 'text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-background text-foreground/50 hover:bg-slate-200 hover:text-slate-600 dark:hover:text-slate-300'
+                                                    : 'text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-background text-foreground hover:bg-slate-200 hover:text-slate-600 dark:hover:text-slate-300'
                                             }`}
                                         >
                                             <StickyNote className="w-3.5 h-3.5" /> Notas

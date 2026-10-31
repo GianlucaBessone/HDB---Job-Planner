@@ -418,7 +418,7 @@ export default function CapacitacionPage() {
             <X className="w-5 h-5 text-slate-500" />
           </button>
           <div className="flex-1">
-            <h1 className="text-lg font-black text-slate-800 dark:text-slate-100">
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100">
               {selectedTraining.document?.titulo || "Capacitación"}
             </h1>
             <p className="text-xs text-slate-400">
@@ -450,11 +450,11 @@ export default function CapacitacionPage() {
               )}
             </div>
             <h2
-              className={`text-2xl font-black ${quizResult.approved ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"}`}
+              className={`text-2xl font-bold ${quizResult.approved ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-300"}`}
             >
               {quizResult.approved ? "¡Aprobado!" : "No Aprobado"}
             </h2>
-            <p className="text-4xl font-black text-slate-800 dark:text-slate-100">
+            <p className="text-4xl font-bold text-slate-800 dark:text-slate-100">
               {Math.round(quizResult.score)}%
             </p>
             <p className="text-sm text-slate-500">
@@ -481,7 +481,7 @@ export default function CapacitacionPage() {
                 Responda todas las preguntas. Puntaje mínimo:{" "}
                 {selectedTraining.puntajeMinimo || 70}%
               </p>
-              <div className="flex items-center gap-2 text-xs font-black text-indigo-600 bg-card text-card-foreground px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+              <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 bg-card text-card-foreground px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
                 <Clock className="w-4 h-4 animate-pulse" />
                 <span>
                   {Math.floor(seconds / 60)}:
@@ -495,7 +495,7 @@ export default function CapacitacionPage() {
                 className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3"
               >
                 <div className="flex items-start gap-3">
-                  <span className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0">
+                  <span className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 text-xs font-bold flex items-center justify-center flex-shrink-0">
                     {qIdx + 1}
                   </span>
                   <p className="text-sm font-bold text-slate-800 dark:text-slate-100 pt-1">
@@ -544,7 +544,7 @@ export default function CapacitacionPage() {
                   documentId={docDetail.id}
                   documentVersion={docDetail.versions?.[0] ? `${docDetail.versions[0].versionMayor}.${docDetail.versions[0].versionMenor}` : '1.0'}
                   onSignComplete={(signature) => handleSubmitQuiz(signature.SignatureID)}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors flex items-center gap-2"
                 />
               )}
             </div>
@@ -603,7 +603,7 @@ export default function CapacitacionPage() {
                       key={i}
                       className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700"
                     >
-                      <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">
+                      <p className="text-[11px] font-semibold text-indigo-500 uppercase tracking-wider mb-2">
                         {s.title}
                       </p>
                       <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
@@ -613,13 +613,13 @@ export default function CapacitacionPage() {
                   ))}
                 {digitalData.definiciones?.length > 0 && (
                   <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">
+                    <p className="text-[11px] font-semibold text-indigo-500 uppercase tracking-wider mb-3">
                       Definiciones
                     </p>
                     <div className="space-y-1">
                       {digitalData.definiciones.map((d: any, i: number) => (
                         <div key={i} className="flex gap-2 text-xs">
-                          <span className="font-black text-indigo-600 min-w-[50px]">
+                          <span className="font-bold text-indigo-600 min-w-[50px]">
                             {d.term}
                           </span>
                           <span className="text-slate-500">{d.definition}</span>
@@ -634,7 +634,7 @@ export default function CapacitacionPage() {
             {/* Plain description fallback */}
             {!digitalData && docDetail?.descripcion && (
               <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Descripción
                 </p>
                 <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap">
@@ -660,7 +660,7 @@ export default function CapacitacionPage() {
                     {docDetail.versions[0].files.find((f: any) => f.esPrincipal)
                       ?.nombreArchivo || "Documento"}
                   </p>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[11px] text-slate-400">
                     Toque para descargar
                   </p>
                 </div>
@@ -674,7 +674,7 @@ export default function CapacitacionPage() {
                 {hasQuiz ? (
                   <button
                     onClick={() => setViewMode("quiz")}
-                    className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                    className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
                   >
                     <Award className="w-5 h-5" /> Comenzar Evaluación (
                     {quiz.length} preguntas)
@@ -692,7 +692,7 @@ export default function CapacitacionPage() {
                     documentId={docDetail.id}
                     documentVersion={docDetail.versions?.[0] ? `${docDetail.versions[0].versionMayor}.${docDetail.versions[0].versionMenor}` : '1.0'}
                     onSignComplete={(signature) => handleMarkAsRead(signature.SignatureID)}
-                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
                   />
                 )}
               </div>
@@ -717,7 +717,7 @@ export default function CapacitacionPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <ModuleHeader
         title="Centro de Formación Integral"
         description="HDB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional"
@@ -750,26 +750,26 @@ export default function CapacitacionPage() {
           {/* Stats Widget */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-800 text-center">
-              <span className="text-2xl font-black text-amber-700 dark:text-amber-300">
+              <span className="text-2xl font-bold text-amber-700 dark:text-amber-300">
                 {pendingCount}
               </span>
-              <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mt-1">
+              <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wider mt-1">
                 Pendientes
               </p>
             </div>
             <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center">
-              <span className="text-2xl font-black text-emerald-700 dark:text-emerald-300">
+              <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
                 {approvedCount}
               </span>
-              <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-1">
+              <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider mt-1">
                 Aprobadas
               </p>
             </div>
             <div className="bg-rose-50 dark:bg-rose-950/20 p-4 rounded-2xl border border-rose-100 dark:border-rose-800 text-center">
-              <span className="text-2xl font-black text-rose-700 dark:text-rose-300">
+              <span className="text-2xl font-bold text-rose-700 dark:text-rose-300">
                 {failedCount}
               </span>
-              <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mt-1">
+              <p className="text-[11px] font-bold text-rose-600 uppercase tracking-wider mt-1">
                 No Aprobadas
               </p>
             </div>
@@ -830,7 +830,7 @@ export default function CapacitacionPage() {
                         </p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span
-                            className={`text-[10px] font-black uppercase tracking-wider ${
+                            className={`text-[11px] font-semibold uppercase tracking-wider ${
                               t.estado === "aprobado"
                                 ? "text-emerald-600"
                                 : t.estado === "reprobado"
@@ -845,17 +845,17 @@ export default function CapacitacionPage() {
                                 : "Pendiente"}
                           </span>
                           {isNewVersion && (
-                            <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
+                            <span className="text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
                               Nueva Versión
                             </span>
                           )}
                           {typeof t.puntaje === "number" && (
-                            <span className="text-[10px] text-slate-400">
+                            <span className="text-[11px] text-slate-400">
                               • Evaluado: {Math.round(t.puntaje)}%
                             </span>
                           )}
                           {isExpired && (
-                            <span className="text-[10px] font-bold text-red-500 flex items-center gap-0.5">
+                            <span className="text-[11px] font-bold text-red-500 flex items-center gap-0.5">
                               <ShieldAlert className="w-3 h-3" /> Vencida
                             </span>
                           )}
@@ -919,7 +919,7 @@ export default function CapacitacionPage() {
                         {cert.nombreCurso}
                       </h3>
                       <span
-                        className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                        className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${
                           cert.estado === "aprobado"
                             ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
                             : cert.estado === "rechazado"
@@ -1002,14 +1002,14 @@ export default function CapacitacionPage() {
 
       {/* PREVIEW CERTIFICATE MODAL */}
       {previewCert && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/50 z-50 flex items-center justify-center p-4">
           <div className="bg-card text-card-foreground rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
               <div>
-                <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">
                   {previewCert.nombreCurso}
                 </h2>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[11px] text-slate-400">
                   {previewCert.institucion}
                 </p>
               </div>
@@ -1046,13 +1046,13 @@ export default function CapacitacionPage() {
               {/* Editable Certificate Data */}
               <div className="bg-indigo-50/50 dark:bg-indigo-950/10 p-4 rounded-2xl border border-indigo-100/50 dark:border-indigo-800/40 space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1">
+                  <p className="text-[11px] font-semibold text-indigo-600 uppercase tracking-wider flex items-center gap-1">
                     <FileText className="w-3.5 h-3.5" /> Datos del Certificado
                   </p>
                   {previewCert.estado !== "aprobado" && !isEditingCert && (
                     <button
                       onClick={() => setIsEditingCert(true)}
-                      className="text-[10px] font-bold px-2 py-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                      className="text-[11px] font-bold px-2 py-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
                     >
                       Editar Datos
                     </button>
@@ -1062,7 +1062,7 @@ export default function CapacitacionPage() {
                 {isEditingCert ? (
                   <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500">
+                      <label className="text-[11px] font-bold text-slate-500">
                         Curso / Título
                       </label>
                       <input
@@ -1074,11 +1074,11 @@ export default function CapacitacionPage() {
                             nombreCurso: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                        className="w-full px-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500">
+                      <label className="text-[11px] font-bold text-slate-500">
                         Institución
                       </label>
                       <input
@@ -1090,12 +1090,12 @@ export default function CapacitacionPage() {
                             institucion: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                        className="w-full px-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500">
+                        <label className="text-[11px] font-bold text-slate-500">
                           Horas
                         </label>
                         <input
@@ -1107,11 +1107,11 @@ export default function CapacitacionPage() {
                               horas: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                          className="w-full px-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-500">
+                        <label className="text-[11px] font-bold text-slate-500">
                           Fecha Emisión
                         </label>
                         <input
@@ -1123,12 +1123,12 @@ export default function CapacitacionPage() {
                               fechaEmision: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                          className="w-full px-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                         />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500">
+                      <label className="text-[11px] font-bold text-slate-500">
                         Descripción / Resumen
                       </label>
                       <textarea
@@ -1139,7 +1139,7 @@ export default function CapacitacionPage() {
                             descripcion: e.target.value,
                           })
                         }
-                        className="w-full h-20 px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
+                        className="w-full h-20 px-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
                       />
                     </div>
                     <div className="flex gap-2 justify-end pt-2">
@@ -1151,7 +1151,7 @@ export default function CapacitacionPage() {
                       </button>
                       <button
                         onClick={handleSaveCertEdit}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md transition-colors flex items-center gap-1.5"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
                       >
                         <CheckCircle className="w-3.5 h-3.5" /> Guardar
                       </button>
@@ -1203,7 +1203,7 @@ export default function CapacitacionPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-indigo-100/50 dark:border-indigo-800/30">
                     {previewCert.aiData.habilidadesRelevantes?.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">
+                        <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider">
                           Habilidades Relevantes
                         </p>
                         <div className="flex flex-wrap gap-1">
@@ -1211,7 +1211,7 @@ export default function CapacitacionPage() {
                             (hab: string, i: number) => (
                               <span
                                 key={i}
-                                className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-200 dark:border-emerald-800"
+                                className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold rounded-lg border border-emerald-200 dark:border-emerald-800"
                               >
                                 {hab}
                               </span>
@@ -1222,7 +1222,7 @@ export default function CapacitacionPage() {
                     )}
                     {previewCert.aiData.otrasHabilidades?.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-wider">
+                        <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider">
                           Otras Habilidades
                         </p>
                         <div className="flex flex-wrap gap-1">
@@ -1230,7 +1230,7 @@ export default function CapacitacionPage() {
                             (hab: string, i: number) => (
                               <span
                                 key={i}
-                                className="px-2 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[10px] font-bold rounded-lg border border-amber-200 dark:border-amber-800"
+                                className="px-2 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[11px] font-bold rounded-lg border border-amber-200 dark:border-amber-800"
                               >
                                 {hab}
                               </span>
@@ -1249,11 +1249,11 @@ export default function CapacitacionPage() {
 
       {/* UPLOAD EXTERNAL CERTIFICATE MODAL */}
       {isUploadModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/50 z-50 flex items-center justify-center p-4">
           <div className="bg-card text-card-foreground rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-              <h2 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <UploadCloud className="w-5 h-5 text-indigo-500" />
                 Cargar Certificado Externo
               </h2>
@@ -1284,7 +1284,7 @@ export default function CapacitacionPage() {
                     disabled={analyzingCert}
                   />
                   <div className="flex flex-col items-center justify-center space-y-2">
-                    <div className="w-10 h-10 rounded-full bg-background text-foreground/50 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-background text-foreground flex items-center justify-center">
                       <UploadCloud className="w-5 h-5 text-slate-400" />
                     </div>
                     {certFileName ? (
@@ -1292,7 +1292,7 @@ export default function CapacitacionPage() {
                         <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
                           {certFileName}
                         </p>
-                        <p className="text-[10px] text-slate-400">
+                        <p className="text-[11px] text-slate-400">
                           Toque para cambiar
                         </p>
                       </div>
@@ -1301,7 +1301,7 @@ export default function CapacitacionPage() {
                         <p className="text-xs text-slate-600">
                           Haga clic o arrastre el archivo aquí
                         </p>
-                        <p className="text-[10px] text-slate-400">
+                        <p className="text-[11px] text-slate-400">
                           PDF, PNG, JPG hasta 5MB
                         </p>
                       </div>
@@ -1324,7 +1324,7 @@ export default function CapacitacionPage() {
                     placeholder="Ej. Curso de Seguridad Eléctrica en Alta Tensión"
                     value={manualNombreCurso}
                     onChange={(e) => setManualNombreCurso(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full px-4 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     disabled={analyzingCert}
                   />
                 </div>
@@ -1340,7 +1340,7 @@ export default function CapacitacionPage() {
                     placeholder="Ej. UTN (Universidad Tecnológica Nacional)"
                     value={manualInstitucion}
                     onChange={(e) => setManualInstitucion(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full px-4 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     disabled={analyzingCert}
                   />
                 </div>
@@ -1352,7 +1352,7 @@ export default function CapacitacionPage() {
                     placeholder="Breve descripción del contenido o temario cubierto..."
                     value={manualDescripcion}
                     onChange={(e) => setManualDescripcion(e.target.value)}
-                    className="w-full h-20 px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+                    className="w-full h-20 px-4 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
                     disabled={analyzingCert}
                   />
                 </div>
@@ -1371,7 +1371,7 @@ export default function CapacitacionPage() {
                 <button
                   type="submit"
                   disabled={analyzingCert || !certFileBase64}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   {analyzingCert ? (
                     <>

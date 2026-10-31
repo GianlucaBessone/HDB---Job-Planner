@@ -98,18 +98,18 @@ export default function ProjectCostModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+            <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200 max-h-[90vh] overflow-hidden flex flex-col">
                 
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <div className="bg-amber-500 p-2 rounded-xl shadow-lg shadow-amber-200 dark:shadow-none">
+                            <div className="bg-amber-500 p-2 rounded-xl shadow-lg dark:shadow-none">
                                 <DollarSign className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
+                                <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
                                     Costo de Proyecto
                                 </h3>
                                 {data?.project && (
@@ -123,7 +123,7 @@ export default function ProjectCostModal({
                             </div>
                         </div>
                     </div>
-                    <button onClick={onClose} className="btn-icon-inline p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-all active:scale-95">
+                    <button onClick={onClose} className="btn-icon-inline p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-all">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
@@ -133,14 +133,14 @@ export default function ProjectCostModal({
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20 space-y-4">
                             <Activity className="w-12 h-12 text-primary animate-spin" />
-                            <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Calculando costos...</p>
+                            <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-xs">Calculando costos...</p>
                         </div>
                     ) : data ? (
                         <div className="space-y-6">
                             
                             {/* IVA Switch Toggle */}
                             <div className="flex justify-end items-center gap-3 bg-card text-card-foreground border border-slate-200/60 dark:border-slate-700/80 px-5 py-3.5 rounded-3xl shadow-sm">
-                                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Mostrar Costos con IVA (21%)</span>
+                                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Mostrar Costos con IVA (21%)</span>
                                 <button
                                     onClick={() => setConIva(!conIva)}
                                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${conIva ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'}`}
@@ -156,9 +156,9 @@ export default function ProjectCostModal({
                                 <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
                                     <div className="flex items-center gap-2 text-indigo-500 mb-2">
                                         <Clock className="w-4 h-4" />
-                                        <h4 className="text-xs font-black uppercase tracking-widest">Mano de Obra</h4>
+                                        <h4 className="text-xs font-semibold uppercase tracking-wider">Mano de Obra</h4>
                                     </div>
-                                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                                    <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                                         {formatCurrency(conIva ? data.summary.totalHoursCost * 1.21 : data.summary.totalHoursCost)}
                                     </p>
                                     <p className="text-xs font-bold text-slate-400 mt-1">
@@ -168,9 +168,9 @@ export default function ProjectCostModal({
                                 <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
                                     <div className="flex items-center gap-2 text-amber-500 mb-2">
                                         <Package className="w-4 h-4" />
-                                        <h4 className="text-xs font-black uppercase tracking-widest">Materiales</h4>
+                                        <h4 className="text-xs font-semibold uppercase tracking-wider">Materiales</h4>
                                     </div>
-                                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                                    <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                                         {formatCurrency(conIva ? data.summary.totalMaterialsCost * 1.21 : data.summary.totalMaterialsCost)}
                                     </p>
                                     <p className="text-xs font-bold text-slate-400 mt-1">
@@ -180,9 +180,9 @@ export default function ProjectCostModal({
                                 <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-5 rounded-3xl shadow-sm">
                                     <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-2">
                                         <Calculator className="w-4 h-4" />
-                                        <h4 className="text-xs font-black uppercase tracking-widest">Costo Total</h4>
+                                        <h4 className="text-xs font-semibold uppercase tracking-wider">Costo Total</h4>
                                     </div>
-                                    <p className="text-3xl font-black text-emerald-700 dark:text-emerald-400">
+                                    <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">
                                         {formatCurrency(conIva ? data.summary.totalCost * 1.21 : data.summary.totalCost)}
                                     </p>
                                     <p className="text-xs font-bold text-emerald-600/70 dark:text-emerald-500 mt-1">
@@ -195,21 +195,21 @@ export default function ProjectCostModal({
                             <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                                 <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-indigo-500" />
-                                    <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">Desglose de Mano de Obra</h2>
+                                    <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Desglose de Mano de Obra</h2>
                                 </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
-                                                <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
-                                                <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Horas</th>
-                                                <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Costo</th>
+                                            <tr className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800">
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operador</th>
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Horas</th>
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Costo</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
                                             {data.operators.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={3} className="px-6 py-8 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">Sin horas registradas</td>
+                                                    <td colSpan={3} className="px-6 py-8 text-center text-slate-400 text-xs font-bold uppercase tracking-wider">Sin horas registradas</td>
                                                 </tr>
                                             ) : data.operators.map((op, idx) => (
                                                 <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -217,7 +217,7 @@ export default function ProjectCostModal({
                                                         <div className="font-bold text-slate-700 dark:text-slate-200 text-sm">{op.name}</div>
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
-                                                        <span className="font-black text-slate-600 dark:text-slate-300">{op.hours}h</span>
+                                                        <span className="font-bold text-slate-600 dark:text-slate-300">{op.hours}h</span>
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
                                                         <span className="font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(op.cost)}</span>
@@ -234,9 +234,9 @@ export default function ProjectCostModal({
                                 <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <Package className="w-4 h-4 text-amber-500" />
-                                        <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">Materiales Utilizados</h2>
+                                        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">Materiales Utilizados</h2>
                                         {data?.hasPendingReturns && (
-                                            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-black animate-pulse border border-rose-100 dark:border-rose-900/50">
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold animate-pulse border border-rose-100 dark:border-rose-900/50">
                                                 <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                                                 <span>Devoluciones Pendientes</span>
                                             </span>
@@ -253,18 +253,18 @@ export default function ProjectCostModal({
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
-                                                <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Código</th>
-                                                <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Material</th>
-                                                <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Cant.</th>
-                                                <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">P. Unitario</th>
-                                                <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Subtotal</th>
+                                            <tr className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800">
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Código</th>
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Material</th>
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Cant.</th>
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">P. Unitario</th>
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Subtotal</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
                                             {data.materials.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">Sin materiales utilizados</td>
+                                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-400 text-xs font-bold uppercase tracking-wider">Sin materiales utilizados</td>
                                                 </tr>
                                             ) : data.materials.map(m => (
                                                 <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -275,7 +275,7 @@ export default function ProjectCostModal({
                                                         <div className="font-bold text-slate-700 dark:text-slate-200 text-sm">{m.name}</div>
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
-                                                        <span className="font-black text-slate-600 dark:text-slate-300">{m.cantidad} {m.unidad}</span>
+                                                        <span className="font-bold text-slate-600 dark:text-slate-300">{m.cantidad} {m.unidad}</span>
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
                                                         <EditablePriceCell 
@@ -304,7 +304,7 @@ export default function ProjectCostModal({
                 <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-card text-card-foreground shrink-0">
                     <button
                         onClick={onClose}
-                        className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-muted text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2"
                     >
                         Cerrar
                     </button>

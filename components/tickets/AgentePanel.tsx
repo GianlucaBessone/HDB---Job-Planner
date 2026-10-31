@@ -53,7 +53,7 @@ export default function AgentePanel({ ticket, canManage }: { ticket: any; canMan
 
     return (
         <section className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 space-y-3">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Bot className="w-3.5 h-3.5" /> Corrección con agente
             </h3>
 
@@ -79,14 +79,14 @@ export default function AgentePanel({ ticket, canManage }: { ticket: any; canMan
                         <button
                             onClick={generar}
                             disabled={generando}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-600 text-white text-[12px] font-semibold hover:bg-indigo-700 disabled:opacity-60 transition-colors"
                         >
                             {generando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5" />}
                             {prompt ? 'Generar acceso nuevo' : 'Copiar para agente'}
                         </button>
                         <button
                             onClick={revocar}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[12px] font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                         >
                             <ShieldOff className="w-3.5 h-3.5" /> Revocar acceso
                         </button>
@@ -104,7 +104,7 @@ export default function AgentePanel({ ticket, canManage }: { ticket: any; canMan
                             >
                                 <Copy className="w-3.5 h-3.5" />
                             </button>
-                            <p className="mt-1 text-[10px] text-slate-400 font-medium">
+                            <p className="mt-1 text-[11px] text-slate-400 font-medium">
                                 El token se muestra una sola vez. Generar uno nuevo invalida el anterior.
                             </p>
                         </div>

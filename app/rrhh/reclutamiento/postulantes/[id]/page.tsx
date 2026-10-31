@@ -40,7 +40,7 @@ export default function CandidateProfilePage({ params: paramsPromise }: { params
     const [activeTab, setActiveTab] = useState('cv');
 
     return (
-        <div className="w-full max-w-7xl mx-auto p-4 md:p-6 animate-in fade-in">
+        <div className="w-full">
             <ModuleHeader
                 title={`${mockCandidate.firstName} ${mockCandidate.lastName}`}
                 description="Ficha del candidato"
@@ -62,13 +62,13 @@ export default function CandidateProfilePage({ params: paramsPromise }: { params
 
             {/* Profile Header Card */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm mb-6 flex flex-col md:flex-row gap-6 items-start">
-                <div className="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-3xl font-black shrink-0">
+                <div className="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-3xl font-bold shrink-0">
                     {mockCandidate.firstName[0]}{mockCandidate.lastName[0]}
                 </div>
                 
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">{mockCandidate.firstName} {mockCandidate.lastName}</h2>
+                        <h2 className="text-title text-slate-800 dark:text-slate-100">{mockCandidate.firstName} {mockCandidate.lastName}</h2>
                         <span className="bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-bold">
                             {mockCandidate.status}
                         </span>
@@ -170,7 +170,7 @@ export default function CandidateProfilePage({ params: paramsPromise }: { params
 
                     {/* AI Analysis Column */}
                     <div className="space-y-6">
-                        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-5 shadow-sm">
+                        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-5 shadow-sm">
                             <div className="flex items-center gap-2 mb-4 text-indigo-700 dark:text-indigo-400">
                                 <BrainCircuit className="w-5 h-5" />
                                 <h3 className="font-bold text-lg">Resumen de Inteligencia Artificial</h3>

@@ -74,11 +74,11 @@ export default function ConfigPage() {
     if (!userRole) return <ConfigSkeleton />;
 
     return (
-        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                        <Settings className="w-6 h-6 md:w-8 md:h-8 text-slate-700 dark:text-slate-200" />
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                        <Settings className="text-slate-700 dark:text-slate-200 w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Configuración
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Administra catálogos y valores globales del sistema</p>
@@ -137,7 +137,7 @@ export default function ConfigPage() {
                 </button>
             </div>
 
-            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-3xl p-6 md:p-8 shadow-sm">
                 {activeTab === 'tags' && <TagsSection />}
                 {activeTab === 'checklists' && <ChecklistSection />}
                 {activeTab === 'options' && <OptionsSection />}
@@ -190,7 +190,7 @@ function OSSection() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Configuración de valores para facturación y reportes de OS.</p>
             </div>
 
-            <div className="space-y-4 bg-background text-foreground/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <div className="space-y-4 bg-background text-foreground p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div>
                     <h4 className="font-bold text-slate-800 dark:text-slate-100">Valor de Mano de Obra (por hora)</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -205,7 +205,7 @@ function OSSection() {
                         step="0.01"
                         value={setting.valorManoObra}
                         onChange={e => setSetting({ ...setting, valorManoObra: parseFloat(e.target.value) || 0 })}
-                        className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                         placeholder="Ej: 50.00"
                     />
                 </div>
@@ -214,7 +214,7 @@ function OSSection() {
             <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full mt-4 bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+                className="w-full mt-4 bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary-hover transition-all disabled:opacity-50"
             >
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
             </button>
@@ -224,10 +224,10 @@ function OSSection() {
 
 function ConfigSkeleton() {
     return (
-        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div> <div className="w-40 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div></h2>
+                    <h2 className="text-title flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div> <div className="w-40 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div></h2>
                     <div className="w-64 h-4 bg-muted text-muted-foreground/50 rounded animate-pulse mt-2"></div>
                 </div>
             </div>
@@ -236,7 +236,7 @@ function ConfigSkeleton() {
                 <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
                 <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
             </div>
-            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col gap-4">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-3xl p-6 md:p-8 shadow-sm flex flex-col gap-4">
                 <div className="w-1/3 h-8 bg-slate-200/50 rounded animate-pulse mb-4"></div>
                 {Array(3).fill(0).map((_, i) => <div key={i} className="w-full h-16 bg-slate-100/50 rounded-xl animate-pulse"></div>)}
             </div>
@@ -309,7 +309,7 @@ function TagsSection() {
 
             <div className="space-y-3">
                 {editingId === 'new' && (
-                    <div className="flex flex-col gap-4 bg-background text-foreground/50 p-4 rounded-xl border border-primary/20">
+                    <div className="flex flex-col gap-4 bg-background text-foreground p-4 rounded-xl border border-primary/20">
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                             <input
                                 className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
@@ -361,11 +361,11 @@ function TagsSection() {
                             </div>
                         </div>
                     ) : (
-                        <div key={tag.id} className="flex items-center justify-between bg-background text-foreground/50 hover:bg-white dark:hover:bg-slate-800 p-4 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+                        <div key={tag.id} className="flex items-center justify-between bg-background text-foreground hover:bg-white dark:hover:bg-slate-800 p-4 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
                             <div className="flex items-center gap-4">
                                 <span className="font-bold text-slate-800 dark:text-slate-100">{tag.name}</span>
-                                {!tag.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md">Inactivo</span>}
-                                {tag.impactsMetrics && <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[10px] uppercase font-black tracking-widest rounded-md">Métricas</span>}
+                                {!tag.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[11px] uppercase font-semibold tracking-wider rounded-md">Inactivo</span>}
+                                {tag.impactsMetrics && <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[11px] uppercase font-semibold tracking-wider rounded-md">Métricas</span>}
                             </div>
                             <div className="flex items-center gap-2">
                                 <button onClick={() => { setEditingId(tag.id); setForm({ name: tag.name, active: tag.active, impactsMetrics: tag.impactsMetrics }); }} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
@@ -493,7 +493,7 @@ function ChecklistSection() {
                     </p>
                 </div>
                 <select
-                    className="px-4 py-2 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
+                    className="px-4 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
                     value={selectedTag}
                     onChange={e => setSelectedTag(e.target.value)}
                 >
@@ -506,9 +506,9 @@ function ChecklistSection() {
                 <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
                     <div className="bg-background text-foreground/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-end gap-3">
                         <div className="flex-1 w-full">
-                            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Vincular Nueva Plantilla</label>
+                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Vincular Nueva Plantilla</label>
                             <select
-                                className="w-full px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full px-4 py-2.5 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
                                 value={selectedTemplateToAdd}
                                 onChange={e => setSelectedTemplateToAdd(e.target.value)}
                             >
@@ -523,13 +523,13 @@ function ChecklistSection() {
                         <button
                             onClick={handleLinkTemplate}
                             disabled={!selectedTemplateToAdd}
-                            className="bg-primary hover:bg-primary/95 disabled:opacity-40 text-white font-black text-sm px-6 py-3 rounded-xl transition-all shadow-sm shadow-primary/20 flex items-center gap-1.5 shrink-0"
+                            className="bg-primary hover:bg-primary/95 disabled:opacity-40 text-white font-bold text-sm px-6 py-3 rounded-xl transition-all flex items-center gap-1.5 shrink-0"
                         >
                             <Plus className="w-4 h-4" /> Vincular Plantilla
                         </button>
                     </div>
 
-                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest pt-2">Plantillas de Checklist Vinculadas</h4>
+                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider pt-2">Plantillas de Checklist Vinculadas</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {linkedTemplates.map((lt: any) => {
@@ -540,14 +540,14 @@ function ChecklistSection() {
                                 <div key={lt.id} className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex justify-between items-start hover:shadow-sm transition-shadow">
                                     <div className="space-y-1.5">
                                         <div className="flex gap-2 items-center">
-                                            <span className="text-[9px] font-black font-mono bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">
+                                            <span className="text-[11px] font-bold font-mono bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">
                                                 {t.code || 'SIN CÓDIGO'}
                                             </span>
-                                            <span className="text-[9px] font-black bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded">
+                                            <span className="text-[11px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded">
                                                 v{t.version}
                                             </span>
                                         </div>
-                                        <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm">{t.name}</h4>
+                                        <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{t.name}</h4>
                                         <p className="text-xs text-slate-400 font-bold">{itemsCount} pasos • Riesgo: {t.riskLevel.toUpperCase()}</p>
                                     </div>
 
@@ -651,7 +651,7 @@ function OptionsSection() {
                         <button
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${selectedCategory === cat.id ? 'bg-card text-card-foreground text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider whitespace-nowrap transition-all ${selectedCategory === cat.id ? 'bg-card text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             {cat.label}
                         </button>
@@ -668,7 +668,7 @@ function OptionsSection() {
                 </button>
 
                 {editingId === 'new' && (
-                    <div className="flex flex-col gap-4 bg-background text-foreground/50 p-4 rounded-xl border border-primary/20">
+                    <div className="flex flex-col gap-4 bg-background text-foreground p-4 rounded-xl border border-primary/20">
                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             <input
                                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
@@ -722,9 +722,9 @@ function OptionsSection() {
                     ) : (
                         <div key={opt.id} className="flex items-center justify-between bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-800/80 p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all shadow-sm">
                             <div className="flex items-center gap-4 flex-1">
-                                <span className="w-8 h-8 flex items-center justify-center bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 font-black text-xs rounded-lg shrink-0">{opt.order}</span>
+                                <span className="w-8 h-8 flex items-center justify-center bg-muted text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg shrink-0">{opt.order}</span>
                                 <span className={`font-bold text-sm ${opt.active ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 line-through'}`}>{opt.value}</span>
-                                {!opt.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md shrink-0">Inactivo</span>}
+                                {!opt.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[11px] uppercase font-semibold tracking-wider rounded-md shrink-0">Inactivo</span>}
                             </div>
                             <div className="flex items-center gap-1 ml-4 shrink-0">
                                 <button onClick={() => { setEditingId(opt.id); setForm({ value: opt.value, active: opt.active, order: opt.order }); }} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
@@ -840,7 +840,7 @@ function SystemSection() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Configura opciones automáticas del sistema.</p>
             </div>
 
-            <div className="space-y-4 bg-background text-foreground/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <div className="space-y-4 bg-background text-foreground p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center justify-between">
                     <div>
                         <h4 className="font-bold text-slate-800 dark:text-slate-100">Alerta Diaria de Carga de Horas</h4>
@@ -862,7 +862,7 @@ function SystemSection() {
                 {setting.dailyReminderEnabled && (
                     <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 Días sin registrar horas para notificación
                             </label>
                             <input
@@ -870,23 +870,23 @@ function SystemSection() {
                                 min={1}
                                 value={setting.daysWithoutHoursThreshold || 5}
                                 onChange={e => setSetting({ ...setting, daysWithoutHoursThreshold: parseInt(e.target.value) || 0 })}
-                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                                className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                                 placeholder="Ej: 5"
                             />
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 Horario de Disparo (Nativo Vercel una vez por día)
                             </label>
-                            <p className="text-[9px] text-amber-600 font-bold px-1 -mt-1">
+                            <p className="text-[11px] text-amber-600 font-bold px-1 -mt-1">
                                 Nota: En Vercel Free el cron corre una vez al día (Configurado a las 18:00hs ART).
                             </p>
                             <input
                                 type="time"
                                 disabled
                                 value="18:00"
-                                className="w-full bg-muted text-muted-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                                className="w-full bg-muted border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -894,7 +894,7 @@ function SystemSection() {
             </div>
 
 
-            <div className="space-y-4 bg-background text-foreground/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 mt-6">
+            <div className="space-y-4 bg-background text-foreground p-6 rounded-2xl border border-slate-100 dark:border-slate-800 mt-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h4 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -916,7 +916,7 @@ function SystemSection() {
                 </div>
 
                 {(setting as any).fichajeHabilitado && (
-                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2 duration-200">
                         <MapPicker 
                             lat={setting.companyGeofenceLat} 
                             lng={setting.companyGeofenceLng} 
@@ -933,24 +933,24 @@ function SystemSection() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Latitud</label>
-                                <input type="number" step="any" value={setting.companyGeofenceLat || ''} onChange={e => setSetting({ ...setting, companyGeofenceLat: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-34.123456" />
+                                <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Latitud</label>
+                                <input type="number" step="any" value={setting.companyGeofenceLat || ''} onChange={e => setSetting({ ...setting, companyGeofenceLat: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-34.123456" />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Longitud</label>
-                                <input type="number" step="any" value={setting.companyGeofenceLng || ''} onChange={e => setSetting({ ...setting, companyGeofenceLng: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-58.123456" />
+                                <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Longitud</label>
+                                <input type="number" step="any" value={setting.companyGeofenceLng || ''} onChange={e => setSetting({ ...setting, companyGeofenceLng: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-58.123456" />
                             </div>
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Radio de Validación (Metros)</label>
-                            <input type="number" value={setting.companyGeofenceRadius || ''} onChange={e => setSetting({ ...setting, companyGeofenceRadius: e.target.value === '' ? null : parseInt(e.target.value) })} className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="Ej: 200" />
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Radio de Validación (Metros)</label>
+                            <input type="number" value={setting.companyGeofenceRadius || ''} onChange={e => setSetting({ ...setting, companyGeofenceRadius: e.target.value === '' ? null : parseInt(e.target.value) })} className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="Ej: 200" />
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Token de Validación QR (Empresa)</label>
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Token de Validación QR (Empresa)</label>
                             <div className="flex gap-2">
-                                <input type="text" value={setting.companyQrToken || ''} onChange={e => setSetting({ ...setting, companyQrToken: e.target.value.toUpperCase() })} className="flex-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono" placeholder="TOKEN-BASE" />
-                                <button type="button" onClick={() => setSetting({ ...setting, companyQrToken: Math.random().toString(36).substring(2, 10).toUpperCase() })} className="px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-xl text-slate-600 dark:text-slate-300 transition-all active:scale-95" title="Generar Nuevo Token">
+                                <input type="text" value={setting.companyQrToken || ''} onChange={e => setSetting({ ...setting, companyQrToken: e.target.value.toUpperCase() })} className="flex-1 bg-card border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono" placeholder="TOKEN-BASE" />
+                                <button type="button" onClick={() => setSetting({ ...setting, companyQrToken: Math.random().toString(36).substring(2, 10).toUpperCase() })} className="px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-xl text-slate-600 dark:text-slate-300 transition-all" title="Generar Nuevo Token">
                                     <Play className="w-4 h-4 rotate-90" />
                                 </button>
                             </div>
@@ -988,7 +988,7 @@ function SystemSection() {
                                     showToast('Error al guardar configuración de fichaje.', 'error');
                                 }
                             }}
-                            className="w-full bg-emerald-600 text-white font-bold rounded-xl py-3 hover:bg-emerald-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+                            className="w-full bg-emerald-600 text-white font-bold rounded-xl py-3 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
                         >
                             <Save className="w-4 h-4" /> Guardar Config. Fichaje Base
                         </button>
@@ -1000,7 +1000,7 @@ function SystemSection() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="w-full mt-4 bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+                    className="w-full mt-4 bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary-hover transition-all disabled:opacity-50"
                 >
                     {saving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
@@ -1018,7 +1018,7 @@ function SystemSection() {
                 <button
                     onClick={handleManualTrigger}
                     disabled={triggering}
-                    className="w-full bg-card text-card-foreground border border-indigo-200 text-indigo-600 font-bold rounded-xl py-3 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
+                    className="w-full bg-card text-card-foreground border border-indigo-200 text-indigo-600 font-bold rounded-xl py-3 hover:bg-indigo-50 transition-all disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
                 >
                     {triggering ? (
                         <div className="w-5 h-5 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
@@ -1143,19 +1143,19 @@ function ViewsSection() {
                 {views.map(view => (
                     <div
                         key={view.key}
-                        className="bg-background text-foreground/50 p-4 md:p-5 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all space-y-4"
+                        className="bg-background text-foreground p-4 md:p-5 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all space-y-4"
                     >
                         {/* View header */}
                         <div className="flex items-center gap-3">
                             <span className="font-bold text-slate-800 dark:text-slate-100 text-sm md:text-base">{view.label}</span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono bg-muted text-muted-foreground px-2 py-0.5 rounded-md">{view.key}</span>
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono bg-muted px-2 py-0.5 rounded-md">{view.key}</span>
                         </div>
 
                         {/* Controls */}
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                             {/* Roles */}
                             <div className="flex-1">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 block px-0.5">
+                                <label className="mb-2 block px-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                     Roles con Acceso
                                 </label>
                                 <div className="flex flex-wrap gap-2">
@@ -1168,7 +1168,7 @@ function ViewsSection() {
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                                                     isActive
                                                         ? `${r.color} border-transparent shadow-sm`
-                                                        : 'bg-card text-card-foreground text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-50 hover:opacity-75'
+                                                        : 'bg-card text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-50 hover:opacity-75'
                                                 }`}
                                             >
                                                 {r.label}
@@ -1180,7 +1180,7 @@ function ViewsSection() {
 
                             {/* Access location */}
                             <div className="shrink-0">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 block px-0.5">
+                                <label className="mb-2 block px-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                     Ubicación
                                 </label>
                                 <div className="flex gap-1 p-1 bg-muted text-muted-foreground/50 rounded-xl">
@@ -1202,13 +1202,13 @@ function ViewsSection() {
 
                             {/* Section assignment */}
                             <div className="shrink-0 w-full md:w-48">
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 block px-0.5">
+                                <label className="mb-2 block px-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                     Grupo / Sección
                                 </label>
                                 <select
                                     value={view.section}
                                     onChange={(e) => setSectionValue(view.key, e.target.value)}
-                                    className="w-full bg-muted text-muted-foreground/50 border-none outline-none focus:ring-2 focus:ring-primary/20 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200"
+                                    className="w-full bg-muted border-none outline-none focus:ring-2 focus:ring-primary/20 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200"
                                 >
                                     {DEFAULT_SECTIONS.map(sec => (
                                         <option key={sec.key} value={sec.key}>{sec.label}</option>
@@ -1223,7 +1223,7 @@ function ViewsSection() {
             <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+                className="w-full bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary-hover transition-all disabled:opacity-50"
             >
                 {saving ? 'Guardando...' : 'Guardar Configuración de Vistas'}
             </button>
@@ -1263,7 +1263,7 @@ function ThemeSection() {
                         onClick={() => setTheme(t.id as any)}
                         className={`relative flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all overflow-hidden ${
                             theme === t.id 
-                                ? 'border-primary bg-primary/5 shadow-md shadow-primary/20 scale-105' 
+                                ? 'border-primary bg-primary/5 shadow-md scale-105' 
                                 : 'border-slate-200 dark:border-slate-700 bg-card text-card-foreground hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-750'
                         }`}
                     >
@@ -1286,7 +1286,7 @@ function ThemeSection() {
             </div>
             
             <div className="bg-primary/10 border border-primary/20 text-primary p-4 rounded-xl mt-6 flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-primary/30">
+                <div className="w-10 h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center shrink-0 shadow-lg">
                     <Settings className="w-5 h-5" />
                 </div>
                 <div>

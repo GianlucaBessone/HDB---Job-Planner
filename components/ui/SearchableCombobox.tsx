@@ -119,7 +119,7 @@ export default function SearchableCombobox({
             <span className="font-semibold text-slate-900 dark:text-slate-100">
               {selectedOption.label}
               {selectedOption.sublabel && (
-                <span className="text-[10px] text-slate-400 font-normal ml-1.5">
+                <span className="text-[11px] text-slate-400 font-normal ml-1.5">
                   ({selectedOption.sublabel})
                 </span>
               )}
@@ -204,7 +204,7 @@ export default function SearchableCombobox({
                     <div className="truncate">
                       <div>{opt.label}</div>
                       {opt.sublabel && (
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
+                        <div className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">
                           {opt.sublabel}
                         </div>
                       )}

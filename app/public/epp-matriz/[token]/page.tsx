@@ -129,7 +129,7 @@ export default function PublicEppMatrixPage() {
                     <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
                         <Lock className="w-7 h-7" />
                     </div>
-                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                         Enlace No Disponible
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed">
@@ -148,25 +148,25 @@ export default function PublicEppMatrixPage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-2">
                             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                                <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+                                <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 rounded-full text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1 shadow-2xs">
                                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                                     Higiene y Seguridad
                                 </span>
 
                                 {share.tipo === 'CLIENTE' ? (
-                                    <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+                                    <span className="px-3 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 rounded-full text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1 shadow-2xs">
                                         <Building2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                                         Cliente: {share.clientNombre}
                                     </span>
                                 ) : (
-                                    <span className="px-3 py-1 bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-2xs">
+                                    <span className="px-3 py-1 bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 rounded-full text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1 shadow-2xs">
                                         <Users className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                                         Dotación General
                                     </span>
                                 )}
                             </div>
 
-                            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                            <h1 className="text-title text-slate-900 dark:text-slate-100">
                                 {share.titulo}
                             </h1>
 
@@ -198,14 +198,14 @@ export default function PublicEppMatrixPage() {
                                     onClick={loadData}
                                     title="Actualizar datos"
                                     aria-label="Actualizar datos"
-                                    className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 transition-all active:scale-95"
+                                    className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 transition-all"
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                 </button>
 
                                 <button
                                     onClick={() => window.open('/public/verificar-firma', '_blank')}
-                                    className="px-3.5 sm:px-4 py-2.5 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 active:scale-95 whitespace-nowrap"
+                                    className="px-3.5 sm:px-4 py-2.5 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 whitespace-nowrap"
                                     title="Abrir Portal de Verificación"
                                 >
                                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -214,7 +214,7 @@ export default function PublicEppMatrixPage() {
 
                                 <button
                                     onClick={() => setQrPosterModalOpen(true)}
-                                    className="px-3.5 sm:px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 active:scale-95 whitespace-nowrap"
+                                    className="px-3.5 sm:px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 whitespace-nowrap"
                                     title="Generar cartel A4 con código QR para imprimir"
                                 >
                                     <QrCode className="w-4 h-4" />
@@ -355,7 +355,7 @@ export default function PublicEppMatrixPage() {
                                             setTimeout(() => { printWindow.print(); }, 600);
                                         }
                                     }}
-                                    className="px-3.5 sm:px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 active:scale-95 whitespace-nowrap"
+                                    className="px-3.5 sm:px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 whitespace-nowrap"
                                 >
                                     <Printer className="w-4 h-4" />
                                     <span>Imprimir / PDF</span>
@@ -374,7 +374,7 @@ export default function PublicEppMatrixPage() {
                                 Cobertura del Grupo
                             </span>
                             <div className="flex items-baseline gap-2 mt-1">
-                                <h3 className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                                <h3 className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                                     {stats.porcentajeCobertura}%
                                 </h3>
                                 <span className="text-xs text-slate-400 font-medium">al día</span>
@@ -394,7 +394,7 @@ export default function PublicEppMatrixPage() {
                             Operadores Filtrados
                         </span>
                         <div className="flex items-baseline gap-2 mt-1">
-                            <h3 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-200">
+                            <h3 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-200">
                                 {stats.totalOperadores}
                             </h3>
                             <span className="text-xs text-slate-400">activos</span>
@@ -405,7 +405,7 @@ export default function PublicEppMatrixPage() {
                         <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">
                             EPP Vigentes
                         </span>
-                        <h3 className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                        <h3 className="text-2xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
                             {stats.vigentesCount}
                         </h3>
                     </div>
@@ -414,7 +414,7 @@ export default function PublicEppMatrixPage() {
                         <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
                             Por Vencer (≤30d)
                         </span>
-                        <h3 className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 mt-1">
+                        <h3 className="text-2xl sm:text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1">
                             {stats.porVencerCount}
                         </h3>
                     </div>
@@ -423,7 +423,7 @@ export default function PublicEppMatrixPage() {
                         <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 block">
                             Vencidos
                         </span>
-                        <h3 className="text-2xl sm:text-3xl font-black text-rose-600 dark:text-rose-400 mt-1">
+                        <h3 className="text-2xl sm:text-3xl font-bold text-rose-600 dark:text-rose-400 mt-1">
                             {stats.vencidosCount}
                         </h3>
                     </div>
@@ -439,7 +439,7 @@ export default function PublicEppMatrixPage() {
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Buscar por operador o DNI..."
-                                className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                className="w-full pl-9 pr-8 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                             />
                             {search && (
                                 <button 
@@ -550,7 +550,7 @@ export default function PublicEppMatrixPage() {
                                         {/* Cabecera de la tarjeta del operador */}
                                         <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center font-black text-xs shrink-0">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs shrink-0">
                                                     {op.nombreCompleto?.slice(0, 2).toUpperCase() || <User className="w-4 h-4" />}
                                                 </div>
                                                 <div className="min-w-0">
@@ -564,7 +564,7 @@ export default function PublicEppMatrixPage() {
                                             </div>
 
                                             {/* Badge general */}
-                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1 ${
+                                            <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider shrink-0 flex items-center gap-1 ${
                                                 isAlDia 
                                                     ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300' 
                                                     : isPorVencer 
@@ -580,7 +580,7 @@ export default function PublicEppMatrixPage() {
 
                                         {/* Grilla de EPP del operador */}
                                         <div className="space-y-1.5">
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
                                                 Estado de Elementos de Protección:
                                             </span>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -613,38 +613,38 @@ export default function PublicEppMatrixPage() {
                                                                 <span className="font-bold text-slate-800 dark:text-slate-200 block text-[11px] truncate">
                                                                     {eppName}
                                                                 </span>
-                                                                <span className="text-[10px] text-slate-400 block">
+                                                                <span className="text-[11px] text-slate-400 block">
                                                                     Validez: {eppMeta.diasValidez || 365}d
                                                                 </span>
                                                             </div>
 
                                                             <div className="shrink-0 text-right">
                                                                 {isVigente && (
-                                                                    <div className="inline-flex items-center gap-1 font-black text-[11px] text-emerald-700 dark:text-emerald-300">
+                                                                    <div className="inline-flex items-center gap-1 font-bold text-[11px] text-emerald-700 dark:text-emerald-300">
                                                                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                                                         <span>{cell.diasRestantes}d</span>
                                                                     </div>
                                                                 )}
                                                                 {isPorVencer && (
-                                                                    <div className="inline-flex items-center gap-1 font-black text-[11px] text-amber-700 dark:text-amber-300">
+                                                                    <div className="inline-flex items-center gap-1 font-bold text-[11px] text-amber-700 dark:text-amber-300">
                                                                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
                                                                         <span>{cell.diasRestantes}d</span>
                                                                     </div>
                                                                 )}
                                                                 {isVencido && (
-                                                                    <div className="inline-flex items-center gap-1 font-black text-[11px] text-rose-700 dark:text-rose-300">
+                                                                    <div className="inline-flex items-center gap-1 font-bold text-[11px] text-rose-700 dark:text-rose-300">
                                                                         <XCircle className="w-3.5 h-3.5 text-rose-600" />
                                                                         <span>hace {Math.abs(cell.diasRestantes)}d</span>
                                                                     </div>
                                                                 )}
                                                                 {isPendiente && (
-                                                                    <div className="inline-flex items-center gap-1 font-bold text-[10px] text-indigo-700 dark:text-indigo-300">
+                                                                    <div className="inline-flex items-center gap-1 font-bold text-[11px] text-indigo-700 dark:text-indigo-300">
                                                                         <Clock className="w-3 h-3 text-indigo-600" />
                                                                         <span>Pte. Firma</span>
                                                                     </div>
                                                                 )}
                                                                 {isSinEntrega && (
-                                                                    <span className="text-[10px] font-bold text-slate-400">
+                                                                    <span className="text-[11px] font-bold text-slate-400">
                                                                         Sin Entrega
                                                                     </span>
                                                                 )}
@@ -659,7 +659,7 @@ export default function PublicEppMatrixPage() {
                                         <div className="pt-1">
                                             <button
                                                 onClick={() => setSelectedRow(row)}
-                                                className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 active:scale-98"
+                                                className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
                                             >
                                                 <FileText className="w-3.5 h-3.5 text-indigo-500" />
                                                 <span>Ver Legajo y Actas Firmadas</span>
@@ -686,16 +686,16 @@ export default function PublicEppMatrixPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-950/80 text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-wider">
+                                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-950/80 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
                                     <th className="p-3 sm:p-4 sticky left-0 bg-slate-50 dark:bg-slate-950 z-20 min-w-[170px] sm:min-w-[240px] shadow-[1px_0_0_0_rgba(0,0,0,0.06)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.06)]">
                                         Operador ({filteredRows.length})
                                     </th>
                                     {eppGlobales.map((epp: any) => (
                                         <th key={epp.id} className="p-3 text-center min-w-[130px] sm:min-w-[150px]">
-                                            <div className="font-black text-slate-800 dark:text-slate-200 line-clamp-1" title={epp.nombre}>
+                                            <div className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1" title={epp.nombre}>
                                                 {epp.nombre}
                                             </div>
-                                            <span className="text-[10px] text-slate-400 font-normal">
+                                            <span className="text-[11px] text-slate-400 font-normal">
                                                 Validez: {epp.diasValidez}d
                                             </span>
                                         </th>
@@ -745,11 +745,11 @@ export default function PublicEppMatrixPage() {
                                                         <td key={cell.eppItemId} className="p-2 text-center">
                                                             {isVigente && (
                                                                 <div className="inline-flex flex-col items-center justify-center p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 w-full">
-                                                                    <div className="flex items-center gap-1 font-black text-xs">
+                                                                    <div className="flex items-center gap-1 font-bold text-xs">
                                                                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                                                         <span>Vigente</span>
                                                                     </div>
-                                                                    <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400 font-mono mt-0.5">
+                                                                    <span className="text-[11px] text-emerald-600/80 dark:text-emerald-400 font-mono mt-0.5">
                                                                         {cell.diasRestantes}d restantes
                                                                     </span>
                                                                 </div>
@@ -757,11 +757,11 @@ export default function PublicEppMatrixPage() {
 
                                                             {isPorVencer && (
                                                                 <div className="inline-flex flex-col items-center justify-center p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 w-full">
-                                                                    <div className="flex items-center gap-1 font-black text-xs">
+                                                                    <div className="flex items-center gap-1 font-bold text-xs">
                                                                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
                                                                         <span>Por Vencer</span>
                                                                     </div>
-                                                                    <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono mt-0.5">
+                                                                    <span className="text-[11px] text-amber-700 dark:text-amber-400 font-mono mt-0.5">
                                                                         {cell.diasRestantes}d restantes
                                                                     </span>
                                                                 </div>
@@ -769,11 +769,11 @@ export default function PublicEppMatrixPage() {
 
                                                             {isVencido && (
                                                                 <div className="inline-flex flex-col items-center justify-center p-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800 w-full">
-                                                                    <div className="flex items-center gap-1 font-black text-xs">
+                                                                    <div className="flex items-center gap-1 font-bold text-xs">
                                                                         <XCircle className="w-3.5 h-3.5 text-rose-600" />
                                                                         <span>Vencido</span>
                                                                     </div>
-                                                                    <span className="text-[10px] text-rose-600/90 dark:text-rose-400 font-mono mt-0.5">
+                                                                    <span className="text-[11px] text-rose-600/90 dark:text-rose-400 font-mono mt-0.5">
                                                                         hace {Math.abs(cell.diasRestantes)}d
                                                                     </span>
                                                                 </div>
@@ -801,7 +801,7 @@ export default function PublicEppMatrixPage() {
                                                 <td className="p-3 sm:p-4 text-center">
                                                     <button
                                                         onClick={() => setSelectedRow(row)}
-                                                        className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white rounded-xl font-bold text-xs text-slate-700 dark:text-slate-300 transition-all flex items-center justify-center gap-1.5 mx-auto active:scale-95"
+                                                        className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white rounded-xl font-bold text-xs text-slate-700 dark:text-slate-300 transition-all flex items-center justify-center gap-1.5 mx-auto"
                                                     >
                                                         <FileText className="w-3.5 h-3.5" />
                                                         <span className="hidden sm:inline">Ver Legajo</span>
@@ -822,7 +822,7 @@ export default function PublicEppMatrixPage() {
                     <p>
                         Sistema de Gestión Integrado · HDB Servicios Eléctricos
                     </p>
-                    <p className="text-[10px] text-slate-500 font-mono">
+                    <p className="text-[11px] text-slate-500 font-mono">
                         Documento auditado digitalmente bajo estándares de trazabilidad criptográfica
                     </p>
                 </footer>
@@ -830,8 +830,8 @@ export default function PublicEppMatrixPage() {
 
             {/* MODAL / DRAWER BOTTOM SHEET DE HISTORIAL Y LEGAJO DEL OPERARIO */}
             {selectedRow && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-[2rem] sm:rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl max-h-[92dvh] sm:max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/50 animate-in fade-in">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl max-h-[92dvh] sm:max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-200 sm:slide-in-from-bottom-0 sm:zoom-in-95">
                         {/* Indicador táctil en móvil */}
                         <div className="pt-3 pb-1 flex justify-center sm:hidden">
                             <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full" />
@@ -840,7 +840,7 @@ export default function PublicEppMatrixPage() {
                         {/* Cabecera del Drawer/Modal */}
                         <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/75 dark:bg-slate-950/40 shrink-0">
                             <div className="min-w-0 pr-2">
-                                <h3 className="font-black text-slate-900 dark:text-slate-100 text-sm sm:text-base truncate">
+                                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base truncate">
                                     Historial de Entregas de EPP
                                 </h3>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
@@ -876,7 +876,7 @@ export default function PublicEppMatrixPage() {
                                         >
                                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-700/80 pb-3">
                                                 <div>
-                                                    <span className="font-black text-xs text-slate-900 dark:text-slate-100 block">
+                                                    <span className="font-bold text-xs text-slate-900 dark:text-slate-100 block">
                                                         Acta {del.codigoActa}
                                                     </span>
                                                     <span className="text-[11px] text-slate-500">
@@ -884,7 +884,7 @@ export default function PublicEppMatrixPage() {
                                                     </span>
                                                 </div>
 
-                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase w-fit ${
+                                                <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase w-fit ${
                                                     isFirmada
                                                         ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
                                                         : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
@@ -908,12 +908,12 @@ export default function PublicEppMatrixPage() {
                                                                 <span className="font-bold text-slate-800 dark:text-slate-200 block text-[11px] truncate">
                                                                     {item.cantidad}x {item.eppItem?.nombre}
                                                                 </span>
-                                                                <span className="text-[10px] text-slate-400 block truncate">
+                                                                <span className="text-[11px] text-slate-400 block truncate">
                                                                     {item.talle ? `Talle: ${item.talle} · ` : ''}Validez: {item.diasValidez}d
                                                                 </span>
                                                             </div>
 
-                                                            <div className="text-right text-[10px] shrink-0">
+                                                            <div className="text-right text-[11px] shrink-0">
                                                                 <span className="text-slate-400 block">Vence:</span>
                                                                 <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
                                                                     {new Date(item.fechaVencimiento).toLocaleDateString()}
@@ -930,9 +930,9 @@ export default function PublicEppMatrixPage() {
                                                     <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
                                                         <Fingerprint className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                                                         <span>Firma Digital Válida</span>
-                                                        {del.signatureId && <span className="font-mono text-[10px]">({del.signatureId})</span>}
+                                                        {del.signatureId && <span className="font-mono text-[11px]">({del.signatureId})</span>}
                                                     </div>
-                                                    <div className="text-[10px] text-slate-500 font-mono break-all">
+                                                    <div className="text-[11px] text-slate-500 font-mono break-all">
                                                         Checksum SHA-256: {del.signatureHash}
                                                     </div>
                                                 </div>
@@ -947,7 +947,7 @@ export default function PublicEppMatrixPage() {
                             {selectedRow.historialDeliveries?.length > 0 && (
                                 <button
                                     onClick={() => setPrint299ModalOpen(true)}
-                                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl font-bold transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl font-bold transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm"
                                     title="Imprimir Planilla Oficial según Resolución SRT 299/11 Anexo I"
                                 >
                                     <Printer className="w-4 h-4" />

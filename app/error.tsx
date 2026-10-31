@@ -43,7 +43,7 @@ export default function GlobalError({
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background text-foreground p-6 text-center">
       <div className="max-w-md w-full p-8 bg-card text-card-foreground rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700">
-        <h2 className="text-2xl font-black text-rose-600 dark:text-rose-400 mb-4 uppercase tracking-wide">
+        <h2 className="text-title text-rose-600 dark:text-rose-400 mb-4 tracking-wide">
           Algo salió mal
         </h2>
         <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed">
@@ -52,7 +52,7 @@ export default function GlobalError({
         <div className="flex flex-col gap-3">
           <button
             onClick={() => reset()}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-indigo-200 dark:hover:shadow-none"
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all dark:hover:shadow-none"
           >
             Reintentar Acción
           </button>

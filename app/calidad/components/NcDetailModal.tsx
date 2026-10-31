@@ -146,7 +146,7 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in">
             <div className="bg-card w-full max-w-5xl rounded-xl shadow-xl flex flex-col h-[90vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b bg-muted/30">
@@ -427,7 +427,7 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <span className="font-semibold text-sm text-primary">{a.codigoAccion}</span>
-                                                            <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full">{a.estado}</span>
+                                                            <span className="text-[11px] bg-muted px-2 py-0.5 rounded-full">{a.estado}</span>
                                                         </div>
                                                         <p className="text-xs text-muted-foreground">{a.descripcion || 'Acción vinculada'}</p>
                                                     </div>

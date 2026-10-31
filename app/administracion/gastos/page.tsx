@@ -62,14 +62,14 @@ export default function GastosPage() {
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full md:w-auto">
             <button
               onClick={() => router.push('/administracion/gastos/importar')}
-              className="flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors w-full sm:w-auto"
+              className="flex items-center justify-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors w-full sm:w-auto"
             >
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               Importar Excel
             </button>
             <button
               onClick={() => router.push('/administracion/gastos/escanear')}
-              className="flex items-center justify-center px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-xl shadow-sm transition-colors w-full sm:w-auto"
+              className="flex items-center justify-center px-4 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-medium rounded-xl transition-colors w-full sm:w-auto"
             >
               <Camera className="w-4 h-4 mr-2" />
               Escanear Factura (IA)

@@ -73,19 +73,19 @@ export default function InformesTecnicosContent() {
     });
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 space-y-6">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                        <FileText className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                        <FileText className="w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Informes Técnicos
                     </h2>
                     <p className="text-sm text-slate-500 font-medium">Relevamientos, diagnósticos y mantenimientos.</p>
                 </div>
                 <Link
                     href="/informes-tecnicos/nuevo"
-                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-black text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold text-sm hover:bg-primary-hover transition-all"
                 >
                     <Plus className="w-5 h-5" />
                     Nuevo Informe
@@ -138,8 +138,8 @@ export default function InformesTecnicosContent() {
                         <div key={inf.id} className="bg-card border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-center justify-between hover:border-primary/30 transition-all group">
                             <div className="flex flex-col min-w-0 flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{formatDate(inf.createdAt)}</span>
-                                    <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{formatDate(inf.createdAt)}</span>
+                                    <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider ${
                                         inf.status === 'finalizado' ? 'bg-emerald-100 text-emerald-700' :
                                         inf.status === 'borrador' ? 'bg-amber-100 text-amber-700' :
                                         'bg-slate-100 text-slate-700'

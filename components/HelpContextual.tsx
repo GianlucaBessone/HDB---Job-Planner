@@ -52,7 +52,7 @@ export default function HelpContextual({ slug, iconType = 'help' }: HelpContextu
         <>
           {/* Overlay */}
           <div 
-            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 transition-opacity"
+            className="fixed inset-0 bg-slate-950/50 z-50 transition-opacity"
             onClick={() => setIsOpen(false)}
           />
           

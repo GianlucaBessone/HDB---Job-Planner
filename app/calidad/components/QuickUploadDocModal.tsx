@@ -237,7 +237,7 @@ export default function QuickUploadDocModal({
 
     return (
         <div 
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 pt-16 sm:pt-20 overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 pt-16 sm:pt-20 overflow-y-auto"
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
@@ -253,7 +253,7 @@ export default function QuickUploadDocModal({
                             <UploadCloud className="w-5 h-5" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">
+                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
                                 Subir Archivo Propio a la Biblioteca
                             </h2>
                             <p className="text-xs text-slate-400 font-bold">
@@ -312,7 +312,7 @@ export default function QuickUploadDocModal({
                                         </p>
                                     </div>
                                 </div>
-                                <span className="text-xs font-black text-emerald-600 bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-400 px-3 py-1 rounded-xl">
+                                <span className="text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-400 px-3 py-1 rounded-xl">
                                     Archivo cargado
                                 </span>
                             </div>
@@ -336,7 +336,7 @@ export default function QuickUploadDocModal({
                     {/* Identificador & Tipo de Documento Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 Código Documental
                             </label>
                             <div className="w-full bg-secondary text-secondary-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] flex items-center justify-between">
@@ -354,13 +354,13 @@ export default function QuickUploadDocModal({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 Tipo de Documento
                             </label>
                             <select
                                 value={tipoDocumento}
                                 onChange={e => setTipoDocumento(e.target.value)}
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                             >
                                 <option value="MQ">MQ - Manual de Calidad</option>
                                 <option value="PG">PG - Procedimientos Generales</option>
@@ -373,13 +373,13 @@ export default function QuickUploadDocModal({
                     {/* Área / Sector & Sub-Acceso SGI */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 Área / Sector
                             </label>
                             <select
                                 value={area}
                                 onChange={e => setArea(e.target.value)}
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                             >
                                 <option value="GLB">GLB - Globales</option>
                                 <option value="MNG">MNG - Gerencia</option>
@@ -391,14 +391,14 @@ export default function QuickUploadDocModal({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 flex items-center gap-1.5">
+                            <label className="block mb-1 flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 <FolderTree className="w-3.5 h-3.5 text-primary" />
                                 <span>Sub-Acceso / Proceso SGI</span>
                             </label>
                             <select
                                 value={subAccessId}
                                 onChange={e => setSubAccessId(e.target.value)}
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                             >
                                 <option value="">(Sin asignar a sub-acceso)</option>
                                 {modules.map(mod => (
@@ -416,7 +416,7 @@ export default function QuickUploadDocModal({
 
                     {/* Document Title */}
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 flex items-center gap-1.5">
+                        <label className="block mb-1 flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             <Tag className="w-3.5 h-3.5 text-primary" />
                             <span>Título del Documento *</span>
                         </label>
@@ -425,7 +425,7 @@ export default function QuickUploadDocModal({
                             placeholder="Nombre oficial o descriptivo del documento..."
                             value={titulo}
                             onChange={e => setTitulo(e.target.value)}
-                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                             required
                         />
                     </div>
@@ -433,7 +433,7 @@ export default function QuickUploadDocModal({
                     {/* Revisor & Aprobador Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 flex items-center gap-1.5">
+                            <label className="block mb-1 flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 <UserCheck className="w-3.5 h-3.5 text-primary" />
                                 <span>Revisado Por (Supervisor/QA) <span className="text-rose-500">*</span></span>
                             </label>
@@ -441,7 +441,7 @@ export default function QuickUploadDocModal({
                                 required
                                 value={revisadorId}
                                 onChange={e => setRevisadorId(e.target.value)}
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                             >
                                 <option value="">(Seleccionar revisor...)</option>
                                 {operators
@@ -455,7 +455,7 @@ export default function QuickUploadDocModal({
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 flex items-center gap-1.5">
+                            <label className="block mb-1 flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 <ShieldCheck className="w-3.5 h-3.5 text-primary" />
                                 <span>Aprobado Por (QA/Gerente) <span className="text-rose-500">*</span></span>
                             </label>
@@ -463,7 +463,7 @@ export default function QuickUploadDocModal({
                                 required
                                 value={aprobadorId}
                                 onChange={e => setAprobadorId(e.target.value)}
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                             >
                                 {operators
                                     .filter(op => (op.nombreCompleto || '').toLowerCase().includes('bassignana') || ['supervisor', 'admin', 'qa'].includes((op.role || '').toLowerCase()))
@@ -478,7 +478,7 @@ export default function QuickUploadDocModal({
 
                     {/* Observaciones */}
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             Observaciones o Notas (Opcional)
                         </label>
                         <input
@@ -486,7 +486,7 @@ export default function QuickUploadDocModal({
                             placeholder="Notas sobre el documento, alcance o procedencia"
                             value={observaciones}
                             onChange={e => setObservaciones(e.target.value)}
-                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-xs font-medium outline-none focus:border-indigo-500"
+                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-xs font-medium outline-none focus:border-indigo-500"
                         />
                     </div>
 
@@ -502,7 +502,7 @@ export default function QuickUploadDocModal({
                         <button
                             type="submit"
                             disabled={loading || !fileData || !previewCode || previewCode === 'Calculando...'}
-                            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-50"
+                            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
                         >
                             {loading ? (
                                 <>

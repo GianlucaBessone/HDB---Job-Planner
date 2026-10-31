@@ -121,18 +121,18 @@ export default function ApprovalsPage() {
             case 'PENDING_APPROVAL': return 'bg-amber-50 text-amber-600 border-amber-100';
             case 'APPROVED': return 'bg-blue-50 text-blue-600 border-blue-100';
             case 'REJECTED': return 'bg-rose-50 text-rose-600 border-rose-100';
-            default: return 'bg-background text-foreground/50 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800';
+            default: return 'bg-background text-foreground text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800';
         }
     };
 
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-200">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
-                        <ShieldCheck className="w-8 h-8 text-primary" />
+                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                        <ShieldCheck className="w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Aprobación de Fichadas
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Revisa las entradas que requieren validación manual.</p>
@@ -166,22 +166,22 @@ export default function ApprovalsPage() {
                                 onClick={() => setSelectedEntry(entry)}
                                 className={`w-full text-left p-5 rounded-3xl border transition-all duration-200 cursor-pointer ${
                                     selectedEntry?.id === entry.id 
-                                    ? 'bg-card text-card-foreground border-primary shadow-xl shadow-primary/10 ring-2 ring-primary/5' 
+                                    ? 'bg-card text-card-foreground border-primary shadow-xl ring-2 ring-primary/5' 
                                     : 'bg-card text-card-foreground border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600'
                                 }`}
                             >
                                 <div className="flex justify-between items-start mb-3">
-                                    <div className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getRiskStyle(entry.riskLevel)}`}>
+                                    <div className={`px-2 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wider ${getRiskStyle(entry.riskLevel)}`}>
                                         {getRiskLabel(entry.riskLevel)}
                                     </div>
-                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{format(new Date(entry.createdAt || entry.fecha), 'HH:mm')}</span>
+                                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">{format(new Date(entry.createdAt || entry.fecha), 'HH:mm')}</span>
                                 </div>
                                 <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight mb-1">{entry.operator?.nombreCompleto}</h4>
                                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{entry.project?.nombre || 'Base / Empresa'}</p>
                                 
                                 <div className="flex flex-wrap gap-2">
                                     {parseFlags(entry.validationFlags).map((flag: string) => (
-                                        <span key={flag} className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-[9px] font-bold border border-amber-100">
+                                        <span key={flag} className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-[11px] font-bold border border-amber-100">
                                             {getFlagLabel(flag)}
                                         </span>
                                     ))}
@@ -196,8 +196,8 @@ export default function ApprovalsPage() {
                     {selectedEntry ? (
                         <EntryDetail entry={selectedEntry} onAction={handleAction} />
                     ) : (
-                        <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-background text-foreground/50 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-[2.5rem] p-12 text-center">
-                            <div className="w-16 h-16 bg-card text-card-foreground rounded-2xl flex items-center justify-center text-slate-300 shadow-sm mb-4">
+                        <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-12 text-center">
+                            <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center text-slate-300 shadow-sm mb-4">
                                 <Search className="w-8 h-8" />
                             </div>
                             <h3 className="text-lg font-bold text-slate-500 dark:text-slate-400 mb-2">Selecciona una fichada</h3>
@@ -214,7 +214,7 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
     const flags = parseFlags(entry.validationFlags);
     
     return (
-        <div className="bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Map Placeholder or Actual Map */}
             <div className="h-64 bg-muted text-muted-foreground/50 relative">
                 {entry.latitude ? (
@@ -232,7 +232,7 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                             <MapPin className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">Coordenadas</p>
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mb-1">Coordenadas</p>
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{entry.latitude?.toFixed(5)}, {entry.longitude?.toFixed(5)}</p>
                         </div>
                     </div>
@@ -242,7 +242,7 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                            <Smartphone className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">ID Dispositivo</p>
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mb-1">ID Dispositivo</p>
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{entry.deviceId?.slice(0, 10)}...</p>
                         </div>
                     </div>
@@ -253,11 +253,11 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 rounded-2xl bg-muted text-muted-foreground/50 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                            <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-slate-500 dark:text-slate-400">
                                 <User className="w-8 h-8" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{entry.operator?.nombreCompleto}</h2>
+                                <h2 className="text-title text-slate-800 dark:text-slate-100">{entry.operator?.nombreCompleto}</h2>
                                 <p className="text-slate-500 dark:text-slate-400 font-bold">{entry.project?.nombre || 'Base / Empresa Central'}</p>
                             </div>
                         </div>
@@ -277,13 +277,13 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                     <div className="flex gap-3">
                         <button 
                             onClick={() => onAction(entry.id, 'REJECTED')}
-                            className="px-6 py-3 bg-rose-50 text-rose-600 rounded-2xl font-black text-xs uppercase tracking-widest border border-rose-100 hover:bg-rose-100 transition-all active:scale-95 flex items-center gap-2"
+                            className="px-6 py-3 bg-rose-50 text-rose-600 rounded-2xl font-semibold text-xs border border-rose-100 hover:bg-rose-100 transition-all flex items-center gap-2"
                         >
                             <XCircle className="w-4 h-4" /> Rechazar
                         </button>
                         <button 
                             onClick={() => onAction(entry.id, 'APPROVED')}
-                            className="px-8 py-3 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all active:scale-95 flex items-center gap-2"
+                            className="px-8 py-3 bg-emerald-500 text-white rounded-2xl font-semibold text-xs hover:bg-emerald-600 transition-all flex items-center gap-2"
                         >
                             <CheckCircle2 className="w-4 h-4" /> Aprobar Fichada
                         </button>
@@ -291,15 +291,15 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="bg-background text-foreground/50 rounded-[2rem] p-6 border border-slate-100 dark:border-slate-800">
-                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <div className="bg-background text-foreground rounded-3xl p-6 border border-slate-100 dark:border-slate-800">
+                        <h4 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <AlertTriangle className="w-4 h-4 text-amber-500" /> Flags de Validación
                         </h4>
                         <div className="space-y-3">
                             {flags.length > 0 ? flags.map((flag: string) => (
                                 <div key={flag} className="bg-card text-card-foreground p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{getFlagLabel(flag)}</span>
-                                    <span className="text-[9px] font-black text-slate-300 uppercase">{flag}</span>
+                                    <span className="text-[11px] font-semibold text-slate-300 uppercase">{flag}</span>
                                 </div>
                             )) : (
                                 <p className="text-xs font-bold text-slate-400 dark:text-slate-500 italic">No se detectaron anomalías.</p>
@@ -307,18 +307,18 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                         </div>
                     </div>
 
-                    <div className="bg-indigo-50/30 rounded-[2rem] p-6 border border-indigo-100/50">
-                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <div className="bg-indigo-50/30 rounded-3xl p-6 border border-indigo-100/50">
+                        <h4 className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <Clock className="w-4 h-4" /> Resumen de Jornada
                         </h4>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-card text-card-foreground p-4 rounded-2xl border border-indigo-100 shadow-sm">
-                                <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Ingreso</p>
-                                <p className="text-lg font-black text-indigo-600">{entry.horaIngreso || '--:--'}</p>
+                                <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Ingreso</p>
+                                <p className="text-lg font-bold text-indigo-600">{entry.horaIngreso || '--:--'}</p>
                             </div>
                             <div className="bg-card text-card-foreground p-4 rounded-2xl border border-indigo-100 shadow-sm">
-                                <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Egreso</p>
-                                <p className="text-lg font-black text-slate-600 dark:text-slate-300">{entry.horaEgreso || 'Activo'}</p>
+                                <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Egreso</p>
+                                <p className="text-lg font-bold text-slate-600 dark:text-slate-300">{entry.horaEgreso || 'Activo'}</p>
                             </div>
                         </div>
                     </div>

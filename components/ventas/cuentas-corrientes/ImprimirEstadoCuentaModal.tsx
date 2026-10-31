@@ -57,7 +57,7 @@ export default function ImprimirEstadoCuentaModal({
   );
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-950/50-xs">
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -94,7 +94,7 @@ export default function ImprimirEstadoCuentaModal({
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Estado de Cuenta Corriente — {cliente.nombre}
               </h3>
               <p className="text-[11px] text-slate-400">
@@ -128,7 +128,7 @@ export default function ImprimirEstadoCuentaModal({
             {/* Cabecera del Estado de Cuenta */}
             <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
               <div>
-                <h1 className="text-xl font-black uppercase tracking-tight text-slate-900">
+                <h1 className="text-xl font-semibold uppercase tracking-tight text-slate-900">
                   HDB - Materiales Eléctricos
                 </h1>
                 <p className="text-[11px] text-slate-600 font-medium">
@@ -136,7 +136,7 @@ export default function ImprimirEstadoCuentaModal({
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-xs font-black uppercase tracking-wider text-slate-900">
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-900">
                   ESTADO DE CUENTA
                 </div>
                 <div className="text-[11px] text-slate-600 mt-0.5">
@@ -151,10 +151,10 @@ export default function ImprimirEstadoCuentaModal({
             {/* Datos del Cliente y Resumen de Saldos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="border border-slate-300 p-3 rounded-lg space-y-1 text-[11px]">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
                   Datos del Cliente
                 </span>
-                <div className="text-sm font-black text-slate-900">{cliente.nombre}</div>
+                <div className="text-sm font-bold text-slate-900">{cliente.nombre}</div>
                 {cliente.direccion && <div>Dirección: {cliente.direccion}</div>}
                 {cliente.telefono && <div>Teléfono: {cliente.telefono}</div>}
                 {cliente.email && <div>Email: {cliente.email}</div>}
@@ -182,7 +182,7 @@ export default function ImprimirEstadoCuentaModal({
                     <span>{formatARS(resumen.deudaVencida)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm font-black text-slate-900 pt-1.5 border-t border-slate-300">
+                <div className="flex justify-between text-sm font-bold text-slate-900 pt-1.5 border-t border-slate-300">
                   <span>SALDO ACTUAL A PAGAR:</span>
                   <span>{formatARS(resumen.saldoActual)}</span>
                 </div>
@@ -191,7 +191,7 @@ export default function ImprimirEstadoCuentaModal({
 
             {/* Comprobantes Pendientes de Cancelación */}
             <div className="space-y-2">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-900">
                 1. Comprobantes Pendientes de Cancelación ({comprobantesPendientes.length})
               </h3>
               {comprobantesPendientes.length === 0 ? (
@@ -201,7 +201,7 @@ export default function ImprimirEstadoCuentaModal({
               ) : (
                 <table className="w-full text-left text-[11px] border-collapse border border-slate-300">
                   <thead>
-                    <tr className="bg-slate-100 border-b border-slate-300 font-bold text-[10px] uppercase">
+                    <tr className="bg-slate-100 border-b border-slate-300 font-bold text-[11px] uppercase">
                       <th className="py-1.5 px-2 border-r border-slate-300">Comprobante</th>
                       <th className="py-1.5 px-2 border-r border-slate-300">Emisión</th>
                       <th className="py-1.5 px-2 border-r border-slate-300">Vencimiento</th>
@@ -225,7 +225,7 @@ export default function ImprimirEstadoCuentaModal({
                         <td className="py-1.5 px-2 border-r border-slate-200">
                           {formatDate(cp.fechaVencimiento)}
                           {cp.vencido && (
-                            <span className="ml-1 text-[9px] font-bold text-red-700">
+                            <span className="ml-1 text-[11px] font-bold text-red-700">
                               (Venc. {cp.diasVencido}d)
                             </span>
                           )}
@@ -237,7 +237,7 @@ export default function ImprimirEstadoCuentaModal({
                         <td className="py-1.5 px-2 text-right border-r border-slate-200">
                           {formatARS(cp.montoPagadoCC)}
                         </td>
-                        <td className="py-1.5 px-2 text-right font-black">
+                        <td className="py-1.5 px-2 text-right font-bold">
                           {formatARS(cp.saldoPendiente)}
                         </td>
                       </tr>
@@ -249,7 +249,7 @@ export default function ImprimirEstadoCuentaModal({
 
             {/* Historial del Libro Mayor */}
             <div className="space-y-2">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-900">
                 2. Historial de Movimientos en Cuenta Corriente ({movimientosActivos.length})
               </h3>
               {movimientosActivos.length === 0 ? (
@@ -259,7 +259,7 @@ export default function ImprimirEstadoCuentaModal({
               ) : (
                 <table className="w-full text-left text-[11px] border-collapse border border-slate-300">
                   <thead>
-                    <tr className="bg-slate-100 border-b border-slate-300 font-bold text-[10px] uppercase">
+                    <tr className="bg-slate-100 border-b border-slate-300 font-bold text-[11px] uppercase">
                       <th className="py-1.5 px-2 border-r border-slate-300">Fecha</th>
                       <th className="py-1.5 px-2 border-r border-slate-300">Comprobante</th>
                       <th className="py-1.5 px-2 border-r border-slate-300">Concepto</th>
@@ -288,7 +288,7 @@ export default function ImprimirEstadoCuentaModal({
                         <td className="py-1.5 px-2 text-right border-r border-slate-200 text-emerald-700 font-semibold">
                           {m.haber > 0 ? formatARS(m.haber) : '—'}
                         </td>
-                        <td className="py-1.5 px-2 text-right font-black">
+                        <td className="py-1.5 px-2 text-right font-bold">
                           {formatARS(m.saldoAcumulado)}
                         </td>
                       </tr>
@@ -298,7 +298,7 @@ export default function ImprimirEstadoCuentaModal({
               )}
             </div>
 
-            <div className="pt-4 border-t border-slate-300 text-center text-[10px] text-slate-500">
+            <div className="pt-4 border-t border-slate-300 text-center text-[11px] text-slate-500">
               Documento emitido por el Sistema Integrado de Gestión (SGI) — HDB Materiales Eléctricos
             </div>
           </div>

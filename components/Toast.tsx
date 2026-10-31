@@ -21,7 +21,7 @@ export const showToast = (message: string, type: 'success' | 'error' | 'info' = 
     setTimeout(() => {
         toasts = toasts.filter(t => t.id !== id);
         toastListeners.forEach(listener => listener(toasts));
-    }, 3000);
+    }, type === 'error' ? 6000 : 4000); // los errores quedan más tiempo para poder leerlos
 };
 
 export default function ToastContainer() {
@@ -34,32 +34,34 @@ export default function ToastContainer() {
         };
     }, []);
 
+    // Abajo a la derecha en escritorio (no tapa encabezados ni acciones); arriba en móvil, sobre el teclado
     return (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 w-[90%] max-w-sm pointer-events-none">
+        <div
+            className="fixed z-[9999] flex flex-col gap-2 pointer-events-none top-3 left-3 right-3 sm:top-auto sm:left-auto sm:bottom-5 sm:right-5 sm:w-[380px]"
+            aria-live="polite"
+            aria-relevant="additions"
+        >
             {currentToasts.map(toast => (
                 <div
                     key={toast.id}
-                    className={`
-                        flex items-center gap-3 p-4 rounded-2xl shadow-2xl border backdrop-blur-md animate-in slide-in-from-top-4 duration-300 pointer-events-auto
-                        ${toast.type === 'success' ? 'bg-white/90 dark:bg-slate-800/90 border-green-100 text-slate-800 dark:text-slate-100' :
-                            toast.type === 'error' ? 'bg-red-50/90 border-red-100 text-red-800' :
-                                'bg-white/90 dark:bg-slate-800/90 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-100'}
-                    `}
+                    role={toast.type === 'error' ? 'alert' : 'status'}
+                    className="flex items-start gap-3 pl-3.5 pr-2 py-3 rounded-xl border border-border bg-popover text-popover-foreground shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200 pointer-events-auto"
                 >
-                    {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />}
-                    {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />}
-                    {toast.type === 'info' && <Info className="w-5 h-5 text-primary shrink-0" />}
+                    {toast.type === 'success' && <CheckCircle2 className="w-[18px] h-[18px] mt-px text-success-600 dark:text-success-400 shrink-0" aria-hidden="true" />}
+                    {toast.type === 'error' && <AlertCircle className="w-[18px] h-[18px] mt-px text-danger-600 dark:text-danger-400 shrink-0" aria-hidden="true" />}
+                    {toast.type === 'info' && <Info className="w-[18px] h-[18px] mt-px text-info-600 dark:text-info-400 shrink-0" aria-hidden="true" />}
 
-                    <p className="text-sm font-semibold flex-1 leading-tight">{toast.message}</p>
+                    <p className="text-[13px] font-medium flex-1 leading-snug pt-px">{toast.message}</p>
 
                     <button
                         onClick={() => {
                             toasts = toasts.filter(t => t.id !== toast.id);
                             toastListeners.forEach(listener => listener(toasts));
                         }}
-                        className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 dark:text-slate-500 transition-colors"
+                        className="btn btn-ghost btn-icon btn-sm btn-icon-inline -my-1"
+                        aria-label="Cerrar aviso"
                     >
-                        <X className="w-4 h-4" />
+                        <X />
                     </button>
                 </div>
             ))}

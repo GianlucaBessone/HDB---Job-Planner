@@ -76,11 +76,11 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
                     <p className="text-sm text-slate-400">Gestión de KPIs asociados a OKRs</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <select value={filterOkrId} onChange={e => setFilterOkrId(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-700 dark:text-slate-200">
+                    <select value={filterOkrId} onChange={e => setFilterOkrId(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-700 dark:text-slate-200">
                         <option value="">Todos los OKRs</option>
                         {okrs.map((o: any) => <option key={o.id} value={o.id}>{o.codigoOkr} — {o.nombre}</option>)}
                     </select>
-                    <button onClick={() => { setEditingKpi(null); setShowKpiModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 shadow-sm shrink-0">
+                    <button onClick={() => { setEditingKpi(null); setShowKpiModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary-hover shrink-0">
                         <Plus className="w-4 h-4" /> Nuevo KPI
                     </button>
                 </div>
@@ -102,10 +102,10 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{kpi.codigoKpi}</span>
-                                        <span className="text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{kpi.okr?.codigoOkr}</span>
+                                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{kpi.codigoKpi}</span>
+                                        <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded">{kpi.okr?.codigoOkr}</span>
                                         {kpi.estadoCumplimiento && (
-                                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                                            <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded uppercase ${
                                                 kpi.estadoCumplimiento === 'Cumple' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
                                                 kpi.estadoCumplimiento === 'En Riesgo' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                                                 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
@@ -118,13 +118,13 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
                                 <div className="flex items-center gap-4 shrink-0">
                                     <div className="text-center">
                                         <p className="text-xs text-slate-400 font-medium">Último</p>
-                                        <p className="text-lg font-black text-slate-800 dark:text-slate-100">{kpi.ultimoValor ?? '—'}</p>
+                                        <p className="text-lg font-bold text-slate-800 dark:text-slate-100">{kpi.ultimoValor ?? '—'}</p>
                                     </div>
                                     <div className="text-center">
                                         <p className="text-xs text-slate-400 font-medium">Objetivo</p>
                                         <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{kpi.valorObjetivo}</p>
                                         {kpi.ultimoValor !== null && kpi.valorObjetivo > 0 && (
-                                            <p className="text-[10px] text-slate-500 font-medium">
+                                            <p className="text-[11px] text-slate-500 font-medium">
                                                 Avance: {Math.min(Math.round((kpi.ultimoValor / (kpi.valorMaximoEsperado || kpi.valorObjetivo)) * 100), 200)}%
                                             </p>
                                         )}
@@ -180,7 +180,7 @@ function MiniChart({ historico, objetivo }: { historico: any[]; objetivo: number
         xAxis: { type: 'category' as const, show: false, data: sorted.map((_, i) => i) },
         yAxis: { type: 'value' as const, show: false },
         series: [
-            { type: 'line', data: sorted.map(h => h.valorObtenido), smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#6366f1' }, areaStyle: { color: { type: 'linear' as const, x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(99,102,241,0.2)' }, { offset: 1, color: 'rgba(99,102,241,0.01)' }] } } },
+            { type: 'line', data: sorted.map(h => h.valorObtenido), smooth: true, symbol: 'none', lineStyle: { width: 2, color: '#2f74da' }, areaStyle: { color: { type: 'linear' as const, x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(99,102,241,0.2)' }, { offset: 1, color: 'rgba(99,102,241,0.01)' }] } } },
             { type: 'line', data: sorted.map(() => objetivo), symbol: 'none', lineStyle: { width: 1, type: 'dashed' as const, color: '#10b981' } },
         ],
         tooltip: { show: false },
@@ -217,7 +217,7 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
     };
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-start justify-center pt-[5vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-950/50 z-[200] flex items-start justify-center pt-[5vh] overflow-y-auto">
             <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-2xl mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{kpi ? 'Editar KPI' : 'Nuevo KPI'}</h2>
@@ -226,39 +226,39 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                 <form onSubmit={handleSubmit} className="p-5 space-y-4">
                     {!kpi && (
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">OKR Asociado *</label>
-                            <select value={form.okrId} onChange={e => setForm(p => ({ ...p, okrId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">OKR Asociado *</label>
+                            <select value={form.okrId} onChange={e => setForm(p => ({ ...p, okrId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar OKR...</option>
                                 {okrs.map((o: any) => <option key={o.id} value={o.id}>{o.codigoOkr} — {o.nombre}</option>)}
                             </select>
                         </div>
                     )}
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre *</label>
-                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Índice de satisfacción del cliente" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Nombre *</label>
+                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Índice de satisfacción del cliente" />
                     </div>
                     <div className="grid grid-cols-3 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Valor Objetivo *</label>
-                            <input type="number" step="any" value={form.valorObjetivo} onChange={e => setForm(p => ({ ...p, valorObjetivo: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Valor Objetivo *</label>
+                            <input type="number" step="any" value={form.valorObjetivo} onChange={e => setForm(p => ({ ...p, valorObjetivo: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Mín. Aceptable</label>
-                            <input type="number" step="any" value={form.valorMinimoAceptable} onChange={e => setForm(p => ({ ...p, valorMinimoAceptable: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Mín. Aceptable</label>
+                            <input type="number" step="any" value={form.valorMinimoAceptable} onChange={e => setForm(p => ({ ...p, valorMinimoAceptable: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Máx. Esperado</label>
-                            <input type="number" step="any" value={form.valorMaximoEsperado} onChange={e => setForm(p => ({ ...p, valorMaximoEsperado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Máx. Esperado</label>
+                            <input type="number" step="any" value={form.valorMaximoEsperado} onChange={e => setForm(p => ({ ...p, valorMaximoEsperado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Unidad de Medida</label>
-                            <input value={form.unidadMedida} onChange={e => setForm(p => ({ ...p, unidadMedida: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: %, puntos, horas" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Unidad de Medida</label>
+                            <input value={form.unidadMedida} onChange={e => setForm(p => ({ ...p, unidadMedida: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: %, puntos, horas" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Frecuencia Medición</label>
-                            <select value={form.frecuenciaMedicion} onChange={e => setForm(p => ({ ...p, frecuenciaMedicion: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Frecuencia Medición</label>
+                            <select value={form.frecuenciaMedicion} onChange={e => setForm(p => ({ ...p, frecuenciaMedicion: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar...</option>
                                 <option value="Diario">Diario</option>
                                 <option value="Semanal">Semanal</option>
@@ -271,25 +271,25 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Responsable Carga</label>
-                            <select value={form.responsableCargaId} onChange={e => setForm(p => ({ ...p, responsableCargaId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Responsable Carga</label>
+                            <select value={form.responsableCargaId} onChange={e => setForm(p => ({ ...p, responsableCargaId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar...</option>
                                 {operators.map((op: any) => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fuente de Datos</label>
-                            <input value={form.fuenteDatos} onChange={e => setForm(p => ({ ...p, fuenteDatos: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Sistema ERP, encuestas" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fuente de Datos</label>
+                            <input value={form.fuenteDatos} onChange={e => setForm(p => ({ ...p, fuenteDatos: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Sistema ERP, encuestas" />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fórmula de Cálculo</label>
-                        <input value={form.formulaCalculo} onChange={e => setForm(p => ({ ...p, formulaCalculo: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: (Clientes satisfechos / Total encuestas) x 100" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fórmula de Cálculo</label>
+                        <input value={form.formulaCalculo} onChange={e => setForm(p => ({ ...p, formulaCalculo: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: (Clientes satisfechos / Total encuestas) x 100" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Registro</label>
-                            <select value={form.tipoRegistro} onChange={e => setForm(p => ({ ...p, tipoRegistro: e.target.value, datasetId: e.target.value === 'Manual' ? '' : p.datasetId }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Tipo de Registro</label>
+                            <select value={form.tipoRegistro} onChange={e => setForm(p => ({ ...p, tipoRegistro: e.target.value, datasetId: e.target.value === 'Manual' ? '' : p.datasetId }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="Manual">Manual</option>
                                 <option value="Dataset">Dataset (Automático)</option>
                             </select>
@@ -298,20 +298,20 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                     {form.tipoRegistro === 'Dataset' && (
                         <div className="bg-muted/50 text-muted-foreground p-4 rounded-xl space-y-4 border border-slate-200 dark:border-slate-700">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dataset Origen *</label>
-                                <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                                <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Dataset Origen *</label>
+                                <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                     <option value="">Seleccionar Dataset...</option>
                                     {datasets.map((d: any) => <option key={d.id} value={d.id}>{d.codigoDataset} — {d.nombre}</option>)}
                                 </select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Campo Valor *</label>
-                                    <input value={form.campoValor} onChange={e => setForm(p => ({ ...p, campoValor: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: cantidad_ventas" />
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Campo Valor *</label>
+                                    <input value={form.campoValor} onChange={e => setForm(p => ({ ...p, campoValor: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: cantidad_ventas" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Agregación (Opcional)</label>
-                                    <select value={form.funcionAgregacion} onChange={e => setForm(p => ({ ...p, funcionAgregacion: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Agregación (Opcional)</label>
+                                    <select value={form.funcionAgregacion} onChange={e => setForm(p => ({ ...p, funcionAgregacion: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                         <option value="">Ninguna (Primer valor)</option>
                                         <option value="SUM">Suma (SUM)</option>
                                         <option value="AVG">Promedio (AVG)</option>
@@ -325,7 +325,7 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                     )}
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>
-                        <button type="submit" disabled={saving || !form.nombre || !form.valorObjetivo || (!kpi && !form.okrId) || (form.tipoRegistro === 'Dataset' && (!form.datasetId || !form.campoValor))} className="h-10 px-6 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 disabled:opacity-50 shadow-sm">
+                        <button type="submit" disabled={saving || !form.nombre || !form.valorObjetivo || (!kpi && !form.okrId) || (form.tipoRegistro === 'Dataset' && (!form.datasetId || !form.campoValor))} className="h-10 px-6 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-hover disabled:opacity-50">
                             {saving ? 'Guardando...' : kpi ? 'Actualizar' : 'Crear KPI'}
                         </button>
                     </div>
@@ -358,7 +358,7 @@ function MedicionModal({ kpi, onClose, onSave }: { kpi: any; onClose: () => void
     };
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center">
+        <div className="fixed inset-0 bg-slate-950/50 z-[200] flex items-center justify-center">
             <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <div>
@@ -368,17 +368,17 @@ function MedicionModal({ kpi, onClose, onSave }: { kpi: any; onClose: () => void
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5 text-slate-400" /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="p-5 space-y-4">
-                    <div className="bg-background text-foreground/50 rounded-xl p-3 flex items-center justify-between text-sm">
+                    <div className="bg-background text-foreground rounded-xl p-3 flex items-center justify-between text-sm">
                         <span className="text-slate-500 font-medium">Objetivo:</span>
                         <span className="font-bold text-emerald-600 dark:text-emerald-400">{kpi.valorObjetivo} {kpi.unidadMedida || ''}</span>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Medición</label>
-                        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Medición</label>
+                        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Valor Obtenido *</label>
-                        <input type="number" step="any" value={valor} onChange={e => setValor(e.target.value)} required className="w-full h-12 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-lg font-bold bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="0" autoFocus />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Valor Obtenido *</label>
+                        <input type="number" step="any" value={valor} onChange={e => setValor(e.target.value)} required className="w-full h-12 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-lg font-bold bg-card text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="0" autoFocus />
                     </div>
                     {previewEstado && (
                         <div className={`rounded-xl p-3 flex items-center justify-center gap-2 text-sm font-bold ${
@@ -392,12 +392,12 @@ function MedicionModal({ kpi, onClose, onSave }: { kpi: any; onClose: () => void
                         </div>
                     )}
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Comentario</label>
-                        <textarea value={comentario} onChange={e => setComentario(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Comentario</label>
+                        <textarea value={comentario} onChange={e => setComentario(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>
-                        <button type="submit" disabled={saving || !valor} className="h-10 px-6 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 shadow-sm">
+                        <button type="submit" disabled={saving || !valor} className="h-10 px-6 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 disabled:opacity-50">
                             {saving ? 'Registrando...' : 'Registrar Medición'}
                         </button>
                     </div>

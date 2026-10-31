@@ -44,7 +44,7 @@ export default function PortalProyectosPage() {
           <ShieldCheck className="w-4 h-4" />
           <span>Área Segura de Cliente</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+        <h1 className="text-title text-slate-900 dark:text-slate-100">
           Mis Proyectos Autorizados
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -72,7 +72,7 @@ export default function PortalProyectosPage() {
               <div>
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-sm">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                       <FolderGit2 className="w-5 h-5" />
                     </div>
                     <div>
@@ -80,7 +80,7 @@ export default function PortalProyectosPage() {
                         {p.nombre}
                       </h3>
                       {p.codigoProyecto && (
-                        <span className="text-[10px] font-mono uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded font-bold">
+                        <span className="text-[11px] font-mono uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded font-bold">
                           {p.codigoProyecto}
                         </span>
                       )}
@@ -97,28 +97,28 @@ export default function PortalProyectosPage() {
                 {/* Counters strip */}
                 <div className="grid grid-cols-3 gap-2 py-3 border-y border-slate-100 dark:border-slate-800/80 my-3">
                   <div className="text-center p-2 rounded-xl bg-blue-50/60 dark:bg-blue-950/30">
-                    <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 block mb-0.5">
+                    <span className="text-[11px] uppercase font-bold text-blue-600 dark:text-blue-400 block mb-0.5">
                       Abiertas
                     </span>
-                    <span className="text-base font-black text-blue-700 dark:text-blue-300">
+                    <span className="text-base font-bold text-blue-700 dark:text-blue-300">
                       {p.conteo?.abiertas || 0}
                     </span>
                   </div>
 
                   <div className="text-center p-2 rounded-xl bg-amber-50/60 dark:bg-amber-950/30">
-                    <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 block mb-0.5">
+                    <span className="text-[11px] uppercase font-bold text-amber-600 dark:text-amber-400 block mb-0.5">
                       Ptes. Firma
                     </span>
-                    <span className="text-base font-black text-amber-700 dark:text-amber-300">
+                    <span className="text-base font-bold text-amber-700 dark:text-amber-300">
                       {p.conteo?.pendientesFirma || 0}
                     </span>
                   </div>
 
                   <div className="text-center p-2 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30">
-                    <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block mb-0.5">
+                    <span className="text-[11px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block mb-0.5">
                       Cerradas
                     </span>
-                    <span className="text-base font-black text-emerald-700 dark:text-emerald-300">
+                    <span className="text-base font-bold text-emerald-700 dark:text-emerald-300">
                       {p.conteo?.cerradas || 0}
                     </span>
                   </div>
@@ -133,7 +133,7 @@ export default function PortalProyectosPage() {
 
                 <Link
                   href={`/portal-clientes/ordenes-trabajo?proyectoId=${p.id}`}
-                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                  className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
                 >
                   Ver OTs
                   <ArrowRight className="w-3.5 h-3.5" />

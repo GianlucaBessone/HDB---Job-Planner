@@ -91,39 +91,39 @@ export function Breadcrumbs() {
     };
 
     return (
-        <div className="flex items-center gap-1.5 mb-2 h-7">
-            <button 
+        <div className="flex items-center gap-1 min-w-0 h-9">
+            <button
                 onClick={handleBack}
-                className="px-2 py-1 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors mr-1.5 flex items-center gap-1 text-xs font-bold"
+                className="btn btn-ghost btn-icon btn-sm btn-icon-inline shrink-0"
                 title="Volver (Alt + Flecha Izquierda)"
+                aria-label="Volver"
             >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Volver</span>
+                <ArrowLeft />
             </button>
 
-            <nav className="flex items-center text-xs font-medium text-slate-500 overflow-x-auto whitespace-nowrap hide-scrollbar">
-                <Link href="/" className="hover:text-primary transition-colors flex items-center shrink-0">
-                    <Home className="w-3.5 h-3.5" />
-                </Link>
-                
-                {breadcrumbItems.map((item, index) => {
-                    const isLast = index === breadcrumbItems.length - 1;
-                    return (
-                        <div key={item.url} className="flex items-center shrink-0">
-                            <ChevronRight className="w-3 h-3 mx-1 text-slate-400" />
-                            {isLast ? (
-                                <span className="text-slate-800 dark:text-slate-200 font-bold">{item.label}</span>
-                            ) : (
-                                <Link 
-                                    href={item.url} 
-                                    className="hover:text-primary transition-colors"
-                                >
-                                    {item.label}
-                                </Link>
-                            )}
-                        </div>
-                    );
-                })}
+            <nav aria-label="Ruta de navegación" className="min-w-0">
+                <ol className="flex items-center text-[13px] text-slate-500 dark:text-slate-400 whitespace-nowrap min-w-0">
+                    <li className="hidden md:flex items-center shrink-0">
+                        <Link href="/" className="p-1 rounded hover:text-slate-900 dark:hover:text-slate-100 transition-colors" aria-label="Inicio">
+                            <Home className="w-3.5 h-3.5" />
+                        </Link>
+                    </li>
+                    {breadcrumbItems.map((item, index) => {
+                        const isLast = index === breadcrumbItems.length - 1;
+                        return (
+                            <li key={item.url} className={`items-center min-w-0 ${isLast ? 'flex' : 'hidden md:flex shrink-0'}`}>
+                                <ChevronRight className="hidden md:block w-3.5 h-3.5 mx-0.5 text-slate-300 dark:text-slate-600 shrink-0" aria-hidden="true" />
+                                {isLast ? (
+                                    <span aria-current="page" className="font-medium text-slate-900 dark:text-slate-100 truncate">{item.label}</span>
+                                ) : (
+                                    <Link href={item.url} className="px-1 rounded hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                                        {item.label}
+                                    </Link>
+                                )}
+                            </li>
+                        );
+                    })}
+                </ol>
             </nav>
         </div>
     );

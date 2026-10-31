@@ -85,7 +85,7 @@ export default function EppMatrixTable({
             return (
                 <div 
                     title={`Vencido hace ${Math.abs(cell.diasRestantes)} días (Vto: ${new Date(cell.fechaVencimiento).toLocaleDateString()})`}
-                    className="inline-flex items-center justify-center px-2 py-1 rounded-xl bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 text-[11px] font-black border border-rose-300 dark:border-rose-800 shadow-xs"
+                    className="inline-flex items-center justify-center px-2 py-1 rounded-xl bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 text-[11px] font-bold border border-rose-300 dark:border-rose-800 shadow-xs"
                 >
                     <AlertTriangle className="w-3 h-3 mr-1" />
                     Vencido
@@ -127,7 +127,7 @@ export default function EppMatrixTable({
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Buscar por operador o DNI..."
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full pl-9 pr-4 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                 </div>
 
@@ -195,24 +195,24 @@ export default function EppMatrixTable({
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-950/50">
-                                    <th className="p-4 text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 sticky left-0 bg-slate-50 dark:bg-slate-950 z-10 w-72 shadow-[1px_0_0_0_rgba(0,0,0,0.05)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.05)]">
+                                    <th className="p-4 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 sticky left-0 bg-slate-50 dark:bg-slate-950 z-10 w-72 shadow-[1px_0_0_0_rgba(0,0,0,0.05)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.05)]">
                                         Operador ({filteredOperators.length})
                                     </th>
 
                                     {eppGlobales.map(epp => (
                                         <th key={epp.id} className="p-4 text-center min-w-[130px]">
                                             <div className="flex flex-col items-center">
-                                                <span className="text-xs font-black text-slate-800 dark:text-slate-200 line-clamp-1" title={epp.nombre}>
+                                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1" title={epp.nombre}>
                                                     {epp.nombre}
                                                 </span>
-                                                <span className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                                <span className="text-[11px] text-slate-400 font-medium mt-0.5">
                                                     Validez: {epp.diasValidez}d
                                                 </span>
                                             </div>
                                         </th>
                                     ))}
 
-                                    <th className="p-4 text-center text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 w-28">
+                                    <th className="p-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-28">
                                         Acción
                                     </th>
                                 </tr>
@@ -240,7 +240,7 @@ export default function EppMatrixTable({
                                                     className="p-4 sticky left-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-850 z-10 cursor-pointer shadow-[1px_0_0_0_rgba(0,0,0,0.05)] dark:shadow-[1px_0_0_0_rgba(255,255,255,0.05)]"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
+                                                        <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs">
                                                             {op.nombreCompleto?.slice(0, 2).toUpperCase() || <User className="w-4 h-4" />}
                                                         </div>
                                                         <div className="min-w-0">
@@ -292,35 +292,35 @@ export default function EppMatrixTable({
             {/* Leyenda Semáforo */}
             <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-400 py-2">
                 <div className="flex items-center gap-1.5">
-                    <div className="w-4 h-4 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">
+                    <div className="w-4 h-4 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[11px]">
                         <CheckCircle2 className="w-3 h-3" />
                     </div>
                     <span>Vigente</span>
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                    <div className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">
+                    <div className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[11px]">
                         15d
                     </div>
                     <span>Próximo a Vencer (&le; 30d)</span>
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                    <div className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-black text-[10px]">
+                    <div className="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold text-[11px]">
                         Vencido
                     </div>
                     <span>Vencido</span>
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                    <div className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold text-[10px]">
+                    <div className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold text-[11px]">
                         Pte.
                     </div>
                     <span>Pendiente de Firma</span>
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                    <div className="w-4 h-4 rounded bg-slate-100 text-slate-400 flex items-center justify-center font-bold text-[10px]">
+                    <div className="w-4 h-4 rounded bg-slate-100 text-slate-400 flex items-center justify-center font-bold text-[11px]">
                         -
                     </div>
                     <span>Sin Entrega</span>

@@ -69,7 +69,7 @@ export default function NewNcModal({ isOpen, onClose, onSuccess, user }: NewNcMo
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in">
             <div className="bg-card w-full max-w-3xl rounded-xl shadow-xl flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">

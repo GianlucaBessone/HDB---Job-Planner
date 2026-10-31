@@ -124,7 +124,7 @@ export default function ExportClientModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -169,7 +169,7 @@ export default function ExportClientModal({
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
                 <div className="text-left">
                   <span className="block">Excel (.xlsx)</span>
-                  <span className="text-[10px] font-normal text-slate-400">Multi-hojas con detalles</span>
+                  <span className="text-[11px] font-normal text-slate-400">Multi-hojas con detalles</span>
                 </div>
               </button>
 
@@ -185,7 +185,7 @@ export default function ExportClientModal({
                 <Download className="w-4 h-4 text-blue-600" />
                 <div className="text-left">
                   <span className="block">CSV (.csv)</span>
-                  <span className="text-[10px] font-normal text-slate-400">Texto universal UTF-8</span>
+                  <span className="text-[11px] font-normal text-slate-400">Texto universal UTF-8</span>
                 </div>
               </button>
             </div>
@@ -260,7 +260,7 @@ export default function ExportClientModal({
             {/* Dates range */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Desde</span>
+                <span className="text-[11px] font-bold text-slate-400 uppercase mb-1 block">Desde</span>
                 <input
                   type="date"
                   value={fechaDesde}
@@ -272,7 +272,7 @@ export default function ExportClientModal({
                 />
               </div>
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Hasta</span>
+                <span className="text-[11px] font-bold text-slate-400 uppercase mb-1 block">Hasta</span>
                 <input
                   type="date"
                   value={fechaHasta}
@@ -301,7 +301,7 @@ export default function ExportClientModal({
             type="button"
             onClick={handleExport}
             disabled={exporting}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-50"
           >
             {exporting ? (
               <>

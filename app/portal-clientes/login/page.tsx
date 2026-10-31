@@ -116,14 +116,14 @@ function PortalLoginForm() {
   const detectedClient = responsables.length > 0 ? responsables[0].client : null;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/90 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="inline-flex p-3 rounded-2xl bg-primary/10 text-primary mb-1">
             <ShieldCheck className="w-8 h-8" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-title text-slate-900 dark:text-slate-100">
             Portal de Clientes
           </h1>
           {clienteId && detectedClient ? (
@@ -143,7 +143,7 @@ function PortalLoginForm() {
           <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 space-y-2.5 animate-in fade-in">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 block mb-0.5">
+                <span className="text-[11px] uppercase font-bold text-blue-600 dark:text-blue-400 block mb-0.5">
                   Sesión Activa en este equipo
                 </span>
                 <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
@@ -156,7 +156,7 @@ function PortalLoginForm() {
               <button
                 type="button"
                 onClick={() => router.push('/portal-clientes')}
-                className="px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold shadow-sm transition-colors shrink-0 flex items-center gap-1"
+                className="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1"
               >
                 <span>Continuar</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -215,7 +215,7 @@ function PortalLoginForm() {
                 }}
                 disabled={loadingList}
                 required
-                className="w-full px-3.5 py-3 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full px-3.5 py-3 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="">
                   {loadingList
@@ -248,7 +248,7 @@ function PortalLoginForm() {
                   : 'Contraseña'}
               </span>
               {selectedResp && selectedResp.hasPassword === false && (
-                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded">
+                <span className="text-[11px] text-amber-600 dark:text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded">
                   Primer Acceso
                 </span>
               )}
@@ -268,7 +268,7 @@ function PortalLoginForm() {
                   setErrorMsg('');
                 }}
                 required
-                className="w-full pl-10 pr-3.5 py-2.5 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full pl-10 pr-3.5 py-2.5 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
             {selectedResp && selectedResp.hasPassword === false && (
@@ -281,7 +281,7 @@ function PortalLoginForm() {
           <button
             type="submit"
             disabled={submitting || !selectedResponsibleId || !password}
-            className="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50"
+            className="w-full py-3 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
           >
             {submitting ? (
               <>

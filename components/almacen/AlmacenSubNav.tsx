@@ -92,7 +92,7 @@ export default function AlmacenSubNav({
             <span>{tab.label}</span>
             {tab.badge && (
               <span
-                className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full border border-current/20 leading-none ${
+                className={`text-[11px] font-bold px-1.5 py-0.2 rounded-full border border-current/20 leading-none ${
                   tab.badgeClass || 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                 }`}
               >

@@ -274,7 +274,7 @@ export default function RegistrarCobranzaModal({
     const saldoRestanteEstimado = Math.round((saldoDeudor - totalCobranza) * 100) / 100;
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 {/* Header */}
                 <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
@@ -283,7 +283,7 @@ export default function RegistrarCobranzaModal({
                             <DollarSign className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="font-black text-base tracking-tight">
+                            <h3 className="font-bold text-base tracking-tight">
                                 Registrar Cobranza / Recibo de Cuenta Corriente
                             </h3>
                             <p className="text-xs text-slate-400">
@@ -312,10 +312,10 @@ export default function RegistrarCobranzaModal({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                             <div>
-                                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                                     Deuda Actual
                                 </div>
-                                <div className="text-lg font-black font-mono text-slate-900">
+                                <div className="text-lg font-bold font-mono text-slate-900">
                                     ${fmt(saldoDeudor)}
                                 </div>
                             </div>
@@ -332,10 +332,10 @@ export default function RegistrarCobranzaModal({
 
                         <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/80 flex items-center justify-between">
                             <div>
-                                <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                                <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
                                     Deuda Vencida
                                 </div>
-                                <div className="text-lg font-black font-mono text-amber-800">
+                                <div className="text-lg font-bold font-mono text-amber-800">
                                     ${fmt(cliente.deudaVencida)}
                                 </div>
                             </div>
@@ -352,15 +352,15 @@ export default function RegistrarCobranzaModal({
 
                         <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
                             <div>
-                                <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                                <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
                                     Total Recibo a Emitir
                                 </div>
-                                <div className="text-xl font-black font-mono text-emerald-700">
+                                <div className="text-xl font-bold font-mono text-emerald-700">
                                     ${fmt(totalCobranza)}
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-[10px] text-emerald-600 font-semibold">Saldo Posterior</div>
+                                <div className="text-[11px] text-emerald-600 font-semibold">Saldo Posterior</div>
                                 <div
                                     className={`text-xs font-bold font-mono ${
                                         saldoRestanteEstimado > 0 ? 'text-slate-700' : 'text-emerald-700'
@@ -397,7 +397,7 @@ export default function RegistrarCobranzaModal({
                                     className="grid grid-cols-12 gap-2.5 items-center bg-white p-2.5 rounded-xl border border-slate-200"
                                 >
                                     <div className="col-span-12 sm:col-span-4">
-                                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">
+                                        <label className="block mb-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Medio #{index + 1}
                                         </label>
                                         <select
@@ -416,7 +416,7 @@ export default function RegistrarCobranzaModal({
                                     </div>
 
                                     <div className="col-span-6 sm:col-span-3">
-                                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">
+                                        <label className="block mb-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Importe ($)
                                         </label>
                                         <input
@@ -433,7 +433,7 @@ export default function RegistrarCobranzaModal({
                                     </div>
 
                                     <div className="col-span-5 sm:col-span-4">
-                                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-0.5">
+                                        <label className="block mb-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             N° Comprobante / Cheque / Ref.
                                         </label>
                                         <input
@@ -511,7 +511,7 @@ export default function RegistrarCobranzaModal({
                                 <div className="max-h-60 overflow-y-auto">
                                     <table className="w-full text-xs">
                                         <thead className="bg-slate-50 border-b border-slate-200 sticky top-0">
-                                            <tr className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                            <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                                 {modoImputacion === 'MANUAL' && (
                                                     <th className="py-2 px-3 text-center w-10">Sel.</th>
                                                 )}
@@ -560,7 +560,7 @@ export default function RegistrarCobranzaModal({
                                                             <div className="font-mono font-bold text-slate-800">
                                                                 {comp.numero}
                                                             </div>
-                                                            <div className="text-[10px] text-slate-500 truncate max-w-[180px]">
+                                                            <div className="text-[11px] text-slate-500 truncate max-w-[180px]">
                                                                 {comp.concepto}
                                                             </div>
                                                         </td>
@@ -568,7 +568,7 @@ export default function RegistrarCobranzaModal({
                                                             <div className="text-slate-700">
                                                                 {fmtDate(comp.fecha)}
                                                             </div>
-                                                            <div className="text-[10px]">
+                                                            <div className="text-[11px]">
                                                                 {comp.vencido ? (
                                                                     <span className="text-red-600 font-bold">
                                                                         Vencido ({comp.diasVencido}d)
@@ -617,7 +617,7 @@ export default function RegistrarCobranzaModal({
                                                         </td>
                                                         <td className="py-2 px-3 text-right font-mono">
                                                             {quedaSaldado ? (
-                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
                                                                     <CheckCircle2 className="w-3 h-3" /> Saldado
                                                                 </span>
                                                             ) : imputado > 0 ? (
@@ -710,7 +710,7 @@ export default function RegistrarCobranzaModal({
                         <button
                             type="submit"
                             disabled={submitting || totalCobranza <= 0}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm disabled:opacity-50 transition-all"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 transition-all"
                         >
                             <CheckCircle2 className="w-4 h-4" />
                             {submitting

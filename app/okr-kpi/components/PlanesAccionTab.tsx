@@ -48,7 +48,7 @@ export default function PlanesAccionTab({ user, isActive = true }: { user: any; 
                     <p className="text-sm text-slate-400">Acciones correctivas para KPIs con incumplimientos</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <select value={filterEstado} onChange={e => setFilterEstado(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-700 dark:text-slate-200">
+                    <select value={filterEstado} onChange={e => setFilterEstado(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-700 dark:text-slate-200">
                         <option value="">Todos los estados</option>
                         <option value="Pendiente">Pendiente</option>
                         <option value="En Curso">En Curso</option>
@@ -75,8 +75,8 @@ export default function PlanesAccionTab({ user, isActive = true }: { user: any; 
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{plan.kpi?.codigoKpi}</span>
-                                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{plan.kpi?.codigoKpi}</span>
+                                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded uppercase ${
                                             plan.estado === 'Pendiente' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                                             plan.estado === 'En Curso' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
                                             'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
@@ -124,7 +124,7 @@ function PlanFormModal({ plan, operators, onClose, onSave }: any) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-start justify-center pt-[10vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-950/50 z-[200] flex items-start justify-center pt-[10vh] overflow-y-auto">
             <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-lg mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{plan ? 'Editar Plan de Acción' : 'Nuevo Plan'}</h2>
@@ -132,28 +132,28 @@ function PlanFormModal({ plan, operators, onClose, onSave }: any) {
                 </div>
                 <form onSubmit={handleSubmit} className="p-5 space-y-4">
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descripción *</label>
-                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={3} required className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción *</label>
+                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={3} required className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Causa del Incumplimiento</label>
-                        <textarea value={form.causa} onChange={e => setForm(p => ({ ...p, causa: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Causa del Incumplimiento</label>
+                        <textarea value={form.causa} onChange={e => setForm(p => ({ ...p, causa: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Acción Correctiva</label>
-                        <textarea value={form.accionCorrectiva} onChange={e => setForm(p => ({ ...p, accionCorrectiva: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Acción Correctiva</label>
+                        <textarea value={form.accionCorrectiva} onChange={e => setForm(p => ({ ...p, accionCorrectiva: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Responsable</label>
-                            <select value={form.responsableId} onChange={e => setForm(p => ({ ...p, responsableId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Responsable</label>
+                            <select value={form.responsableId} onChange={e => setForm(p => ({ ...p, responsableId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar...</option>
                                 {operators.map((op: any) => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado</label>
-                            <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
+                            <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="Pendiente">Pendiente</option>
                                 <option value="En Curso">En Curso</option>
                                 <option value="Cerrado">Cerrado</option>
@@ -162,17 +162,17 @@ function PlanFormModal({ plan, operators, onClose, onSave }: any) {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Compromiso</label>
-                            <input type="date" value={form.fechaCompromiso} onChange={e => setForm(p => ({ ...p, fechaCompromiso: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Compromiso</label>
+                            <input type="date" value={form.fechaCompromiso} onChange={e => setForm(p => ({ ...p, fechaCompromiso: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Cierre</label>
-                            <input type="date" value={form.fechaCierre} onChange={e => setForm(p => ({ ...p, fechaCierre: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Cierre</label>
+                            <input type="date" value={form.fechaCierre} onChange={e => setForm(p => ({ ...p, fechaCierre: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>
-                        <button type="submit" disabled={saving || !form.descripcion} className="h-10 px-6 bg-orange-600 text-white rounded-lg text-sm font-bold hover:bg-orange-700 disabled:opacity-50 shadow-sm">
+                        <button type="submit" disabled={saving || !form.descripcion} className="h-10 px-6 bg-orange-600 text-white rounded-lg text-sm font-bold hover:bg-orange-700 disabled:opacity-50">
                             {saving ? 'Guardando...' : plan ? 'Actualizar' : 'Crear Plan'}
                         </button>
                     </div>

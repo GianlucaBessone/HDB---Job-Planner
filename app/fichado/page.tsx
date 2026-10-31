@@ -350,9 +350,9 @@ export default function PunchInPage() {
     const needsQR = selectedProjectId ? selectedProject?.qrToken : systemSetting?.companyQrToken;
 
     return (
-        <div className="max-w-md mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-md mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
             {/* Header Status */}
-            <div className="bg-card text-card-foreground rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                         <User className="w-6 h-6" />
@@ -362,7 +362,7 @@ export default function PunchInPage() {
                             {currentUser?.nombreCompleto || 'Cargando...'}
                             <HelpContextual slug="fichado-gps-qr" />
                         </h2>
-                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                        <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {formatTime(new Date())} — {formatDate(new Date())}
                         </p>
                     </div>
@@ -376,7 +376,7 @@ export default function PunchInPage() {
                         <MapPin className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className={`text-[10px] font-black uppercase tracking-widest ${location ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        <p className={`text-[11px] font-semibold uppercase tracking-wider ${location ? 'text-emerald-600' : 'text-amber-600'}`}>
                             {location ? 'Ubicación Obtenida' : 'Buscando GPS...'}
                         </p>
                         <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
@@ -387,7 +387,7 @@ export default function PunchInPage() {
                 <button 
                     onClick={refreshLocation} 
                     disabled={isRefreshingLocation}
-                    className="p-2 hover:bg-white/50 rounded-xl transition-all active:scale-95"
+                    className="p-2 hover:bg-white/50 rounded-xl transition-all"
                 >
                     <RefreshCcw className={`w-5 h-5 text-slate-400 dark:text-slate-500 ${isRefreshingLocation ? 'animate-spin' : ''}`} />
                 </button>
@@ -397,22 +397,22 @@ export default function PunchInPage() {
             <div className="px-4 py-2 bg-muted text-muted-foreground/50 rounded-2xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Smartphone className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">ID de Dispositivo:</span>
+                    <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">ID de Dispositivo:</span>
                 </div>
-                <code className="text-[9px] font-bold text-slate-500 dark:text-slate-400">{deviceId.slice(0, 8)}...</code>
+                <code className="text-[11px] font-bold text-slate-500 dark:text-slate-400">{deviceId.slice(0, 8)}...</code>
             </div>
 
             {/* Active Entries (Clock OUT) */}
             {activeEntries.length > 0 && (
                 <div className="space-y-4">
-                    <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">Jornadas Activas</h3>
+                    <h3 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2">Jornadas Activas</h3>
                     {activeEntries.map(entry => (
-                        <div key={entry.id} className="bg-card text-card-foreground rounded-[2rem] p-6 shadow-lg border-2 border-primary ring-4 ring-primary/5">
+                        <div key={entry.id} className="bg-card text-card-foreground rounded-3xl p-6 shadow-lg border-2 border-primary ring-4 ring-primary/5">
                             <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <h4 className="font-extrabold text-slate-800 dark:text-slate-100 text-lg leading-tight">{entry.project?.nombre || 'Base / Empresa'}</h4>
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-lg leading-tight">{entry.project?.nombre || 'Base / Empresa'}</h4>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <span className="px-2 py-0.5 bg-primary text-white text-[10px] font-black rounded-md uppercase tracking-wider">Activa</span>
+                                        <span className="px-2 py-0.5 bg-primary text-white text-[11px] font-semibold rounded-md uppercase tracking-wider">Activa</span>
                                         <p className="text-xs font-bold text-slate-400 dark:text-slate-500">Desde: {entry.horaIngreso}hs</p>
                                     </div>
                                 </div>
@@ -424,7 +424,7 @@ export default function PunchInPage() {
                             <button 
                                 onClick={() => handlePunch('OUT', entry.id, entry.projectId)}
                                 disabled={isLoading}
-                                className="w-full bg-rose-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-rose-600 shadow-xl shadow-rose-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                className="w-full bg-rose-500 text-white py-4 rounded-2xl font-semibold text-xs hover:bg-rose-600 transition-all flex items-center justify-center gap-2"
                             >
                                 <Square className="w-4 h-4 fill-current" />
                                 Finalizar Jornada
@@ -435,23 +435,23 @@ export default function PunchInPage() {
             )}
 
             {/* Clock IN Form */}
-            <div className="bg-card text-card-foreground rounded-[2.5rem] p-8 shadow-xl border border-slate-100 dark:border-slate-800 space-y-6">
+            <div className="bg-card text-card-foreground rounded-3xl p-8 shadow-xl border border-slate-100 dark:border-slate-800 space-y-6">
                 <div className="space-y-1">
-                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Iniciar Nueva Jornada</h3>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Iniciar Nueva Jornada</h3>
                     <p className="text-xs font-medium text-slate-400 dark:text-slate-500">Selecciona el destino y método de validación.</p>
                 </div>
 
                 {/* Validation Mode Toggle */}
-                <div className="grid grid-cols-2 bg-muted text-muted-foreground/50 p-1.5 rounded-[1.5rem] gap-1">
+                <div className="grid grid-cols-2 bg-muted text-muted-foreground/50 p-1.5 rounded-2xl gap-1">
                     <button 
                         onClick={() => setValidationMode('gps')}
-                        className={`py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${validationMode === 'gps' ? 'bg-card text-card-foreground text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500'}`}
+                        className={`py-2.5 rounded-2xl text-[11px] font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${validationMode === 'gps' ? 'bg-card text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500'}`}
                     >
                         <MapPin className="w-3.5 h-3.5" /> GPS
                     </button>
                     <button 
                         onClick={() => setValidationMode('qr')}
-                        className={`py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${validationMode === 'qr' ? 'bg-card text-card-foreground text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500'}`}
+                        className={`py-2.5 rounded-2xl text-[11px] font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${validationMode === 'qr' ? 'bg-card text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500'}`}
                     >
                         <QrCode className="w-3.5 h-3.5" /> Código QR
                     </button>
@@ -459,13 +459,13 @@ export default function PunchInPage() {
 
                 <div className="space-y-4">
                     {/* Auto-detected Destination View */}
-                    <div className="bg-background text-foreground/50 p-4 rounded-[1.5rem] border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <div className="bg-background text-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedProjectId ? 'bg-indigo-500 text-white' : (validationMode === 'gps' && !location ? 'bg-slate-200 dark:bg-slate-700 text-slate-400' : 'bg-slate-800 text-white')}`}>
                                 {validationMode === 'qr' && !scannedToken ? <AlertTriangle className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                     Destino Detectado ({validationMode === 'gps' ? 'GPS' : 'QR'})
                                 </p>
                                 <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
@@ -486,29 +486,29 @@ export default function PunchInPage() {
                             </div>
                             <div>
                                 <h4 className="font-bold text-indigo-900 text-sm">Escanea el Código QR</h4>
-                                <p className="text-[10px] font-medium text-indigo-700/70">Apunta al código impreso en el sitio {selectedProjectId ? 'de la obra' : 'de la base'}.</p>
+                                <p className="text-[11px] font-medium text-indigo-700/70">Apunta al código impreso en el sitio {selectedProjectId ? 'de la obra' : 'de la base'}.</p>
                             </div>
                             <div className="flex gap-2">
-                                <div className="flex-1 bg-card text-card-foreground border border-indigo-200 rounded-xl py-2 px-4 text-center font-mono text-xs text-slate-500 dark:text-slate-400 overflow-hidden truncate">
+                                <div className="flex-1 bg-card border border-indigo-200 rounded-xl py-2 px-4 text-center font-mono text-xs text-slate-500 dark:text-slate-400 overflow-hidden truncate">
                                     {scannedToken || 'Esperando escaneo...'}
                                 </div>
                                 <button 
                                     type="button"
                                     onClick={() => setIsScanning(true)}
-                                    className="px-4 bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center"
+                                    className="px-4 bg-indigo-500 text-white rounded-xl transition-all flex items-center justify-center"
                                 >
                                     <Camera className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 text-center space-y-2">
+                        <div className="bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-3xl p-6 text-center space-y-2">
                             <div className={`mx-auto w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm ${location ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500'}`}>
                                 <MapPin className="w-5 h-5" />
                             </div>
                             <div>
                                 <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{location ? 'Ubicación Lista' : 'Esperando GPS'}</h4>
-                                <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">Requerido para validar zona de trabajo.</p>
+                                <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">Requerido para validar zona de trabajo.</p>
                             </div>
                         </div>
                     )}
@@ -518,14 +518,14 @@ export default function PunchInPage() {
                         id="btn-fichar-entrada"
                         onClick={() => handlePunch('IN')}
                         disabled={isLoading}
-                        className="w-full bg-emerald-500 disabled:opacity-50 text-white py-5 rounded-3xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-emerald-600 shadow-xl shadow-emerald-500/20 active:scale-95 transition-all mt-4"
+                        className="w-full bg-emerald-500 disabled:opacity-50 text-white py-5 rounded-3xl font-semibold text-sm flex items-center justify-center gap-3 hover:bg-emerald-600 transition-all mt-4"
                     >
                         <Play className="w-5 h-5 fill-current" />
                         Ingresar a {selectedProject ? 'Obra' : 'Base'}
                     </button>
                     
                     {!location && validationMode === 'gps' && (
-                        <p className="text-[10px] text-center font-bold text-amber-600 animate-pulse">
+                        <p className="text-[11px] text-center font-bold text-amber-600 animate-pulse">
                             Espera a obtener ubicación para fichar con precisión.
                         </p>
                     )}
@@ -533,18 +533,18 @@ export default function PunchInPage() {
             </div>
 
             {/* Validation Tips */}
-            <div className="bg-background text-foreground/50 rounded-3xl p-6 border border-slate-200 dark:border-slate-700">
-                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <div className="bg-background text-foreground rounded-3xl p-6 border border-slate-200 dark:border-slate-700">
+                <h4 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Tips de Validación
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                     <div className="bg-card text-card-foreground p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <MapPin className="w-4 h-4 text-primary mb-1" />
-                        <p className="text-[9px] font-bold text-slate-600 dark:text-slate-300 leading-tight">Asegúrate de estar dentro del radio permitido.</p>
+                        <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-tight">Asegúrate de estar dentro del radio permitido.</p>
                     </div>
                     <div className="bg-card text-card-foreground p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <Smartphone className="w-4 h-4 text-primary mb-1" />
-                        <p className="text-[9px] font-bold text-slate-600 dark:text-slate-300 leading-tight">Usa siempre tu dispositivo principal.</p>
+                        <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-tight">Usa siempre tu dispositivo principal.</p>
                     </div>
                 </div>
             </div>
@@ -632,8 +632,8 @@ function QRScannerModal({ onScan, onClose }: { onScan: (token: string) => void, 
     }, []);
 
     return (
-        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-in fade-in duration-300">
-            <div className="w-full max-w-sm bg-card text-card-foreground rounded-[2.5rem] overflow-hidden shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-[200] bg-slate-950/50 flex flex-col items-center justify-center p-6 animate-in fade-in duration-200">
+            <div className="w-full max-w-sm bg-card text-card-foreground rounded-3xl overflow-hidden shadow-2xl space-y-4">
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         <Camera className="w-5 h-5 text-primary" /> Escaneando QR
@@ -658,7 +658,7 @@ function QRScannerModal({ onScan, onClose }: { onScan: (token: string) => void, 
             
             <button 
                 onClick={onClose}
-                className="mt-8 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-black uppercase tracking-widest text-[10px] transition-all"
+                className="mt-8 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-semibold text-[12px] transition-all"
             >
                 Cancelar Escaneo
             </button>

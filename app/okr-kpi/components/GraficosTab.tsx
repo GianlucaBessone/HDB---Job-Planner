@@ -52,7 +52,7 @@ export default function GraficosTab({ user, isActive = true }: { user: any; isAc
                     <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Configuración de Gráficos</h2>
                     <p className="text-sm text-slate-400">Definí gráficos para asociar a OKRs y KPIs</p>
                 </div>
-                <button onClick={() => { setEditing(null); setShowModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-violet-600 text-white rounded-lg font-bold text-sm hover:bg-violet-700 shadow-sm">
+                <button onClick={() => { setEditing(null); setShowModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-violet-600 text-white rounded-lg font-bold text-sm hover:bg-violet-700">
                     <Plus className="w-4 h-4" /> Nuevo Gráfico
                 </button>
             </div>
@@ -76,8 +76,8 @@ export default function GraficosTab({ user, isActive = true }: { user: any; isAc
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-1.5 flex-wrap">
-                                                <span className="text-[9px] font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{g.codigoGrafico}</span>
-                                                {g.dataset && <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-0.5" title={g.dataset.nombre}><Database className="w-2.5 h-2.5" /> DS</span>}
+                                                <span className="text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{g.codigoGrafico}</span>
+                                                {g.dataset && <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-0.5" title={g.dataset.nombre}><Database className="w-2.5 h-2.5" /> DS</span>}
                                             </div>
                                             <p className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">{g.nombre}</p>
                                         </div>
@@ -92,7 +92,7 @@ export default function GraficosTab({ user, isActive = true }: { user: any; isAc
                                     <div className="flex flex-col gap-1 items-end">
                                         <div className="flex items-center gap-2 text-slate-400">
                                             {g.dataset && <span className="truncate max-w-[150px]" title={g.dataset.nombre}>{g.dataset.nombre}</span>}
-                                            {!g.dataset && <span className="italic text-[10px]">Sin Dataset</span>}
+                                            {!g.dataset && <span className="italic text-[11px]">Sin Dataset</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -135,7 +135,7 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
     };
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/50 z-[200] flex items-center justify-center p-4">
             <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700 shrink-0">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{grafico ? 'Editar Gráfico' : 'Nuevo Gráfico'}</h2>
@@ -145,12 +145,12 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
                 <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
                     <form onSubmit={handleSubmit} className="p-5 space-y-4 md:w-1/2 overflow-y-auto border-r border-slate-200 dark:border-slate-700 custom-scrollbar">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre *</label>
-                            <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Nombre *</label>
+                            <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Gráfico *</label>
-                            <select value={form.tipoGrafico} onChange={e => setForm(p => ({ ...p, tipoGrafico: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Tipo de Gráfico *</label>
+                            <select value={form.tipoGrafico} onChange={e => setForm(p => ({ ...p, tipoGrafico: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="Linea">📈 Línea</option>
                                 <option value="Barra">📊 Barra</option>
                                 <option value="Gauge">🎯 Gauge</option>
@@ -159,12 +159,12 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
-                            <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción</label>
+                            <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none resize-none" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dataset Origen</label>
-                            <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Dataset Origen</label>
+                            <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar Dataset...</option>
                                 {datasets.map(ds => (
                                     <option key={ds.id} value={ds.id}>{ds.codigoDataset} — {ds.nombre}</option>
@@ -174,19 +174,19 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
                         {form.datasetId && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Eje X (Categoría)</label>
-                                    <input value={form.configuracion.ejeX} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, ejeX: e.target.value } }))} placeholder="Ej: mes" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Eje X (Categoría)</label>
+                                    <input value={form.configuracion.ejeX} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, ejeX: e.target.value } }))} placeholder="Ej: mes" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Serie(s) Eje Y</label>
-                                    <input value={form.configuracion.series.join(', ')} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, series: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } }))} placeholder="Ej: ventas, gastos" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Serie(s) Eje Y</label>
+                                    <input value={form.configuracion.series.join(', ')} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, series: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } }))} placeholder="Ej: ventas, gastos" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" />
                                 </div>
                             </div>
                         )}
                         {grafico && (
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado</label>
-                                <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                                <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
+                                <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none">
                                     <option value="Activo">Activo</option>
                                     <option value="Inactivo">Inactivo</option>
                                 </select>
@@ -194,7 +194,7 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
                         )}
                         <div className="flex justify-end gap-3 pt-2">
                             <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>
-                            <button type="submit" disabled={saving || !form.nombre} className="h-10 px-6 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50 shadow-sm">
+                            <button type="submit" disabled={saving || !form.nombre} className="h-10 px-6 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50">
                                 {saving ? 'Guardando...' : grafico ? 'Actualizar' : 'Crear Gráfico'}
                             </button>
                         </div>

@@ -100,10 +100,10 @@ function RatingButton({ value, selected, onClick, min, max }: { value: number; s
             type="button"
             onClick={onClick}
             className={`
-                w-full h-11 rounded-xl text-sm font-black transition-all duration-150 active:scale-90 border
+                w-full h-11 rounded-xl text-sm font-bold transition-all duration-150 border
                 ${selected
                     ? `${bg} ${textColor} border-transparent shadow-md scale-105`
-                    : 'bg-background text-foreground/50 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    : 'bg-background text-foreground border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                 }
             `}
         >
@@ -150,7 +150,7 @@ function ScaleSelector({
                     />
                 ))}
             </div>
-            <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 px-1">
+            <div className="flex justify-between text-[11px] font-bold text-slate-400 dark:text-slate-500 px-1">
                 <span>{labelLeft}</span>
                 <span>{labelRight}</span>
             </div>
@@ -219,16 +219,16 @@ function SurveyView({
     if (done) {
         return (
             <div className="text-center space-y-5 py-6">
-                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-100">
+                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto shadow-lg">
                     <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">¡Gracias por tu respuesta! 🙌</h3>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">¡Gracias por tu respuesta! 🙌</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Tu opinión nos ayuda a mejorar cada día.</p>
                 </div>
                 <button
                     onClick={onDone}
-                    className="w-full py-4 bg-primary text-white rounded-2xl font-black text-base shadow-lg shadow-primary/20 active:scale-95 transition-all hover:bg-primary/90"
+                    className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-base transition-all hover:bg-primary-hover"
                 >
                     Volver a la Orden de Servicio
                 </button>
@@ -242,14 +242,14 @@ function SurveyView({
                 <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                     <Star className="w-7 h-7 text-blue-500" fill="currentColor" />
                 </div>
-                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">Encuesta de Satisfacción</h3>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Encuesta de Satisfacción</h3>
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Menos de 30 segundos · Tu opinión importa</p>
             </div>
 
             {/* Q1 — Atención */}
-            <div className="space-y-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 bg-background text-foreground rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">1 de 4</span>
+                    <span className="bg-blue-100 text-blue-600 text-[11px] font-semibold rounded-lg px-2 py-1 uppercase tracking-wider shrink-0">1 de 4</span>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo calificás la atención recibida por el técnico?</p>
                 </div>
                 <ScaleSelector
@@ -262,9 +262,9 @@ function SurveyView({
             </div>
 
             {/* Q2 — Calidad */}
-            <div className="space-y-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 bg-background text-foreground rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
-                    <span className="bg-indigo-100 text-indigo-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">2 de 4</span>
+                    <span className="bg-indigo-100 text-indigo-600 text-[11px] font-semibold rounded-lg px-2 py-1 uppercase tracking-wider shrink-0">2 de 4</span>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo calificás el resultado final del trabajo?</p>
                 </div>
                 <ScaleSelector
@@ -277,9 +277,9 @@ function SurveyView({
             </div>
 
             {/* Q3 — Tiempo */}
-            <div className="space-y-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 bg-background text-foreground rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
-                    <span className="bg-amber-100 text-amber-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">3 de 4</span>
+                    <span className="bg-amber-100 text-amber-600 text-[11px] font-semibold rounded-lg px-2 py-1 uppercase tracking-wider shrink-0">3 de 4</span>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo evaluás el tiempo en que se realizó el servicio?</p>
                 </div>
                 <ScaleSelector
@@ -292,9 +292,9 @@ function SurveyView({
             </div>
 
             {/* Q4 — NPS */}
-            <div className="space-y-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 bg-background text-foreground rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
-                    <span className="bg-emerald-100 text-emerald-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">4 de 4</span>
+                    <span className="bg-emerald-100 text-emerald-600 text-[11px] font-semibold rounded-lg px-2 py-1 uppercase tracking-wider shrink-0">4 de 4</span>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Qué tan probable es que recomiendes nuestra empresa?</p>
                 </div>
                 <ScaleSelector
@@ -308,7 +308,7 @@ function SurveyView({
 
             {/* Q5 — Comentario opcional */}
             <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                <label className="flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     <MessageSquare className="w-3.5 h-3.5" />
                     Comentarios adicionales <span className="normal-case font-medium text-slate-300">(opcional)</span>
                 </label>
@@ -317,7 +317,7 @@ function SurveyView({
                     onChange={e => setData(d => ({ ...d, comentario: e.target.value }))}
                     placeholder="Contanos tu experiencia..."
                     rows={3}
-                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all resize-none"
+                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all resize-none"
                 />
             </div>
 
@@ -332,7 +332,7 @@ function SurveyView({
                 <button
                     onClick={onSkip}
                     type="button"
-                    className="flex-1 py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                    className="flex-1 py-4 bg-muted text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
                 >
                     Cancelar
                 </button>
@@ -340,7 +340,7 @@ function SurveyView({
                     onClick={handleSubmit}
                     disabled={submitting}
                     type="button"
-                    className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
+                    className="flex-[2] py-4 bg-primary text-white rounded-2xl font-bold text-sm hover:bg-primary-hover transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                 >
                     {submitting ? (
                         <>
@@ -371,8 +371,8 @@ function PostFirmaModal({
 
     if (showSurvey) {
         return (
-            <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm">
-                <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-0 animate-in slide-in-from-bottom-4 duration-300 max-h-[95dvh] overflow-y-auto overscroll-contain">
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50">
+                <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-0 animate-in slide-in-from-bottom-2 duration-200 max-h-[95dvh] overflow-y-auto overscroll-contain">
                     <SurveyView
                         osId={osId}
                         onDone={onClose}
@@ -384,16 +384,16 @@ function PostFirmaModal({
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <div className="bg-card text-card-foreground w-full max-w-sm rounded-3xl shadow-2xl p-7 animate-in zoom-in-95 duration-300 space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+            <div className="bg-card text-card-foreground w-full max-w-sm rounded-3xl shadow-2xl p-7 animate-in zoom-in-95 duration-200 space-y-5">
                 {/* Icon */}
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
+                <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
                     <Smile className="w-9 h-9 text-white" />
                 </div>
 
                 {/* Text */}
                 <div className="text-center space-y-2">
-                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                         ¡Gracias por confirmar la Orden de Servicio! 🙌
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
@@ -406,14 +406,14 @@ function PostFirmaModal({
                 <div className="space-y-2.5 pt-1">
                     <button
                         onClick={() => setShowSurvey(true)}
-                        className="w-full py-4 bg-primary text-white rounded-2xl font-black text-base shadow-lg shadow-primary/20 active:scale-95 transition-all hover:bg-primary/90 flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-primary text-white rounded-2xl font-bold text-base transition-all hover:bg-primary-hover flex items-center justify-center gap-2"
                     >
                         <Star className="w-5 h-5" fill="currentColor" />
                         Responder encuesta
                     </button>
                     <button
                         onClick={onClose}
-                        className="w-full py-3.5 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                        className="w-full py-3.5 bg-muted text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
                     >
                         Ahora no
                     </button>
@@ -716,7 +716,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-background text-foreground/50 flex items-center justify-center">
+            <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Cargando orden de servicio...</p>
@@ -727,12 +727,12 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
 
     if (error || !os) {
         return (
-            <div className="min-h-screen bg-background text-foreground/50 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
                 <div className="bg-card text-card-foreground rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
                     <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto">
                         <AlertCircle className="w-8 h-8 text-red-500" />
                     </div>
-                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">No encontrada</h2>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">No encontrada</h2>
                     <p className="text-slate-500 dark:text-slate-400 text-sm">{error || 'Orden de servicio no encontrada.'}</p>
                 </div>
             </div>
@@ -743,22 +743,22 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
     const isFirmada = os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada';
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800/50">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
             {/* Header */}
             <div className="bg-card text-card-foreground border-b border-slate-100 dark:border-slate-800 shadow-sm">
                 <div className="max-w-2xl mx-auto px-4 py-5 flex items-center gap-3">
-                    <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20">
+                    <div className="bg-primary p-2 rounded-xl shadow-lg">
                         <FileText className="w-5 h-5 text-white" />
                     </div>
                     <div>
                         <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <p className="text-[10px] font-black text-blue-600/70 uppercase tracking-widest">HDB SGI</p>
+                            <p className="text-[11px] font-semibold text-blue-600/70 uppercase tracking-wider">HDB SGI</p>
                             {os.codigoOS && <CodeBadge code={os.codigoOS} variant="os" size="sm" showCopy={false} />}
                         </div>
-                        <h1 className="text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">Orden de Servicio</h1>
+                        <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">Orden de Servicio</h1>
                     </div>
                     <div className="ml-auto shrink-0 flex items-center gap-2">
-                        <span className={`whitespace-nowrap px-2 py-1.5 md:px-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-wider ${
+                        <span className={`whitespace-nowrap px-2 py-1.5 md:px-3 rounded-full text-[11px] md:text-xs font-semibold uppercase tracking-wider ${
                             os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
                             os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                             os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
@@ -795,27 +795,27 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                 {/* Project Info */}
                 <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50">
-                        <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Proyecto</h2>
+                        <h2 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Proyecto</h2>
                     </div>
                     <div className="px-6 py-5 grid grid-cols-2 gap-4">
                         <div className="col-span-2">
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Nombre del Proyecto</p>
+                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Nombre del Proyecto</p>
                             <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-lg font-black text-slate-800 dark:text-slate-100">{os.project.nombre}</p>
+                                <p className="text-lg font-bold text-slate-800 dark:text-slate-100">{os.project.nombre}</p>
                                 {os.project.codigoProyecto && <CodeBadge code={os.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                             </div>
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Cliente</p>
+                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Cliente</p>
                             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{clienteName}</p>
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Fecha de emisión</p>
+                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Fecha de emisión</p>
                             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatDate(os.fechaCreacion)}</p>
                         </div>
                         {os.project.responsableUser && (
                             <div className="col-span-2">
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Responsable</p>
+                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Responsable</p>
                                 <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{os.project.responsableUser.nombreCompleto}</p>
                             </div>
                         )}
@@ -826,7 +826,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                 <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-blue-500" />
-                        <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Reporte del Trabajo</h2>
+                        <h2 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Reporte del Trabajo</h2>
                     </div>
                     <div className="px-6 py-5">
                         <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-wrap">{os.reporte}</p>
@@ -837,23 +837,23 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                 <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                         <User className="w-4 h-4 text-indigo-500" />
-                        <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operadores</h2>
+                        <h2 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operadores</h2>
                     </div>
                     <div className="divide-y divide-slate-50">
                         {os.operadores.map(op => (
                             <div key={op.id} className="px-6 py-3.5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xs">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
                                         {op.operador.nombreCompleto.charAt(0)}
                                     </div>
                                     <div className="flex flex-col">
                                         <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{op.operador.nombreCompleto}</p>
                                         {op.isExtra && (
-                                            <span className="text-[10px] text-amber-600 font-black uppercase tracking-tight">Horas Extras</span>
+                                            <span className="text-[11px] text-amber-600 font-semibold uppercase tracking-tight">Horas Extras</span>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 text-sm font-black text-indigo-600">
+                                <div className="flex items-center gap-1 text-sm font-bold text-indigo-600">
                                     <Clock className="w-3.5 h-3.5" />
                                     {op.horas}h
                                 </div>
@@ -867,15 +867,15 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                     <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                             <Package className="w-4 h-4 text-amber-500" />
-                            <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Materiales Utilizados</h2>
+                            <h2 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Materiales Utilizados</h2>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-slate-50">
-                                        <th className="text-left px-6 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Material</th>
-                                        <th className="text-right px-6 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cantidad</th>
-                                        <th className="text-right px-6 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Unidad</th>
+                                        <th className="text-left px-6 py-2.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Material</th>
+                                        <th className="text-right px-6 py-2.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Cantidad</th>
+                                        <th className="text-right px-6 py-2.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Unidad</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
@@ -885,12 +885,12 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                                                         {m.codigo && (
-                                                            <span className="font-mono text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.2 rounded">
+                                                            <span className="font-mono text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.2 rounded">
                                                                 {m.codigo}
                                                             </span>
                                                         )}
                                                         {m.esManual && (
-                                                            <span className="text-[9px] font-bold bg-amber-100 text-amber-800 px-1 rounded">
+                                                            <span className="text-[11px] font-bold bg-amber-100 text-amber-800 px-1 rounded">
                                                                 Manual
                                                             </span>
                                                         )}
@@ -900,7 +900,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                             </td>
                                             <td className="px-6 py-3 text-right font-bold text-slate-800 dark:text-slate-100">{m.cantidad}</td>
                                             <td className="px-6 py-3 text-right">
-                                                <span className="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-100 uppercase">{m.unidadMedida}</span>
+                                                <span className="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[11px] font-semibold border border-amber-100 uppercase">{m.unidadMedida}</span>
                                             </td>
                                         </tr>
                                     ))}
@@ -916,7 +916,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                         <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                                <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Comentario Adicional</h2>
+                                <h2 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Comentario Adicional</h2>
                             </div>
                             <div className="px-6 py-5">
                                 <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
@@ -928,7 +928,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                         <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                                <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Comentario / Observaciones Técnicas</h2>
+                                <h2 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Comentario / Observaciones Técnicas</h2>
                             </div>
                         </div>
                         <div className="px-6 py-5">
@@ -953,25 +953,25 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                     <div className="bg-emerald-50 rounded-3xl border border-emerald-200 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-emerald-100 flex items-center gap-2">
                             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                            <h2 className="text-xs font-black text-emerald-600 uppercase tracking-widest">Firma del Cliente</h2>
+                            <h2 className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Firma del Cliente</h2>
                         </div>
                         <div className="px-6 py-5 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Nombre</p>
+                                    <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5">Nombre</p>
                                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{os.firma.nombre}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">DNI</p>
+                                    <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5">DNI</p>
                                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{os.firma.dni}</p>
                                 </div>
                                 <div className="col-span-2">
-                                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Fecha de firma</p>
+                                    <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider mb-0.5">Fecha de firma</p>
                                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatDate(os.firma.fechaFirma)}</p>
                                 </div>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2">Firma</p>
+                                <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider mb-2">Firma</p>
                                 <div className="bg-card text-card-foreground rounded-2xl border border-emerald-100 p-3">
                                     <img src={os.firma.firmaImagen} alt="Firma del cliente" className="max-h-32 mx-auto" />
                                 </div>
@@ -993,7 +993,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                         <PenLine className="w-7 h-7 text-amber-500" />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">Pendiente de firma</h3>
+                                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">Pendiente de firma</h3>
                                         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Firmá esta orden de servicio para confirmar la aceptación del trabajo realizado.</p>
                                     </div>
 
@@ -1002,7 +1002,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                         <div className="bg-amber-50 dark:bg-amber-950/25 border border-amber-200 dark:border-amber-900 rounded-2xl p-4 text-left space-y-2.5">
                                             <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
                                                 <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-                                                <p className="text-xs font-black uppercase tracking-widest">Firma Bloqueada por Calidad</p>
+                                                <p className="text-xs font-semibold uppercase tracking-wider">Firma Bloqueada por Calidad</p>
                                             </div>
                                             <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
                                                 Existen requisitos obligatorios del Sistema de Gestión de Calidad (QMS / ISO 9001) pendientes de completar por los operadores:
@@ -1018,10 +1018,10 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                     <button
                                         onClick={openFirmaModal}
                                         disabled={hasBlocks}
-                                        className={`w-full py-4 rounded-2xl font-black text-base transition-all ${
+                                        className={`w-full py-4 rounded-2xl font-bold text-base transition-all ${
                                             hasBlocks
                                                 ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-                                                : 'bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95'
+                                                : 'bg-primary text-white shadow-lg hover:bg-primary/90'
                                         }`}
                                     >
                                         {hasBlocks ? 'Firma Bloqueada por Calidad' : 'Firmar Orden de Servicio'}
@@ -1035,8 +1035,8 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
 
             {/* Firma Modal (2-Step) */}
             {showFirmaModal && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-all focus:outline-none">
-                    <div className={`bg-card text-card-foreground shadow-2xl space-y-6 animate-in slide-in-from-bottom-4 duration-300 flex flex-col w-full overscroll-contain
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/50 transition-all focus:outline-none">
+                    <div className={`bg-card text-card-foreground shadow-2xl space-y-6 animate-in slide-in-from-bottom-2 duration-200 flex flex-col w-full overscroll-contain
                         ${firmaStep === 2 
                             ? 'h-[90dvh] sm:h-[85vh] sm:max-w-2xl sm:rounded-3xl rounded-t-3xl p-4 sm:p-6' 
                             : 'max-h-[85dvh] max-w-lg sm:rounded-3xl rounded-t-3xl p-6 sm:p-8 overflow-y-auto'
@@ -1044,10 +1044,10 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                     >
                         <div className="flex items-center justify-between shrink-0">
                             <div>
-                                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                                     {firmaStep === 1 ? 'Datos del Firmante' : 'Firma de Conformidad'}
                                 </h3>
-                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                                <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">
                                     Paso {firmaStep} de 2
                                 </p>
                             </div>
@@ -1064,7 +1064,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
 
                                 <div className="space-y-4">
                                     <div className="space-y-1.5 focus-within:z-10 relative">
-                                        <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nombre Completo *</label>
+                                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Nombre Completo *</label>
                                         <input
                                             type="text"
                                             value={firmaNombre}
@@ -1076,11 +1076,11 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                                 setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
                                             }}
                                             placeholder="Ingresá tu nombre completo"
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
                                         />
                                     </div>
                                     <div className="space-y-1.5 focus-within:z-10 relative">
-                                        <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">DNI *</label>
+                                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">DNI *</label>
                                         <input
                                             type="text"
                                             inputMode="numeric"
@@ -1093,7 +1093,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                                 setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
                                             }}
                                             placeholder="Ej: 12345678"
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
                                         />
                                     </div>
                                 </div>
@@ -1109,14 +1109,14 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                     <button
                                         onClick={() => setShowFirmaModal(false)}
                                         type="button"
-                                        className="flex-1 py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                                        className="flex-1 py-4 bg-muted text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         onClick={handleNextStep}
                                         type="button"
-                                        className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                        className="flex-[2] py-4 bg-primary text-white rounded-2xl font-bold text-sm hover:bg-primary-hover transition-all flex items-center justify-center gap-2"
                                     >
                                         Siguiente Paso
                                     </button>
@@ -1144,7 +1144,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                     <button
                                         onClick={() => { setFirmaError(''); setFirmaStep(1); }}
                                         type="button"
-                                        className="flex-1 py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                                        className="flex-1 py-4 bg-muted text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
                                     >
                                         Volver Atrás
                                     </button>
@@ -1152,7 +1152,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
                                         onClick={handleConfirm}
                                         disabled={submittingFirma}
                                         type="button"
-                                        className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-emerald-200 hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
+                                        className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                                     >
                                         {submittingFirma ? (
                                             <>

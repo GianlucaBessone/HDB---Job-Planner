@@ -828,13 +828,13 @@ export default function MyProjectsPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
             {!selectedProject ? (
                 <>
                     <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div className="space-y-1">
-                            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                                <ClipboardCheck className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                            <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                                <ClipboardCheck className="w-5 h-5 text-brand-600 dark:text-brand-300" />
                                 {viewAll ? 'Todos los Proyectos' : 'Mis Proyectos'}
                             </h2>
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Gestión técnica y cierre de obra</p>
@@ -842,7 +842,7 @@ export default function MyProjectsPage() {
 
                         {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa') && (
                             <div className="flex items-center gap-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-2xl shadow-sm self-start md:self-auto">
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${!viewAll ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>Mis Proyectos</span>
+                                <span className={`text-[11px] font-semibold uppercase tracking-wider ${!viewAll ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>Mis Proyectos</span>
                                 <button
                                     onClick={() => setViewAll(!viewAll)}
                                     className={`btn-icon-inline relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${viewAll ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}
@@ -851,7 +851,7 @@ export default function MyProjectsPage() {
                                         className={`inline-block h-4 w-4 transform rounded-full bg-card text-card-foreground transition-transform ${viewAll ? 'translate-x-6' : 'translate-x-1'}`}
                                     />
                                 </button>
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${viewAll ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>Ver Todos</span>
+                                <span className={`text-[11px] font-semibold uppercase tracking-wider ${viewAll ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>Ver Todos</span>
                             </div>
                         )}
                     </header>
@@ -870,14 +870,14 @@ export default function MyProjectsPage() {
                     {pendingDelegations.length > 0 && (
                         <div className="bg-blue-50 border border-blue-200 rounded-3xl p-5 space-y-4 shadow-sm">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <h3 className="flex items-center gap-2 text-sm font-black text-blue-800 uppercase tracking-wide">
+                                <h3 className="flex items-center gap-2 text-sm font-semibold text-blue-800 uppercase tracking-wide">
                                     <Package className="w-5 h-5 text-blue-600" />
                                     Delegaciones Pendientes
                                 </h3>
                                 <button
                                     onClick={acceptAllDelegations}
                                     disabled={isLoadingDelegations}
-                                    className="bg-primary text-white font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-md shadow-primary/20 disabled:opacity-50"
+                                    className="bg-primary text-white font-semibold text-[12px] px-4 py-2 rounded-xl hover:bg-primary-hover transition-all disabled:opacity-50"
                                 >
                                     {isLoadingDelegations ? 'Procesando...' : 'Aceptar Todas'}
                                 </button>
@@ -887,18 +887,18 @@ export default function MyProjectsPage() {
                                     <div key={del.id} className="bg-white border border-blue-100 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
                                         <div>
                                             <h4 className="text-sm font-bold text-slate-800">{del.material.nombre} <span className="text-slate-500 font-medium">({del.cantidadADevolver} {del.material.unidad})</span></h4>
-                                            <p className="text-[10px] text-slate-500 font-medium uppercase mt-1">De: {del.delegadoPorNombre} • Obra: {del.material.proyecto.nombre}</p>
+                                            <p className="text-[11px] text-slate-500 font-medium uppercase mt-1">De: {del.delegadoPorNombre} • Obra: {del.material.proyecto.nombre}</p>
                                         </div>
                                         <div className="flex gap-2 w-full md:w-auto mt-3 md:mt-0">
                                             <button
                                                 onClick={() => rejectDelegation(del.id)}
-                                                className="flex-1 md:flex-none bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold text-xs px-4 py-2.5 rounded-xl transition-all active:scale-95 border border-slate-200"
+                                                className="flex-1 md:flex-none bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold text-xs px-4 py-2.5 rounded-xl transition-all border border-slate-200"
                                             >
                                                 Rechazar
                                             </button>
                                             <button
                                                 onClick={() => acceptDelegation(del.id)}
-                                                className="flex-[2] md:flex-none bg-primary text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:bg-primary/90 active:scale-95 transition-all"
+                                                className="flex-[2] md:flex-none bg-primary text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-primary-hover transition-all"
                                             >
                                                 Aceptar
                                             </button>
@@ -925,7 +925,7 @@ export default function MyProjectsPage() {
                                     >
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="space-y-1">
-                                                <h3 className="font-black text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors flex items-center gap-2 flex-wrap text-lg">
+                                                <h3 className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-primary transition-colors flex items-center gap-2 flex-wrap text-lg">
                                                     {p.codigoProyecto ? (
                                                         <span className="text-primary font-mono">{p.codigoProyecto} |</span>
                                                     ) : (
@@ -938,12 +938,12 @@ export default function MyProjectsPage() {
                                                     {viewAll && p.responsableUser && (
                                                         <>
                                                             <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                                            <p className="text-[10px] text-primary font-bold uppercase tracking-tight">PM: {p.responsableUser.nombreCompleto}</p>
+                                                            <p className="text-[11px] text-primary font-bold uppercase tracking-tight">PM: {p.responsableUser.nombreCompleto}</p>
                                                         </>
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${p.estado === 'activo' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800'}`}>
+                                            <div className={`px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider ${p.estado === 'activo' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-background text-foreground text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800'}`}>
                                                 {p.estado}
                                             </div>
                                         </div>
@@ -951,7 +951,7 @@ export default function MyProjectsPage() {
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center text-xs">
                                                 <span className="font-bold text-slate-600 dark:text-slate-300">Avance Checklist</span>
-                                                <span className={`font-black ${progress === 100 ? 'text-emerald-600' : 'text-slate-500 dark:text-slate-400'}`}>{progress}%</span>
+                                                <span className={`font-bold ${progress === 100 ? 'text-emerald-600' : 'text-slate-500 dark:text-slate-400'}`}>{progress}%</span>
                                             </div>
                                             <div className="h-2 w-full bg-muted text-muted-foreground/50 rounded-full overflow-hidden">
                                                 <div
@@ -963,19 +963,19 @@ export default function MyProjectsPage() {
 
                                         <div className="mt-4 flex flex-wrap gap-1.5">
                                             {(p.tags as string[]).slice(0, 3).map(tag => (
-                                                <span key={tag} className="px-2 py-0.5 rounded-lg bg-background text-foreground/50 text-[10px] font-bold text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-800 uppercase">
+                                                <span key={tag} className="px-2 py-0.5 rounded-lg bg-background text-foreground text-[11px] font-bold text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-800 uppercase">
                                                     {tag}
                                                 </span>
                                             ))}
                                             {(p.tags as string[]).length > 3 && (
-                                                <span className="text-[10px] text-slate-400 dark:text-slate-500">+{(p.tags as string[]).length - 3}</span>
+                                                <span className="text-[11px] text-slate-400 dark:text-slate-500">+{(p.tags as string[]).length - 3}</span>
                                             )}
                                         </div>
                                     </div>
                                 );
                             })}
                             {filteredProjects.length === 0 && (
-                                <div className="py-20 text-center bg-background text-foreground/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
+                                <div className="py-20 text-center bg-background text-foreground rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
                                     <Layout className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                                     <p className="text-slate-500 dark:text-slate-400 font-medium">No tienes proyectos asignados como responsable</p>
                                 </div>
@@ -984,7 +984,7 @@ export default function MyProjectsPage() {
                     )}
                 </>
             ) : (
-                <div className="animate-in slide-in-from-right-4 duration-300 space-y-6 pb-10">
+                <div className="animate-in slide-in-from-right-2 duration-200 space-y-6 pb-10">
                     <button
                         onClick={() => setSelectedProject(null)}
                         className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-primary transition-colors mb-2"
@@ -996,15 +996,15 @@ export default function MyProjectsPage() {
                     <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-sm space-y-6">
                         <div className="flex justify-between items-start border-b border-slate-50 pb-5">
                             <div className="space-y-1">
-                                <h1 className="text-2xl font-black text-slate-900 dark:text-slate-50 leading-tight flex items-center gap-2 flex-wrap">
+                                <h1 className="text-title text-slate-900 dark:text-slate-50 leading-tight flex items-center gap-2 flex-wrap">
                                     {selectedProject.nombre}
                                     {selectedProject.codigoProyecto && <CodeBadge code={selectedProject.codigoProyecto} variant="project" />}
                                 </h1>
                                 <p className="text-sm font-bold text-primary">{selectedProject.client?.nombre}</p>
                             </div>
                             <div className="text-right space-y-1">
-                                <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Avance Total</div>
-                                <div className="text-2xl font-black text-slate-800 dark:text-slate-100">{getProjectProgress(selectedProject)}%</div>
+                                <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Avance Total</div>
+                                <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">{getProjectProgress(selectedProject)}%</div>
                             </div>
                         </div>
 
@@ -1017,7 +1017,7 @@ export default function MyProjectsPage() {
                             <div className="space-y-8">
                                 {Array.from(new Set(checklistItems.map(i => i.tag))).map(tag => (
                                     <div key={tag} className="space-y-3">
-                                        <h3 className="flex items-center gap-2 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                                        <h3 className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                             <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                                             {tag}
                                         </h3>
@@ -1028,7 +1028,7 @@ export default function MyProjectsPage() {
                                                     onClick={() => handleToggleItem(item)}
                                                     className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${item.completed
                                                         ? 'bg-emerald-50/50 border-emerald-100'
-                                                        : 'bg-background text-foreground/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                        : 'bg-background text-foreground border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                         } ${item.pendingChange ? 'opacity-70 bg-amber-50 border-amber-200' : ''}`}
                                                 >
                                                     <div className="flex items-center gap-4">
@@ -1044,12 +1044,12 @@ export default function MyProjectsPage() {
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         {item.confirmedBySupervisor && (
-                                                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[9px] font-bold border border-blue-200 uppercase">
+                                                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[11px] font-bold border border-blue-200 uppercase">
                                                                 Confirmado
                                                             </span>
                                                         )}
                                                         {item.pendingChange && (
-                                                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 text-[9px] font-bold border border-amber-200 uppercase anim-pulse">
+                                                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 text-[11px] font-bold border border-amber-200 uppercase anim-pulse">
                                                                 Pendiente Aprobación
                                                             </span>
                                                         )}
@@ -1066,7 +1066,7 @@ export default function MyProjectsPage() {
                         {(selectedProject as any).aprovisionamiento && (
                             <div className="pt-6 border-t border-slate-50 space-y-5">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <h3 className="flex items-center gap-2 text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                                    <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
                                         <Package className="w-4 h-4 text-primary" />
                                         Materiales en Obra
                                     </h3>
@@ -1075,9 +1075,9 @@ export default function MyProjectsPage() {
                                     <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 self-start md:self-auto w-full md:w-auto">
                                         <button
                                             onClick={() => setActiveMaterialTab('general')}
-                                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
+                                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[11px] font-semibold uppercase tracking-wider transition-all duration-300 ${
                                                 activeMaterialTab === 'general'
-                                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm shadow-slate-200/50 dark:shadow-none'
+                                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm dark:shadow-none'
                                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                             }`}
                                         >
@@ -1085,9 +1085,9 @@ export default function MyProjectsPage() {
                                         </button>
                                         <button
                                             onClick={() => setActiveMaterialTab('devueltos')}
-                                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
+                                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[11px] font-semibold uppercase tracking-wider transition-all duration-300 ${
                                                 activeMaterialTab === 'devueltos'
-                                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm shadow-slate-200/50 dark:shadow-none'
+                                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm dark:shadow-none'
                                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                             }`}
                                         >
@@ -1126,7 +1126,7 @@ export default function MyProjectsPage() {
                                     <input
                                         type="text"
                                         placeholder="Buscar material o código..."
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
                                         value={materialSearch}
                                         onChange={e => setMaterialSearch(e.target.value)}
                                     />
@@ -1147,36 +1147,36 @@ export default function MyProjectsPage() {
                                             const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
 
                                             return (
-                                                <div key={m.id} className="bg-background text-foreground/50 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 space-y-3">
+                                                <div key={m.id} className="bg-background text-foreground border border-slate-100 dark:border-slate-800 rounded-2xl p-4 space-y-3">
                                                     <div className="flex justify-between items-start">
                                                         <div>
                                                             <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{m.nombre}</h4>
-                                                            <p className="text-[10px] text-slate-500 font-medium uppercase">{m.codigo || 'S/C'} • {m.unidad}</p>
+                                                            <p className="text-[11px] text-slate-500 font-medium uppercase">{m.codigo || 'S/C'} • {m.unidad}</p>
                                                         </div>
                                                         <div className="text-right">
-                                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">En Poder</div>
-                                                            <div className={`text-sm font-black ${balance > 0 ? 'text-primary' : 'text-slate-400'}`}>{balance.toFixed(2)}</div>
+                                                            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">En Poder</div>
+                                                            <div className={`text-sm font-bold ${balance > 0 ? 'text-primary' : 'text-slate-400'}`}>{balance.toFixed(2)}</div>
                                                         </div>
                                                     </div>
                                                     
                                                     <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/50">
                                                         <div className="text-center">
-                                                            <div className="text-[8px] font-bold text-slate-400 uppercase">Entregado</div>
+                                                            <div className="text-[11px] font-bold text-slate-400 uppercase">Entregado</div>
                                                             <div className="text-xs font-bold text-slate-600">{m.cantidadEntregada}</div>
                                                         </div>
                                                         <div className="text-center">
-                                                            <div className="text-[8px] font-bold text-slate-400 uppercase">Usado</div>
+                                                            <div className="text-[11px] font-bold text-slate-400 uppercase">Usado</div>
                                                             <div className="text-xs font-bold text-emerald-600">{totalUsado}</div>
                                                         </div>
                                                         <div className="text-center">
-                                                            <div className="text-[8px] font-bold text-slate-400 uppercase">Devuelto</div>
+                                                            <div className="text-[11px] font-bold text-slate-400 uppercase">Devuelto</div>
                                                             <div className="text-xs font-bold text-blue-600">{totalDevuelto}</div>
                                                         </div>
                                                     </div>
 
                                                     {pendingDevolucion > 0 && (
                                                         <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-1.5 flex items-center justify-between anim-pulse">
-                                                            <span className="text-[10px] font-bold text-amber-700">Devolución / Delegación pendiente: {pendingDevolucion}</span>
+                                                            <span className="text-[11px] font-bold text-amber-700">Devolución / Delegación pendiente: {pendingDevolucion}</span>
                                                             <History className="w-3 h-3 text-amber-500" />
                                                         </div>
                                                     )}
@@ -1190,7 +1190,7 @@ export default function MyProjectsPage() {
                                                                     setMaterialQuantity('');
                                                                     setIsMaterialModalOpen(true);
                                                                 }}
-                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all shadow-sm"
                                                             >
                                                                 <PlusCircle className="w-3.5 h-3.5 text-emerald-500" />
                                                                 INFORMAR USO
@@ -1203,7 +1203,7 @@ export default function MyProjectsPage() {
                                                                         setMaterialQuantity('');
                                                                         setIsMaterialModalOpen(true);
                                                                     }}
-                                                                    className="flex-[2] flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95"
+                                                                    className="flex-[2] flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all"
                                                                 >
                                                                     <MinusCircle className="w-3.5 h-3.5 text-blue-500" />
                                                                     DEVOLVER
@@ -1216,7 +1216,7 @@ export default function MyProjectsPage() {
                                                                         setPendingDelegationSignature(null);
                                                                         setIsDelegationModalOpen(true);
                                                                     }}
-                                                                    className="flex-1 flex items-center justify-center py-1.5 rounded-lg hover:bg-slate-50 transition-all active:scale-95"
+                                                                    className="flex-1 flex items-center justify-center py-1.5 rounded-lg hover:bg-slate-50 transition-all"
                                                                     title="Delegar material"
                                                                 >
                                                                     <Share2 className="w-3.5 h-3.5 text-indigo-500" />
@@ -1234,7 +1234,7 @@ export default function MyProjectsPage() {
 
                         {/* Comments Section */}
                         <div className="pt-6 border-t border-slate-50 space-y-5">
-                            <h3 className="flex items-center gap-2 text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
                                 <MessageSquare className="w-4 h-4 text-primary" />
                                 Comentarios
                             </h3>
@@ -1243,7 +1243,7 @@ export default function MyProjectsPage() {
                                 <div className="space-y-3">
                                     {/* Category selector */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                        <label className="flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <Tag className="w-3 h-3" /> Categoría *
                                         </label>
                                         <div className="flex flex-wrap gap-2">
@@ -1255,9 +1255,9 @@ export default function MyProjectsPage() {
                                                     className={`btn-icon-inline px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                                                         newLogCategoria === cat
                                                             ? cat === 'Bloqueante'
-                                                                ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-200'
-                                                                : 'bg-primary text-white border-primary shadow-md shadow-primary/20'
-                                                            : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                                ? 'bg-red-600 text-white border-red-600 shadow-lg'
+                                                                : 'bg-primary text-white border-primary shadow-md'
+                                                            : 'bg-background text-foreground text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                     }`}
                                                 >
                                                     {cat === 'Bloqueante' && <AlertOctagon className="w-3 h-3 inline mr-1" />}
@@ -1276,16 +1276,16 @@ export default function MyProjectsPage() {
                                     <textarea
                                         rows={3}
                                         placeholder="Escribe un comentario o actualización..."
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
                                         value={newLog}
                                         onChange={e => setNewLog(e.target.value)}
                                     />
                                     <button
                                         onClick={submitLog}
                                         disabled={!newLog.trim() || isSubmittingLog}
-                                        className={`w-full text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 ${
+                                        className={`w-full text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 ${
                                             newLogCategoria === 'Bloqueante'
-                                                ? 'bg-red-600 hover:bg-red-700 shadow-red-200'
+                                                ? 'bg-red-600 hover:bg-red-700'
                                                 : 'bg-slate-800 hover:bg-slate-700'
                                         }`}
                                     >
@@ -1312,16 +1312,16 @@ export default function MyProjectsPage() {
                                             };
                                             return (
                                                 <div key={log.id} className={`border p-4 rounded-2xl space-y-2 ${
-                                                    cat === 'Bloqueante' ? 'bg-red-50 border-red-100' : 'bg-background text-foreground/50 border-slate-100 dark:border-slate-800'
+                                                    cat === 'Bloqueante' ? 'bg-red-50 border-red-100' : 'bg-background text-foreground border-slate-100 dark:border-slate-800'
                                                 }`}>
                                                     <div className="flex justify-between items-start">
                                                         <div className="flex items-center gap-2 flex-wrap">
                                                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{log.responsable}</span>
-                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-wider ${catStyles[cat] || catStyles['Nota']}`}>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border uppercase tracking-wider ${catStyles[cat] || catStyles['Nota']}`}>
                                                                 {cat === 'Bloqueante' && '🚨 '}{cat}
                                                             </span>
                                                         </div>
-                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 shrink-0">{formatDateTime(log.createdAt)}</span>
+                                                        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0">{formatDateTime(log.createdAt)}</span>
                                                     </div>
                                                     <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{log.observacion}</p>
                                                 </div>
@@ -1347,11 +1347,11 @@ export default function MyProjectsPage() {
                                             }`}>
                                             <div className="flex items-center gap-2">
                                                 <FileSignature className={`w-4 h-4 ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? 'text-emerald-600' : 'text-amber-600'}`} />
-                                                <span className={`text-sm font-black ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? 'text-emerald-800' : 'text-amber-800'}`}>
+                                                <span className={`text-sm font-bold ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? 'text-emerald-800' : 'text-amber-800'}`}>
                                                     Orden de Servicio
                                                 </span>
                                             </div>
-                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${
+                                            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded-lg ${
                                                 projectOS.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700' :
                                                 projectOS.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700' :
                                                 projectOS.estado === 'pagada' ? 'bg-blue-100 text-blue-700' :
@@ -1368,7 +1368,7 @@ export default function MyProjectsPage() {
                                             {(projectOS.estado !== 'firmada' && projectOS.estado !== 'cobrada' && projectOS.estado !== 'pagada') && (
                                                 <Link
                                                     href={`/ordenes-servicio/qr/${projectOS.id}`}
-                                                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-sm text-white bg-indigo-600 shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98]"
+                                                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-all"
                                                 >
                                                     <QrCode className="w-5 h-5" />
                                                     VER QR
@@ -1376,8 +1376,8 @@ export default function MyProjectsPage() {
                                             )}
                                             <Link
                                                 href={`/ordenes-servicio/generar?projectId=${selectedProject.id}&editId=${projectOS.id}`}
-                                                className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-sm transition-all active:scale-[0.98] ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada')
-                                                        ? 'text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 hover:bg-slate-200 border border-slate-200 dark:border-slate-700'
+                                                className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada')
+                                                        ? 'text-slate-500 dark:text-slate-400 bg-muted hover:bg-slate-200 border border-slate-200 dark:border-slate-700'
                                                         : 'text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100'
                                                     }`}
                                             >
@@ -1390,7 +1390,7 @@ export default function MyProjectsPage() {
                                     /* No OS creada todavía */
                                     <Link
                                         href={`/ordenes-servicio/generar?projectId=${selectedProject.id}`}
-                                        className="w-full text-white py-4 rounded-2xl font-black text-base shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700"
+                                        className="w-full text-white py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700"
                                     >
                                         <FileSignature className="w-6 h-6" />
                                         GENERAR ORDEN DE SERVICIO
@@ -1400,9 +1400,9 @@ export default function MyProjectsPage() {
                             <button
                                 onClick={() => handleFinalizeProject()}
                                 disabled={isFinalizing}
-                                className={`w-full text-white py-4 rounded-2xl font-black text-base shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa')
-                                    ? 'bg-primary shadow-primary/20 hover:bg-primary/90'
-                                    : 'bg-indigo-600 shadow-indigo-200 hover:bg-indigo-700'
+                                className={`w-full text-white py-4 rounded-2xl font-bold text-base shadow-xl transition-all flex items-center justify-center gap-2 ${(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa')
+                                    ? 'bg-primary hover:bg-primary/90'
+                                    : 'bg-indigo-600 hover:bg-indigo-700'
                                     }`}
                             >
                                 {isFinalizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ClipboardCheck className="w-6 h-6" />}
@@ -1417,14 +1417,14 @@ export default function MyProjectsPage() {
 
             {/* Material Modal */}
             {isMaterialModalOpen && selectedMaterial && (
-                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200">
                         <div className="flex items-center gap-4">
                             <div className={`p-3 rounded-2xl ${materialAction === 'uso' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
                                 {materialAction === 'uso' ? <PlusCircle className="w-6 h-6" /> : <MinusCircle className="w-6 h-6" />}
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                                     {materialAction === 'uso' ? 'Informar Uso' : 'Devolver Material'}
                                 </h3>
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{selectedMaterial.nombre}</p>
@@ -1442,10 +1442,10 @@ export default function MyProjectsPage() {
                                 return (
                                     <div className="space-y-1.5">
                                         <div className="flex justify-between items-center">
-                                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                                 Cantidad ({selectedMaterial.unidad}) *
                                             </label>
-                                            <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                                            <span className="text-[11px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
                                                 MÁX: {maxAllowed.toFixed(2)}
                                             </span>
                                         </div>
@@ -1453,7 +1453,7 @@ export default function MyProjectsPage() {
                                             type="number"
                                             autoFocus
                                             inputMode="decimal"
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                                             placeholder="0.00"
                                             value={materialQuantity}
                                             onChange={e => setMaterialQuantity(e.target.value)}
@@ -1464,10 +1464,10 @@ export default function MyProjectsPage() {
 
                             {materialAction === 'devolucion' && (
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Observación (Opcional)</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Observación (Opcional)</label>
                                     <textarea
                                         rows={2}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
                                         placeholder="Ej: Material sobrante en buen estado..."
                                         value={materialNote}
                                         onChange={e => setMaterialNote(e.target.value)}
@@ -1479,15 +1479,15 @@ export default function MyProjectsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsMaterialModalOpen(false)}
-                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
+                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted hover:bg-slate-200 transition-all"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={submitMaterialAction}
                                 disabled={!materialQuantity || isSubmittingMaterial}
-                                className={`flex-[2] text-white py-3.5 rounded-2xl font-bold transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 ${
-                                    materialAction === 'uso' ? 'bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700' : 'bg-primary shadow-primary/20 hover:bg-primary/90'
+                                className={`flex-[2] text-white py-3.5 rounded-2xl font-bold transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 ${
+                                    materialAction === 'uso' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-primary hover:bg-primary/90'
                                 }`}
                             >
                                 {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
@@ -1500,25 +1500,25 @@ export default function MyProjectsPage() {
 
             {/* Delegation Modal */}
             {isDelegationModalOpen && selectedMaterial && (
-                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200">
                         <div className="flex items-center gap-4">
                             <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
                                 <Share2 className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Delegar Devolución</h3>
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{selectedMaterial.nombre}</p>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Delegar Devolución</h3>
+                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{selectedMaterial.nombre}</p>
                             </div>
                         </div>
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Delegar a *</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Delegar a *</label>
                                 <select
                                     value={delegationTargetId}
                                     onChange={(e) => setDelegationTargetId(e.target.value)}
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
                                 >
                                     <option value="" disabled>Seleccione un operador</option>
                                     {operatorsList.map(op => (
@@ -1528,7 +1528,7 @@ export default function MyProjectsPage() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cantidad *</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Cantidad *</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -1536,33 +1536,33 @@ export default function MyProjectsPage() {
                                     value={delegationQuantity}
                                     onChange={(e) => setDelegationQuantity(e.target.value)}
                                     placeholder="Ej. 1"
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-lg font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-lg font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nota / Observación</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Nota / Observación</label>
                                 <textarea
                                     value={delegationNote}
                                     onChange={(e) => setDelegationNote(e.target.value)}
                                     rows={2}
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
                                     placeholder="Opcional..."
                                 />
                             </div>
                             <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 flex items-start gap-2 mt-2">
                                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                                <p className="text-[10px] font-bold text-amber-800 leading-tight">Al delegar, el material seguirá pendiente de devolución. Deberás firmar tu autorización.</p>
+                                <p className="text-[11px] font-bold text-amber-800 leading-tight">Al delegar, el material seguirá pendiente de devolución. Deberás firmar tu autorización.</p>
                             </div>
 
                             <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Firma del Responsable *</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Firma del Responsable *</label>
                                     {pendingDelegationSignature && (
                                         <button 
                                             type="button" 
                                             onClick={() => setPendingDelegationSignature(null)}
-                                            className="text-[10px] font-bold text-red-500 hover:underline"
+                                            className="text-[11px] font-bold text-red-500 hover:underline"
                                         >
                                             Borrar Firma
                                         </button>
@@ -1581,7 +1581,7 @@ export default function MyProjectsPage() {
                                                 <ShieldCheck className="w-5 h-5 text-emerald-500" />
                                                 Firmado Electrónicamente
                                             </div>
-                                            <span className="text-[10px] text-slate-500 font-mono">{pendingDelegationSignature}</span>
+                                            <span className="text-[11px] text-slate-500 font-mono">{pendingDelegationSignature}</span>
                                         </div>
                                     )}
                                 </div>
@@ -1591,14 +1591,14 @@ export default function MyProjectsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsDelegationModalOpen(false)}
-                                className="flex-[1] py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95 text-sm"
+                                className="flex-[1] py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all text-sm"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={submitDelegation}
                                 disabled={!delegationTargetId || !delegationQuantity || isSubmittingMaterial || !pendingDelegationSignature}
-                                className="flex-[2] py-3.5 rounded-2xl font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                                className="flex-[2] py-3.5 rounded-2xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
                                 Solicitar Delegación
@@ -1610,25 +1610,25 @@ export default function MyProjectsPage() {
 
             {/* Delegar Todo Modal */}
             {isDelegarTodoModalOpen && selectedProject && (
-                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200">
                         <div className="flex items-center gap-4">
                             <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
                                 <Share2 className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Delegar Todos los Materiales</h3>
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{selectedProject.nombre}</p>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Delegar Todos los Materiales</h3>
+                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{selectedProject.nombre}</p>
                             </div>
                         </div>
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Delegar a *</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Delegar a *</label>
                                 <select
                                     value={delegationTargetId}
                                     onChange={(e) => setDelegationTargetId(e.target.value)}
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
                                 >
                                     <option value="" disabled>Seleccione un operador</option>
                                     {operatorsList.filter(op => op.id !== user?.id).map(op => (
@@ -1638,29 +1638,29 @@ export default function MyProjectsPage() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nota / Observación</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Nota / Observación</label>
                                 <textarea
                                     value={delegationNote}
                                     onChange={(e) => setDelegationNote(e.target.value)}
                                     rows={2}
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
                                     placeholder="Motivo de la delegación (Opcional)..."
                                 />
                             </div>
                             
                             <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 flex items-start gap-2 mt-2">
                                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                                <p className="text-[10px] font-bold text-amber-800 leading-tight">Se delegarán todos los materiales con balance mayor a cero. Los materiales seguirán pendientes de devolución.</p>
+                                <p className="text-[11px] font-bold text-amber-800 leading-tight">Se delegarán todos los materiales con balance mayor a cero. Los materiales seguirán pendientes de devolución.</p>
                             </div>
 
                             <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Firma del Responsable *</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Firma del Responsable *</label>
                                     {pendingDelegationSignature && (
                                         <button 
                                             type="button" 
                                             onClick={() => setPendingDelegationSignature(null)}
-                                            className="text-[10px] font-bold text-red-500 hover:underline"
+                                            className="text-[11px] font-bold text-red-500 hover:underline"
                                         >
                                             Borrar Firma
                                         </button>
@@ -1679,7 +1679,7 @@ export default function MyProjectsPage() {
                                                 <ShieldCheck className="w-5 h-5 text-emerald-500" />
                                                 Firmado Electrónicamente
                                             </div>
-                                            <span className="text-[10px] text-slate-500 font-mono">{pendingDelegationSignature}</span>
+                                            <span className="text-[11px] text-slate-500 font-mono">{pendingDelegationSignature}</span>
                                         </div>
                                     )}
                                 </div>
@@ -1689,14 +1689,14 @@ export default function MyProjectsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsDelegarTodoModalOpen(false)}
-                                className="flex-[1] py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95 text-sm"
+                                className="flex-[1] py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all text-sm"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={submitBatchDelegation}
                                 disabled={!delegationTargetId || !pendingDelegationSignature || isSubmittingMaterial}
-                                className="flex-[2] py-3.5 rounded-2xl font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                                className="flex-[2] py-3.5 rounded-2xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                             >
                                 {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
                                 Delegar Todo
@@ -1708,13 +1708,13 @@ export default function MyProjectsPage() {
 
             {/* Justification Modal */}
             {isJustifyModalOpen && (
-                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200">
                         <div className="flex items-center gap-4 text-amber-500">
                             <div className="p-3 bg-amber-50 rounded-2xl">
                                 <AlertTriangle className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">Solicitud de Cambio</h3>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Solicitud de Cambio</h3>
                         </div>
 
                         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
@@ -1722,11 +1722,11 @@ export default function MyProjectsPage() {
                         </p>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Motivo del cambio *</label>
+                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Motivo del cambio *</label>
                             <textarea
                                 rows={4}
                                 autoFocus
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
                                 placeholder="Explica por qué necesitas desmarcar o cambiar este ítem..."
                                 value={justification}
                                 onChange={e => setJustification(e.target.value)}
@@ -1736,14 +1736,14 @@ export default function MyProjectsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsJustifyModalOpen(false)}
-                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
+                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted hover:bg-slate-200 transition-all"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={submitChangeRequest}
                                 disabled={!justification.trim() || isSubmittingChange}
-                                className="flex-[2] bg-primary text-white py-3.5 rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                                className="flex-[2] bg-primary text-white py-3.5 rounded-2xl font-bold hover:bg-primary-hover transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                             >
                                 {isSubmittingChange ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                 Enviar Solicitud
@@ -1755,14 +1755,14 @@ export default function MyProjectsPage() {
 
             {/* Finalize Warning Modal */}
             {isFinalizeModalOpen && (
-                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200 max-h-[90vh] flex flex-col overflow-hidden">
                         <div className="flex items-center gap-4 text-red-500 shrink-0">
                             <div className="p-3 bg-red-50 rounded-2xl">
                                 <AlertTriangle className="w-7 h-7" />
                             </div>
                             <div className="space-y-0.5">
-                                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 leading-tight">Pendientes detectados</h3>
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight">Pendientes detectados</h3>
                                 <p className="text-xs font-bold text-red-600/70 uppercase tracking-wider">Checklist Incompleto</p>
                             </div>
                         </div>
@@ -1772,7 +1772,7 @@ export default function MyProjectsPage() {
                             <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
                                 {Array.from(new Set(pendingItemsForFinalize.map(i => i.tag))).map(tag => (
                                     <div key={tag} className="space-y-1.5">
-                                        <div className="text-[10px] font-black text-red-400 uppercase tracking-widest">{tag}</div>
+                                        <div className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">{tag}</div>
                                         <ul className="space-y-1">
                                             {pendingItemsForFinalize.filter(i => i.tag === tag).map((p, idx) => (
                                                 <li key={idx} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-semibold">
@@ -1789,19 +1789,19 @@ export default function MyProjectsPage() {
                         <div className="flex flex-col gap-3 shrink-0">
                             <button
                                 onClick={() => handleFinalizeProject(true)}
-                                className="w-full bg-red-600 text-white py-4 rounded-2xl font-black text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2 active:scale-95"
+                                className="w-full bg-red-600 text-white py-4 rounded-2xl font-bold text-sm hover:bg-red-700 transition-all flex items-center justify-center gap-2"
                             >
                                 <AlertTriangle className="w-5 h-5" />
                                 FINALIZAR DE TODOS MODOS
                             </button>
                             <button
                                 onClick={() => setIsFinalizeModalOpen(false)}
-                                className="w-full py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
+                                className="w-full py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted hover:bg-slate-200 transition-all"
                             >
                                 Volver y completar checklist
                             </button>
                         </div>
-                        <p className="text-[10px] text-center text-slate-400 dark:text-slate-500 font-medium shrink-0 pt-2">Si fuerza el cierre, se registrará trazabilidad completa de los pendientes.</p>
+                        <p className="text-[11px] text-center text-slate-400 dark:text-slate-500 font-medium shrink-0 pt-2">Si fuerza el cierre, se registrará trazabilidad completa de los pendientes.</p>
                     </div>
                 </div>
             )}
@@ -1821,7 +1821,7 @@ export default function MyProjectsPage() {
 
 function MyProjectsSkeleton({ viewAll }: { viewAll: boolean }) {
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-1 flex items-center gap-3">
                     <ClipboardCheck className="w-6 h-6 md:w-8 md:h-8 text-primary opacity-20" />

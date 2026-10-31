@@ -58,26 +58,26 @@ export default function DynamicChart({ grafico, height = 300, onEvents }: Dynami
         const seriesFields = config.series || [Object.keys(data[0])[1] || Object.keys(data[0])[0]];
 
         const categories = data.map(row => row[xAxisField]);
-        const colors = config.colores || ['#3b82f6', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6'];
+        const colors = config.colores || ['#2f74da', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
         const baseOption = {
             tooltip: {
                 trigger: 'axis',
-                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                backgroundColor: 'rgba(22, 27, 36, 0.96)',
                 borderColor: 'rgba(255,255,255,0.1)',
-                textStyle: { color: '#f8fafc', fontSize: 12 },
+                textStyle: { color: '#f6f7f9', fontSize: 12 },
             },
             grid: { ...COMMON_GRID, top: 20 },
             xAxis: {
                 type: 'category',
                 data: categories,
-                axisLabel: { color: '#64748b', fontSize: 10 },
-                axisLine: { lineStyle: { color: '#e2e8f0' } },
+                axisLabel: { color: '#5a6372', fontSize: 10 },
+                axisLine: { lineStyle: { color: '#e1e4e9' } },
             },
             yAxis: {
                 type: 'value',
-                splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
-                axisLabel: { color: '#64748b', fontSize: 10 },
+                splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
+                axisLabel: { color: '#5a6372', fontSize: 10 },
             },
         };
 
@@ -112,9 +112,9 @@ export default function DynamicChart({ grafico, height = 300, onEvents }: Dynami
             return {
                 tooltip: {
                     trigger: 'item',
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    backgroundColor: 'rgba(22, 27, 36, 0.96)',
                     borderColor: 'rgba(255,255,255,0.1)',
-                    textStyle: { color: '#f8fafc', fontSize: 12 },
+                    textStyle: { color: '#f6f7f9', fontSize: 12 },
                 },
                 series: [{
                     type: 'pie',
@@ -140,7 +140,7 @@ export default function DynamicChart({ grafico, height = 300, onEvents }: Dynami
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center bg-background text-foreground/50 rounded-xl" style={{ height }}>
+            <div className="flex items-center justify-center bg-background text-foreground rounded-xl" style={{ height }}>
                 <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>
         );
@@ -157,7 +157,7 @@ export default function DynamicChart({ grafico, height = 300, onEvents }: Dynami
 
     if (!data || data.length === 0 || !option) {
         return (
-            <div className="flex items-center justify-center bg-background text-foreground/50 rounded-xl text-slate-400 text-xs font-bold uppercase tracking-widest" style={{ height }}>
+            <div className="flex items-center justify-center bg-background text-foreground rounded-xl text-slate-400 text-xs font-bold uppercase tracking-wider" style={{ height }}>
                 Sin Datos
             </div>
         );

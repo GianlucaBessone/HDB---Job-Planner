@@ -400,7 +400,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                             setSelectedItemId('');
                             setStockModalOpen(true);
                         }}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                     >
                         <ArrowDownRight className="w-4 h-4" />
                         Ingresar Stock (Remito)
@@ -408,7 +408,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
 
                     <button
                         onClick={() => setCreateModalOpen(true)}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                     >
                         <Plus className="w-4 h-4" />
                         Nuevo Elemento
@@ -434,7 +434,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-wider">
+                                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
                                         <th className="p-4">Elemento de EPP</th>
                                         <th className="p-4">Categoría</th>
                                         <th className="p-4 text-center">Tipo</th>
@@ -477,7 +477,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                                     </td>
 
                                                     <td className="p-4 text-center">
-                                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
                                                             item.esGlobal
                                                                 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
                                                                 : 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
@@ -491,7 +491,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                                     </td>
 
                                                     <td className="p-4 text-center">
-                                                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-black ${
+                                                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold ${
                                                             isLowStock
                                                                 ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse'
                                                                 : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
@@ -562,7 +562,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse text-xs">
                                 <thead>
-                                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 font-black uppercase tracking-wider">
+                                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
                                         <th className="p-4">Fecha</th>
                                         <th className="p-4">Tipo</th>
                                         <th className="p-4">Elemento de EPP</th>
@@ -591,7 +591,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                                         {new Date(mov.createdAt).toLocaleString()}
                                                     </td>
                                                     <td className="p-4">
-                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
                                                             isIngreso
                                                                 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
                                                                 : isAjuste
@@ -607,7 +607,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                                     <td className="p-4 font-bold text-slate-800 dark:text-slate-200">
                                                         {mov.eppItem?.nombre}
                                                     </td>
-                                                    <td className={`p-4 text-center font-black ${
+                                                    <td className={`p-4 text-center font-bold ${
                                                         isIngreso ? 'text-emerald-600' : isAjuste ? 'text-amber-600' : 'text-rose-600'
                                                     }`}>
                                                         {isIngreso ? `+${mov.cantidad}` : isAjuste ? `±${mov.cantidad}` : `-${mov.cantidad}`}
@@ -636,10 +636,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
 
             {/* MODAL 1: CREAR ELEMENTO */}
             {createModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in overflow-y-auto">
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl my-8">
                         <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                            <h3 className="font-black text-slate-900 dark:text-slate-100 text-base flex items-center gap-2">
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base flex items-center gap-2">
                                 <Package className="w-5 h-5 text-indigo-600" />
                                 Registrar Nuevo Elemento de EPP
                             </h3>
@@ -816,7 +816,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                 <button
                                     type="submit"
                                     disabled={creatingItem}
-                                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
                                 >
                                     {creatingItem && <Loader2 className="w-4 h-4 animate-spin" />}
                                     Guardar en Catálogo
@@ -829,10 +829,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
 
             {/* MODAL 2: EDITAR ELEMENTO Y AJUSTE MANUAL AUDITADO */}
             {editModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in overflow-y-auto">
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl my-8">
                         <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/40">
-                            <h3 className="font-black text-slate-900 dark:text-slate-100 text-base flex items-center gap-2">
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base flex items-center gap-2">
                                 <Edit2 className="w-5 h-5 text-indigo-600" />
                                 Editar Elemento de EPP
                             </h3>
@@ -980,7 +980,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <SlidersHorizontal className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                                        <span className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-200">
+                                        <span className="text-xs font-semibold uppercase tracking-wider text-amber-900 dark:text-amber-200">
                                             Ajuste Manual de Stock (Auditoría ISO)
                                         </span>
                                     </div>
@@ -1018,7 +1018,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                                     value={editFormData.nuevoStockManual === '' ? '' : editFormData.nuevoStockManual}
                                                     onChange={(e) => setEditFormData({ ...editFormData, nuevoStockManual: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
                                                     onFocus={(e) => e.target.select()}
-                                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-black text-center text-slate-900 dark:text-slate-100"
+                                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-bold text-center text-slate-900 dark:text-slate-100"
                                                 />
                                             </div>
 
@@ -1026,7 +1026,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                                 <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
                                                     Diferencial resultante
                                                 </label>
-                                                <div className={`px-3 py-2 rounded-xl text-xs font-black text-center border ${
+                                                <div className={`px-3 py-2 rounded-xl text-xs font-bold text-center border ${
                                                     adjustmentDiff === 0 
                                                         ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200' 
                                                         : adjustmentDiff > 0 
@@ -1064,7 +1064,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                             />
                                         </div>
 
-                                        <p className="text-[10px] text-amber-800 dark:text-amber-300">
+                                        <p className="text-[11px] text-amber-800 dark:text-amber-300">
                                             * Esta modificación quedará registrada de forma permanente en el Kardex y en el log de auditoría del sistema.
                                         </p>
                                     </div>
@@ -1082,7 +1082,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                 <button
                                     type="submit"
                                     disabled={savingEdit}
-                                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
                                 >
                                     {savingEdit && <Loader2 className="w-4 h-4 animate-spin" />}
                                     Guardar Cambios
@@ -1095,10 +1095,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
 
             {/* MODAL 3: INGRESO DE STOCK POR REMITO */}
             {stockModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in overflow-y-auto">
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl my-8">
                         <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                            <h3 className="font-black text-slate-900 dark:text-slate-100 text-base flex items-center gap-2">
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base flex items-center gap-2">
                                 <ArrowDownRight className="w-5 h-5 text-emerald-600" />
                                 Registrar Ingreso de Stock
                             </h3>
@@ -1140,7 +1140,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                         value={stockData.cantidad === '' ? '' : stockData.cantidad}
                                         onChange={(e) => setStockData({ ...stockData, cantidad: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
                                         onFocus={(e) => e.target.select()}
-                                        className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black text-center text-slate-800 dark:text-slate-100"
+                                        className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-center text-slate-800 dark:text-slate-100"
                                     />
                                 </div>
 
@@ -1194,7 +1194,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                 <button
                                     type="submit"
                                     disabled={addingStock}
-                                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
                                 >
                                     {addingStock && <Loader2 className="w-4 h-4 animate-spin" />}
                                     Confirmar Ingreso

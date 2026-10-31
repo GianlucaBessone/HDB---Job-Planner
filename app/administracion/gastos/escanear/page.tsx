@@ -351,7 +351,7 @@ export default function EscanearFactura() {
       <div className="px-6 pt-6">
         <button 
           onClick={() => router.push('/administracion/gastos')}
-          className="mb-4 flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-card text-card-foreground/50 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50 w-fit shadow-sm"
+          className="mb-4 flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-card hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50 w-fit shadow-sm"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver a Gastos
@@ -396,7 +396,7 @@ export default function EscanearFactura() {
                   <>
                     <button 
                       onClick={() => cameraInputRef.current?.click()}
-                      className="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-3"
+                      className="w-full py-4 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold transition-all flex items-center justify-center gap-3"
                     >
                       <Camera className="w-5 h-5" />
                       Tomar Foto (Cámara)
@@ -408,7 +408,7 @@ export default function EscanearFactura() {
                 {!isMobile && !isWaitingScanner && (
                   <button 
                     onClick={connectScannerFolder}
-                    className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold shadow-lg shadow-slate-800/30 transition-all flex items-center justify-center gap-3"
+                    className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-3"
                   >
                     <Usb className="w-5 h-5" />
                     Vincular Escáner USB
@@ -418,7 +418,7 @@ export default function EscanearFactura() {
                 {!isMobile && isWaitingScanner && (
                   <button 
                     onClick={processNewScans}
-                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/30 rounded-xl font-bold transition-all flex items-center justify-center gap-3 animate-pulse"
+                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-3 animate-pulse"
                   >
                     <Check className="w-5 h-5" />
                     Procesar Escaneos Nuevos
@@ -429,7 +429,7 @@ export default function EscanearFactura() {
                   <>
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className={`w-full py-4 ${isMobile ? 'bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-700' : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-blue-600/30'} rounded-xl font-bold transition-all flex items-center justify-center gap-3`}
+                      className={`w-full py-4 ${isMobile ? 'bg-card hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-700' : 'bg-primary hover:bg-primary-hover text-white'} rounded-xl font-bold transition-all flex items-center justify-center gap-3`}
                     >
                       <Upload className="w-5 h-5" />
                       Subir Archivo de Factura
@@ -465,7 +465,7 @@ export default function EscanearFactura() {
                 </button>
                 <button 
                   onClick={() => capturedImage && processImageFromDataUrl(capturedImage)}
-                  className="px-6 py-3 bg-primary hover:bg-blue-500 rounded-xl font-medium transition-colors shadow-lg shadow-blue-900/50"
+                  className="px-6 py-3 bg-primary hover:bg-blue-500 rounded-xl font-medium transition-colors shadow-lg"
                 >
                   <Check className="w-5 h-5 inline mr-2" />
                   Procesar Factura
@@ -473,7 +473,7 @@ export default function EscanearFactura() {
                 {fileQueue.length > 0 && (
                   <button 
                     onClick={skipNext}
-                    className="px-6 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-xl font-medium transition-colors shadow-lg shadow-yellow-900/50 text-white"
+                    className="px-6 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-xl font-medium transition-colors shadow-lg text-white"
                   >
                     <SkipForward className="w-5 h-5 inline mr-2" />
                     Saltar
@@ -486,11 +486,11 @@ export default function EscanearFactura() {
 
         {/* Validation Form */}
         {ocrData && (
-          <div className="absolute inset-0 bg-card text-card-foreground text-slate-900 dark:text-white overflow-y-auto p-4 md:p-8">
+          <div className="absolute inset-0 bg-card text-slate-900 dark:text-white overflow-y-auto p-4 md:p-8">
             <div className="max-w-3xl mx-auto space-y-6">
               
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-title">
                   Validar Datos Extraídos
                   {fileQueue.length > 0 && <span className="text-blue-600 dark:text-blue-400 ml-2 text-lg">(Factura {queueIndex + 1} de {fileQueue.length})</span>}
                 </h2>
@@ -650,7 +650,7 @@ export default function EscanearFactura() {
                 <button 
                   onClick={saveFactura}
                   disabled={saving || !selectedCodigo}
-                  className="px-6 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center shadow-sm"
+                  className="px-6 py-2.5 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center"
                 >
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                   {saving ? 'Guardando...' : (fileQueue.length > 0 ? (queueIndex < fileQueue.length - 1 ? 'Guardar y Siguiente' : 'Guardar y Finalizar Lote') : 'Confirmar y Guardar')}

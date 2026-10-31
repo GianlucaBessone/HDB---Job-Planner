@@ -243,7 +243,7 @@ export default function HistorialVentasModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-3 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-3 bg-slate-950/50-xs">
       <div className="bg-card w-[98vw] max-w-none h-[96vh] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -252,7 +252,7 @@ export default function HistorialVentasModal({
               <History className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Historial y Consulta de Ventas
               </h3>
               <p className="text-[11px] text-slate-400">
@@ -381,7 +381,7 @@ export default function HistorialVentasModal({
           ) : (
             <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto shadow-xs">
               <table className="w-full text-left text-xs min-w-[900px]">
-                <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[10px] select-none">
+                <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px] select-none">
                   <tr>
                     <th
                       onClick={() => handleSort('numero')}
@@ -480,7 +480,7 @@ export default function HistorialVentasModal({
                         </td>
                         <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap">
                           {fechaObj.toLocaleDateString('es-AR')}{' '}
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[11px] text-slate-400">
                             {fechaObj.toLocaleTimeString('es-AR', {
                               hour: '2-digit',
                               minute: '2-digit',
@@ -492,7 +492,7 @@ export default function HistorialVentasModal({
                             {v.clienteNombre}
                           </div>
                           {v.clienteIdentificacion && (
-                            <div className="text-[10px] text-slate-400">
+                            <div className="text-[11px] text-slate-400">
                               {v.clienteIdentificacion}
                             </div>
                           )}
@@ -503,46 +503,46 @@ export default function HistorialVentasModal({
                         <td className="py-2.5 px-3 text-center font-bold text-slate-700 dark:text-slate-300">
                           {v.items?.length || 0}
                         </td>
-                        <td className="py-2.5 px-3 text-right font-black text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                        <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                           {formatARS(v.total)}
                         </td>
                         <td className="py-2.5 px-3 text-center whitespace-nowrap">
                           {v.estadoPago === 'PAGADO' ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                               Pagado
                             </span>
                           ) : v.estadoPago === 'PARCIAL' ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                               Parcial ({formatARS(v.saldoPendiente)})
                             </span>
                           ) : (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">
                               Pendiente (CC)
                             </span>
                           )}
                         </td>
                         <td className="py-2.5 px-3 text-center whitespace-nowrap">
                           {v.estadoEntrega === 'ENTREGADO' ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                               Entregado
                             </span>
                           ) : v.estadoEntrega === 'PARCIAL' ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                               Parcial
                             </span>
                           ) : v.estadoEntrega === 'CANCELADO' ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                               Cancelado
                             </span>
                           ) : (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                               Pendiente
                             </span>
                           )}
                         </td>
                         <td className="py-2.5 px-3 text-center whitespace-nowrap">
                           <span
-                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase ${
                               v.estado === 'ANULADA'
                                 ? 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -621,11 +621,11 @@ export default function HistorialVentasModal({
 
         {/* Modal interno para Ver Detalle completo */}
         {ventaDetalle && (
-          <div className="fixed inset-0 z-[85] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[85] flex items-center justify-center p-4 bg-slate-950/50-xs">
             <div className="bg-card w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
                 <div>
-                  <h4 className="text-base font-black text-slate-900 dark:text-slate-100">
+                  <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     Detalle de Venta {ventaDetalle.numero}
                   </h4>
                   <p className="text-[11px] text-slate-400">
@@ -643,12 +643,12 @@ export default function HistorialVentasModal({
               <div className="overflow-y-auto space-y-4 flex-1 text-xs">
                 {/* Tabla de ítems con cantidades entregadas */}
                 <div>
-                  <h5 className="text-[11px] font-black uppercase text-slate-500 mb-2">
+                  <h5 className="text-[11px] font-semibold uppercase text-slate-500 mb-2">
                     Productos Registrados
                   </h5>
                   <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold text-[10px]">
+                      <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold text-[11px]">
                         <tr>
                           <th className="p-2">SKU</th>
                           <th className="p-2">Descripción</th>
@@ -670,7 +670,7 @@ export default function HistorialVentasModal({
                               {it.cantidadEntregada || 0} {it.unidad || ''}
                             </td>
                             <td className="p-2 text-right">{formatARS(it.precioUnitario)}</td>
-                            <td className="p-2 text-right font-black">{formatARS(it.subtotal)}</td>
+                            <td className="p-2 text-right font-bold">{formatARS(it.subtotal)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -681,7 +681,7 @@ export default function HistorialVentasModal({
                 {/* Remitos de Entrega emitidos */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h5 className="text-[11px] font-black uppercase text-slate-500">
+                    <h5 className="text-[11px] font-semibold uppercase text-slate-500">
                       Remitos de Entrega de Materiales
                     </h5>
                     {ventaDetalle.estado !== 'ANULADA' && (
@@ -714,7 +714,7 @@ export default function HistorialVentasModal({
                             <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
                               {rem.numero}
                             </span>
-                            <span className="text-[10px] text-slate-400 block">
+                            <span className="text-[11px] text-slate-400 block">
                               Fecha: {rem.fecha ? new Date(rem.fecha).toLocaleDateString('es-AR') : '—'} • Retirado por: {rem.receptorNombre || '—'}
                             </span>
                           </div>
@@ -751,7 +751,7 @@ export default function HistorialVentasModal({
 
                 {/* Pagos */}
                 <div>
-                  <h5 className="text-[11px] font-black uppercase text-slate-500 mb-2">
+                  <h5 className="text-[11px] font-semibold uppercase text-slate-500 mb-2">
                     Medios de Pago
                   </h5>
                   <div className="space-y-1.5">
@@ -763,10 +763,10 @@ export default function HistorialVentasModal({
                         <div>
                           <span className="font-bold capitalize">{p.metodo.replace(/_/g, ' ')}</span>
                           {p.referencia && (
-                            <span className="text-[10px] text-slate-400 block">Ref: {p.referencia}</span>
+                            <span className="text-[11px] text-slate-400 block">Ref: {p.referencia}</span>
                           )}
                         </div>
-                        <span className="font-black">{formatARS(p.monto)}</span>
+                        <span className="font-bold">{formatARS(p.monto)}</span>
                       </div>
                     ))}
                   </div>
@@ -796,7 +796,7 @@ export default function HistorialVentasModal({
                       Motivo: {ventaDetalle.motivoAnulacion}
                     </div>
                     {ventaDetalle.anuladoEn && (
-                      <div className="text-[10px] text-red-600/80 mt-0.5">
+                      <div className="text-[11px] text-red-600/80 mt-0.5">
                         Fecha: {new Date(ventaDetalle.anuladoEn).toLocaleString('es-AR')}
                       </div>
                     )}
@@ -828,11 +828,11 @@ export default function HistorialVentasModal({
 
         {/* Modal interno para Confirmar Anulación */}
         {ventaAAnular && (
-          <div className="fixed inset-0 z-[85] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[85] flex items-center justify-center p-4 bg-slate-950/50-xs">
             <div className="bg-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 animate-in fade-in zoom-in-95">
               <div className="flex items-center gap-2 text-red-600 mb-2">
                 <Ban className="w-5 h-5" />
-                <h4 className="text-base font-black text-slate-900 dark:text-slate-100">
+                <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   Anular Venta {ventaAAnular.numero}
                 </h4>
               </div>
@@ -843,7 +843,7 @@ export default function HistorialVentasModal({
 
               <div className="space-y-3 mb-5">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     Motivo de Anulación (obligatorio)
                   </label>
                   <textarea
@@ -858,7 +858,7 @@ export default function HistorialVentasModal({
                 {/* Si el rol actual no es supervisor ni admin, pedir PIN */}
                 {!['admin', 'supervisor'].includes((currentUserRole || '').toLowerCase()) && (
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                       PIN de Supervisor Requerido
                     </label>
                     <input
@@ -867,7 +867,7 @@ export default function HistorialVentasModal({
                       value={supervisorPin}
                       onChange={(e) => setSupervisorPin(e.target.value)}
                       placeholder="••••"
-                      className="w-full px-3 py-2 bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base font-black tracking-widest focus:outline-hidden"
+                      className="w-full px-3 py-2 bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base font-bold tracking-wider focus:outline-hidden"
                     />
                   </div>
                 )}

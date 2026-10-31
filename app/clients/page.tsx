@@ -177,12 +177,12 @@ export default function ClientsPage() {
     }, [registerCommand, unregisterCommand]);
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6 md:mb-8">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                        <UserCircle2 className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                        <UserCircle2 className="w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Gestión de Clientes
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Administra la base de datos de tus clientes</p>
@@ -200,7 +200,7 @@ export default function ClientsPage() {
                     </div>
                     <button
                         onClick={openCreate}
-                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all shrink-0"
+                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-primary-hover transition-all shrink-0"
                     >
                         <Plus className="w-4 h-4" />
                         <span className="hidden sm:inline">Nuevo Cliente</span>
@@ -217,7 +217,7 @@ export default function ClientsPage() {
                     ))}
                 </div>
             ) : filteredClients.length === 0 ? (
-                <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
+                <div className="py-24 flex flex-col items-center justify-center bg-card border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
                     <AlertCircle className="w-12 h-12 mb-4 opacity-20" />
                     <p className="font-semibold text-slate-600 dark:text-slate-300">No se encontraron clientes</p>
                 </div>
@@ -268,7 +268,7 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
         <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 p-5 flex flex-col gap-4 group">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${client.activo ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground/50 text-slate-400 dark:text-slate-500'}`}>
+                    <div className={`p-2.5 rounded-xl ${client.activo ? 'bg-primary/10 text-primary' : 'bg-muted text-slate-400 dark:text-slate-500'}`}>
                         <UserCircle2 className="w-6 h-6" />
                     </div>
                     <div>
@@ -277,7 +277,7 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                         </h4>
                         <div className="flex items-center gap-1.5 mt-0.5">
                             <span className={`w-2 h-2 rounded-full ${client.activo ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                 {client.activo ? 'Activo' : 'Inactivo'}
                             </span>
                         </div>
@@ -320,7 +320,7 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                 )}
                 {client.listaPrecio && (
                     <div className="pt-1">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-wider text-primary">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/10 border border-primary/20 text-[11px] font-semibold uppercase tracking-wider text-primary">
                             🏷️ Lista: {client.listaPrecio.nombre}
                         </span>
                     </div>
@@ -330,7 +330,7 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
             <div className="pt-4 mt-auto border-t border-slate-50 flex items-center justify-between">
                 <button
                     onClick={() => onToggleStatus(client.id, client.activo)}
-                    className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all ${client.activo
+                    className={`text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all ${client.activo
                         ? 'text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50'
                         : 'text-primary hover:bg-primary/5'
                         }`}
@@ -339,7 +339,7 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                 </button>
                 <button
                     onClick={() => onEdit(client)}
-                    className="text-[10px] font-bold text-primary uppercase tracking-wider hover:underline"
+                    className="text-[12px] font-bold text-primary hover:underline"
                 >
                     Ver detalles
                 </button>
@@ -352,8 +352,8 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
     const setField = (field: string, value: any) => setFormData((prev: any) => ({ ...prev, [field]: value }));
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+            <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200">
                 <div className="p-5 md:p-7 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                         <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
@@ -366,11 +366,11 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
 
                     <form onSubmit={onSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Nombre Completo *</label>
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Nombre Completo *</label>
                             <input
                                 required
                                 type="text"
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                 placeholder="Ej: Arcor S.A."
                                 value={formData.nombre}
                                 onChange={e => setField('nombre', e.target.value)}
@@ -379,22 +379,22 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Email</label>
+                                <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Email</label>
                                 <input
                                     type="email"
                                     inputMode="email"
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     placeholder="contacto@empresa.com"
                                     value={formData.email}
                                     onChange={e => setField('email', e.target.value)}
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Teléfono</label>
+                                <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Teléfono</label>
                                 <input
                                     type="tel"
                                     inputMode="tel"
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     placeholder="+54 9 11 ..."
                                     value={formData.telefono}
                                     onChange={e => setField('telefono', e.target.value)}
@@ -403,10 +403,10 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Dirección</label>
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Dirección</label>
                             <input
                                 type="text"
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                 placeholder="Calle, Altura, Ciudad"
                                 value={formData.direccion}
                                 onChange={e => setField('direccion', e.target.value)}
@@ -414,13 +414,13 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
                         </div>
 
                         <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 Lista de Precios Predeterminada (Gestión Comercial)
                             </label>
                             <select
                                 value={formData.listaPrecioId || ''}
                                 onChange={e => setField('listaPrecioId', e.target.value)}
-                                className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-primary/20"
                             >
                                 <option value="">Sin lista predeterminada (Se definirá por proyecto o precio base)</option>
                                 {listasPrecios.filter((lp: any) => lp.activo).map((lp: any) => (
@@ -429,7 +429,7 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
                                     </option>
                                 ))}
                             </select>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium px-1">
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium px-1">
                                 Los nuevos proyectos creados para este cliente heredarán esta lista por defecto. Cada proyecto puede modificarla libremente.
                             </p>
                         </div>
@@ -438,13 +438,13 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 py-3.5 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95"
+                                className="flex-1 bg-muted text-slate-600 dark:text-slate-300 py-3.5 rounded-2xl font-bold hover:bg-slate-200 transition-all"
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                className="flex-[1.5] bg-primary text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+                                className="flex-[1.5] bg-primary text-white py-3.5 rounded-2xl font-bold hover:bg-primary-hover transition-all"
                             >
                                 {editingClient ? 'Guardar Cambios' : 'Crear Cliente'}
                             </button>

@@ -55,7 +55,7 @@ export default function HistoricoTab({ user, isActive = true }: { user: any; isA
                     <p className="text-sm text-slate-400">Trazabilidad completa de todas las mediciones — ISO 9001:2015</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <select value={selectedKpiId} onChange={e => setSelectedKpiId(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-700 dark:text-slate-200">
+                    <select value={selectedKpiId} onChange={e => setSelectedKpiId(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-700 dark:text-slate-200">
                         <option value="">Todos los KPIs</option>
                         {kpis.map((k: any) => <option key={k.id} value={k.id}>{k.codigoKpi} — {k.nombre}</option>)}
                     </select>
@@ -73,13 +73,13 @@ export default function HistoricoTab({ user, isActive = true }: { user: any; isA
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="bg-background text-foreground/50 border-b border-slate-200 dark:border-slate-700">
-                                    <th className="text-left px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-wider">Fecha</th>
-                                    <th className="text-left px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-wider">OKR</th>
-                                    <th className="text-left px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-wider">KPI</th>
-                                    <th className="text-right px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-wider">Valor</th>
-                                    <th className="text-left px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-wider">Comentario</th>
-                                    <th className="text-left px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-wider">Registrado por</th>
+                                <tr className="bg-background text-foreground border-b border-slate-200 dark:border-slate-700">
+                                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Fecha</th>
+                                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">OKR</th>
+                                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">KPI</th>
+                                    <th className="text-right px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Valor</th>
+                                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Comentario</th>
+                                    <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Registrado por</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -92,11 +92,11 @@ export default function HistoricoTab({ user, isActive = true }: { user: any; isA
                                             </div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded">{m.okrCodigo}</span>
+                                            <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded">{m.okrCodigo}</span>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div>
-                                                <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">{m.kpiCodigo}</span>
+                                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">{m.kpiCodigo}</span>
                                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-[200px]">{m.kpiNombre}</p>
                                             </div>
                                         </td>

@@ -398,7 +398,7 @@ export default function OperadoresTab() {
                         <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded-lg" />
                         <div className="space-y-3">
                             {[1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="flex justify-between items-center p-3.5 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div key={i} className="flex justify-between items-center p-3.5 bg-background text-foreground rounded-2xl border border-slate-100 dark:border-slate-800">
                                     <div className="flex items-center gap-3 w-full">
                                         <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full shrink-0" />
                                         <div className="space-y-1.5 w-full">
@@ -502,12 +502,12 @@ export default function OperadoresTab() {
             {/* Header section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-violet-600 rounded-2xl text-white shadow-lg shadow-violet-200">
+                    <div className="p-3 bg-violet-600 rounded-2xl text-white shadow-lg">
                         <Award className="w-7 h-7" />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Score de Operadores</h3>
-                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Score de Operadores</h3>
+                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
                             Evaluación integral de competencias · Capacitaciones · Desempeño y Asistencia
                         </p>
                     </div>
@@ -515,14 +515,14 @@ export default function OperadoresTab() {
                 <div className="flex items-center gap-2 self-start sm:self-auto">
                     <button
                         onClick={() => setShowConfigModal(true)}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-black text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all shadow-sm"
                     >
                         <Settings className="w-4 h-4" />
                         Configuración
                     </button>
                     <button
                         onClick={() => setShowAuditModal(true)}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-2xl transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-2xl transition-all shadow-sm"
                     >
                         <Info className="w-4 h-4" />
                         Fórmula & Auditoría SGC
@@ -535,7 +535,7 @@ export default function OperadoresTab() {
 
                 {/* LEFT COLUMN: The Leaderboard */}
                 <div className="lg:col-span-4 bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
-                    <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm uppercase tracking-wider">Ranking de Técnicos</h4>
+                    <h4 className="font-semibold text-slate-800 dark:text-slate-100 text-sm uppercase tracking-wider">Ranking de Técnicos</h4>
                     <div className="space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
                         {scoreboard.map((op, index) => {
                             const isSelected = selectedOperator?.operatorId === op.operatorId;
@@ -553,7 +553,7 @@ export default function OperadoresTab() {
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
                                         {/* Rank Badge */}
-                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${isPodium
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${isPodium
                                                 ? index === 0
                                                     ? 'bg-yellow-100 text-yellow-700'
                                                     : index === 1
@@ -567,17 +567,17 @@ export default function OperadoresTab() {
                                         </div>
 
                                         <div className="min-w-0">
-                                            <p className={`font-black text-xs truncate ${isSelected ? 'text-white dark:text-slate-950' : 'text-slate-800 dark:text-slate-100'}`}>
+                                            <p className={`font-bold text-xs truncate ${isSelected ? 'text-white dark:text-slate-950' : 'text-slate-800 dark:text-slate-100'}`}>
                                                 {op.operatorName}
                                             </p>
-                                            <p className={`text-[10px] font-medium truncate ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>
+                                            <p className={`text-[11px] font-medium truncate ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>
                                                 {op.role}
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Global Score pill */}
-                                    <div className={`px-2.5 py-1 rounded-xl border text-[11px] font-black tracking-tighter ${scoreClass} shrink-0`}>
+                                    <div className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold tracking-tight ${scoreClass} shrink-0`}>
                                         {op.globalScore} pts
                                     </div>
                                 </button>
@@ -593,16 +593,16 @@ export default function OperadoresTab() {
                             {/* Operator Overview card */}
                             <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-2xl font-black shrink-0">
+                                    <div className="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-2xl font-bold shrink-0">
                                         {selectedOperator.operatorName.charAt(0)}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 leading-tight">
+                                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight">
                                                 {selectedOperator.operatorName}
                                             </h3>
                                         </div>
-                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1">
                                             {selectedOperator.role} · HDB Servicios Eléctricos
                                         </p>
                                     </div>
@@ -620,12 +620,12 @@ export default function OperadoresTab() {
                                                 strokeLinecap="round"
                                             />
                                         </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center font-black text-sm text-slate-800 dark:text-slate-100">
+                                        <div className="absolute inset-0 flex items-center justify-center font-bold text-sm text-slate-800 dark:text-slate-100">
                                             {selectedOperator.globalScore}
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Score Global</p>
+                                        <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">Score Global</p>
                                         <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">Nivel: {
                                             selectedOperator.globalScore >= 90 ? 'Excelente' :
                                                 selectedOperator.globalScore >= 75 ? 'Destacado' :
@@ -645,26 +645,26 @@ export default function OperadoresTab() {
                                             <Star className="w-5 h-5" fill="currentColor" />
                                         </div>
                                         <div className="flex flex-col items-end text-right min-w-0">
-                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate w-full">
                                                 Opinión Cliente
                                             </span>
                                             {!scoreConfig.enableCsat && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[11px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-semibold mt-1 inline-block shrink-0">
                                                     Neutro
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Satisfacción CSAT</p>
-                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Satisfacción CSAT</p>
+                                        <h4 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCsat ? `${selectedOperator.metrics.csat} / 10` : '10 / 10'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className="h-full bg-amber-500 rounded-full" style={{ width: scoreConfig.enableCsat ? `${selectedOperator.metrics.csat * 10}%` : '100%' }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <span className="truncate">NPS: {scoreConfig.enableCsat ? (selectedOperator.metrics.nps >= 0 ? `+${selectedOperator.metrics.nps}` : selectedOperator.metrics.nps) : '+100'}</span>
                                         <span className="truncate shrink-0">{selectedOperator.metrics.surveysCount} enc.</span>
                                     </div>
@@ -677,19 +677,19 @@ export default function OperadoresTab() {
                                             <GraduationCap className="w-5 h-5" />
                                         </div>
                                         <div className="flex flex-col items-end text-right min-w-0">
-                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate w-full">
                                                 Competencias
                                             </span>
                                             {!scoreConfig.enableCompetency && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[11px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-semibold mt-1 inline-block shrink-0">
                                                     Neutro
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Score Matriz</p>
-                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Score Matriz</p>
+                                        <h4 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCompetency ? `${selectedOperator.metrics.competencyScore || 0}%` : '100%'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
@@ -698,9 +698,9 @@ export default function OperadoresTab() {
                                             />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <span className="truncate">LMS / Int:</span>
-                                        <span className="text-indigo-600 dark:text-indigo-400 font-black shrink-0">{selectedOperator.metrics.completedTrainings} / {selectedOperator.metrics.totalTrainings}</span>
+                                        <span className="text-indigo-600 dark:text-indigo-400 font-bold shrink-0">{selectedOperator.metrics.completedTrainings} / {selectedOperator.metrics.totalTrainings}</span>
                                     </div>
                                 </div>
 
@@ -711,35 +711,35 @@ export default function OperadoresTab() {
                                             <Activity className="w-5 h-5" />
                                         </div>
                                         <div className="flex flex-col items-end text-right min-w-0">
-                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate w-full">
                                                 Asistencia
                                             </span>
                                             {(!scoreConfig.enableAttendance || !scoreConfig.enableCompliance) && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[11px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-semibold mt-1 inline-block shrink-0">
                                                     {!scoreConfig.enableAttendance && !scoreConfig.enableCompliance ? 'Desact.' : !scoreConfig.enableAttendance ? 'Asist. Des.' : 'Fich. Des.'}
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Cumplimiento Fichaje</p>
-                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Cumplimiento Fichaje</p>
+                                        <h4 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCompliance ? `${selectedOperator.metrics.timeCompliance}%` : '100%'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className="h-full bg-emerald-500 rounded-full" style={{ width: scoreConfig.enableCompliance ? `${selectedOperator.metrics.timeCompliance}%` : '100%' }} />
                                         </div>
                                     </div>
-                                    <div className="mt-2 pt-2 border-t border-slate-50 dark:border-slate-700/50 flex flex-col gap-1 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                    <div className="mt-2 pt-2 border-t border-slate-50 dark:border-slate-700/50 flex flex-col gap-1 text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <div className="flex justify-between items-center gap-1 min-w-0">
                                             <span className="truncate">Injustificadas:</span>
-                                            <span className={`font-black shrink-0 ${selectedOperator.metrics.unjustifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                            <span className={`font-bold shrink-0 ${selectedOperator.metrics.unjustifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-rose-500' : 'text-emerald-500'}`}>
                                                 {scoreConfig.enableAttendance ? (selectedOperator.metrics.unjustifiedAbsences || 0) : '0'}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center gap-1 min-w-0">
                                             <span className="truncate">Justificadas:</span>
-                                            <span className={`font-black shrink-0 ${selectedOperator.metrics.justifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                            <span className={`font-bold shrink-0 ${selectedOperator.metrics.justifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-amber-500' : 'text-emerald-500'}`}>
                                                 {scoreConfig.enableAttendance ? (selectedOperator.metrics.justifiedAbsences || 0) : '0'}
                                             </span>
                                         </div>
@@ -753,28 +753,28 @@ export default function OperadoresTab() {
                                             <Clock className="w-5 h-5" />
                                         </div>
                                         <div className="flex flex-col items-end text-right min-w-0">
-                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate w-full">
                                                 Carga Horaria
                                             </span>
                                             {!scoreConfig.enableOvertimeBonus && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[11px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-semibold mt-1 inline-block shrink-0">
                                                     Bono Des.
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Horas Confirmadas</p>
-                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Horas Confirmadas</p>
+                                        <h4 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">
                                             {selectedOperator.metrics.totalWorkedHours || 0} hs
                                         </h4>
                                         <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className="h-full bg-violet-500 rounded-full" style={{ width: `${Math.min(100, ((selectedOperator.metrics.totalWorkedHours || 0) / 180) * 100)}%` }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <span className="truncate">Bono:</span>
-                                        <span className="font-black text-emerald-500 shrink-0">
+                                        <span className="font-bold text-emerald-500 shrink-0">
                                             {scoreConfig.enableOvertimeBonus ? `+${selectedOperator.metrics.hoursRewardBonus} pts` : '0 pts'}
                                         </span>
                                     </div>
@@ -787,28 +787,28 @@ export default function OperadoresTab() {
                                             {selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? <ShieldAlert className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
                                         </div>
                                         <div className="flex flex-col items-end text-right min-w-0">
-                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate w-full">
                                                 Seguridad SST
                                             </span>
                                             {!scoreConfig.enableSafetyPenalty && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[11px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-semibold mt-1 inline-block shrink-0">
                                                     Desact.
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Auditorías SST</p>
-                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5 truncate">
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Auditorías SST</p>
+                                        <h4 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
                                             {selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? `${selectedOperator.metrics.safetyInfractionsCount} Desvíos` : 'Sin desvíos'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className={`h-full rounded-full ${selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (scoreConfig.enableSafetyPenalty ? (selectedOperator.metrics.safetyPenalty || 0) : 0))}%` }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <span className="truncate">Penalidad:</span>
-                                        <span className={`font-black shrink-0 ${selectedOperator.metrics.safetyPenalty > 0 && scoreConfig.enableSafetyPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
+                                        <span className={`font-bold shrink-0 ${selectedOperator.metrics.safetyPenalty > 0 && scoreConfig.enableSafetyPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
                                             {scoreConfig.enableSafetyPenalty ? `-${selectedOperator.metrics.safetyPenalty || 0} pts` : '0 pts'}
                                         </span>
                                     </div>
@@ -821,28 +821,28 @@ export default function OperadoresTab() {
                                             {selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
                                         </div>
                                         <div className="flex flex-col items-end text-right min-w-0">
-                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate w-full">
                                                 Re-Trabajos
                                             </span>
                                             {!scoreConfig.enableReworkPenalty && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[11px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-semibold mt-1 inline-block shrink-0">
                                                     Desact.
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Ratio FTFR</p>
-                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Ratio FTFR</p>
+                                        <h4 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-0.5">
                                             {selectedOperator.metrics.reworkCount || 0} OS
                                         </h4>
                                         <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className={`h-full rounded-full ${selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (scoreConfig.enableReworkPenalty ? (selectedOperator.metrics.reworkPenalty || 0) : 0))}%` }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <span className="truncate">Penalidad:</span>
-                                        <span className={`font-black shrink-0 ${selectedOperator.metrics.reworkPenalty > 0 && scoreConfig.enableReworkPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
+                                        <span className={`font-bold shrink-0 ${selectedOperator.metrics.reworkPenalty > 0 && scoreConfig.enableReworkPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
                                             {scoreConfig.enableReworkPenalty ? `-${selectedOperator.metrics.reworkPenalty || 0} pts` : '0 pts'}
                                         </span>
                                     </div>
@@ -854,19 +854,19 @@ export default function OperadoresTab() {
                             {(() => {
                                 const insights = getAiInsights(selectedOperator);
                                 return (
-                                    <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
-                                        <div className="absolute right-0 bottom-0 top-0 w-1/3 bg-radial-gradient opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500" />
+                                    <div className="bg-violet-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden group">
+                                        <div className="absolute right-0 bottom-0 top-0 w-1/3 bg-radial-gradient opacity-10 pointer-events-none transition-transform duration-500" />
 
                                         <div className="space-y-4 relative">
                                             <div className="flex items-center justify-between flex-wrap gap-2">
                                                 <div className="flex items-center gap-2">
                                                     <Sparkles className={`w-5 h-5 text-yellow-300 ${updatingAi ? 'animate-spin' : 'animate-spin-slow'}`} />
-                                                    <h4 className="font-black text-sm uppercase tracking-wider">Diagnóstico IA · HDB SGI</h4>
+                                                    <h4 className="font-semibold text-sm uppercase tracking-wider">Diagnóstico IA · HDB SGI</h4>
                                                 </div>
                                                 <button 
                                                     onClick={handleRefreshAi}
                                                     disabled={updatingAi}
-                                                    className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 active:scale-95 transition-all text-[10px] font-black uppercase tracking-wider rounded-xl border border-white/10 disabled:opacity-50"
+                                                    className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 transition-all text-[12px] font-semibold rounded-xl border border-white/10 disabled:opacity-50"
                                                 >
                                                     {updatingAi ? (
                                                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -882,7 +882,7 @@ export default function OperadoresTab() {
                                                     <Loader2 className="w-8 h-8 text-yellow-300 animate-spin" />
                                                     <div className="space-y-1 animate-pulse">
                                                         <p className="text-xs font-bold text-indigo-100">SGI Gemini cruzando métricas...</p>
-                                                        <p className="text-[10px] text-indigo-200">Analizando presentismo, calificaciones CSAT y matriz de competencias</p>
+                                                        <p className="text-[11px] text-indigo-200">Analizando presentismo, calificaciones CSAT y matriz de competencias</p>
                                                     </div>
                                                 </div>
                                             ) : (
@@ -892,9 +892,9 @@ export default function OperadoresTab() {
                                                     </p>
                                                     <div className="bg-white/10 dark:bg-black/20 p-4 rounded-2xl border border-white/10">
                                                         <div className="flex justify-between items-center mb-1">
-                                                            <span className="block text-[10px] font-black text-yellow-300 uppercase tracking-widest">Recomendación Sugerida</span>
+                                                            <span className="block text-[11px] font-semibold text-yellow-300 uppercase tracking-wider">Recomendación Sugerida</span>
                                                             {aiUpdatedTimes[selectedOperator.operatorId] && (
-                                                                <span className="text-[9px] font-bold text-indigo-200 uppercase tracking-wider">
+                                                                <span className="text-[11px] font-bold text-indigo-200 uppercase tracking-wider">
                                                                     Actualizado {aiUpdatedTimes[selectedOperator.operatorId]}
                                                                 </span>
                                                             )}
@@ -914,12 +914,12 @@ export default function OperadoresTab() {
                             <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                                 <div className="flex justify-between items-center flex-wrap gap-4 border-b border-slate-100 dark:border-slate-700 pb-4">
                                     <div>
-                                        <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">Matriz de Competencias (Habilidades)</h4>
+                                        <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">Matriz de Competencias (Habilidades)</h4>
                                         <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5">
                                             Pesos del score global · LMS · Certificados Externos · Supervisor
                                         </p>
                                     </div>
-                                    <div className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-black">
+                                    <div className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold">
                                         Peso Total: {selectedOperator.metrics.competencyScore}% del Score de Matriz
                                     </div>
                                 </div>
@@ -938,16 +938,16 @@ export default function OperadoresTab() {
                                                 <div key={skill.name} className="flex justify-between items-center p-4 bg-background text-foreground/40 rounded-2xl border border-slate-100 dark:border-slate-800 hover:shadow-sm transition-all">
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="font-black text-sm text-slate-800 dark:text-slate-100">{skill.name}</span>
-                                                            <span className="text-[10px] font-black bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded">
+                                                            <span className="font-bold text-sm text-slate-800 dark:text-slate-100">{skill.name}</span>
+                                                            <span className="text-[11px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded">
                                                                 Peso: {skill.weight}
                                                             </span>
                                                         </div>
-                                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
                                                             Categoría: {skill.category}
                                                         </p>
                                                         <div className="flex items-center gap-2 mt-1">
-                                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${isActive
+                                                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-lg border uppercase tracking-wider ${isActive
                                                                     ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400'
                                                                     : isPending
                                                                         ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 animate-pulse'
@@ -955,7 +955,7 @@ export default function OperadoresTab() {
                                                                 }`}>
                                                                 {skill.status === 'vigente' ? 'Vigente' : skill.status === 'pendiente' ? 'Pendiente' : 'Inactiva'}
                                                             </span>
-                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                                                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
                                                                 {skill.source}
                                                             </span>
                                                         </div>
@@ -1007,7 +1007,7 @@ export default function OperadoresTab() {
                             {/* External Certificates Management Panel */}
                             <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                                 <div className="border-b border-slate-100 dark:border-slate-700 pb-4">
-                                    <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">Certificados Externos Presentados</h4>
+                                    <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">Certificados Externos Presentados</h4>
                                     <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5">
                                         Validación y control de acreditaciones de capacitación externa
                                     </p>
@@ -1030,8 +1030,8 @@ export default function OperadoresTab() {
                                                 <div key={cert.id} className="p-4 bg-background text-foreground/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-in fade-in duration-200">
                                                     <div className="space-y-1.5 flex-1">
                                                         <div className="flex items-center gap-2 flex-wrap">
-                                                            <h5 className="font-black text-sm text-slate-800 dark:text-slate-100">{cert.nombreCurso}</h5>
-                                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${cert.estado === 'aprobado'
+                                                            <h5 className="font-bold text-sm text-slate-800 dark:text-slate-100">{cert.nombreCurso}</h5>
+                                                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-lg border uppercase tracking-wider ${cert.estado === 'aprobado'
                                                                     ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400'
                                                                     : cert.estado === 'rechazado'
                                                                         ? 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400'
@@ -1043,7 +1043,7 @@ export default function OperadoresTab() {
                                                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                                                             Emitido por: <span className="font-bold text-slate-700 dark:text-slate-300">{cert.institucion}</span>
                                                         </p>
-                                                        <div className="flex gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                                                        <div className="flex gap-4 text-[11px] font-bold text-slate-400 dark:text-slate-500">
                                                             {cert.horas && <span>Duración: {cert.horas} hs</span>}
                                                             {cert.fechaEmision && (
                                                                 <span>
@@ -1066,23 +1066,23 @@ export default function OperadoresTab() {
                                                         {((aiData.habilidadesRelevantes && aiData.habilidadesRelevantes.length > 0) || 
                                                           (aiData.otrasHabilidades && aiData.otrasHabilidades.length > 0)) && (
                                                             <div className="mt-2 p-3 bg-violet-500/10 dark:bg-violet-950/20 rounded-xl border border-violet-100 dark:border-violet-900/40 text-xs text-violet-700 dark:text-violet-300">
-                                                                <span className="font-black text-[9px] uppercase tracking-widest block text-violet-600 dark:text-violet-400 mb-1">Extracción Gemini AI</span>
+                                                                <span className="font-semibold text-[11px] uppercase tracking-wider block text-violet-600 dark:text-violet-400 mb-1">Extracción Gemini AI</span>
                                                                 {aiData.habilidadesRelevantes && aiData.habilidadesRelevantes.length > 0 && (
                                                                     <div className="mb-1">
-                                                                        <span className="font-bold text-[9px] text-slate-400 uppercase tracking-wider block">Habilidades Relevantes</span>
+                                                                        <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider block">Habilidades Relevantes</span>
                                                                         <div className="flex flex-wrap gap-1 mt-1">
                                                                             {aiData.habilidadesRelevantes.map((hab: string, idx: number) => (
-                                                                                <span key={idx} className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 rounded text-[9px] font-bold">{hab}</span>
+                                                                                <span key={idx} className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 rounded text-[11px] font-bold">{hab}</span>
                                                                             ))}
                                                                         </div>
                                                                     </div>
                                                                 )}
                                                                 {aiData.otrasHabilidades && aiData.otrasHabilidades.length > 0 && (
                                                                     <div className="mt-1.5">
-                                                                        <span className="font-bold text-[9px] text-slate-400 uppercase tracking-wider block">Otras Habilidades</span>
+                                                                        <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider block">Otras Habilidades</span>
                                                                         <div className="flex flex-wrap gap-1 mt-1">
                                                                             {aiData.otrasHabilidades.map((hab: string, idx: number) => (
-                                                                                <span key={idx} className="px-1.5 py-0.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 rounded text-[9px] font-bold">{hab}</span>
+                                                                                <span key={idx} className="px-1.5 py-0.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 rounded text-[11px] font-bold">{hab}</span>
                                                                             ))}
                                                                         </div>
                                                                     </div>
@@ -1107,7 +1107,7 @@ export default function OperadoresTab() {
                                                                 });
                                                                 setIsEditingCert(false);
                                                             }}
-                                                            className="p-2 bg-muted text-muted-foreground hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-sm"
+                                                            className="p-2 bg-muted hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-sm"
                                                             title="Ver detalles y archivo"
                                                         >
                                                             <Eye className="w-4 h-4" />
@@ -1117,13 +1117,13 @@ export default function OperadoresTab() {
                                                             <>
                                                                 <button
                                                                     onClick={() => handleApproveCertificate(cert.id, true)}
-                                                                    className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black rounded-xl transition-colors shadow-sm"
+                                                                    className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-colors"
                                                                 >
                                                                     Aprobar
                                                                 </button>
                                                                 <button
                                                                     onClick={() => handleApproveCertificate(cert.id, false)}
-                                                                    className="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black rounded-xl transition-colors shadow-sm"
+                                                                    className="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl transition-colors"
                                                                 >
                                                                     Rechazar
                                                                 </button>
@@ -1146,9 +1146,9 @@ export default function OperadoresTab() {
                             </div>
                         </>
                     ) : (
-                        <div className="h-64 flex flex-col justify-center items-center bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem] text-slate-500">
+                        <div className="h-64 flex flex-col justify-center items-center bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-slate-500">
                             <User className="w-12 h-12 text-slate-400 mb-3" />
-                            <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">Seleccione un Operador</h4>
+                            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Seleccione un Operador</h4>
                             <p className="text-xs font-medium text-slate-500 mt-1">Haga clic en un técnico del ranking para analizar su perfil de competencias.</p>
                         </div>
                     )}
@@ -1158,16 +1158,16 @@ export default function OperadoresTab() {
 
             {/* Detailed Certificate preview modal */}
             {previewCert && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex justify-center items-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-card text-card-foreground w-full max-w-5xl h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-105 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 bg-slate-950/50 z-[999] flex justify-center items-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-5xl h-[85vh] rounded-3xl overflow-hidden flex flex-col border border-slate-105 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/40">
                             <div>
-                                <h4 className="font-black text-slate-850 dark:text-slate-100 text-sm md:text-base">{previewCert.nombreCurso}</h4>
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">SGI Acreditaciones</p>
+                                <h4 className="font-bold text-slate-850 dark:text-slate-100 text-sm md:text-base">{previewCert.nombreCurso}</h4>
+                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">SGI Acreditaciones</p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider ${
+                                <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border uppercase tracking-wider ${
                                     previewCert.estado === 'aprobado'
                                         ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400'
                                         : previewCert.estado === 'rechazado'
@@ -1206,13 +1206,13 @@ export default function OperadoresTab() {
                             <div className="w-full md:w-[450px] border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-700 bg-card text-card-foreground p-6 overflow-y-auto flex flex-col justify-between">
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1">
+                                        <p className="text-[11px] font-semibold text-indigo-600 uppercase tracking-wider flex items-center gap-1">
                                             <FileText className="w-3.5 h-3.5" /> Datos del Certificado
                                         </p>
                                         {previewCert.estado !== 'aprobado' && !isEditingCert && isSupervisorOrAdmin && (
                                             <button 
                                                 onClick={() => setIsEditingCert(true)} 
-                                                className="text-[10px] font-bold px-2 py-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                                                className="text-[11px] font-bold px-2 py-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
                                             >
                                                 Editar Datos
                                             </button>
@@ -1222,38 +1222,38 @@ export default function OperadoresTab() {
                                     {isEditingCert ? (
                                         <div className="space-y-3">
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-bold text-slate-500">Curso / Título</label>
-                                                <input type="text" value={editCertData.nombreCurso} onChange={(e) => setEditCertData({...editCertData, nombreCurso: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-750 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                <label className="text-[11px] font-bold text-slate-500">Curso / Título</label>
+                                                <input type="text" value={editCertData.nombreCurso} onChange={(e) => setEditCertData({...editCertData, nombreCurso: e.target.value})} className="w-full px-3 py-2 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-750 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-bold text-slate-500">Institución</label>
-                                                <input type="text" value={editCertData.institucion} onChange={(e) => setEditCertData({...editCertData, institucion: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-755 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                <label className="text-[11px] font-bold text-slate-500">Institución</label>
+                                                <input type="text" value={editCertData.institucion} onChange={(e) => setEditCertData({...editCertData, institucion: e.target.value})} className="w-full px-3 py-2 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-755 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="space-y-1">
-                                                    <label className="text-[10px] font-bold text-slate-500">Horas</label>
-                                                    <input type="number" step="any" value={editCertData.horas} onChange={(e) => setEditCertData({...editCertData, horas: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-760 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                    <label className="text-[11px] font-bold text-slate-500">Horas</label>
+                                                    <input type="number" step="any" value={editCertData.horas} onChange={(e) => setEditCertData({...editCertData, horas: e.target.value})} className="w-full px-3 py-2 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-760 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <label className="text-[10px] font-bold text-slate-500">Fecha Emisión</label>
-                                                    <input type="date" value={editCertData.fechaEmision} onChange={(e) => setEditCertData({...editCertData, fechaEmision: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-765 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                    <label className="text-[11px] font-bold text-slate-500">Fecha Emisión</label>
+                                                    <input type="date" value={editCertData.fechaEmision} onChange={(e) => setEditCertData({...editCertData, fechaEmision: e.target.value})} className="w-full px-3 py-2 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-765 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-bold text-slate-500">Descripción / Resumen</label>
-                                                <textarea value={editCertData.descripcion} onChange={(e) => setEditCertData({...editCertData, descripcion: e.target.value})} className="w-full h-20 px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-770 dark:text-slate-250 focus:outline-none focus:border-indigo-500 resize-none" />
+                                                <label className="text-[11px] font-bold text-slate-500">Descripción / Resumen</label>
+                                                <textarea value={editCertData.descripcion} onChange={(e) => setEditCertData({...editCertData, descripcion: e.target.value})} className="w-full h-20 px-3 py-2 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-770 dark:text-slate-250 focus:outline-none focus:border-indigo-500 resize-none" />
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-bold text-slate-500">Habilidades Relevantes (separadas por coma)</label>
-                                                <input type="text" value={editCertData.habilidadesRelevantes} onChange={(e) => setEditCertData({...editCertData, habilidadesRelevantes: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-775 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                <label className="text-[11px] font-bold text-slate-500">Habilidades Relevantes (separadas por coma)</label>
+                                                <input type="text" value={editCertData.habilidadesRelevantes} onChange={(e) => setEditCertData({...editCertData, habilidadesRelevantes: e.target.value})} className="w-full px-3 py-2 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-775 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-bold text-slate-500">Otras Habilidades (separadas por coma)</label>
-                                                <input type="text" value={editCertData.otrasHabilidades} onChange={(e) => setEditCertData({...editCertData, otrasHabilidades: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-780 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                <label className="text-[11px] font-bold text-slate-500">Otras Habilidades (separadas por coma)</label>
+                                                <input type="text" value={editCertData.otrasHabilidades} onChange={(e) => setEditCertData({...editCertData, otrasHabilidades: e.target.value})} className="w-full px-3 py-2 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-780 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                             </div>
                                             <div className="flex gap-2 justify-end pt-2">
                                                 <button onClick={() => setIsEditingCert(false)} className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">Cancelar</button>
-                                                <button onClick={handleSaveCertEdit} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md transition-colors flex items-center gap-1">
+                                                <button onClick={handleSaveCertEdit} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-1">
                                                     <Check className="w-3.5 h-3.5" /> Guardar
                                                 </button>
                                             </div>
@@ -1262,19 +1262,19 @@ export default function OperadoresTab() {
                                         <div className="space-y-3 text-xs">
                                             <div className="grid grid-cols-2 gap-3 bg-background text-foreground/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                                 <div>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Curso:</p>
+                                                    <p className="text-[11px] text-slate-400 font-bold uppercase">Curso:</p>
                                                     <p className="font-bold text-slate-850 dark:text-slate-250">{previewCert.nombreCurso || 'N/A'}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Institución:</p>
+                                                    <p className="text-[11px] text-slate-400 font-bold uppercase">Institución:</p>
                                                     <p className="font-bold text-slate-850 dark:text-slate-250">{previewCert.institucion || 'N/A'}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Horas:</p>
+                                                    <p className="text-[11px] text-slate-400 font-bold uppercase">Horas:</p>
                                                     <p className="font-bold text-slate-850 dark:text-slate-250">{previewCert.horas || 'N/A'}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Fecha Emisión:</p>
+                                                    <p className="text-[11px] text-slate-400 font-bold uppercase">Fecha Emisión:</p>
                                                     <p className="font-bold text-slate-850 dark:text-slate-250">
                                                         {previewCert.fechaEmision 
                                                             ? (() => {
@@ -1288,21 +1288,21 @@ export default function OperadoresTab() {
                                             
                                             {/* Description / Resumen view */}
                                             <div className="bg-background text-foreground/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Descripción / Resumen:</p>
+                                                <p className="text-[11px] text-slate-400 font-bold uppercase mb-1">Descripción / Resumen:</p>
                                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">{previewCert.descripcion || 'Sin descripción'}</p>
                                             </div>
 
                                             {/* AI Data Skills */}
                                             {previewCert.aiData && (
                                                 <div className="mt-3 space-y-3 pt-3 border-t border-slate-100 dark:border-slate-700">
-                                                    <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest block">Extracción Gemini AI</p>
+                                                    <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider block">Extracción Gemini AI</p>
                                                     
                                                     {previewCert.aiData.habilidadesRelevantes?.length > 0 && (
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Habilidades Relevantes</p>
+                                                            <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Habilidades Relevantes</p>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {previewCert.aiData.habilidadesRelevantes.map((hab: string, i: number) => (
-                                                                    <span key={i} className="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/40 text-[10px] font-bold rounded-lg">{hab}</span>
+                                                                    <span key={i} className="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/40 text-[11px] font-bold rounded-lg">{hab}</span>
                                                                 ))}
                                                             </div>
                                                         </div>
@@ -1310,10 +1310,10 @@ export default function OperadoresTab() {
 
                                                     {previewCert.aiData.otrasHabilidades?.length > 0 && (
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Otras Habilidades</p>
+                                                            <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Otras Habilidades</p>
                                                             <div className="flex flex-wrap gap-1">
                                                                 {previewCert.aiData.otrasHabilidades.map((hab: string, i: number) => (
-                                                                    <span key={i} className="px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/40 text-[10px] font-bold rounded-lg">{hab}</span>
+                                                                    <span key={i} className="px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/40 text-[11px] font-bold rounded-lg">{hab}</span>
                                                                 ))}
                                                             </div>
                                                         </div>
@@ -1331,19 +1331,19 @@ export default function OperadoresTab() {
                                             <div className="flex gap-2 w-full">
                                                 <button
                                                     onClick={() => handleApproveCertificate(previewCert.id, true)}
-                                                    className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black rounded-xl transition-colors shadow-sm text-center"
+                                                    className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-colors text-center"
                                                 >
                                                     Aprobar
                                                 </button>
                                                 <button
                                                     onClick={() => handleApproveCertificate(previewCert.id, false)}
-                                                    className="flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black rounded-xl transition-colors shadow-sm text-center"
+                                                    className="flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl transition-colors text-center"
                                                 >
                                                     Rechazar
                                                 </button>
                                             </div>
                                         ) : (
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase italic">
+                                            <span className="text-[11px] text-slate-400 font-bold uppercase italic">
                                                 Certificado procesado
                                             </span>
                                         )}
@@ -1364,8 +1364,8 @@ export default function OperadoresTab() {
 
             {/* SGC ISO9001 Audit Modal */}
             {showAuditModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex justify-center items-center p-4">
-                    <div className="bg-card text-card-foreground w-full max-w-3xl max-h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 bg-slate-950/50 z-[999] flex justify-center items-center p-4">
+                    <div className="bg-card text-card-foreground w-full max-w-3xl max-h-[85vh] rounded-3xl overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
 
                         {/* Modal Header */}
                         <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/40">
@@ -1374,8 +1374,8 @@ export default function OperadoresTab() {
                                     <Shield className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h4 className="font-black text-slate-850 dark:text-slate-100 text-lg">Cálculo del Score - Auditoría ISO 9001</h4>
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+                                    <h4 className="font-bold text-slate-850 dark:text-slate-100 text-lg">Cálculo del Score - Auditoría ISO 9001</h4>
+                                    <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
                                         Procedimiento Registrado del SGC · HDB Servicios Eléctricos
                                     </p>
                                 </div>
@@ -1392,8 +1392,8 @@ export default function OperadoresTab() {
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-slate-700 dark:text-slate-300">
 
                             {/* Summary/Introduction */}
-                            <div className="bg-background text-foreground/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
-                                <h5 className="text-xs font-black uppercase text-slate-800 dark:text-slate-250 tracking-wider">Objetivo del Procedimiento</h5>
+                            <div className="bg-background text-foreground p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
+                                <h5 className="text-xs font-semibold uppercase text-slate-800 dark:text-slate-250 tracking-wider">Objetivo del Procedimiento</h5>
                                 <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                     Este módulo calcula automáticamente el desempeño global de los técnicos y operadores de campo de HDB Servicios Eléctricos. El sistema consolida datos operativos, capacitaciones homologadas e inasistencias en base mensual para asegurar el cumplimiento del estándar de calidad ISO 9001 y la trazabilidad del personal.
                                 </p>
@@ -1401,7 +1401,7 @@ export default function OperadoresTab() {
 
                             {/* Main Pillars */}
                             <div className="space-y-4">
-                                <h5 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider flex items-center gap-2">
+                                <h5 className="text-xs font-semibold uppercase text-slate-800 dark:text-slate-200 tracking-wider flex items-center gap-2">
                                     <span className="w-1.5 h-3 bg-violet-600 rounded-full" />
                                     Pilar Base: Score de Desempeño (100 Puntos Máximos)
                                 </h5>
@@ -1410,13 +1410,13 @@ export default function OperadoresTab() {
                                     {/* Competencies */}
                                     <div className="p-4 bg-indigo-50/30 dark:bg-indigo-950/10 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/30 space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">1. Matriz Competencias (35%)</span>
-                                            <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-[10px] font-black rounded-lg">Peso: 35%</span>
+                                            <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">1. Matriz Competencias (35%)</span>
+                                            <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-[11px] font-bold rounded-lg">Peso: 35%</span>
                                         </div>
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                             Evalúa las habilidades técnicas validadas y vigentes en el mes. El sistema valora la especialización, midiendo el peso acumulado contra una meta base de 25 puntos (perfil especialista), permitiendo que técnicos enfocados alcancen el 100% sin ser penalizados por no poseer la totalidad de las 8 disciplinas posibles.
                                         </p>
-                                        <div className="text-[10px] bg-card text-card-foreground p-2 rounded-xl border border-indigo-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                        <div className="text-[11px] bg-card p-2 rounded-xl border border-indigo-100/30 dark:border-slate-800 font-mono text-slate-500">
                                             Score = Min(100, Round((Sumatoria_Pesos_Activos / Meta_Especialista_25) * 100))
                                         </div>
                                     </div>
@@ -1424,13 +1424,13 @@ export default function OperadoresTab() {
                                     {/* Client Surveys */}
                                     <div className="p-4 bg-amber-50/30 dark:bg-amber-950/10 rounded-2xl border border-amber-100/50 dark:border-amber-900/30 space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider">2. Encuestas Cliente (20%)</span>
-                                            <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-[10px] font-black rounded-lg">Peso: 20%</span>
+                                            <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">2. Encuestas Cliente (20%)</span>
+                                            <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-[11px] font-bold rounded-lg">Peso: 20%</span>
                                         </div>
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                             Combina la satisfacción CSAT (promedio de atención, calidad y tiempo del cliente, escala 1-10) y el impacto NPS. Promotores (9-10) otorgan 100 pts, Pasivos (7-8) 70 pts y Detractores (0-6) 0 pts.
                                         </p>
-                                        <div className="text-[10px] bg-card text-card-foreground p-2 rounded-xl border border-amber-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                        <div className="text-[11px] bg-card p-2 rounded-xl border border-amber-100/30 dark:border-slate-800 font-mono text-slate-500">
                                             Score = (CSAT * 10 * 0.70) + (Avg_NPS_Impact * 0.30)
                                         </div>
                                     </div>
@@ -1438,13 +1438,13 @@ export default function OperadoresTab() {
                                     {/* Attendance */}
                                     <div className="p-4 bg-emerald-50/30 dark:bg-emerald-950/10 rounded-2xl border border-emerald-100/50 dark:border-emerald-900/30 space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">3. Asistencia Neutra (20%)</span>
-                                            <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[10px] font-black rounded-lg">Peso: 20%</span>
+                                            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">3. Asistencia Neutra (20%)</span>
+                                            <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold rounded-lg">Peso: 20%</span>
                                         </div>
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                             Calcula la presencia efectiva sobre días hábiles. Las faltas justificadas (médicas, licencias) no penalizan y se restan de los días laborables del mes. Las faltas injustificadas reducen de forma matemáticamente proporcional la tasa de cumplimiento del pilar de asistencia.
                                         </p>
-                                        <div className="text-[10px] bg-card text-card-foreground p-2 rounded-xl border border-emerald-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                        <div className="text-[11px] bg-card p-2 rounded-xl border border-emerald-100/30 dark:border-slate-800 font-mono text-slate-500">
                                             Asistencia = ((Hábiles - Justificadas - Injustificadas) / (Hábiles - Justificadas)) * 100
                                         </div>
                                     </div>
@@ -1452,13 +1452,13 @@ export default function OperadoresTab() {
                                     {/* Time Compliance */}
                                     <div className="p-4 bg-sky-50/30 dark:bg-sky-950/10 rounded-2xl border border-sky-100/50 dark:border-sky-900/30 space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs font-black text-sky-700 dark:text-sky-400 uppercase tracking-wider">4. Cumplimiento Horario (25%)</span>
-                                            <span className="px-2 py-0.5 bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 text-[10px] font-black rounded-lg">Peso: 25%</span>
+                                            <span className="text-xs font-semibold text-sky-700 dark:text-sky-400 uppercase tracking-wider">4. Cumplimiento Horario (25%)</span>
+                                            <span className="px-2 py-0.5 bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 text-[11px] font-bold rounded-lg">Peso: 25%</span>
                                         </div>
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                             Evalúa la precisión y consistencia del registro de jornada. Descuenta puntos si hay fichadas sospechosas y aplica una penalización (máx 20 pts) si la discrepancia entre horas declaradas manualmente y horas registradas por fichador automático supera el 15%.
                                         </p>
-                                        <div className="text-[10px] bg-card text-card-foreground p-2 rounded-xl border border-sky-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                        <div className="text-[11px] bg-card p-2 rounded-xl border border-sky-100/30 dark:border-slate-800 font-mono text-slate-500">
                                             Score = 100 - (% Suspicious * 100) - Penalidad_Discrepancia
                                         </div>
                                     </div>
@@ -1467,7 +1467,7 @@ export default function OperadoresTab() {
 
                             {/* Modifiers and Penalties */}
                             <div className="space-y-4">
-                                <h5 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider flex items-center gap-2">
+                                <h5 className="text-xs font-semibold uppercase text-slate-800 dark:text-slate-200 tracking-wider flex items-center gap-2">
                                     <span className="w-1.5 h-3 bg-violet-600 rounded-full" />
                                     Modificadores Directos (Bonos y Penalidades)
                                 </h5>
@@ -1475,36 +1475,36 @@ export default function OperadoresTab() {
                                 <div className="space-y-2.5">
                                     {/* Bonus horas extras */}
                                     <div className="flex items-start gap-3 p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
-                                        <span className="mt-0.5 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[9px] font-black rounded-md uppercase tracking-wider shrink-0">Bono +</span>
+                                        <span className="mt-0.5 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold rounded-md uppercase tracking-wider shrink-0">Bono +</span>
                                         <div>
-                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">Productividad por Carga Horaria</span>
+                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Productividad por Carga Horaria</span>
                                             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Se otorga +1 punto por cada 2 horas de trabajo confirmadas que excedan las 180 horas mensuales, hasta un máximo de +15 puntos globales.</p>
                                         </div>
                                     </div>
 
                                     {/* Penalidad Demoras */}
                                     <div className="flex items-start gap-3 p-3 bg-rose-500/5 rounded-xl border border-rose-500/10">
-                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[9px] font-black rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
+                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[11px] font-semibold rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
                                         <div>
-                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">Desvíos y Demoras de Proyectos (Máx: -10 pts)</span>
+                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Desvíos y Demoras de Proyectos (Máx: -10 pts)</span>
                                             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Descuenta 0.2 puntos por cada hora de demora en los proyectos en los que el operador participó activamente durante el período.</p>
                                         </div>
                                     </div>
 
                                     {/* Penalidad Seguridad */}
                                     <div className="flex items-start gap-3 p-3 bg-rose-500/5 rounded-xl border border-rose-500/10">
-                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[9px] font-black rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
+                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[11px] font-semibold rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
                                         <div>
-                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">Infracciones de Seguridad SST (Sin Límite)</span>
+                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Infracciones de Seguridad SST (Sin Límite)</span>
                                             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Cada desvío crítico de seguridad reportado (EPP incompleto, no aplicación de bloqueo LOTO o incumplimiento de normativas como NFPA 70E) penaliza directamente con -15 puntos globales.</p>
                                         </div>
                                     </div>
 
                                     {/* Penalidad Re-Trabajos */}
                                     <div className="flex items-start gap-3 p-3 bg-rose-500/5 rounded-xl border border-rose-500/10">
-                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[9px] font-black rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
+                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[11px] font-semibold rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
                                         <div>
-                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">Tasa de Retrabajos (FTFR - First Time Fix Rate)</span>
+                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Tasa de Retrabajos (FTFR - First Time Fix Rate)</span>
                                             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Penalización progresiva según la cantidad de órdenes de servicio repetidas (retrabajo): 1 retrabajo = -5 pts, 2 retrabajos = -15 pts, 3 o más = -30 pts globales.</p>
                                         </div>
                                     </div>
@@ -1512,16 +1512,16 @@ export default function OperadoresTab() {
                             </div>
 
                             {/* Consolidated score explanation */}
-                            <div className="bg-slate-900 text-white rounded-[2rem] p-6 space-y-4">
+                            <div className="bg-slate-900 text-white rounded-3xl p-6 space-y-4">
                                 <div className="flex items-center gap-2">
                                     <Award className="w-5 h-5 text-yellow-400" />
-                                    <h5 className="text-xs font-black uppercase tracking-wider">Cálculo del Score Global Consolidado</h5>
+                                    <h5 className="text-xs font-semibold uppercase tracking-wider">Cálculo del Score Global Consolidado</h5>
                                 </div>
                                 <div className="text-center py-4 bg-black/30 rounded-2xl border border-white/5 font-mono text-xs text-yellow-300">
                                     Score Global = Max( 10, Min( 100, BaseScore + BonoHoras - PenalidadDemoras - PenalidadSeguridad - PenalidadRetrabajo ) )
                                 </div>
                                 <div className="text-xs leading-relaxed text-slate-300 space-y-1">
-                                    <p>• El <strong className="font-bold text-white">BaseScore</strong> es la suma ponderada: <code className="bg-slate-800/80 text-yellow-200 px-1.5 py-0.5 rounded font-mono text-[10px]">Competencias*0.35 + Encuestas*0.20 + Asistencia*0.20 + Cumplimiento*0.25</code>.</p>
+                                    <p>• El <strong className="font-bold text-white">BaseScore</strong> es la suma ponderada: <code className="bg-slate-800/80 text-yellow-200 px-1.5 py-0.5 rounded font-mono text-[11px]">Competencias*0.35 + Encuestas*0.20 + Asistencia*0.20 + Cumplimiento*0.25</code>.</p>
                                     <p>• El puntaje final resultante se redondea al entero más cercano y se encuentra acotado en el intervalo <strong className="font-bold text-white">[10, 100]</strong>.</p>
                                     <p>• Los datos son auditables mediante el historial de auditorías de seguridad, partes de horas validados por supervisores, encuestas directas de clientes e historial de aprobaciones del LMS.</p>
                                 </div>
@@ -1532,7 +1532,7 @@ export default function OperadoresTab() {
                         <div className="p-5 border-t border-slate-100 dark:border-slate-700 flex justify-end bg-slate-50/50 dark:bg-slate-900/40">
                             <button
                                 onClick={() => setShowAuditModal(false)}
-                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-black rounded-xl transition-colors shadow-sm"
+                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-bold rounded-xl transition-colors shadow-sm"
                             >
                                 Entendido
                             </button>
@@ -1543,7 +1543,7 @@ export default function OperadoresTab() {
 
             {/* SCORE CONFIG MODAL */}
             {showConfigModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-slate-950/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-card text-card-foreground rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col max-h-[85vh]">
                         {/* Header */}
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
@@ -1552,8 +1552,8 @@ export default function OperadoresTab() {
                                     <Settings className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                                 </div>
                                 <div>
-                                    <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">Configuración del Score</h2>
-                                    <p className="text-[10px] text-slate-400">Activa o desactiva componentes del cálculo global</p>
+                                    <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">Configuración del Score</h2>
+                                    <p className="text-[11px] text-slate-400">Activa o desactiva componentes del cálculo global</p>
                                 </div>
                             </div>
                             <button
@@ -1568,8 +1568,8 @@ export default function OperadoresTab() {
                         <div className="flex-1 overflow-y-auto p-6 space-y-6">
                             {/* Base Components */}
                             <div className="space-y-3">
-                                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">Componentes Base del Score</p>
-                                <p className="text-[10px] text-slate-400">Al desactivar un componente, se ignora su cálculo y se asume un valor neutro (100%)</p>
+                                <p className="text-[11px] font-semibold text-indigo-600 uppercase tracking-wider">Componentes Base del Score</p>
+                                <p className="text-[11px] text-slate-400">Al desactivar un componente, se ignora su cálculo y se asume un valor neutro (100%)</p>
                                 <div className="space-y-2">
                                     {SCORE_CONFIG_ITEMS.filter(i => i.category === 'base').map(item => (
                                         <div key={item.key} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
@@ -1581,7 +1581,7 @@ export default function OperadoresTab() {
                                                 <span className="text-lg">{item.icon}</span>
                                                 <div>
                                                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{item.label}</p>
-                                                    <p className="text-[10px] text-slate-400">{item.description}</p>
+                                                    <p className="text-[11px] text-slate-400">{item.description}</p>
                                                 </div>
                                             </div>
                                             <button
@@ -1601,8 +1601,8 @@ export default function OperadoresTab() {
 
                             {/* Modifiers */}
                             <div className="space-y-3">
-                                <p className="text-[10px] font-black text-amber-600 uppercase tracking-wider">Modificadores (Bonos y Penalidades)</p>
-                                <p className="text-[10px] text-slate-400">Se aplican después del cálculo base</p>
+                                <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider">Modificadores (Bonos y Penalidades)</p>
+                                <p className="text-[11px] text-slate-400">Se aplican después del cálculo base</p>
                                 <div className="space-y-2">
                                     {SCORE_CONFIG_ITEMS.filter(i => i.category === 'modifier').map(item => (
                                         <div key={item.key} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
@@ -1614,7 +1614,7 @@ export default function OperadoresTab() {
                                                 <span className="text-lg">{item.icon}</span>
                                                 <div>
                                                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{item.label}</p>
-                                                    <p className="text-[10px] text-slate-400">{item.description}</p>
+                                                    <p className="text-[11px] text-slate-400">{item.description}</p>
                                                 </div>
                                             </div>
                                             <button
@@ -1633,11 +1633,11 @@ export default function OperadoresTab() {
                             </div>
 
                             {/* Active summary */}
-                            <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Resumen Activo</p>
+                            <div className="bg-background text-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Resumen Activo</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {SCORE_CONFIG_ITEMS.map(item => (
-                                        <span key={item.key} className={`px-2 py-1 text-[10px] font-bold rounded-lg ${
+                                        <span key={item.key} className={`px-2 py-1 text-[11px] font-bold rounded-lg ${
                                             scoreConfig[item.key]
                                                 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                                 : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 border border-slate-300 dark:border-slate-600 line-through'
@@ -1653,7 +1653,7 @@ export default function OperadoresTab() {
                         <div className="p-5 border-t border-slate-100 dark:border-slate-700 flex justify-end bg-slate-50/50 dark:bg-slate-900/40">
                             <button
                                 onClick={() => setShowConfigModal(false)}
-                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-black rounded-xl transition-colors shadow-sm"
+                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-bold rounded-xl transition-colors shadow-sm"
                             >
                                 Cerrar
                             </button>

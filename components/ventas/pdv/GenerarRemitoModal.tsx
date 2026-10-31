@@ -210,7 +210,7 @@ export default function GenerarRemitoModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-950/50-xs">
       <div className="bg-card w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -219,7 +219,7 @@ export default function GenerarRemitoModal({
               <PackageCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Generar Remito de Entrega
               </h3>
               <p className="text-[11px] text-slate-400">
@@ -275,7 +275,7 @@ export default function GenerarRemitoModal({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                   Conteo Físico de Materiales a Entregar
                 </h4>
                 <p className="text-[11px] text-slate-400">
@@ -286,7 +286,7 @@ export default function GenerarRemitoModal({
                 <button
                   type="button"
                   onClick={() => toggleSelectAll(true)}
-                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
                   Marcar todos
                 </button>
@@ -294,7 +294,7 @@ export default function GenerarRemitoModal({
                 <button
                   type="button"
                   onClick={() => toggleSelectAll(false)}
-                  className="text-[10px] font-bold text-slate-500 hover:underline"
+                  className="text-[11px] font-bold text-slate-500 hover:underline"
                 >
                   Desmarcar
                 </button>

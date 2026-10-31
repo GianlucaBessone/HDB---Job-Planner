@@ -241,7 +241,7 @@ export default function AjusteLotesModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
       <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
@@ -250,7 +250,7 @@ export default function AjusteLotesModal({
               <Percent className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 Ajuste de Precios por Lotes
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -298,7 +298,7 @@ export default function AjusteLotesModal({
                     <select
                       value={filters.proveedorId}
                       onChange={(e) => setFilters({ ...filters, proveedorId: e.target.value })}
-                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="">Todos los proveedores</option>
                       {meta.proveedores.map((p) => (
@@ -316,7 +316,7 @@ export default function AjusteLotesModal({
                     <select
                       value={filters.marcaId}
                       onChange={(e) => setFilters({ ...filters, marcaId: e.target.value })}
-                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="">Todas las marcas</option>
                       {meta.marcas.map((m) => (
@@ -334,7 +334,7 @@ export default function AjusteLotesModal({
                     <select
                       value={filters.familiaId}
                       onChange={(e) => setFilters({ ...filters, familiaId: e.target.value, subFamiliaId: '' })}
-                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="">Todas las familias</option>
                       {meta.familias.map((f) => (
@@ -353,7 +353,7 @@ export default function AjusteLotesModal({
                       value={filters.subFamiliaId}
                       onChange={(e) => setFilters({ ...filters, subFamiliaId: e.target.value })}
                       disabled={!filters.familiaId}
-                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
                     >
                       <option value="">Todas las subfamilias</option>
                       {meta.familias
@@ -373,7 +373,7 @@ export default function AjusteLotesModal({
                     <select
                       value={filters.almacenId}
                       onChange={(e) => setFilters({ ...filters, almacenId: e.target.value })}
-                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="">Todos los almacenes</option>
                       {meta.almacenes.map((a) => (
@@ -391,7 +391,7 @@ export default function AjusteLotesModal({
                     <select
                       value={filters.estadoStock}
                       onChange={(e) => setFilters({ ...filters, estadoStock: e.target.value })}
-                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
                       <option value="">Cualquier estado</option>
                       <option value="normal">Stock Normal (&gt; mín)</option>
@@ -411,7 +411,7 @@ export default function AjusteLotesModal({
                         <button
                           type="button"
                           onClick={() => setFilters({ ...filters, q: '' })}
-                          className="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                          className="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                         >
                           Limpiar texto
                         </button>
@@ -424,7 +424,7 @@ export default function AjusteLotesModal({
                         value={filters.q}
                         onChange={(e) => setFilters({ ...filters, q: e.target.value })}
                         placeholder="Ej: SKU '05610', 'termomagnética 10A', 'NXB-63', 'Curva C', 'C10'..."
-                        className="w-full h-9 pl-9 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-slate-400"
+                        className="w-full h-9 pl-9 pr-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-slate-400"
                       />
                       {filters.q && (
                         <button
@@ -437,7 +437,7 @@ export default function AjusteLotesModal({
                         </button>
                       )}
                     </div>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                       Búsqueda inteligente insensible a tildes, mayúsculas, espacios y términos técnicos.
                     </p>
                   </div>
@@ -471,7 +471,7 @@ export default function AjusteLotesModal({
                       ) : (
                         <span>
                           Se encontraron{' '}
-                          <strong className="text-slate-900 dark:text-slate-100 font-extrabold text-sm">
+                          <strong className="text-slate-900 dark:text-slate-100 font-bold text-sm">
                             {matchingCount}
                           </strong>{' '}
                           producto{matchingCount === 1 ? '' : 's'} disponible{matchingCount === 1 ? '' : 's'} para modificar.
@@ -528,7 +528,7 @@ export default function AjusteLotesModal({
                           Margen de Ganancia
                         </span>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold tracking-wide uppercase bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
                         Rentabilidad
                       </span>
                     </div>
@@ -559,7 +559,7 @@ export default function AjusteLotesModal({
                           Costo de Adquisición
                         </span>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold tracking-wide uppercase bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40">
                         Costo
                       </span>
                     </div>
@@ -590,7 +590,7 @@ export default function AjusteLotesModal({
                           Precio Base de Venta
                         </span>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold tracking-wide uppercase bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
                         Directo
                       </span>
                     </div>
@@ -619,7 +619,7 @@ export default function AjusteLotesModal({
                       value={porcentaje}
                       onChange={(e) => setPorcentaje(e.target.value)}
                       placeholder={tipoAjuste === 'RENTABILIDAD' ? '35' : '10'}
-                      className="w-full h-11 px-4 pr-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-base font-black focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-11 px-4 pr-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-base font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                     <span className="absolute right-3.5 top-3 text-slate-400 font-bold">%</span>
                   </div>
@@ -671,7 +671,7 @@ export default function AjusteLotesModal({
                           value={margenRentabilidad}
                           onChange={(e) => setMargenRentabilidad(e.target.value)}
                           placeholder="Conservar actual"
-                          className="w-full h-9 px-3 pr-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                          className="w-full h-9 px-3 pr-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
                         />
                         <span className="absolute right-2.5 top-2 text-slate-400 font-bold text-xs">%</span>
                       </div>
@@ -693,7 +693,7 @@ export default function AjusteLotesModal({
                     <Eye className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-indigo-900 dark:text-indigo-200">
+                    <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-200">
                       Previsualización del Ajuste {
                         previewData?.tipoAjuste === 'COSTO'
                           ? 'de Costos'
@@ -723,7 +723,7 @@ export default function AjusteLotesModal({
               {/* Diff Table */}
               <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
                 <table className="w-full text-left text-xs border-collapse">
-                  <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase text-[10px]">
+                  <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase text-[11px]">
                     {previewData?.tipoAjuste === 'RENTABILIDAD' ? (
                       <tr>
                         <th className="py-2.5 px-3">SKU</th>
@@ -767,7 +767,7 @@ export default function AjusteLotesModal({
                               {item.costoActual > 0 ? (
                                 formatARS(item.costoActual)
                               ) : (
-                                <span className="text-[10px] text-amber-500 dark:text-amber-400 font-normal">
+                                <span className="text-[11px] text-amber-500 dark:text-amber-400 font-normal">
                                   $0 (Sin costo)
                                 </span>
                               )}
@@ -781,7 +781,7 @@ export default function AjusteLotesModal({
                             <td className="py-2 px-3 text-right font-mono text-slate-500">
                               {formatARS(item.precioActual)}
                             </td>
-                            <td className="py-2 px-3 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
+                            <td className="py-2 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                               {formatARS(item.nuevoPrecio)}
                             </td>
                           </>
@@ -799,7 +799,7 @@ export default function AjusteLotesModal({
                             <td className="py-2 px-3 text-center font-bold text-emerald-600 dark:text-emerald-400">
                               {item.rentabilidad}%
                             </td>
-                            <td className="py-2 px-3 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
+                            <td className="py-2 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                               {formatARS(item.nuevoPrecio)}
                             </td>
                           </>
@@ -811,7 +811,7 @@ export default function AjusteLotesModal({
                             <td className="py-2 px-3 text-center font-bold text-indigo-600 dark:text-indigo-400">
                               {item.porcentaje > 0 ? `+${item.porcentaje}%` : `${item.porcentaje}%`}
                             </td>
-                            <td className="py-2 px-3 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
+                            <td className="py-2 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                               {formatARS(item.nuevoPrecio)}
                             </td>
                           </>
@@ -840,7 +840,7 @@ export default function AjusteLotesModal({
               type="button"
               disabled={isLoadingPreview || isCounting || matchingCount === 0}
               onClick={handleFetchPreview}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoadingPreview ? (
                 <>
@@ -872,7 +872,7 @@ export default function AjusteLotesModal({
                 type="button"
                 disabled={isApplying}
                 onClick={handleApplyAdjustment}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-600/25 hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50"
               >
                 {isApplying ? (
                   <>

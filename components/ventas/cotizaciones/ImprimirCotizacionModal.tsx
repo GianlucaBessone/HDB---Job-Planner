@@ -50,7 +50,7 @@ export default function ImprimirCotizacionModal({
     const pdfDownloadUrl = `${pdfUrl}?download=true`;
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 print:p-0 print:bg-white print:static print:inset-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static print:inset-auto">
             {/* Reglas CSS para impresión limpia sin capturas de pantalla ni elementos de UI */}
             <style>{`
                 @media print {
@@ -89,10 +89,10 @@ export default function ImprimirCotizacionModal({
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="font-black text-base">
+                                <h3 className="font-bold text-base">
                                     Cotización {cotizacion.numero}
                                 </h3>
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                                     {cotizacion.estado || 'VIGENTE'}
                                 </span>
                             </div>
@@ -130,7 +130,7 @@ export default function ImprimirCotizacionModal({
                         <a
                             href={pdfDownloadUrl}
                             download={`Cotizacion_${cotizacion.numero || 'HDB'}.pdf`}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
                             title="Descargar archivo PDF oficial generado por el servidor"
                         >
                             <Download className="w-3.5 h-3.5" />
@@ -142,7 +142,7 @@ export default function ImprimirCotizacionModal({
                             href={pdfUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
                             title="Abrir visor de PDF corporativo en nueva pestaña para imprimir o guardar"
                         >
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -197,14 +197,14 @@ export default function ImprimirCotizacionModal({
                                             className="h-11 object-contain"
                                         />
                                     </div>
-                                    <div className="text-sm font-black tracking-tight text-slate-950 uppercase">
+                                    <div className="text-sm font-semibold tracking-tight text-slate-950 uppercase">
                                         HDB Servicios Eléctricos
                                     </div>
                                     <div className="text-[11px] font-bold text-sky-700 mt-0.5">
                                         Materiales Eléctricos • Tableros • Obras e Ingeniería
                                     </div>
                                 </div>
-                                <div className="text-[10px] text-slate-600 mt-2.5 space-y-0.5 border-t border-slate-200 pt-2">
+                                <div className="text-[11px] text-slate-600 mt-2.5 space-y-0.5 border-t border-slate-200 pt-2">
                                     <div>
                                         <span className="font-bold">Razón Social:</span> Bassignana Hernán David
                                     </div>
@@ -225,10 +225,10 @@ export default function ImprimirCotizacionModal({
 
                             {/* Letra Central P / Presupuesto */}
                             <div className="col-span-2 p-3 flex flex-col items-center justify-center bg-slate-50 text-center">
-                                <div className="w-12 h-12 rounded-xl border-2 border-slate-900 flex items-center justify-center text-2xl font-black bg-white">
+                                <div className="w-12 h-12 rounded-xl border-2 border-slate-900 flex items-center justify-center text-2xl font-bold bg-white">
                                     P
                                 </div>
-                                <div className="text-[8.5px] font-black uppercase tracking-wider text-slate-600 mt-1.5 leading-tight">
+                                <div className="text-[8.5px] font-semibold uppercase tracking-wider text-slate-600 mt-1.5 leading-tight">
                                     DOCUMENTO NO VÁLIDO COMO FACTURA
                                 </div>
                             </div>
@@ -236,10 +236,10 @@ export default function ImprimirCotizacionModal({
                             {/* Numeración y Fechas */}
                             <div className="col-span-5 p-4 flex flex-col justify-between bg-slate-50/40">
                                 <div>
-                                    <div className="text-[10px] font-black uppercase tracking-widest text-sky-800">
+                                    <div className="text-[11px] font-semibold uppercase tracking-wider text-sky-800">
                                         Cotización / Presupuesto
                                     </div>
-                                    <div className="text-xl font-black font-mono text-slate-900 mt-0.5">
+                                    <div className="text-xl font-bold font-mono text-slate-900 mt-0.5">
                                         N° {cotizacion.numero}
                                     </div>
                                 </div>
@@ -268,10 +268,10 @@ export default function ImprimirCotizacionModal({
                     {/* Datos del Destinatario y Condiciones Comerciales */}
                     <div className="grid grid-cols-12 gap-4 mb-5 bg-slate-50 rounded-xl p-4 border border-slate-200 text-xs">
                         <div className="col-span-7 space-y-1">
-                            <div className="text-[10px] font-black uppercase tracking-wider text-sky-800 border-b border-slate-200 pb-1 mb-1.5">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-sky-800 border-b border-slate-200 pb-1 mb-1.5">
                                 Destinatario / Cliente
                             </div>
-                            <div className="text-sm font-black text-slate-900">
+                            <div className="text-sm font-bold text-slate-900">
                                 {cotizacion.clienteNombre || 'Consumidor Final'}
                             </div>
                             <div className="flex flex-wrap gap-x-4 gap-y-1 text-slate-600 text-[11px]">
@@ -302,7 +302,7 @@ export default function ImprimirCotizacionModal({
                         </div>
 
                         <div className="col-span-5 border-l border-slate-200 pl-4 space-y-1">
-                            <div className="text-[10px] font-black uppercase tracking-wider text-sky-800 border-b border-slate-200 pb-1 mb-1.5">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-sky-800 border-b border-slate-200 pb-1 mb-1.5">
                                 Condiciones Comerciales
                             </div>
                             <div className="text-[11px]">
@@ -336,7 +336,7 @@ export default function ImprimirCotizacionModal({
                     <div className="border border-slate-300 rounded-xl overflow-hidden mb-5">
                         <table className="w-full text-xs">
                             <thead className="bg-slate-900 text-white">
-                                <tr className="text-[10px] font-bold uppercase tracking-wider">
+                                <tr className="text-[11px] font-bold uppercase tracking-wider">
                                     <th className="py-2 px-3 text-center w-9">#</th>
                                     <th className="py-2 px-3 text-left w-24">Código</th>
                                     <th className="py-2 px-3 text-left">Descripción del Material / Servicio</th>
@@ -368,19 +368,19 @@ export default function ImprimirCotizacionModal({
                                                     {item.descripcion || item.nombre}
                                                 </div>
                                                 {(item.motivoModificacion || item.observacion) && (
-                                                    <div className="text-[10px] text-slate-500 italic mt-0.5">
+                                                    <div className="text-[11px] text-slate-500 italic mt-0.5">
                                                         Nota: {item.motivoModificacion || item.observacion}
                                                     </div>
                                                 )}
                                                 {item.marca && (
-                                                    <div className="text-[10px] text-slate-400">
+                                                    <div className="text-[11px] text-slate-400">
                                                         Marca: {item.marca}
                                                     </div>
                                                 )}
                                             </td>
                                             <td className="py-2 px-3 text-center font-mono font-bold text-slate-900 text-[11px]">
                                                 {item.cantidad}{' '}
-                                                <span className="text-[9px] font-normal text-slate-500">
+                                                <span className="text-[11px] font-normal text-slate-500">
                                                     {item.unidad || 'u'}
                                                 </span>
                                             </td>
@@ -406,7 +406,7 @@ export default function ImprimirCotizacionModal({
                     <div className="grid grid-cols-12 gap-5 items-start mt-auto pt-6 mb-6">
                         <div className="col-span-7 space-y-3">
                             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                                <div className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">
+                                <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
                                     Observaciones y Alcance de la Oferta
                                 </div>
                                 <p className="text-slate-700 text-[11px] whitespace-pre-line leading-relaxed">
@@ -415,7 +415,7 @@ export default function ImprimirCotizacionModal({
                                 </p>
                             </div>
 
-                            <div className="pt-6 grid grid-cols-2 gap-6 text-center text-[10px] text-slate-500">
+                            <div className="pt-6 grid grid-cols-2 gap-6 text-center text-[11px] text-slate-500">
                                 <div className="border-t border-slate-300 pt-1.5">
                                     <span className="font-bold text-slate-700 block">
                                         HDB SERVICIOS ELÉCTRICOS
@@ -481,12 +481,12 @@ export default function ImprimirCotizacionModal({
                                     <span className="text-sm font-bold uppercase tracking-wider text-slate-900">
                                         Total Cotizado
                                     </span>
-                                    <span className="text-2xl font-black font-mono text-slate-950">
+                                    <span className="text-2xl font-bold font-mono text-slate-950">
                                         $ {fmt(cotizacion.total)}{' '}
                                         <span className="text-xs font-sans font-bold text-slate-500">ARS</span>
                                     </span>
                                 </div>
-                                <div className="text-[10px] text-right font-medium text-slate-500 pt-2 mt-1">
+                                <div className="text-[11px] text-right font-medium text-slate-500 pt-2 mt-1">
                                     {cotizacion.ivaDiscriminado
                                         ? 'Precios con IVA discriminado incluido en el Total'
                                         : 'Precios finales (IVA incluido) — Moneda: ARS'}

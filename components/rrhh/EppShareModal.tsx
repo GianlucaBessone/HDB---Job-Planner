@@ -165,7 +165,7 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/50 animate-in fade-in overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl my-8">
                 {/* Cabecera */}
                 <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/75 dark:bg-slate-950/40">
@@ -174,7 +174,7 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
                             <Share2 className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="font-black text-slate-900 dark:text-slate-100 text-base">
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                                 Compartir Matriz de Asignación de EPP
                             </h3>
                             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -282,7 +282,7 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
                             <button
                                 type="submit"
                                 disabled={creating}
-                                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center gap-2 shadow-sm transition-all"
+                                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center gap-2 transition-all"
                             >
                                 {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
                                 Generar Enlace Compartido
@@ -292,13 +292,13 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
 
                     {/* Vista de Enlace Activo Seleccionado */}
                     {activeShare && (
-                        <div className="p-5 bg-gradient-to-br from-indigo-50/70 via-white to-emerald-50/50 dark:from-slate-800/80 dark:via-slate-900 dark:to-emerald-950/20 rounded-2xl border-2 border-indigo-400/40 space-y-4">
+                        <div className="p-5 bg-indigo-50/70 dark:bg-slate-800/80 rounded-2xl border-2 border-indigo-400/40 space-y-4">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <div>
-                                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 inline-block mb-1">
+                                    <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 inline-block mb-1">
                                         {activeShare.tipo === 'CLIENTE' ? `Cliente: ${activeShare.clientNombre}` : 'Matriz Completa'}
                                     </span>
-                                    <h4 className="font-black text-sm text-slate-900 dark:text-slate-100">
+                                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                                         {activeShare.titulo}
                                     </h4>
                                 </div>
@@ -331,7 +331,7 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleCopy(getShareUrl(activeShare.token))}
-                                            className="flex-1 sm:flex-none px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                                            className="flex-1 sm:flex-none px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all"
                                         >
                                             {copied ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
                                             {copied ? '¡Copiado!' : 'Copiar'}
@@ -373,7 +373,7 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
                                 <button
                                     type="button"
                                     onClick={() => setQrPosterShare(activeShare)}
-                                    className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 whitespace-nowrap active:scale-95 shrink-0"
+                                    className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 whitespace-nowrap shrink-0"
                                 >
                                     <Printer className="w-4 h-4" />
                                     <span>Imprimir QR</span>
@@ -419,7 +419,7 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
                                                     <span className="font-bold text-slate-900 dark:text-slate-100 block">
                                                         {sh.titulo}
                                                     </span>
-                                                    <span className="text-[10px] text-slate-400">
+                                                    <span className="text-[11px] text-slate-400">
                                                         {sh.tipo === 'CLIENTE' ? `Cliente: ${sh.clientNombre}` : 'Todos los operadores'} · Creado el {new Date(sh.createdAt).toLocaleDateString()} · {sh.visitas || 0} visitas
                                                     </span>
                                                 </div>

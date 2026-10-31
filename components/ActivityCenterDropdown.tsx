@@ -254,13 +254,13 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
             <div
                 key={notif.id}
                 onClick={() => handleNotificationClick(notif)}
-                className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-all relative flex gap-4 ${!notif.read ? 'bg-primary/5 dark:bg-primary/10' : ''}`}
+                className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/40 cursor-pointer transition-colors relative flex gap-3 ${!notif.read ? 'bg-brand-50/50 dark:bg-brand-950/40' : ''}`}
             >
                 <div className="shrink-0 mt-0.5 relative">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${style.bg} ${style.border} ${style.text}`}>
-                        <Icon className="w-5 h-5" />
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${style.bg} ${style.border} ${style.text}`}>
+                        <Icon className="w-4 h-4" />
                     </div>
-                    {!notif.read && <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary rounded-full border-2 border-white dark:border-slate-900 shadow-sm"></div>}
+                    {!notif.read && <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-popover"></div>}
                 </div>
                 <div className="flex-1 min-w-0 pr-2">
                     <div className="flex flex-col gap-1 mb-1">
@@ -272,13 +272,13 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                         {cleanMessage}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
                             {formatTime(notif.createdAt)}
                         </span>
                         {parsedCategory && (
                             <>
                                 <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                                <span className={`text-[9px] font-black uppercase tracking-widest ${style.text}`}>
+                                <span className={`text-xs font-medium ${style.text}`}>
                                     {parsedCategory}
                                 </span>
                             </>
@@ -288,7 +288,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                 {!notif.read && (
                     <button
                         onClick={(e) => markAsRead(notif.id, notif.recipientId, e)}
-                        className="absolute right-4 top-4 p-1.5 hover:bg-primary/10 rounded-lg text-primary/60 hover:text-primary transition-colors h-fit"
+                        className="absolute right-3 top-3 btn btn-ghost btn-icon btn-sm btn-icon-inline"
                         title="Marcar como leída"
                     >
                         <Check className="w-4 h-4" />
@@ -303,25 +303,25 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
             <div className="relative">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors"
+                    className="btn btn-ghost btn-icon btn-icon-inline relative"
+                    aria-haspopup="dialog"
+                    aria-expanded={isOpen}
+                    aria-label={unreadCount > 0 ? `Actividad: ${unreadCount} sin leer` : 'Actividad'}
                 >
-                    <Bell className="w-6 h-6" />
+                    <Bell />
                     {unreadCount > 0 && (
-                        <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger-500 rounded-full ring-2 ring-background" aria-hidden="true"></span>
                     )}
                 </button>
 
                 {isOpen && (
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-                        <div className="absolute right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] bg-card text-card-foreground rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden ring-1 ring-slate-900/5 origin-top-right animate-in fade-in zoom-in-95 duration-200">
-                            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm">
-                                <div>
-                                    <h3 className="font-black text-lg text-slate-800 dark:text-slate-100 tracking-tight">Centro de Actividad</h3>
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Eventos del Sistema</p>
-                                </div>
+                        <div role="dialog" aria-label="Centro de actividad" className="fixed sm:absolute left-2 right-2 top-[calc(var(--topbar-h)+4px)] sm:left-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[400px] bg-popover text-popover-foreground rounded-2xl shadow-xl border border-border z-50 overflow-hidden origin-top-right animate-in fade-in zoom-in-95 duration-150">
+                            <div className="px-4 h-14 border-b border-border flex items-center justify-between">
+                                <h3 className="text-heading text-slate-900 dark:text-slate-50">Actividad</h3>
                                 {unreadCount > 0 && (
-                                    <span className="text-xs font-black text-primary bg-primary/10 px-3 py-1.5 rounded-xl shadow-sm">{unreadCount} nuevas</span>
+                                    <span className="badge badge-brand">{unreadCount} sin leer</span>
                                 )}
                             </div>
 
@@ -334,7 +334,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                     <div className="flex flex-col">
                                         {groupedNotifications.hoy.length > 0 && (
                                             <div>
-                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-widest border-y border-slate-100 dark:border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                                                <div className="eyebrow bg-surface-sunken px-4 py-1.5 border-b border-border sticky top-0 z-10">
                                                     Hoy
                                                 </div>
                                                 <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -344,7 +344,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                         )}
                                         {groupedNotifications.ayer.length > 0 && (
                                             <div>
-                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-widest border-y border-slate-100 dark:border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                                                <div className="eyebrow bg-surface-sunken px-4 py-1.5 border-b border-border sticky top-0 z-10">
                                                     Ayer
                                                 </div>
                                                 <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -354,7 +354,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                         )}
                                         {groupedNotifications.semana.length > 0 && (
                                             <div>
-                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-widest border-y border-slate-100 dark:border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                                                <div className="eyebrow bg-surface-sunken px-4 py-1.5 border-b border-border sticky top-0 z-10">
                                                     Últimos 7 días
                                                 </div>
                                                 <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -364,7 +364,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                         )}
                                         {groupedNotifications.anteriores.length > 0 && (
                                             <div>
-                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-widest border-y border-slate-100 dark:border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                                                <div className="eyebrow bg-surface-sunken px-4 py-1.5 border-b border-border sticky top-0 z-10">
                                                     Más Antiguos
                                                 </div>
                                                 <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -376,10 +376,10 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                 )}
                             </div>
                             
-                            <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                            <div className="p-2 border-t border-border">
                                 <button
                                     onClick={() => { setIsOpen(false); router.push('/notifications'); }}
-                                    className="w-full py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all shadow-sm"
+                                    className="btn btn-ghost w-full"
                                 >
                                     Ver toda la actividad
                                 </button>
@@ -392,8 +392,8 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
             {mounted && typeof document !== 'undefined' && createPortal(
                 <>
                     {selectedNotification && selectedNotification.type === 'TIME_MODIFICATION_REQUEST' && (
-                        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative">
+                        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                            <div className="bg-card text-card-foreground w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-8 relative">
                                 <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500">
                                     <X className="w-5 h-5" />
                                 </button>
@@ -402,14 +402,14 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                         <AlertCircle className="w-6 h-6 text-indigo-500" />
                                         {(selectedNotification.metadata || selectedNotification.message?.includes('modificar')) ? 'Modificación Solicitada' : 'Eliminación Solicitada'}
                                     </h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 italic">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium bg-background text-foreground p-4 rounded-xl border border-slate-100 dark:border-slate-800 italic">
                                         "{selectedNotification.message.split('Motivo:')[1]?.trim() || 'Sin motivo especificado'}"
                                     </p>
                                 </div>
 
                                 {selectedNotification.metadata && (
                                     <div className="bg-indigo-50/50 rounded-2xl p-5 mb-6 border border-indigo-100/50">
-                                        <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-3">Cambios Solicitados</h4>
+                                        <h4 className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-3">Cambios Solicitados</h4>
                                         <div className="space-y-2">
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-slate-500 dark:text-slate-400 font-medium">Hora Inicio:</span>
@@ -430,12 +430,12 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                 {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa') && (
                                     <div className="flex gap-3">
                                         <button onClick={handleRejectModification} className="flex-1 py-4 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 transition-colors">Rechazar</button>
-                                        <button onClick={handleAcceptModification} className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95">Aprobar</button>
+                                        <button onClick={handleAcceptModification} className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all">Aprobar</button>
                                     </div>
                                 )}
                                 {user?.role === 'operador' && (
-                                    <div className="p-4 bg-background text-foreground/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
-                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Pendiente de aprobación</p>
+                                    <div className="p-4 bg-background text-foreground rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pendiente de aprobación</p>
                                     </div>
                                 )}
                             </div>
@@ -443,8 +443,8 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                     )}
 
                     {selectedNotification && selectedNotification.type === 'PLANNING_ASSIGNMENT' && (
-                        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                            <div className="bg-card text-card-foreground w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
                                 <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 z-10">
                                     <X className="w-5 h-5" />
                                 </button>
@@ -468,7 +468,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
 
                                 {selectedNotification.metadata?.assignments?.length > 0 ? (
                                     <div className="space-y-4 mb-6">
-                                        <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tus Proyectos Asignados</h4>
+                                        <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tus Proyectos Asignados</h4>
                                         {selectedNotification.metadata.assignments.map((assignment: any, i: number) => (
                                             <div key={i} className="bg-primary/5 border border-primary/10 rounded-2xl p-4">
                                                 <h5 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2">{assignment.projectName}</h5>
@@ -478,17 +478,17 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                                 </div>
                                                 {assignment.companionNames && assignment.companionNames.length > 0 && (
                                                     <div className="mt-3">
-                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Compañeros:</span>
+                                                        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Compañeros:</span>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {assignment.companionNames.map((name: string, j: number) => (
-                                                                <span key={j} className="text-xs bg-card text-card-foreground text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-800 shadow-sm">{name}</span>
+                                                                <span key={j} className="text-xs bg-card text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-800 shadow-sm">{name}</span>
                                                             ))}
                                                         </div>
                                                     </div>
                                                 )}
                                                 {assignment.note && (
                                                     <div className="mt-3 bg-card text-card-foreground p-3 rounded-xl border border-amber-100">
-                                                        <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider block mb-1">Nota de la Asignación:</span>
+                                                        <span className="text-[11px] font-bold text-amber-500 uppercase tracking-wider block mb-1">Nota de la Asignación:</span>
                                                         <p className="text-sm text-slate-700 dark:text-slate-200 italic">{assignment.note}</p>
                                                     </div>
                                                 )}
@@ -501,7 +501,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
 
                                 {selectedNotification.metadata?.notes?.length > 0 && (
                                     <div className="space-y-3">
-                                        <h4 className="text-xs font-black text-amber-500 uppercase tracking-widest">Notas Generales del Día</h4>
+                                        <h4 className="text-xs font-semibold text-amber-500 uppercase tracking-wider">Notas Generales del Día</h4>
                                         {selectedNotification.metadata.notes.map((noteBlock: any, i: number) => (
                                             <div key={i} className="bg-amber-50 border border-amber-100 rounded-xl p-4">
                                                 <p className="text-sm text-amber-900 font-medium">"{noteBlock.note}"</p>
@@ -511,15 +511,15 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                 )}
 
                                 <div className="mt-8">
-                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar</button>
+                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-muted text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar</button>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {selectedNotification && selectedNotification.type === 'PLANNING_ASSIGNMENT_SUMMARY' && (
-                        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-card text-card-foreground w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                            <div className="bg-card text-card-foreground w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
                                 <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 z-10">
                                     <X className="w-5 h-5" />
                                 </button>
@@ -548,7 +548,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                 </div>
 
                                 <div className="mt-8">
-                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
+                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-muted text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
                                 </div>
                             </div>
                         </div>

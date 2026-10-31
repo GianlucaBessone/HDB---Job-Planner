@@ -25,9 +25,9 @@ export default function ProjectViewSelector({
                     <button
                         key={opt.value}
                         onClick={() => onChange(opt.value)}
-                        className={`flex items-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-200 whitespace-nowrap ${
+                        className={`flex items-center gap-1.5 px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-[11px] md:text-[11px] font-semibold uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
                             active
-                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                ? 'bg-primary text-white shadow-lg'
                                 : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                         }`}
                         title={opt.label}

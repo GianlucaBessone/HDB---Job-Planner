@@ -138,7 +138,7 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
     }), [project, filteredTimeEntries, filteredClientDelays]);
 
     return (
-        <div className="min-h-screen bg-background text-foreground/50 py-8 print:p-0 print:bg-white text-slate-800 dark:text-slate-100 font-sans mx-auto max-w-[950px] px-4 md:px-6">
+        <div className="min-h-screen bg-background text-foreground py-8 print:p-0 print:bg-white text-slate-800 dark:text-slate-100 font-sans mx-auto max-w-[950px] px-4 md:px-6">
             
             {/* Top Control Bar */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 print:hidden">
@@ -248,21 +248,21 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
             )}
 
             {/* ── Main Report Content Card ── */}
-            <div id="report-content" className="bg-card text-card-foreground p-8 md:p-14 md:rounded-[2.5rem] shadow-sm print:shadow-none print:p-0">
+            <div id="report-content" className="bg-card text-card-foreground p-8 md:p-14 md:rounded-3xl shadow-sm print:shadow-none print:p-0">
 
                 {/* ── Header ── */}
                 <div className="flex flex-col md:flex-row justify-between items-start border-b-2 border-slate-900 dark:border-slate-700 pb-8 mb-8 gap-4">
                     <div>
-                        <h1 className="text-4xl font-black text-slate-900 dark:text-slate-50 tracking-tighter mb-2">
+                        <h1 className="text-display text-slate-900 dark:text-slate-50 mb-2">
                             Reporte de Proyecto
                         </h1>
                         <div className="flex items-center gap-2">
                             <StatusIcon className={`w-4 h-4 mr-1 ${statusCfg.textColor}`} />
-                            <span className={`text-sm font-bold uppercase tracking-widest ${statusCfg.textColor}`}>
+                            <span className={`text-sm font-bold uppercase tracking-wider ${statusCfg.textColor}`}>
                                 {statusCfg.label}
                             </span>
                             {project.proyectoFijo && (
-                                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 tracking-wider">
+                                <span className="text-[11px] uppercase font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 tracking-wider">
                                     Fijo
                                 </span>
                             )}
@@ -270,7 +270,7 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
                     </div>
 
                     <div className="text-left md:text-right flex flex-col md:items-end gap-1">
-                        <h2 className="text-2xl font-black text-indigo-600 tracking-tight leading-none">
+                        <h2 className="text-title text-indigo-600 leading-none">
                             {project.nombre}
                         </h2>
                         <div className="flex items-center md:justify-end text-slate-500 dark:text-slate-400">
@@ -294,47 +294,47 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
 
                 {/* ── KPI Cards ── */}
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-10">
-                    <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                    <div className="bg-background text-foreground p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
                         <div className="h-7 flex items-center justify-center mb-1">
-                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-tight">Hs Estimadas</p>
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-tight">Hs Estimadas</p>
                         </div>
-                        <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                        <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                             {project.proyectoFijo ? `${totalRealHours.toFixed(1)}h` : `${project.horasEstimadas}h`}
                         </p>
                     </div>
-                    <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                    <div className="bg-background text-foreground p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
                         <div className="h-7 flex items-center justify-center mb-1">
-                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-tight">Hs Reales</p>
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-tight">Hs Reales</p>
                         </div>
-                        <p className={`text-2xl font-black ${totalRealHours > estimatedHours ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        <p className={`text-2xl font-bold ${totalRealHours > estimatedHours ? 'text-rose-500' : 'text-emerald-500'}`}>
                             {totalRealHours.toFixed(1)}h
                         </p>
                     </div>
-                    <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                    <div className="bg-background text-foreground p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
                         <div className="h-7 flex items-center justify-center mb-1">
-                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-tight">Ahorro / Desvío</p>
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-tight">Ahorro / Desvío</p>
                         </div>
-                        <p className={`text-2xl font-black ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                        <p className={`text-2xl font-bold ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {savedHours > 0 ? '+' : ''}{savedHours.toFixed(1)}h
                         </p>
                     </div>
                     <div className="bg-indigo-50 dark:bg-indigo-950/40 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/40 flex flex-col justify-center items-center text-center">
                         <div className="h-7 flex items-center justify-center mb-1">
-                            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest leading-tight">Eficiencia (IPT)</p>
+                            <p className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider leading-tight">Eficiencia (IPT)</p>
                         </div>
-                        <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{IPT}</p>
+                        <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{IPT}</p>
                     </div>
                     <div className="bg-amber-50 dark:bg-amber-950/40 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/40 flex flex-col justify-center items-center text-center">
                         <div className="h-7 flex items-center justify-center mb-1">
-                            <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest leading-tight">Carga Demoras</p>
+                            <p className="text-[11px] font-semibold text-amber-500 uppercase tracking-wider leading-tight">Carga Demoras</p>
                         </div>
-                        <p className="text-2xl font-black text-amber-500">{delayImpactPct}%</p>
+                        <p className="text-2xl font-bold text-amber-500">{delayImpactPct}%</p>
                     </div>
                     <div className="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 flex flex-col justify-center items-center text-center">
                         <div className="h-7 flex items-center justify-center mb-1">
-                            <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest leading-tight">Avance Técnico</p>
+                            <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider leading-tight">Avance Técnico</p>
                         </div>
-                        <p className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                        <p className="text-xl md:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                             {project.checklistItems?.filter((i: any) => i.completed && !i.excluded).length || 0} / {project.checklistItems?.filter((i: any) => !i.excluded).length || 0}
                         </p>
                     </div>
@@ -345,7 +345,7 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
                     <div className="mb-8 p-5 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 rounded-2xl">
                         <div className="flex items-center gap-2 mb-2">
                             <FileText className="w-4 h-4 text-amber-500" />
-                            <h3 className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Observaciones del Proyecto</h3>
+                            <h3 className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Observaciones del Proyecto</h3>
                         </div>
                         <p className="text-sm font-medium text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{project.observaciones}</p>
                     </div>
@@ -431,10 +431,10 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
                                 <table className="w-full text-left text-sm">
                                     <thead>
                                         <tr className="border-b border-slate-200 dark:border-slate-700">
-                                            <th className="py-2 pr-4 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Fecha</th>
-                                            <th className="py-2 pr-4 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Operador</th>
-                                            <th className="py-2 pr-4 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Horario</th>
-                                            <th className="py-2 text-right font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Hs</th>
+                                            <th className="py-2 pr-4 font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider">Fecha</th>
+                                            <th className="py-2 pr-4 font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider">Operador</th>
+                                            <th className="py-2 pr-4 font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider">Horario</th>
+                                            <th className="py-2 text-right font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider">Hs</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -443,8 +443,8 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
                                                 <td className="py-2 pr-4">{formatDate(e.fecha)}</td>
                                                 <td className="py-2 pr-4">
                                                     {e.operator?.nombreCompleto || 'Desconocido'}
-                                                    {e.isExtra && <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest ml-1.5">(Extra)</span>}
-                                                    {e.isDevolucion && <span className="text-[9px] font-black text-purple-500 uppercase tracking-widest ml-1.5">(Devolución)</span>}
+                                                    {e.isExtra && <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-wider ml-1.5">(Extra)</span>}
+                                                    {e.isDevolucion && <span className="text-[11px] font-semibold text-purple-500 uppercase tracking-wider ml-1.5">(Devolución)</span>}
                                                 </td>
                                                 <td className="py-2 pr-4 font-bold">{e.horaIngreso} → {e.horaEgreso}</td>
                                                 <td className="py-2 text-right font-bold text-slate-700 dark:text-slate-200">
@@ -469,11 +469,11 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
                                 <table className="w-full text-left text-sm">
                                     <thead>
                                         <tr className="border-b border-slate-200 dark:border-slate-700">
-                                            <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Fecha</th>
-                                            <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Área</th>
-                                            <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Resp. Área</th>
-                                            <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Motivo</th>
-                                            <th className="py-2 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest text-right">Hs</th>
+                                            <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider">Fecha</th>
+                                            <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider">Área</th>
+                                            <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider">Resp. Área</th>
+                                            <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider">Motivo</th>
+                                            <th className="py-2 font-bold text-slate-400 dark:text-slate-500 uppercase text-[11px] tracking-wider text-right">Hs</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -483,11 +483,11 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
                                                 <td className="py-2 pr-3 text-amber-600 font-bold text-xs uppercase">{d.area}</td>
                                                 <td className="py-2 pr-3 text-slate-500 dark:text-slate-400 text-xs">{d.responsableArea || '—'}</td>
                                                 <td className="py-2 pr-3 italic max-w-[200px] truncate" title={d.motivo}>&quot;{d.motivo}&quot;</td>
-                                                <td className="py-2 text-right font-black text-amber-500">{d.duracion}h</td>
+                                                <td className="py-2 text-right font-bold text-amber-500">{d.duracion}h</td>
                                             </tr>
                                         ))}
-                                        <tr className="border-t-2 border-slate-200 dark:border-slate-700 font-black">
-                                            <td colSpan={4} className="py-2 pr-3 text-right text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">Total Demoras:</td>
+                                        <tr className="border-t-2 border-slate-200 dark:border-slate-700 font-bold">
+                                            <td colSpan={4} className="py-2 pr-3 text-right text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-500">Total Demoras:</td>
                                             <td className="py-2 text-right text-amber-500">{totalDelaysHours}h</td>
                                         </tr>
                                     </tbody>
@@ -515,8 +515,8 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
                                             <p className={`text-sm font-bold leading-snug ${item.completed ? 'text-emerald-900 dark:text-emerald-300' : 'text-slate-600 dark:text-slate-300'}`}>
                                                 {item.description}
                                             </p>
-                                            <div className="flex items-center gap-2 mt-1.5 font-bold uppercase tracking-widest text-[9px]">
-                                                <span className="px-2 py-0.5 rounded-lg bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
+                                            <div className="flex items-center gap-2 mt-1.5 font-bold uppercase tracking-wider text-[11px]">
+                                                <span className="px-2 py-0.5 rounded-lg bg-card border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
                                                     {item.tag}
                                                 </span>
                                                 <span className={item.completed ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}>

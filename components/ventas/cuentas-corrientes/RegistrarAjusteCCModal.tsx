@@ -76,7 +76,7 @@ export default function RegistrarAjusteCCModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export default function RegistrarAjusteCCModal({
                             <FilePlus2 className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="font-black text-sm">Registrar Nota Débito / Crédito / Saldo Inicial</h3>
+                            <h3 className="font-bold text-sm">Registrar Nota Débito / Crédito / Saldo Inicial</h3>
                             <p className="text-xs text-slate-400">{cliente.name}</p>
                         </div>
                     </div>
@@ -116,7 +116,7 @@ export default function RegistrarAjusteCCModal({
                             >
                                 <ArrowUpRight className="w-4 h-4 text-amber-600 mb-1" />
                                 <div className="text-xs font-bold">Nota de Débito</div>
-                                <div className="text-[10px] opacity-75">Aumenta deuda (+)</div>
+                                <div className="text-[11px] opacity-75">Aumenta deuda (+)</div>
                             </button>
 
                             <button
@@ -130,7 +130,7 @@ export default function RegistrarAjusteCCModal({
                             >
                                 <ArrowDownLeft className="w-4 h-4 text-emerald-600 mb-1" />
                                 <div className="text-xs font-bold">Nota de Crédito</div>
-                                <div className="text-[10px] opacity-75">Disminuye deuda (-)</div>
+                                <div className="text-[11px] opacity-75">Disminuye deuda (-)</div>
                             </button>
 
                             <button
@@ -144,7 +144,7 @@ export default function RegistrarAjusteCCModal({
                             >
                                 <Scale className="w-4 h-4 text-indigo-600 mb-1" />
                                 <div className="text-xs font-bold">Saldo Inicial</div>
-                                <div className="text-[10px] opacity-75">Migración previa</div>
+                                <div className="text-[11px] opacity-75">Migración previa</div>
                             </button>
                         </div>
                     </div>
@@ -248,7 +248,7 @@ export default function RegistrarAjusteCCModal({
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
                         >
                             <CheckCircle2 className="w-4 h-4" />
                             {submitting ? 'Guardando...' : 'Registrar Movimiento'}

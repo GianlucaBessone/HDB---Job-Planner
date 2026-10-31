@@ -21,7 +21,7 @@ export default function RecruitmentDashboardPage() {
     };
 
     return (
-        <div className="w-full max-w-7xl mx-auto p-4 md:p-6 animate-in fade-in">
+        <div className="w-full">
             <ModuleHeader
                 title="Reclutamiento (ATS)"
                 description="Gestión inteligente de vacantes y postulantes"
@@ -51,7 +51,7 @@ export default function RecruitmentDashboardPage() {
                     <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-sm">
                         <div>
                             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
-                            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">{stat.value}</h3>
+                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-1">{stat.value}</h3>
                         </div>
                         <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                             {stat.icon}

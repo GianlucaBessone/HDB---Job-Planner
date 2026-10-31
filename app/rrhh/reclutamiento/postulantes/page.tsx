@@ -40,7 +40,7 @@ export default function TalentPoolPage() {
     );
 
     return (
-        <div className="w-full max-w-7xl mx-auto p-4 md:p-6 animate-in fade-in">
+        <div className="w-full">
             <ModuleHeader
                 title="Base de Talentos"
                 description="Búsqueda global de postulantes pasados y actuales"
@@ -89,12 +89,12 @@ export default function TalentPoolPage() {
                                     <td className="px-6 py-4">
                                         <div className="flex flex-wrap gap-1">
                                             {candidate.tags && candidate.tags.slice(0, 3).map((tag: any) => (
-                                                <span key={tag.id} className="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
+                                                <span key={tag.id} className="text-[11px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
                                                     {tag.name}
                                                 </span>
                                             ))}
                                             {candidate.tags && candidate.tags.length > 3 && (
-                                                <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
+                                                <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
                                                     +{candidate.tags.length - 3}
                                                 </span>
                                             )}

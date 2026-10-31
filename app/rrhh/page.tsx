@@ -55,7 +55,7 @@ export default async function RRHHHubPage() {
     }
 
     return (
-        <div className="w-full max-w-7xl mx-auto p-4 md:p-6 space-y-8 animate-in fade-in duration-300">
+        <div className="w-full space-y-8">
             <ModuleHeader
                 title="Recursos Humanos & Capital Humano"
                 description="Portal integral de atracción de talentos y administración del equipo operativo"
@@ -67,7 +67,7 @@ export default async function RRHHHubPage() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Equipo Operativo</p>
-                        <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-1">{totalOperators}</h3>
+                        <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mt-1">{totalOperators}</h3>
                         <p className="text-xs text-slate-400 mt-1 font-medium">Operarios activos</p>
                     </div>
                     <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-xl">
@@ -78,7 +78,7 @@ export default async function RRHHHubPage() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Búsquedas Activas</p>
-                        <h3 className="text-3xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{openVacancies}</h3>
+                        <h3 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">{openVacancies}</h3>
                         <p className="text-xs text-slate-400 mt-1 font-medium">{totalCandidates} postulantes en base</p>
                     </div>
                     <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 rounded-xl">
@@ -89,7 +89,7 @@ export default async function RRHHHubPage() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">EPP Globales</p>
-                        <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-1">{eppGlobalesCount}</h3>
+                        <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mt-1">{eppGlobalesCount}</h3>
                         <p className="text-xs text-slate-400 mt-1 font-medium">Items de asignación general</p>
                     </div>
                     <div className="p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-xl">
@@ -100,7 +100,7 @@ export default async function RRHHHubPage() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Atención EPP</p>
-                        <h3 className={`text-3xl font-black mt-1 ${eppVencidosCount > 0 ? 'text-rose-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                        <h3 className={`text-3xl font-bold mt-1 ${eppVencidosCount > 0 ? 'text-rose-600' : 'text-slate-700 dark:text-slate-200'}`}>
                             {eppVencidosCount + eppPendientesFirma}
                         </h3>
                         <p className="text-xs text-slate-400 mt-1 font-medium">
@@ -115,7 +115,7 @@ export default async function RRHHHubPage() {
 
             {/* Los Dos Pilares Principales de RRHH */}
             <div>
-                <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
                     <Layers className="w-5 h-5 text-indigo-500" />
                     Módulos de Recursos Humanos
                 </h2>
@@ -124,7 +124,7 @@ export default async function RRHHHubPage() {
                     {/* Pilar 1: Reclutamiento y Selección */}
                     <Link
                         href="/rrhh/reclutamiento"
-                        className="group bg-gradient-to-br from-white to-indigo-50/40 dark:from-slate-900 dark:to-indigo-950/20 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+                        className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Briefcase className="w-40 h-40 text-indigo-600" />
@@ -136,7 +136,7 @@ export default async function RRHHHubPage() {
                                 Módulo ATS
                             </div>
 
-                            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                 Reclutamiento y Base de Talentos
                             </h3>
 
@@ -147,11 +147,11 @@ export default async function RRHHHubPage() {
                             <div className="grid grid-cols-2 gap-3 pt-4">
                                 <div className="p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                                     <span className="text-xs text-slate-500 font-medium">Vacantes Abiertas</span>
-                                    <p className="text-lg font-black text-indigo-600 dark:text-indigo-400">{openVacancies}</p>
+                                    <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{openVacancies}</p>
                                 </div>
                                 <div className="p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                                     <span className="text-xs text-slate-500 font-medium">Postulantes</span>
-                                    <p className="text-lg font-black text-slate-800 dark:text-slate-200">{totalCandidates}</p>
+                                    <p className="text-lg font-bold text-slate-800 dark:text-slate-200">{totalCandidates}</p>
                                 </div>
                             </div>
                         </div>
@@ -165,7 +165,7 @@ export default async function RRHHHubPage() {
                     {/* Pilar 2: Gestión de Personal Operativo */}
                     <Link
                         href="/rrhh/personal"
-                        className="group bg-gradient-to-br from-white to-emerald-50/40 dark:from-slate-900 dark:to-emerald-950/20 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+                        className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                             <ShieldCheck className="w-40 h-40 text-emerald-600" />
@@ -177,7 +177,7 @@ export default async function RRHHHubPage() {
                                 Equipo & Operaciones
                             </div>
 
-                            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                                 Gestión de Personal Operativo
                             </h3>
 
@@ -188,11 +188,11 @@ export default async function RRHHHubPage() {
                             <div className="grid grid-cols-2 gap-3 pt-4">
                                 <div className="p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                                     <span className="text-xs text-slate-500 font-medium">Elementos EPP</span>
-                                    <p className="text-lg font-black text-emerald-600 dark:text-emerald-400">{eppGlobalesCount} Globales</p>
+                                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{eppGlobalesCount} Globales</p>
                                 </div>
                                 <div className="p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                                     <span className="text-xs text-slate-500 font-medium">Operarios Activos</span>
-                                    <p className="text-lg font-black text-slate-800 dark:text-slate-200">{totalOperators}</p>
+                                    <p className="text-lg font-bold text-slate-800 dark:text-slate-200">{totalOperators}</p>
                                 </div>
                             </div>
                         </div>
@@ -221,7 +221,7 @@ export default async function RRHHHubPage() {
                     <div className="flex items-center gap-3">
                         <Link
                             href="/rrhh/personal/epp"
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                         >
                             <ShieldCheck className="w-4 h-4" />
                             Abrir Matriz de EPP

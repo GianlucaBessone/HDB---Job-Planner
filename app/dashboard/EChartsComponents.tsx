@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 
-const COMMON_TEXT_COLOR = '#64748b'; // slate-500
+const COMMON_TEXT_COLOR = '#5a6372'; // slate-500
 export const COMMON_GRID = { left: '3%', right: '4%', bottom: '3%', containLabel: true };
 
 interface BaseChartProps {
@@ -17,7 +17,7 @@ interface BaseChartProps {
 // ----------------------------------------------------
 export function TrendChart({ 
     data, 
-    color = '#2563eb', 
+    color = '#1f60c1', 
     height = 224, 
     valuePrefix = '', 
     valueSuffix = '',
@@ -35,12 +35,12 @@ export function TrendChart({
     const option = useMemo(() => ({
         tooltip: {
             trigger: 'axis',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backgroundColor: 'rgba(22, 27, 36, 0.96)',
             borderColor: 'rgba(255,255,255,0.1)',
-            textStyle: { color: '#f8fafc', fontSize: 12 },
+            textStyle: { color: '#f6f7f9', fontSize: 12 },
             formatter: (params: any) => {
                 const val = params[0];
-                return `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
+                return `<div style="font-weight:bold;margin-bottom:4px;color:#8b93a1;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
                         <div style="font-size:14px;font-weight:bold;color:${color}">${valuePrefix}${val.value}${valueSuffix}</div>`;
             }
         },
@@ -50,12 +50,12 @@ export function TrendChart({
             boundaryGap: false,
             data: data.map(d => d.label),
             axisLabel: { color: COMMON_TEXT_COLOR, fontSize: 10, margin: 12 },
-            axisLine: { lineStyle: { color: '#e2e8f0' } },
+            axisLine: { lineStyle: { color: '#e1e4e9' } },
             axisTick: { show: false }
         },
         yAxis: {
             type: 'value',
-            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
+            splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
             axisLabel: { color: COMMON_TEXT_COLOR, fontSize: 10 },
             axisLine: { show: false },
             axisTick: { show: false }
@@ -123,7 +123,7 @@ export function BasicBarChart({
     valuePrefix = '',
     valueSuffix = '',
     targetRange,
-    colors = ['#3b82f6', '#94a3b8'], // [Good/Active, Bad/Inactive]
+    colors = ['#2f74da', '#8b93a1'], // [Good/Active, Bad/Inactive]
     onEvents
 }: { 
     data: { name: string; value: number; isHighlight?: boolean; code?: string }[], 
@@ -147,20 +147,20 @@ export function BasicBarChart({
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' },
-                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                backgroundColor: 'rgba(22, 27, 36, 0.96)',
                 borderColor: 'rgba(255,255,255,0.1)',
-                textStyle: { color: '#f8fafc', fontSize: 12 },
+                textStyle: { color: '#f6f7f9', fontSize: 12 },
                 formatter: (params: any) => {
                     const val = params[0];
                     const label = val.data?.name || val.name || '';
-                    return `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${label}</div>
+                    return `<div style="font-weight:bold;margin-bottom:4px;color:#8b93a1;font-size:10px;text-transform:uppercase;letter-spacing:1px">${label}</div>
                             <div style="font-size:14px;font-weight:bold;color:${val.color}">${valuePrefix}${val.value}${valueSuffix}</div>`;
                 }
             },
             grid: { ...COMMON_GRID, top: 10 },
             xAxis: isHorizontal ? {
                 type: 'value',
-                splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
+                splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
                 axisLabel: { color: COMMON_TEXT_COLOR, fontSize: 10 },
             } : {
                 type: 'category',
@@ -173,7 +173,7 @@ export function BasicBarChart({
                     width: 60,
                     overflow: 'truncate'
                 },
-                axisLine: { lineStyle: { color: '#e2e8f0' } },
+                axisLine: { lineStyle: { color: '#e1e4e9' } },
                 axisTick: { show: false }
             },
             yAxis: isHorizontal ? {
@@ -185,11 +185,11 @@ export function BasicBarChart({
                     width: 80,
                     overflow: 'truncate'
                 },
-                axisLine: { lineStyle: { color: '#e2e8f0' } },
+                axisLine: { lineStyle: { color: '#e1e4e9' } },
                 axisTick: { show: false }
             } : {
                 type: 'value',
-                splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
+                splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
                 axisLabel: { color: COMMON_TEXT_COLOR, fontSize: 10 },
             },
             series: [{
@@ -239,7 +239,7 @@ export function BasicBarChart({
 export function DonutChart({ 
     data, 
     height = 200,
-    colors = ['#1e293b', '#334155', '#475569', '#64748b', '#94a3b8'],
+    colors = ['#232a36', '#353d4c', '#475061', '#5a6372', '#8b93a1'],
     centerText = '',
     centerSubtext = '',
     onEvents
@@ -254,9 +254,9 @@ export function DonutChart({
     const option = useMemo(() => ({
         tooltip: {
             trigger: 'item',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backgroundColor: 'rgba(22, 27, 36, 0.96)',
             borderColor: 'rgba(255,255,255,0.1)',
-            textStyle: { color: '#f8fafc', fontSize: 12 },
+            textStyle: { color: '#f6f7f9', fontSize: 12 },
             formatter: '{b}: {c} ({d}%)'
         },
         color: colors,
@@ -265,8 +265,8 @@ export function DonutChart({
             subtext: centerSubtext.toUpperCase(),
             left: 'center',
             top: 'center',
-            textStyle: { fontSize: 24, fontWeight: 'bold', color: '#1e293b' },
-            subtextStyle: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8', letterSpacing: 1 }
+            textStyle: { fontSize: 24, fontWeight: 'bold', color: '#232a36' },
+            subtextStyle: { fontSize: 9, fontWeight: 'bold', color: '#8b93a1', letterSpacing: 1 }
         },
         series: [{
             type: 'pie',
@@ -310,15 +310,15 @@ export function DivergentBarChart({
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' },
-                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                backgroundColor: 'rgba(22, 27, 36, 0.96)',
                 borderColor: 'rgba(255,255,255,0.1)',
-                textStyle: { color: '#f8fafc', fontSize: 12 },
+                textStyle: { color: '#f6f7f9', fontSize: 12 },
                 formatter: (params: any) => {
                     const val = params[0];
                     const isPositive = val.value >= 0;
-                    const color = isPositive ? '#10b981' : '#f43f5e';
+                    const color = isPositive ? '#10b981' : '#ef4444';
                     const text = isPositive ? 'AHORRO' : 'DESVÍO';
-                    return `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
+                    return `<div style="font-weight:bold;margin-bottom:4px;color:#8b93a1;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
                             <div style="font-size:14px;font-weight:bold;color:${color}">${Math.abs(val.value)}H ${text}</div>`;
                 }
             },
@@ -327,7 +327,7 @@ export function DivergentBarChart({
                 type: 'value',
                 min: -maxAbs * 1.1,
                 max: maxAbs * 1.1,
-                splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
+                splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
                 axisLabel: { show: false },
                 axisLine: { show: false },
                 axisTick: { show: false }
@@ -348,7 +348,7 @@ export function DivergentBarChart({
                 type: 'bar',
                 data: data.map(d => ({
                     value: d.value,
-                    itemStyle: { color: d.value >= 0 ? '#10b981' : '#f43f5e', borderRadius: d.value >= 0 ? [0, 4, 4, 0] : [4, 0, 0, 4] }
+                    itemStyle: { color: d.value >= 0 ? '#10b981' : '#ef4444', borderRadius: d.value >= 0 ? [0, 4, 4, 0] : [4, 0, 0, 4] }
                 })),
                 barMaxWidth: 16,
             }]
@@ -384,14 +384,14 @@ export function TargetBarChart({
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' },
-                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                backgroundColor: 'rgba(22, 27, 36, 0.96)',
                 borderColor: 'rgba(255,255,255,0.1)',
-                textStyle: { color: '#f8fafc', fontSize: 12 },
+                textStyle: { color: '#f6f7f9', fontSize: 12 },
                 formatter: (params: any) => {
                     const val = params[0];
                     const isAboveTarget = val.value >= target;
                     const color = isAboveTarget ? '#10b981' : '#f59e0b';
-                    return `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
+                    return `<div style="font-weight:bold;margin-bottom:4px;color:#8b93a1;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
                             <div style="font-size:14px;font-weight:bold;color:${color}">${val.value}/10</div>`;
                 }
             },
@@ -416,7 +416,7 @@ export function TargetBarChart({
                     type: 'bar',
                     data: data.map(d => ({
                         value: d.value,
-                        itemStyle: { color: d.value >= target ? '#3b82f6' : '#94a3b8', borderRadius: [0, 4, 4, 0] }
+                        itemStyle: { color: d.value >= target ? '#2f74da' : '#8b93a1', borderRadius: [0, 4, 4, 0] }
                     })),
                     barMaxWidth: 16,
                     z: 2
@@ -451,7 +451,7 @@ export function MultiTrendChart({
     data, 
     target = 8,
     height = 224,
-    colors = ['#3b82f6', '#10b981', '#f59e0b'], // Attention, Quality, Time
+    colors = ['#2f74da', '#10b981', '#f59e0b'], // Attention, Quality, Time
     onEvents
 }: { 
     data: { label: string; atencion: number; calidad: number; tiempo: number }[], 
@@ -463,16 +463,16 @@ export function MultiTrendChart({
     const option = useMemo(() => ({
         tooltip: {
             trigger: 'axis',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backgroundColor: 'rgba(22, 27, 36, 0.96)',
             borderColor: 'rgba(255,255,255,0.1)',
-            textStyle: { color: '#f8fafc', fontSize: 12 },
+            textStyle: { color: '#f6f7f9', fontSize: 12 },
             formatter: (params: any) => {
                 const label = params[0].name;
-                let html = `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${label}</div>`;
+                let html = `<div style="font-weight:bold;margin-bottom:4px;color:#8b93a1;font-size:10px;text-transform:uppercase;letter-spacing:1px">${label}</div>`;
                 params.forEach((p: any) => {
                     html += `<div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
                                 <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background-color:${p.color}"></span>
-                                <span style="color:#cbd5e1;font-size:12px">${p.seriesName}:</span>
+                                <span style="color:#c9ced6;font-size:12px">${p.seriesName}:</span>
                                 <span style="color:${p.color};font-weight:bold">${p.value}/10</span>
                              </div>`;
                 });
@@ -492,14 +492,14 @@ export function MultiTrendChart({
             boundaryGap: false,
             data: data.map(d => d.label),
             axisLabel: { color: COMMON_TEXT_COLOR, fontSize: 10, margin: 12 },
-            axisLine: { lineStyle: { color: '#e2e8f0' } },
+            axisLine: { lineStyle: { color: '#e1e4e9' } },
             axisTick: { show: false }
         },
         yAxis: {
             type: 'value',
             min: 0,
             max: 10,
-            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
+            splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
             axisLabel: { color: COMMON_TEXT_COLOR, fontSize: 10 },
             axisLine: { show: false },
             axisTick: { show: false }

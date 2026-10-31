@@ -390,7 +390,7 @@ export default function DetalleOrdenTrabajoPage() {
   const activeCycle = ot.ciclos.find((c: any) => c.estado !== 'FIRMADO') || ot.ciclos[ot.ciclos.length - 1];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-8 space-y-6">
+    <div className="space-y-6">
       {/* Top Breadcrumb & Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -430,7 +430,7 @@ export default function DetalleOrdenTrabajoPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 font-mono tracking-tight">
+              <h1 className="text-title text-slate-900 dark:text-slate-100 font-mono">
                 {ot.numeroOT}
               </h1>
 
@@ -455,7 +455,7 @@ export default function DetalleOrdenTrabajoPage() {
               </span>
 
               {ot.tipoCierre && (
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
                   Cierre: {ot.tipoCierre}
                 </span>
               )}
@@ -491,7 +491,7 @@ export default function DetalleOrdenTrabajoPage() {
                 {ot.estado !== 'PENDIENTE_FIRMA' && (
                   <button
                     onClick={() => handleOpenStatusModal('PENDIENTE_FIRMA')}
-                    className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                    className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5"
                   >
                     <FileSignature className="w-3.5 h-3.5" />
                     Enviar a Firma
@@ -505,7 +505,7 @@ export default function DetalleOrdenTrabajoPage() {
               <button
                 onClick={() => handleVerifyIntegrity()}
                 disabled={checkingIntegrity}
-                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5"
               >
                 {checkingIntegrity ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                 Verificar Integridad
@@ -527,22 +527,22 @@ export default function DetalleOrdenTrabajoPage() {
         {/* Metadatos grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Responsable</span>
+            <span className="text-[11px] uppercase font-bold text-slate-400 block mb-0.5">Responsable</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{ot.responsable?.nombreCompleto}</span>
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Fecha Creación</span>
+            <span className="text-[11px] uppercase font-bold text-slate-400 block mb-0.5">Fecha Creación</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{formatDate(ot.createdAt)}</span>
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Creador</span>
+            <span className="text-[11px] uppercase font-bold text-slate-400 block mb-0.5">Creador</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{ot.creador?.nombreCompleto}</span>
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Sector</span>
+            <span className="text-[11px] uppercase font-bold text-slate-400 block mb-0.5">Sector</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{ot.sector || 'Sin sector'}</span>
           </div>
         </div>
@@ -589,7 +589,7 @@ export default function DetalleOrdenTrabajoPage() {
         <div className="space-y-6">
           {/* Reporte de Trabajo */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-2">
-            <h3 className="text-xs font-black uppercase text-slate-500 tracking-wider">Reporte de Trabajo</h3>
+            <h3 className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Reporte de Trabajo</h3>
             <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
               {ot.reporteTrabajo}
             </p>
@@ -599,7 +599,7 @@ export default function DetalleOrdenTrabajoPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-base font-black text-slate-900 dark:text-slate-100">
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   Ciclos de Ejecución y Trazabilidad
                 </h2>
                 <p className="text-xs text-slate-500">
@@ -624,7 +624,7 @@ export default function DetalleOrdenTrabajoPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800 pb-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
                           isSigned
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                             : 'bg-primary/10 text-primary'
@@ -634,16 +634,16 @@ export default function DetalleOrdenTrabajoPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                             Ciclo {ciclo.numeroCiclo} ({ciclo.periodo})
                           </h3>
                           {isSigned ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
+                            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
                               <Lock className="w-3 h-3" />
                               FIRMADO DIGITALMENTE
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
                               ABIERTO
                             </span>
                           )}
@@ -658,7 +658,7 @@ export default function DetalleOrdenTrabajoPage() {
 
                     {isSigned && ciclo.hashIntegridad && (
                       <div className="flex items-center gap-2">
-                        <code className="text-[10px] font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-400 max-w-[160px] truncate" title={ciclo.hashIntegridad}>
+                        <code className="text-[11px] font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-400 max-w-[160px] truncate" title={ciclo.hashIntegridad}>
                           SHA: {ciclo.hashIntegridad.slice(0, 16)}...
                         </code>
                         <button
@@ -675,7 +675,7 @@ export default function DetalleOrdenTrabajoPage() {
                   {/* 1. Técnicos y Horas */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-black uppercase text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <h4 className="text-xs font-semibold uppercase text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-primary" />
                         Técnicos y Mano de Obra
                       </h4>
@@ -724,7 +724,7 @@ export default function DetalleOrdenTrabajoPage() {
                                     <td className="py-2.5 px-4 text-right text-slate-500 font-mono">
                                       ${op.valorHoraSnapshot.toLocaleString('es-AR')}
                                     </td>
-                                    <td className="py-2.5 px-4 text-right font-black text-slate-900 dark:text-slate-100 font-mono">
+                                    <td className="py-2.5 px-4 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
                                       ${op.costoManoObra.toLocaleString('es-AR')}
                                     </td>
                                   </>
@@ -750,7 +750,7 @@ export default function DetalleOrdenTrabajoPage() {
                   {/* 2. Materiales */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-black uppercase text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <h4 className="text-xs font-semibold uppercase text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                         <Package className="w-3.5 h-3.5 text-primary" />
                         Materiales Utilizados
                       </h4>
@@ -794,7 +794,7 @@ export default function DetalleOrdenTrabajoPage() {
                                 <td className="py-2.5 px-4 font-mono font-bold text-slate-700 dark:text-slate-300">
                                   {m.materialCodigo}{' '}
                                   {m.materialSource === 'MANUAL' && (
-                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                    <span className="text-[11px] font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 border border-amber-500/20">
                                       MANUAL
                                     </span>
                                   )}
@@ -806,7 +806,7 @@ export default function DetalleOrdenTrabajoPage() {
                                     <td className="py-2.5 px-4 text-right font-mono text-slate-600 dark:text-slate-400">
                                       ${m.precioFinalSnapshot.toLocaleString('es-AR')}
                                     </td>
-                                    <td className="py-2.5 px-4 text-right font-black text-slate-900 dark:text-slate-100 font-mono">
+                                    <td className="py-2.5 px-4 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
                                       ${m.importeTotal.toLocaleString('es-AR')}
                                     </td>
                                   </>
@@ -833,14 +833,14 @@ export default function DetalleOrdenTrabajoPage() {
                   <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/80 dark:border-slate-800">
                     <div className="flex items-center gap-6">
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Horas Ciclo</span>
+                        <span className="text-[11px] uppercase font-bold text-slate-400 block">Horas Ciclo</span>
                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                           {ciclo.totalHoras.toFixed(2)} h
                         </span>
                       </div>
                       {canSeeLaborCosts && (
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Mano de Obra</span>
+                          <span className="text-[11px] uppercase font-bold text-slate-400 block">Mano de Obra</span>
                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                             ${ciclo.totalManoObra.toLocaleString('es-AR')}
                           </span>
@@ -848,14 +848,14 @@ export default function DetalleOrdenTrabajoPage() {
                       )}
                       {canSeeMaterialCosts ? (
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Materiales</span>
+                          <span className="text-[11px] uppercase font-bold text-slate-400 block">Materiales</span>
                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                             ${ciclo.totalMateriales.toLocaleString('es-AR')}
                           </span>
                         </div>
                       ) : (
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Items Materiales</span>
+                          <span className="text-[11px] uppercase font-bold text-slate-400 block">Items Materiales</span>
                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                             {ciclo.materiales?.length || 0}
                           </span>
@@ -865,8 +865,8 @@ export default function DetalleOrdenTrabajoPage() {
 
                     {canSeeTotalCosts && (
                       <div className="text-right">
-                        <span className="text-[10px] uppercase font-bold text-primary block">Total Ciclo</span>
-                        <span className="text-sm font-black text-primary font-mono">
+                        <span className="text-[11px] uppercase font-bold text-primary block">Total Ciclo</span>
+                        <span className="text-sm font-bold text-primary font-mono">
                           ${ciclo.totalGeneral.toLocaleString('es-AR')}
                         </span>
                       </div>
@@ -883,7 +883,7 @@ export default function DetalleOrdenTrabajoPage() {
       {activeTab === 'chat' && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-6">
           <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Conversación y Novedades de la Orden
             </h3>
             <p className="text-xs text-slate-500">
@@ -905,7 +905,7 @@ export default function DetalleOrdenTrabajoPage() {
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-900 dark:text-slate-100">{c.usuarioNombre}</span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded font-bold uppercase bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                      <span className="text-[11px] px-1.5 py-0.2 rounded font-bold uppercase bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                         {c.usuarioRol}
                       </span>
                     </div>
@@ -929,7 +929,7 @@ export default function DetalleOrdenTrabajoPage() {
             <button
               type="submit"
               disabled={sendingComment || !newComment.trim()}
-              className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
             >
               {sendingComment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
               Enviar
@@ -942,7 +942,7 @@ export default function DetalleOrdenTrabajoPage() {
       {activeTab === 'historial' && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
           <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Historial de Transiciones y Auditoría
             </h3>
             <p className="text-xs text-slate-500">Registro de cambios de estado y autorizaciones.</p>
@@ -961,7 +961,7 @@ export default function DetalleOrdenTrabajoPage() {
                       </span>
                     </div>
                     {h.motivo && <p className="text-slate-500 text-[11px] mt-0.5">{h.motivo}</p>}
-                    <span className="text-[10px] text-slate-400 mt-1 block">Por: {h.usuarioNombre || 'Sistema'}</span>
+                    <span className="text-[11px] text-slate-400 mt-1 block">Por: {h.usuarioNombre || 'Sistema'}</span>
                   </div>
                   <span className="text-[11px] text-slate-400 whitespace-nowrap">{formatDateTime(h.createdAt)}</span>
                 </div>
@@ -973,9 +973,9 @@ export default function DetalleOrdenTrabajoPage() {
 
       {/* MODAL: ADD OPERATOR HOURS */}
       {isAddOperatorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Clock className="w-4 h-4 text-primary" />
               Cargar Horas de Técnico
             </h3>
@@ -1026,9 +1026,9 @@ export default function DetalleOrdenTrabajoPage() {
 
       {/* MODAL: ADD MATERIAL */}
       {isAddMaterialOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Package className="w-4 h-4 text-primary" />
               Cargar Material en la OT
             </h3>
@@ -1156,9 +1156,9 @@ export default function DetalleOrdenTrabajoPage() {
 
       {/* MODAL: EDIT GENERAL INFO */}
       {isEditingInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">Editar Datos de la Orden</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Editar Datos de la Orden</h3>
 
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">Ref. Cliente</label>
@@ -1173,7 +1173,7 @@ export default function DetalleOrdenTrabajoPage() {
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
                 <span>Sector / Ubicación</span>
-                <span className="text-[10px] text-slate-400 font-normal">Buscar o crear</span>
+                <span className="text-[11px] text-slate-400 font-normal">Buscar o crear</span>
               </label>
               <SearchableCombobox
                 options={clientSectors.map((s) => ({
@@ -1235,7 +1235,7 @@ export default function DetalleOrdenTrabajoPage() {
 
       {/* MODAL: INTEGRITY VERIFICATION RESULT */}
       {integrityModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               {integrityModal.integridadTotal ? (
@@ -1248,7 +1248,7 @@ export default function DetalleOrdenTrabajoPage() {
                 </div>
               )}
               <div>
-                <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   {integrityModal.integridadTotal
                     ? 'INTEGRIDAD CRIPTOGRÁFICA VERIFICADA'
                     : 'ADVERTENCIA DE INCONSISTENCIA'}
@@ -1278,7 +1278,7 @@ export default function DetalleOrdenTrabajoPage() {
                   <p className="text-[11px] opacity-80">
                     Firmante: {r.firmanteNombre} el {formatDateTime(r.fechaFirma)}
                   </p>
-                  <div className="font-mono text-[10px] break-all bg-white/60 dark:bg-slate-900/60 p-2 rounded">
+                  <div className="font-mono text-[11px] break-all bg-white/60 dark:bg-slate-900/60 p-2 rounded">
                     <div>
                       <strong>Almacenado:</strong> {r.hashAlmacenado}
                     </div>
@@ -1304,7 +1304,7 @@ export default function DetalleOrdenTrabajoPage() {
 
       {/* MODAL: CAMBIAR ESTADO DE LA OT (Reemplazo nativo de prompt) */}
       {statusChangeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Cambiar Estado a &quot;{statusChangeModal.nuevoEstado}&quot;
@@ -1335,7 +1335,7 @@ export default function DetalleOrdenTrabajoPage() {
                 type="button"
                 onClick={handleExecuteStatusChange}
                 disabled={actionLoading}
-                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-2"
               >
                 {actionLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 Confirmar Cambio

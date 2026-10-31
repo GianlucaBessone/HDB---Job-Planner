@@ -65,10 +65,10 @@ export default function ReportesPage() {
     };
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 pb-20">
             <ProjectsHeader activeTabId="reportes" />
             
-            <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-[2.5rem] shadow-sm border-dashed">
+            <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm border-dashed">
                 <div className="p-6 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full mb-6">
                     <PieChart className="w-12 h-12" />
                 </div>

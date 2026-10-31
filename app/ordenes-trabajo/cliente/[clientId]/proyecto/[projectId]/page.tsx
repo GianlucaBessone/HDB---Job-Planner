@@ -204,7 +204,7 @@ export default function ProyectoOtsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-8 space-y-6">
+    <div className="space-y-6">
       {/* Breadcrumbs */}
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
         <Link href="/ordenes-trabajo" className="hover:text-primary transition-colors">
@@ -225,7 +225,7 @@ export default function ProyectoOtsPage() {
             <FileText className="w-4 h-4" />
             <span>{client?.nombre} · {project?.codigoProyecto ? `[${project.codigoProyecto}]` : ''}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-title text-slate-900 dark:text-slate-100">
             Órdenes de Trabajo
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
@@ -263,7 +263,7 @@ export default function ProyectoOtsPage() {
           <button
             type="button"
             onClick={handleCopyPortalLink}
-            className="p-2.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold flex items-center justify-center shadow-sm transition-all hover:border-slate-300 dark:hover:border-slate-700 active:scale-95"
+            className="p-2.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold flex items-center justify-center shadow-sm transition-all hover:border-slate-300 dark:hover:border-slate-700"
             title="Copiar enlace de acceso al portal del cliente"
             aria-label="Copiar enlace al portal del cliente"
           >
@@ -276,7 +276,7 @@ export default function ProyectoOtsPage() {
 
           <Link
             href={`/ordenes-trabajo/nueva?clienteId=${clientId}&proyectoId=${projectId}`}
-            className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-colors shrink-0"
+            className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-colors shrink-0"
           >
             <Plus className="w-4 h-4" />
             Nueva OT
@@ -294,7 +294,7 @@ export default function ProyectoOtsPage() {
             placeholder="Buscar por OT (ej: OT-2026-0001) o Ref. Cliente..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full pl-10 pr-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
@@ -383,7 +383,7 @@ export default function ProyectoOtsPage() {
                   {/* Left block */}
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <span className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors font-mono">
+                      <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors font-mono">
                         {ot.numeroOT}
                       </span>
 
@@ -396,7 +396,7 @@ export default function ProyectoOtsPage() {
                       {getStatusBadge(ot.estado)}
 
                       {ot.ciclos.length > 1 && (
-                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                        <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
                           {ot.ciclos.length} Ciclos
                         </span>
                       )}
@@ -427,8 +427,8 @@ export default function ProyectoOtsPage() {
                     <div className="flex items-center gap-5">
                       {!isVendedor && (
                         <div className="text-right">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Horas</span>
-                          <span className="text-sm font-black text-slate-800 dark:text-slate-200">
+                          <span className="text-[11px] uppercase font-bold text-slate-400 block">Horas</span>
+                          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
                             {totalHoras.toFixed(1)} h
                           </span>
                         </div>
@@ -436,8 +436,8 @@ export default function ProyectoOtsPage() {
 
                       {!isOperador && (
                         <div className="text-right">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Materiales</span>
-                          <span className="text-sm font-black text-slate-800 dark:text-slate-200">
+                          <span className="text-[11px] uppercase font-bold text-slate-400 block">Materiales</span>
+                          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
                             ${totalMateriales.toLocaleString('es-AR')}
                           </span>
                         </div>

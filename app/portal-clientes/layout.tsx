@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { BrandMark } from '@/components/shell/BrandMark';
 import {
-  ShieldCheck,
+
   FolderGit2,
   FileText,
   LayoutDashboard,
@@ -66,9 +67,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   if (loadingSession) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-xs font-bold">Verificando sesión del portal...</p>
+      <div role="status" className="min-h-screen flex flex-col items-center justify-center bg-background text-slate-500 gap-3">
+        <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+        <p className="text-[13px]">Verificando sesión del portal…</p>
       </div>
     );
   }
@@ -80,23 +81,19 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Top Portal Navbar */}
-      <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 bg-background/90 backdrop-blur border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[var(--topbar-h)] flex items-center justify-between gap-4">
           {/* Brand */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-black shadow-sm">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
+            <BrandMark className="w-8 h-8" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
                   HDB
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary/10 text-primary uppercase">
-                  Portal Clientes
-                </span>
+                <span className="badge badge-brand">Portal de clientes</span>
               </div>
               <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 line-clamp-1">
                 {session?.cliente?.nombre}
@@ -117,11 +114,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors ${
-                    isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                  className="nav-item"
                 >
                   <Icon className="w-4 h-4" />
                   {link.label}
@@ -136,7 +130,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                 {session?.nombre}
               </span>
-              <span className="text-[10px] text-slate-400 font-medium">
+              <span className="text-[11px] text-slate-400 font-medium">
                 {session?.cargo || 'Responsable Autorizado'}
               </span>
             </div>
@@ -144,24 +138,27 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <button
               onClick={handleLogout}
               title="Cerrar sesión"
-              className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Cerrar sesión"
+              className="btn btn-ghost btn-icon btn-icon-inline"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut />
             </button>
 
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-slate-500 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="md:hidden btn btn-ghost btn-icon btn-icon-inline"
+              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X /> : <Menu />}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-2">
+          <div className="md:hidden border-t border-border bg-card p-3 space-y-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive =
@@ -174,11 +171,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors ${
-                    isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                  className="nav-item h-10"
                 >
                   <Icon className="w-4 h-4" />
                   {link.label}
@@ -193,7 +187,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">{children}</main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 py-4 text-center text-xs text-slate-400">
+      <footer className="border-t border-border py-4 px-4 text-center text-xs text-slate-500 dark:text-slate-400">
         HDB Servicios Eléctricos · Portal Privado para Clientes · Documentos e Integridad SHA-256
       </footer>
     </div>

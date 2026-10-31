@@ -236,12 +236,12 @@ export default function ProductoFormModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
       <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
           <div>
-            <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
               {isEdit ? 'Editar Producto Comercial' : 'Nuevo Producto Comercial'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -325,9 +325,9 @@ export default function ProductoFormModal({
                       }
                     }}
                     placeholder="Ej: 00025"
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 uppercase"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 uppercase"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">Identificador único (los códigos numéricos se completan a 5 dígitos con ceros).</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Identificador único (los códigos numéricos se completan a 5 dígitos con ceros).</p>
                 </div>
 
                 <div>
@@ -339,9 +339,9 @@ export default function ProductoFormModal({
                     value={formData.codigoBarras}
                     onChange={(e) => setFormData({ ...formData, codigoBarras: e.target.value })}
                     placeholder="Ej: 7791234567890"
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">Acepta escaneo directo con lector láser o pistola USB.</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Acepta escaneo directo con lector láser o pistola USB.</p>
                 </div>
               </div>
 
@@ -355,7 +355,7 @@ export default function ProductoFormModal({
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                   placeholder="Ej: Cable Unipolar 2.5mm Normalizado IRAM Celeste"
-                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
 
@@ -469,7 +469,7 @@ export default function ProductoFormModal({
                     value={formData.skuProveedor}
                     onChange={(e) => setFormData({ ...formData, skuProveedor: e.target.value })}
                     placeholder="Ej: ART-FAB-9921"
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
                 </div>
               </div>
@@ -488,7 +488,7 @@ export default function ProductoFormModal({
                       value={formData.costo}
                       onChange={(e) => setFormData({ ...formData, costo: e.target.value })}
                       placeholder="0.00"
-                      className="w-full h-10 pl-8 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-10 pl-8 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   <div className="flex items-center justify-between text-[11px] mt-1">
@@ -515,7 +515,7 @@ export default function ProductoFormModal({
                   <select
                     value={formData.ivaId}
                     onChange={(e) => setFormData({ ...formData, ivaId: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     {meta.alicuotasIva.map((a) => (
                       <option key={a.id} value={a.id}>
@@ -546,7 +546,7 @@ export default function ProductoFormModal({
                       value={formData.rentabilidad}
                       onChange={(e) => setFormData({ ...formData, rentabilidad: e.target.value })}
                       placeholder="30"
-                      className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                     <span className="absolute right-3.5 top-2.5 text-slate-400 font-bold">%</span>
                   </div>
@@ -557,7 +557,7 @@ export default function ProductoFormModal({
               <div className="p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/20 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="block text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                    <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                       Precio Base de Venta ($ ARS) <span className="text-rose-500">*</span>
                     </label>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -567,7 +567,7 @@ export default function ProductoFormModal({
                   <button
                     type="button"
                     onClick={handleAutoCalcPrecioBase}
-                    className="px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-bold flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-opacity"
+                    className="px-3 py-1.5 rounded-xl bg-primary text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 transition-opacity"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     Costo + Margen
@@ -584,13 +584,13 @@ export default function ProductoFormModal({
                       value={formData.precioBase}
                       onChange={(e) => setFormData({ ...formData, precioBase: e.target.value })}
                       placeholder="0.00"
-                      className="w-full h-11 pl-8 pr-3.5 rounded-xl border border-primary/30 bg-background text-base font-black text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-inner"
+                      className="w-full h-11 pl-8 pr-3.5 rounded-xl border border-primary/30 bg-card text-base font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-inner"
                     />
                   </div>
 
                   <div className="flex items-center gap-3 p-2.5 rounded-xl bg-background/80 border border-slate-200 dark:border-slate-800">
                     <div className="text-xs text-slate-500 dark:text-slate-400">Formato ARS:</div>
-                    <div className="text-base font-mono font-black text-emerald-600 dark:text-emerald-400">
+                    <div className="text-base font-mono font-bold text-emerald-600 dark:text-emerald-400">
                       {formData.precioBase !== '' ? formatARS(formData.precioBase) : '$ 0,00'}
                     </div>
                   </div>
@@ -637,12 +637,12 @@ export default function ProductoFormModal({
                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                               {lp.nombre}
                             </span>
-                            <span className="text-[10px] font-mono text-slate-400 font-semibold">
+                            <span className="text-[11px] font-mono text-slate-400 font-semibold">
                               {lp.codigo}
                             </span>
                           </div>
                           <div className="flex items-baseline justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-xs">
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400">
                               {lp.tipoAjuste === 'MANUAL'
                                 ? 'Base'
                                 : lp.tipoAjuste === 'DESCUENTO_BASE'
@@ -684,7 +684,7 @@ export default function ProductoFormModal({
                   <select
                     value={formData.almacenId}
                     onChange={(e) => setFormData({ ...formData, almacenId: e.target.value, ubicacionId: '' })}
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     {meta.almacenes.map((a) => (
                       <option key={a.id} value={a.id}>
@@ -701,7 +701,7 @@ export default function ProductoFormModal({
                   <select
                     value={formData.ubicacionId}
                     onChange={(e) => setFormData({ ...formData, ubicacionId: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     <option value="">-- Sin Ubicación Específica --</option>
                     {availableUbicaciones.map((u) => (
@@ -724,9 +724,9 @@ export default function ProductoFormModal({
                     value={formData.stockMinimo}
                     onChange={(e) => setFormData({ ...formData, stockMinimo: e.target.value })}
                     placeholder="5"
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">Dispara alerta visual de "Stock Bajo".</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Dispara alerta visual de "Stock Bajo".</p>
                 </div>
 
                 <div>
@@ -739,9 +739,9 @@ export default function ProductoFormModal({
                     value={formData.stockMaximo}
                     onChange={(e) => setFormData({ ...formData, stockMaximo: e.target.value })}
                     placeholder="100"
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">Dispara alerta visual de "Sobre Stock".</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Dispara alerta visual de "Sobre Stock".</p>
                 </div>
 
                 <div>
@@ -755,9 +755,9 @@ export default function ProductoFormModal({
                     value={formData.stockInicial}
                     onChange={(e) => setFormData({ ...formData, stockInicial: e.target.value })}
                     placeholder="0"
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60 disabled:bg-slate-100 dark:disabled:bg-slate-800"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-60 disabled:bg-slate-100 dark:disabled:bg-slate-800"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">
+                  <p className="text-[11px] text-slate-400 mt-1">
                     {isEdit ? 'Modificar mediante acción "Stock ▾ → Ajuste Rápido"' : 'Se registrará como movimiento inicial.'}
                   </p>
                 </div>
@@ -779,7 +779,7 @@ export default function ProductoFormModal({
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
                 {isSaving ? 'Guardando...' : isEdit ? 'Guardar Cambios' : 'Crear Producto'}

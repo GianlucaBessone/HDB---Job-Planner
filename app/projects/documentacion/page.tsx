@@ -56,17 +56,17 @@ export default function DocumentacionPage() {
     };
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 pb-20">
             <ProjectsHeader activeTabId="documentacion" />
             
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 space-y-4">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Cargando Documentación...</p>
+                    <p className="text-slate-500 font-bold uppercase tracking-wider text-xs">Cargando Documentación...</p>
                 </div>
             ) : reports.length === 0 ? (
-                <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-[2.5rem] shadow-sm border-dashed">
-                    <div className="p-6 bg-background text-foreground/50 rounded-full mb-6">
+                <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm border-dashed">
+                    <div className="p-6 bg-background text-foreground rounded-full mb-6">
                         <FileText className="w-12 h-12 opacity-20" />
                     </div>
                     <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Sin documentos</h2>
@@ -76,7 +76,7 @@ export default function DocumentacionPage() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <div className="bg-card border border-slate-200 dark:border-slate-700 rounded-[2rem] overflow-hidden shadow-sm">
+                    <div className="bg-card border border-slate-200 dark:border-slate-700 rounded-3xl overflow-hidden shadow-sm">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 border-b border-slate-200 dark:border-slate-700">
                                 <tr>

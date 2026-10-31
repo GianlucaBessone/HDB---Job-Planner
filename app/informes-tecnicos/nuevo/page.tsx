@@ -50,7 +50,7 @@ export default function NuevoInformePage() {
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+        <div className="w-full max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200 space-y-6">
             {/* Header */}
             <div className="space-y-4">
                 <Link
@@ -60,8 +60,8 @@ export default function NuevoInformePage() {
                     <ArrowLeft className="w-4 h-4" /> Volver
                 </Link>
                 <div>
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                        <FileText className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                        <FileText className="w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Nuevo Informe Técnico
                     </h2>
                     <p className="text-sm text-slate-500 font-medium mt-1">Seleccioná el tipo de informe que deseas confeccionar.</p>
@@ -90,7 +90,7 @@ export default function NuevoInformePage() {
                             </p>
                             
                             <div className="mt-4 flex items-center justify-between">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                                     {template.schema?.sections?.length || 0} SECCIONES
                                 </span>
                                 {creatingId === template.id ? (

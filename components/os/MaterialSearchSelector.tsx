@@ -250,7 +250,7 @@ export function MaterialSearchSelector({
   return (
     <div
       id="modal-material-search"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/50 animate-in fade-in duration-200"
       onKeyDown={handleKeyDown}
     >
       <div className="bg-card text-card-foreground w-full max-w-3xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
@@ -261,7 +261,7 @@ export function MaterialSearchSelector({
               <Package className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 Buscar Material en Gestión Comercial
               </h3>
               <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
@@ -298,7 +298,7 @@ export function MaterialSearchSelector({
               value={searchTerm}
               onChange={handleInputChange}
               placeholder="Buscar por SKU (ej: 12345), SKU Proveedor (ej: ABC-123) o descripción..."
-              className="w-full pl-11 pr-24 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              className="w-full pl-11 pr-24 py-3 bg-card border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
             <div className="absolute right-3 flex items-center gap-2">
               {loading && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
@@ -354,7 +354,7 @@ export function MaterialSearchSelector({
               </div>
               <button
                 onClick={openManualEntry}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all"
               >
                 <Plus className="w-4 h-4" /> Cargar como Material Manual (999999)
               </button>
@@ -395,32 +395,32 @@ export function MaterialSearchSelector({
                     onMouseEnter={() => setSelectedIndex(idx)}
                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                       isSelected
-                        ? 'border-primary bg-primary/5 shadow-md shadow-primary/5'
+                        ? 'border-primary bg-primary/5 shadow-md'
                         : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-card'
                     }`}
                   >
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs font-black text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
                           {item.sku}
                         </span>
 
                         {item.skuProveedor && (
-                          <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
+                          <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                             Prov: {item.skuProveedor}
                           </span>
                         )}
 
                         {tierLabel && (
                           <span
-                            className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${tierColor}`}
+                            className={`text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border ${tierColor}`}
                           >
                             {tierLabel}
                           </span>
                         )}
 
                         {isManual && (
-                          <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                          <span className="text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
                             Manual
                           </span>
                         )}
@@ -460,7 +460,7 @@ export function MaterialSearchSelector({
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
                         isSelected
-                          ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105'
+                          ? 'bg-primary text-white shadow-md scale-105'
                           : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-primary hover:text-white'
                       }`}
                     >
@@ -496,12 +496,12 @@ export function MaterialSearchSelector({
 
       {/* Modal para Material Manual 999999 (Sección 16) */}
       {showManualModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-150">
           <div className="bg-card text-card-foreground w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-2">
                 <Hash className="w-5 h-5 text-amber-500" />
-                <h4 className="text-base font-black text-slate-800 dark:text-slate-100">
+                <h4 className="text-base font-bold text-slate-800 dark:text-slate-100">
                   Cargar Material Manual (999999)
                 </h4>
               </div>
@@ -519,7 +519,7 @@ export function MaterialSearchSelector({
 
             <div className="space-y-3">
               <div>
-                <label className="text-[11px] font-black uppercase text-slate-400 block mb-1">
+                <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                   Descripción *
                 </label>
                 <input
@@ -534,7 +534,7 @@ export function MaterialSearchSelector({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-black uppercase text-slate-400 block mb-1">
+                  <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     Cantidad *
                   </label>
                   <input
@@ -547,7 +547,7 @@ export function MaterialSearchSelector({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-black uppercase text-slate-400 block mb-1">
+                  <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     Unidad
                   </label>
                   <input
@@ -561,7 +561,7 @@ export function MaterialSearchSelector({
               </div>
 
               <div>
-                <label className="text-[11px] font-black uppercase text-slate-400 block mb-1">
+                <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                   Precio Unitario Aplicado ($)
                 </label>
                 <input
@@ -588,7 +588,7 @@ export function MaterialSearchSelector({
                 type="button"
                 disabled={!manualDesc.trim() || Number(manualCantidad) <= 0}
                 onClick={handleConfirmManual}
-                className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
               >
                 <Check className="w-4 h-4" /> Agregar a OS
               </button>

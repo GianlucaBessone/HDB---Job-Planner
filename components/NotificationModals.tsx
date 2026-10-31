@@ -105,8 +105,8 @@ export default function NotificationModals({ selectedNotification, user, onClose
     return (
         <>
             {selectedNotification.type === 'TIME_MODIFICATION_REQUEST' && (
-                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative">
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-8 relative">
                         <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500">
                             <X className="w-5 h-5" />
                         </button>
@@ -115,14 +115,14 @@ export default function NotificationModals({ selectedNotification, user, onClose
                                 <AlertCircle className="w-6 h-6 text-indigo-500" />
                                 {(selectedNotification.metadata || selectedNotification.message?.includes('modificar')) ? 'Modificación Solicitada' : 'Eliminación Solicitada'}
                             </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 italic">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium bg-background text-foreground p-4 rounded-xl border border-slate-100 dark:border-slate-800 italic">
                                 "{selectedNotification.message.split('Motivo:')[1]?.trim() || 'Sin motivo especificado'}"
                             </p>
                         </div>
 
                         {selectedNotification.metadata && (
                             <div className="bg-indigo-50/50 rounded-2xl p-5 mb-6 border border-indigo-100/50">
-                                <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-3">Cambios Solicitados</h4>
+                                <h4 className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-3">Cambios Solicitados</h4>
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-slate-500 dark:text-slate-400 font-medium">Hora Inicio:</span>
@@ -143,12 +143,12 @@ export default function NotificationModals({ selectedNotification, user, onClose
                         {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa') && (
                             <div className="flex gap-3">
                                 <button onClick={handleRejectModification} className="flex-1 py-4 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 transition-colors">Rechazar</button>
-                                <button onClick={handleAcceptModification} className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95">Aprobar</button>
+                                <button onClick={handleAcceptModification} className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all">Aprobar</button>
                             </div>
                         )}
                         {user?.role === 'operador' && (
-                            <div className="p-4 bg-background text-foreground/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
-                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Pendiente de aprobación</p>
+                            <div className="p-4 bg-background text-foreground rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pendiente de aprobación</p>
                             </div>
                         )}
                     </div>
@@ -156,8 +156,8 @@ export default function NotificationModals({ selectedNotification, user, onClose
             )}
 
             {selectedNotification.type === 'PLANNING_ASSIGNMENT' && (
-                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
                         <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 z-10">
                             <X className="w-5 h-5" />
                         </button>
@@ -181,7 +181,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
 
                         {selectedNotification.metadata?.assignments?.length > 0 ? (
                             <div className="space-y-4 mb-6">
-                                <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tus Proyectos Asignados</h4>
+                                <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tus Proyectos Asignados</h4>
                                 {selectedNotification.metadata.assignments.map((assignment: any, i: number) => (
                                     <div key={i} className="bg-primary/5 border border-primary/10 rounded-2xl p-4">
                                         <h5 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2">{assignment.projectName}</h5>
@@ -191,17 +191,17 @@ export default function NotificationModals({ selectedNotification, user, onClose
                                         </div>
                                         {assignment.companionNames && assignment.companionNames.length > 0 && (
                                             <div className="mt-3">
-                                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Compañeros:</span>
+                                                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Compañeros:</span>
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {assignment.companionNames.map((name: string, j: number) => (
-                                                        <span key={j} className="text-xs bg-card text-card-foreground text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-800 shadow-sm">{name}</span>
+                                                        <span key={j} className="text-xs bg-card text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-800 shadow-sm">{name}</span>
                                                     ))}
                                                 </div>
                                             </div>
                                         )}
                                         {assignment.note && (
                                             <div className="mt-3 bg-card text-card-foreground p-3 rounded-xl border border-amber-100">
-                                                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider block mb-1">Nota de la Asignación:</span>
+                                                <span className="text-[11px] font-bold text-amber-500 uppercase tracking-wider block mb-1">Nota de la Asignación:</span>
                                                 <p className="text-sm text-slate-700 dark:text-slate-200 italic">{assignment.note}</p>
                                             </div>
                                         )}
@@ -214,7 +214,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
                         
                         {selectedNotification.metadata?.generalNotes && (
                             <div className="mb-6">
-                                <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Notas de Planificación</h4>
+                                <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Notas de Planificación</h4>
                                 <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                                     <p className="text-sm text-slate-700 dark:text-slate-300 italic whitespace-pre-wrap">{selectedNotification.metadata.generalNotes}</p>
                                 </div>
@@ -222,15 +222,15 @@ export default function NotificationModals({ selectedNotification, user, onClose
                         )}
                         
                         <div className="mt-8">
-                            <button onClick={onClose} className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
+                            <button onClick={onClose} className="w-full py-4 bg-muted text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
                         </div>
                     </div>
                 </div>
             )}
 
             {selectedNotification.type === 'PLANNING_ASSIGNMENT_SUMMARY' && (
-                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
                         <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 z-10">
                             <X className="w-5 h-5" />
                         </button>
@@ -261,7 +261,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
                         </div>
 
                         <div className="mt-8">
-                            <button onClick={onClose} className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Entendido</button>
+                            <button onClick={onClose} className="w-full py-4 bg-muted text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Entendido</button>
                         </div>
                     </div>
                 </div>

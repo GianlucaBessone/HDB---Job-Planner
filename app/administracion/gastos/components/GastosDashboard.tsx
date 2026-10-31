@@ -38,7 +38,7 @@ function MultiSelectDropdown({
         <div className="relative min-w-[160px] flex-1" ref={containerRef}>
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full h-11 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none focus:ring-4 focus:ring-blue-500/10"
+                className="flex items-center justify-between w-full h-11 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none focus:ring-4 focus:ring-blue-500/10"
             >
                 <div className="flex items-center gap-2 truncate">
                     {icon}
@@ -82,20 +82,20 @@ function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; c
     return (
         <div className="group/tooltip relative">
             <Info className="w-5 h-5 text-slate-300 hover:text-blue-500 transition-colors cursor-pointer" />
-            <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] leading-relaxed hidden group-hover/tooltip:block z-[50] shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
+            <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[11px] leading-relaxed hidden group-hover/tooltip:block z-[50] shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
                 <div className="space-y-3">
                     <div>
-                        <span className="block font-black uppercase tracking-widest text-blue-500 mb-1">¿Qué mide?</span>
+                        <span className="block font-semibold uppercase tracking-wider text-blue-500 mb-1">¿Qué mide?</span>
                         <p className="text-slate-300 font-medium">{def}</p>
                     </div>
                     <div>
-                        <span className="block font-black uppercase tracking-widest text-emerald-400 mb-1">¿Para qué sirve?</span>
+                        <span className="block font-semibold uppercase tracking-wider text-emerald-400 mb-1">¿Para qué sirve?</span>
                         <p className="text-slate-300 font-medium">{purpose}</p>
                     </div>
                     {calc && calc !== "N/A" && (
                         <div className="pt-2 border-t border-slate-700/50">
-                            <span className="block font-black uppercase tracking-widest text-amber-400 mb-1">Cálculo</span>
-                            <code className="text-[9px] font-mono bg-black/30 p-1.5 rounded block text-slate-300">{calc}</code>
+                            <span className="block font-semibold uppercase tracking-wider text-amber-400 mb-1">Cálculo</span>
+                            <code className="text-[11px] font-mono bg-black/30 p-1.5 rounded block text-slate-300">{calc}</code>
                         </div>
                     )}
                 </div>
@@ -106,7 +106,7 @@ function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; c
 
 function KpiCard({ title, value, icon, color, trend, tooltip, active }: { title: string; value: string | number; icon: React.ReactNode; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string }, active?: boolean }) {
     return (
-        <div className={`bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border ${active ? 'border-blue-500 ring-1 ring-blue-500 shadow-md' : 'border-slate-200 dark:border-slate-700 shadow-sm'} hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[64px] md:h-[72px] gap-2`}>
+        <div className={`bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border ${active ? 'border-blue-500 ring-1 ring-blue-500 shadow-md' : 'border-slate-200 dark:border-slate-700 shadow-sm'} hover:shadow-md transition-all duration-300 flex items-center justify-between h-[64px] md:h-[72px] gap-2`}>
             <div className="flex items-center gap-2.5 min-w-0">
                 <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 ${color} text-white shadow-sm`}>
                     <div className="[&>svg]:w-4 [&>svg]:h-4 md:[&>svg]:w-5 md:[&>svg]:h-5">
@@ -114,16 +114,16 @@ function KpiCard({ title, value, icon, color, trend, tooltip, active }: { title:
                     </div>
                 </div>
                 <div className="flex flex-col justify-center min-w-0 py-0.5">
-                    <p className="text-[10px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest line-clamp-1">{title}</p>
-                    <h4 className="text-lg md:text-xl lg:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tighter truncate leading-none mt-0.5">{value}</h4>
+                    <p className="text-[11px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider line-clamp-1">{title}</p>
+                    <h4 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight truncate leading-none mt-0.5">{value}</h4>
                 </div>
             </div>
             
             <div className="flex flex-col items-end justify-between shrink-0 h-full py-0.5">
-                {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1.5 py-0.5 bg-background text-foreground/50 rounded-md">KPI</div>}
+                {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-1.5 py-0.5 bg-background text-foreground rounded-md">KPI</div>}
                 <div className="flex items-center gap-1.5 mt-auto">
                     <div className={`w-1.5 h-1.5 rounded-full ${color.replace('bg-', 'bg-').replace('500', '400')} animate-pulse`} />
-                    <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase max-w-[60px] lg:max-w-[80px] truncate" title={trend}>{trend}</p>
+                    <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase max-w-[60px] lg:max-w-[80px] truncate" title={trend}>{trend}</p>
                 </div>
             </div>
         </div>
@@ -283,17 +283,17 @@ export default function GastosDashboard() {
   }
 
   return (
-    <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 p-2 md:p-4 pb-12 overflow-y-auto h-full">
+    <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 p-2 md:p-4 pb-12 overflow-y-auto h-full">
       
       {/* Top Filters Header */}
-      <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-3">
+      <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
               <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                   <Filter className="w-4 h-4 text-blue-500" />
                   Filtros de Análisis
               </h3>
               {hasAnyFilter && (
-                  <button onClick={clearAllFilters} className="flex items-center gap-1 text-[10px] font-black text-blue-500 uppercase tracking-widest hover:underline bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 px-2 py-1 rounded-md transition-colors">
+                  <button onClick={clearAllFilters} className="flex items-center gap-1 text-[12px] font-semibold text-blue-500 hover:underline bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 px-2 py-1 rounded-md transition-colors">
                       <XCircle className="w-3 h-3" /> Limpiar Todo
                   </button>
               )}
@@ -303,28 +303,28 @@ export default function GastosDashboard() {
               {/* Fechas (Desde/Hasta) */}
               <div className="flex flex-wrap gap-4">
                   <div className="space-y-1.5 min-w-[140px]">
-                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Desde</label>
+                      <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Desde</label>
                       <input 
                           type="date" 
                           value={dateFrom}
                           onChange={(e) => setDateFrom(e.target.value)}
-                          className="w-full h-11 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                          className="w-full h-11 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                       />
                   </div>
                   <div className="space-y-1.5 min-w-[140px]">
-                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Hasta</label>
+                      <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Hasta</label>
                       <input 
                           type="date" 
                           value={dateTo}
                           onChange={(e) => setDateTo(e.target.value)}
-                          className="w-full h-11 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                          className="w-full h-11 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                       />
                   </div>
               </div>
 
               {/* Año Dropdown */}
               <div className="space-y-1.5 flex-1 min-w-[160px]">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Años</label>
+                  <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Años</label>
                   <MultiSelectDropdown 
                       options={availableYears} 
                       selected={selectedYears} 
@@ -336,7 +336,7 @@ export default function GastosDashboard() {
 
               {/* Periodos Dropdown */}
               <div className="space-y-1.5 flex-1 min-w-[200px]">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Períodos</label>
+                  <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Períodos</label>
                   <MultiSelectDropdown 
                       options={availablePeriods} 
                       selected={selectedPeriods} 
@@ -348,13 +348,13 @@ export default function GastosDashboard() {
 
               {/* Trimestre Filter (Chips) */}
               <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Cuatrimestre</label>
+                  <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Cuatrimestre</label>
                   <div className="flex flex-wrap gap-1">
                       {availableQuarters.map(q => (
                           <button 
                               key={q}
                               onClick={() => toggleArrayItem(selectedQuarters, q, setSelectedQuarters)}
-                              className={`px-4 h-11 text-sm font-bold rounded-xl transition-all ${selectedQuarters.includes(q) ? 'bg-indigo-500 text-white shadow-sm ring-2 ring-indigo-500/20' : 'bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                              className={`px-4 h-11 text-sm font-bold rounded-xl transition-all ${selectedQuarters.includes(q) ? 'bg-indigo-500 text-white ring-2 ring-indigo-500/20' : 'bg-background text-foreground border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                           >
                               {q}
                           </button>
@@ -366,7 +366,7 @@ export default function GastosDashboard() {
           {/* Active Cross-Filters Badges */}
           {(selectedCategory || selectedMonthTrend) && (
               <div className="flex flex-wrap gap-2 pt-3 mt-2 border-t border-slate-100 dark:border-slate-700/50">
-                  <span className="text-[10px] font-black text-slate-400 uppercase pt-1">Filtros Cruzados Activos:</span>
+                  <span className="text-[11px] font-semibold text-slate-400 uppercase pt-1">Filtros Cruzados Activos:</span>
                   {selectedCategory && (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg text-xs font-bold border border-amber-200 dark:border-amber-900/50">
                           <Activity className="w-3 h-3" />
@@ -448,7 +448,7 @@ export default function GastosDashboard() {
                 />
             </div>
             {trendData.length === 0 ? (
-                <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos para graficar</div>
+                <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Sin datos para graficar</div>
             ) : (
                 <TrendChart 
                     data={trendData} 
@@ -460,7 +460,7 @@ export default function GastosDashboard() {
                     }}
                 />
             )}
-            <div className="mt-2 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+            <div className="mt-2 text-center text-[11px] text-slate-400 font-bold uppercase tracking-wider">
                 Tip: Clickea un punto en el gráfico para filtrar por mes
             </div>
         </div>
@@ -487,10 +487,10 @@ export default function GastosDashboard() {
                       }}
                   />
                 ) : (
-                  <div className="h-full flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
+                  <div className="h-full flex items-center justify-center text-slate-400 font-bold text-[11px] uppercase tracking-wider">Sin datos</div>
                 )}
             </div>
-            <div className="mt-auto mb-4 w-full text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+            <div className="mt-auto mb-4 w-full text-center text-[11px] text-slate-400 font-bold uppercase tracking-wider">
                 Tip: Clickea una porción para filtrar
             </div>
         </div>
@@ -505,14 +505,14 @@ export default function GastosDashboard() {
             </div>
             <div className="mt-4">
                 {pieData.length === 0 ? (
-                    <div className="py-8 text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">No hay categorías registradas</div>
+                    <div className="py-8 text-center text-slate-400 font-bold text-[11px] uppercase tracking-wider">No hay categorías registradas</div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {pieData.map((cat, idx) => (
                             <div key={idx} className={`space-y-1.5 p-3 rounded-xl transition-colors ${selectedCategory === cat.name ? 'bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200' : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'}`}>
                                 <div className="flex justify-between items-center px-1">
                                     <span className="font-bold text-slate-700 dark:text-slate-200 text-sm truncate pr-4">{cat.name}</span>
-                                    <span className="text-sm font-black text-slate-900 dark:text-white">
+                                    <span className="text-sm font-bold text-slate-900 dark:text-white">
                                         ${cat.value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                 </div>
@@ -523,10 +523,10 @@ export default function GastosDashboard() {
                                     />
                                 </div>
                                 <div className="flex justify-between px-1">
-                                    <span className="text-[10px] font-bold text-slate-400 cursor-pointer hover:text-blue-500" onClick={() => setSelectedCategory(prev => prev === cat.name ? null : cat.name)}>
+                                    <span className="text-[11px] font-bold text-slate-400 cursor-pointer hover:text-blue-500" onClick={() => setSelectedCategory(prev => prev === cat.name ? null : cat.name)}>
                                         {selectedCategory === cat.name ? 'Quitar filtro' : 'Filtrar categoría'}
                                     </span>
-                                    <span className="text-[10px] font-bold text-slate-400">
+                                    <span className="text-[11px] font-bold text-slate-400">
                                         {((cat.value / totalGasto) * 100).toFixed(1)}% del total
                                     </span>
                                 </div>

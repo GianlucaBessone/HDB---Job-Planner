@@ -293,7 +293,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-black text-slate-900 dark:text-slate-100">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Ajuste Rápido y Masivo de Stock
               </h2>
               <p className="text-xs text-slate-500">
@@ -354,7 +354,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
             <select
               value={almacenId}
               onChange={(e) => setAlmacenId(e.target.value)}
-              className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
             >
               {meta.almacenes.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -376,7 +376,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Escanee código de barras o escriba SKU / descripción..."
-                className="w-full pl-9 pr-8 h-9 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground"
+                className="w-full pl-9 pr-8 h-9 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-card focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground"
               />
               {isSearching && (
                 <Loader2 className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-slate-400" />
@@ -399,7 +399,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
                     </div>
                     <div className="text-right whitespace-nowrap">
                       <span className="font-mono text-xs font-bold text-primary">{prod.stockActual} {prod.unidad}</span>
-                      <span className="block text-[10px] text-slate-400">{prod.almacenNombre}</span>
+                      <span className="block text-[11px] text-slate-400">{prod.almacenNombre}</span>
                     </div>
                   </button>
                 ))}
@@ -414,7 +414,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none">
                 <th className="py-2.5 px-3 w-32">SKU</th>
                 <th className="py-2.5 px-3">Producto</th>
                 <th className="py-2.5 px-3 text-right w-28">Stock Actual</th>
@@ -463,7 +463,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
                           step="any"
                           value={linea.valorIngresado}
                           onChange={(e) => handleUpdateLinea(idx, e.target.value)}
-                          className="w-28 h-8 px-2 text-right font-mono text-xs font-black rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+                          className="w-28 h-8 px-2 text-right font-mono text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                         />
                       </td>
                       <td className="py-2 px-3 text-right font-mono text-xs font-bold whitespace-nowrap">
@@ -481,12 +481,12 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
                           <span className="text-slate-400">0</span>
                         )}
                       </td>
-                      <td className="py-2 px-3 text-right font-mono text-xs font-black whitespace-nowrap">
-                        <span className={esNegativo ? 'text-rose-600 font-extrabold' : 'text-slate-900 dark:text-slate-100'}>
+                      <td className="py-2 px-3 text-right font-mono text-xs font-bold whitespace-nowrap">
+                        <span className={esNegativo ? 'text-rose-600 font-bold' : 'text-slate-900 dark:text-slate-100'}>
                           {linea.stockResultante}
                         </span>
                       </td>
-                      <td className="py-2 px-2 text-center font-bold text-[10px] text-slate-500 uppercase">
+                      <td className="py-2 px-2 text-center font-bold text-[11px] text-slate-500 uppercase">
                         {linea.unidad}
                       </td>
                       <td className="py-2 px-2 text-center">
@@ -547,7 +547,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
               value={motivoGeneral}
               onChange={(e) => setMotivoGeneral(e.target.value)}
               placeholder="Ej: Ajuste por rotura en depósito, recuento físico, sobrante..."
-              className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground font-medium"
+              className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground font-medium"
             />
           </div>
 
@@ -560,7 +560,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
               placeholder="Notas internas o referencia de remito / informe..."
-              className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground"
+              className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground"
             />
           </div>
         </div>
@@ -581,7 +581,7 @@ export default function AjusteRapidoView({ meta, initialProduct, onSuccess }: Aj
           <button
             type="submit"
             disabled={isSubmitting || lineasConCambio.length === 0 || !motivoGeneral.trim() || tieneNegativosBloqueantes}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50 transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 disabled:opacity-50 transition-all"
           >
             {isSubmitting ? (
               <>

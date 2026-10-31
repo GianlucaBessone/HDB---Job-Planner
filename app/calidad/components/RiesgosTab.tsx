@@ -31,7 +31,7 @@ export function RiesgosTab({ currentUser }: { currentUser: any }) {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-semibold tracking-tight">Matriz de Riesgos</h2>
+                    <h2 className="text-title">Matriz de Riesgos</h2>
                     <p className="text-muted-foreground">Gestión de riesgos organizacionales (ISO 9001 Cl. 6.1)</p>
                 </div>
                 <button className="btn-primary flex items-center gap-2">
@@ -51,7 +51,7 @@ export function RiesgosTab({ currentUser }: { currentUser: any }) {
                             <div className="p-4 pb-2 flex-1">
                                 <div className="flex justify-between items-start mb-2">
                                     <span className="text-xs font-semibold px-2 py-1 bg-muted rounded-full">{riesgo.codigo}</span>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${riesgo.estado === 'Cerrado' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${riesgo.estado === 'Cerrado' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
                                         {riesgo.estado}
                                     </span>
                                 </div>

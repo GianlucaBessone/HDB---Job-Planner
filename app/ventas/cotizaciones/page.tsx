@@ -595,11 +595,11 @@ export default function CotizacionesPage() {
 
                 <div className="flex items-center gap-2 flex-wrap">
                     {cotizacionEditandoNumero && (
-                        <div className="px-3 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-black flex items-center gap-2 whitespace-nowrap">
+                        <div className="px-3 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center gap-2 whitespace-nowrap">
                             <span>Editando {cotizacionEditandoNumero}</span>
                             <button
                                 onClick={handleSolicitarReiniciar}
-                                className="text-[10px] underline hover:text-amber-950 dark:hover:text-white"
+                                className="text-[11px] underline hover:text-amber-950 dark:hover:text-white"
                             >
                                 Salir / Nueva
                             </button>
@@ -630,7 +630,7 @@ export default function CotizacionesPage() {
                 <div className="lg:col-span-5 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col min-h-[350px] lg:min-h-0 h-full overflow-hidden">
                     <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-2.5 shrink-0">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
                                 <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                 Catálogo de Materiales ({allSearchMatches.length} / {rawCatalogo.length})
                             </span>
@@ -671,7 +671,7 @@ export default function CotizacionesPage() {
                                         }
                                     }
                                 }}
-                                className="w-full pl-10 pr-8 py-2.5 text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
+                                className="w-full pl-10 pr-8 py-2.5 text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                             />
                             {searchQuery && (
                                 <button
@@ -739,12 +739,12 @@ export default function CotizacionesPage() {
                                                     {prod.sku}
                                                 </span>
                                                 {prod.marca && (
-                                                    <span className="text-[10px] font-bold uppercase text-slate-400">
+                                                    <span className="text-[11px] font-bold uppercase text-slate-400">
                                                         {prod.marca}
                                                     </span>
                                                 )}
                                                 <span
-                                                    className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                                                    className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
                                                         prod.stockActual > 0
                                                             ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
                                                             : 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300'
@@ -761,11 +761,11 @@ export default function CotizacionesPage() {
                                         </div>
 
                                         <div className="text-right shrink-0">
-                                            <div className="text-sm font-black font-mono text-slate-900 dark:text-slate-100">
+                                            <div className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
                                                 $ {fmt(precio)}{' '}
-                                                <span className="text-[10px] font-sans font-bold text-slate-400">ARS</span>
+                                                <span className="text-[11px] font-sans font-bold text-slate-400">ARS</span>
                                             </div>
-                                            <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">
+                                            <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold">
                                                 + Agregar
                                             </div>
                                         </div>
@@ -785,7 +785,7 @@ export default function CotizacionesPage() {
                             <div className="sm:col-span-5 flex items-center gap-2 bg-background px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
                                 <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                    <div className="text-[10px] font-bold uppercase text-slate-400">
+                                    <div className="text-[11px] font-bold uppercase text-slate-400">
                                         Cliente / Destinatario [F3]
                                     </div>
                                     <input
@@ -815,7 +815,7 @@ export default function CotizacionesPage() {
 
                             {/* Lista de Precios */}
                             <div className="sm:col-span-4 bg-background px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <label className="block text-[10px] font-bold uppercase text-slate-400">
+                                <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                     Lista de Precios
                                 </label>
                                 <select
@@ -833,7 +833,7 @@ export default function CotizacionesPage() {
 
                             {/* Validez en días */}
                             <div className="sm:col-span-3 bg-background px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <label className="block text-[10px] font-bold uppercase text-slate-400">
+                                <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                     Validez Oferta
                                 </label>
                                 <select
@@ -924,7 +924,7 @@ export default function CotizacionesPage() {
                         ) : (
                             <table className="w-full text-xs">
                                 <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 select-none whitespace-nowrap">
-                                    <tr className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                    <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                         {[
                                             { key: 'nombre', label: 'Material / Concepto', align: 'left', className: 'py-2 px-3 text-left' },
                                             { key: 'cantidad', label: 'Cant.', align: 'center', className: 'py-2 px-2 text-center w-24' },
@@ -975,11 +975,11 @@ export default function CotizacionesPage() {
                                         <tr key={it.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
                                             <td className="py-2.5 px-3">
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="font-mono text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                                                    <span className="font-mono text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
                                                         {it.codigo}
                                                     </span>
                                                     {it.esManual && (
-                                                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
+                                                        <span className="text-[11px] font-semibold uppercase px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
                                                             Especial
                                                         </span>
                                                     )}
@@ -1088,7 +1088,7 @@ export default function CotizacionesPage() {
                                                 </div>
                                             </td>
 
-                                            <td className="py-2.5 px-3 text-right font-mono font-black text-slate-900 dark:text-slate-100">
+                                            <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
                                                 ${fmt(it.subtotal)}
                                             </td>
 
@@ -1178,10 +1178,10 @@ export default function CotizacionesPage() {
                                     </div>
                                 )}
                                 <div className="text-right">
-                                    <div className="text-[10px] font-black uppercase tracking-wider text-indigo-400">
+                                    <div className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400">
                                         Total Cotizado ({items.length} ítems)
                                     </div>
-                                    <div className="text-2xl font-black font-mono text-white">
+                                    <div className="text-2xl font-bold font-mono text-white">
                                         $ {fmt(totales.totalFinal)}{' '}
                                         <span className="text-xs font-sans font-bold text-slate-400">ARS</span>
                                     </div>
@@ -1226,7 +1226,7 @@ export default function CotizacionesPage() {
                                     type="button"
                                     disabled={guardando || items.length === 0}
                                     onClick={() => handleGuardarCotizacion('IMPRIMIR')}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 disabled:opacity-40 transition-all"
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 transition-all"
                                     title="Generar la cotización oficial y ver opciones de impresión o PDF"
                                 >
                                     <FileCheck2 className="w-4 h-4" />

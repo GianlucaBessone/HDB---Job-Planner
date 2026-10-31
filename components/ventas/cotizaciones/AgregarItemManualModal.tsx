@@ -58,13 +58,13 @@ export default function AgregarItemManualModal({ isOpen, onClose, onAdd }: Props
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                         <Wrench className="w-5 h-5 text-indigo-400" />
                         <div>
-                            <h3 className="font-black text-sm">Agregar Ítem Libre / Servicio / Mano de Obra</h3>
+                            <h3 className="font-bold text-sm">Agregar Ítem Libre / Servicio / Mano de Obra</h3>
                             <p className="text-[11px] text-slate-400">Permite cotizar conceptos especiales fuera de catálogo</p>
                         </div>
                     </div>
@@ -195,8 +195,8 @@ export default function AgregarItemManualModal({ isOpen, onClose, onAdd }: Props
                         return (
                             <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
                                 <span className="text-slate-500 font-medium">Subtotal estimado:</span>
-                                <span className="font-mono font-black text-slate-900 dark:text-slate-100">
-                                    $ {sub.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[10px] text-slate-400 font-sans font-bold">ARS</span>
+                                <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                                    $ {sub.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[11px] text-slate-400 font-sans font-bold">ARS</span>
                                 </span>
                             </div>
                         );

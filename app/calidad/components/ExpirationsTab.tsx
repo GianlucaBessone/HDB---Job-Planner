@@ -41,7 +41,7 @@ export default function ExpirationsTab({ user }: { user: any }) {
 
     return (
         <div className="space-y-4">
-            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-500" /> Próximos Vencimientos y Revisiones
             </h3>
 
@@ -56,11 +56,11 @@ export default function ExpirationsTab({ user }: { user: any }) {
                 <div className="bg-card text-card-foreground rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-background text-foreground/50 border-b border-slate-200 dark:border-slate-700 text-[10px] uppercase tracking-widest text-slate-500">
-                                <th className="p-4 font-black">Documento</th>
-                                <th className="p-4 font-black">Próx. Revisión</th>
-                                <th className="p-4 font-black">Estado</th>
-                                <th className="p-4 font-black text-right">Acción</th>
+                            <tr className="bg-background text-foreground border-b border-slate-200 dark:border-slate-700 text-[11px] uppercase tracking-wider text-slate-500">
+                                <th className="p-4 font-bold">Documento</th>
+                                <th className="p-4 font-bold">Próx. Revisión</th>
+                                <th className="p-4 font-bold">Estado</th>
+                                <th className="p-4 font-bold text-right">Acción</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -74,7 +74,7 @@ export default function ExpirationsTab({ user }: { user: any }) {
                                         {doc.proximaRevision ? format(new Date(doc.proximaRevision), "dd MMM, yyyy", { locale: es }) : 'N/A'}
                                     </td>
                                     <td className="p-4">
-                                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${
+                                        <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded ${
                                             doc.indicadorVencimiento === 'vencido' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
                                         }`}>
                                             {doc.indicadorVencimiento}

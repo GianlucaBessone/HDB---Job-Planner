@@ -28,8 +28,10 @@ No ejecutes `prisma migrate`, `db push`, commits, push ni deploy sin autorizaci�
 
 ## Convenciones
 
-- UI en español, tono directo. Tailwind con tokens (`bg-card`, `text-muted-foreground`) y paleta slate/rose/indigo.
-- Componentes de página: `'use client'`, `ModuleHeader`, `showToast` de `@/components/Toast`.
+- UI en español, tono directo. La fuente de verdad visual es `docs/DESIGN_SYSTEM.md` (tokens, componentes, reglas) y `docs/BRAND_GUIDELINES.md`.
+- Componentes base en `@/components/ui` (`Button`, `Input`, `Badge`, `Panel`, `Dialog`, `EmptyState`, `Tabs`…). No escribas colores, radios ni sombras sueltos: usá tokens (`bg-card`, `text-muted-foreground`, `brand-*`, `success-*`, `danger-*`).
+- Componentes de página: `'use client'`, `ModuleHeader` como único `h1`, `showToast` de `@/components/Toast`. Las vistas no agregan fondo ni relleno exterior (lo pone el layout).
+- Antes de un PR que toque UI: `node scripts/design-system/migrate-classes.js --dry` debe informar 0 archivos.
 - Las rutas de API validan con Zod y devuelven `NextResponse.json`.
 - Los permisos de vistas se declaran en `lib/viewAccess.ts`; no hardcodees roles en el sidebar.
 - Las acciones globales del buscador se registran con `useCommandStore` (`lib/store/useCommandStore.ts`).

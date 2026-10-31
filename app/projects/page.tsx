@@ -380,7 +380,7 @@ function ProjectsContent() {
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
 
             {/* ── Page Header ── */}
             <div className="flex flex-col gap-6 mb-8">
@@ -410,11 +410,11 @@ function ProjectsContent() {
                                     setAppliedFilters(f => ({ ...f, fechaInicio: val }));
                                     setPendingFilters(f => ({ ...f, fechaInicio: val }));
                                 }}
-                                className="w-full h-[56px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 text-[11px] font-black uppercase tracking-tighter text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
+                                className="w-full h-[56px] bg-card border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 text-[11px] font-semibold uppercase tracking-tight text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                                 title="Fecha Inicio"
                             />
                         </div>
-                        <div className="hidden sm:block text-slate-300 font-black">/</div>
+                        <div className="hidden sm:block text-slate-300 font-bold">/</div>
                         <div className="relative w-full sm:w-44">
                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
                             <input 
@@ -425,7 +425,7 @@ function ProjectsContent() {
                                     setAppliedFilters(f => ({ ...f, fechaFin: val }));
                                     setPendingFilters(f => ({ ...f, fechaFin: val }));
                                 }}
-                                className="w-full h-[56px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 text-[11px] font-black uppercase tracking-tighter text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
+                                className="w-full h-[56px] bg-card border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 text-[11px] font-semibold uppercase tracking-tight text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                                 title="Fecha Fin"
                             />
                         </div>
@@ -435,7 +435,7 @@ function ProjectsContent() {
                                     setAppliedFilters(f => ({ ...f, fechaInicio: '', fechaFin: '' }));
                                     setPendingFilters(f => ({ ...f, fechaInicio: '', fechaFin: '' }));
                                 }}
-                                className="p-4 bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 rounded-2xl hover:bg-rose-50 hover:text-rose-500 transition-all"
+                                className="p-4 bg-muted text-slate-500 dark:text-slate-400 rounded-2xl hover:bg-rose-50 hover:text-rose-500 transition-all"
                                 title="Limpiar fechas"
                             >
                                 <X className="w-5 h-5" />
@@ -445,18 +445,18 @@ function ProjectsContent() {
                 </div>
 
                 {/* Status Pills Filter */}
-                <div className="flex flex-wrap items-center gap-2 bg-white/50 p-2 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm border-dashed">
+                <div className="flex flex-wrap items-center gap-2 bg-white/50 p-2 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm border-dashed">
                     <button
                         onClick={() => {
                             setAppliedFilters(f => ({ ...f, estados: [] }));
                             setPendingFilters(f => ({ ...f, estados: [] }));
                         }}
-                        className={`px-5 py-3 rounded-2xl text-[10px] font-black transition-all flex items-center gap-2 uppercase tracking-widest ${appliedFilters.estados.length === 0 
-                            ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                            : 'bg-card text-card-foreground text-slate-400 dark:text-slate-500 hover:text-slate-600 border border-slate-100 dark:border-slate-800'}`}
+                        className={`px-5 py-3 rounded-2xl text-[11px] font-semibold transition-all flex items-center gap-2 uppercase tracking-wider ${appliedFilters.estados.length === 0 
+                            ? 'bg-primary text-white shadow-lg' 
+                            : 'bg-card text-slate-400 dark:text-slate-500 hover:text-slate-600 border border-slate-100 dark:border-slate-800'}`}
                     >
                         Todos
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] ${appliedFilters.estados.length === 0 ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400'}`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[11px] ${appliedFilters.estados.length === 0 ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-slate-400'}`}>
                             {projects.length}
                         </span>
                     </button>
@@ -474,13 +474,13 @@ function ProjectsContent() {
                                     setAppliedFilters(f => ({ ...f, estados: next }));
                                     setPendingFilters(f => ({ ...f, estados: next }));
                                 }}
-                                className={`px-5 py-3 rounded-2xl text-[10px] font-black transition-all flex items-center gap-2.5 border uppercase tracking-widest ${isActive 
+                                className={`px-5 py-3 rounded-2xl text-[11px] font-semibold transition-all flex items-center gap-2.5 border uppercase tracking-wider ${isActive 
                                     ? `${cfg.bg} ${cfg.color} border-${cfg.dot.split('-')[1]}-200 shadow-md` 
-                                    : 'bg-card text-card-foreground text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}
+                                    : 'bg-card text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}
                             >
                                 <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
                                 {cfg.label}
-                                <span className={`px-2 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-white/50' : 'bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400'}`}>
+                                <span className={`px-2 py-0.5 rounded-md text-[11px] ${isActive ? 'bg-white/50' : 'bg-muted text-slate-500 dark:text-slate-400'}`}>
                                     {count}
                                 </span>
                             </button>
@@ -494,12 +494,12 @@ function ProjectsContent() {
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {Array(6).fill(0).map((_, i) => (
-                            <div key={i} className="bg-slate-100/60 rounded-[2.5rem] animate-pulse h-64" />
+                            <div key={i} className="bg-slate-100/60 rounded-3xl animate-pulse h-64" />
                         ))}
                     </div>
                 ) : filteredProjects.length === 0 ? (
-                    <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-[2.5rem] text-slate-400 dark:text-slate-500 shadow-sm border-dashed">
-                        <div className="p-6 bg-background text-foreground/50 rounded-full mb-6">
+                    <div className="py-24 flex flex-col items-center justify-center bg-card border border-slate-200 dark:border-slate-700 rounded-3xl text-slate-400 dark:text-slate-500 shadow-sm border-dashed">
+                        <div className="p-6 bg-background text-foreground rounded-full mb-6">
                             <AlertCircle className="w-12 h-12 opacity-20" />
                         </div>
                         <p className="font-bold text-slate-600 dark:text-slate-300 text-lg">
@@ -594,10 +594,10 @@ export default function ProjectsPage() {
 
 function ProjectsSkeleton() {
     return (
-        <div className="w-full space-y-4 md:space-y-8 animate-in fade-in duration-500 pb-20">
+        <div className="w-full space-y-4 md:space-y-8 animate-in fade-in duration-200 pb-20">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div> 
                         <div className="w-48 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
                     </h2>
@@ -605,7 +605,7 @@ function ProjectsSkeleton() {
                 </div>
             </div>
 
-            <div className="bg-card text-card-foreground p-4 md:p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4">
+            <div className="bg-card text-card-foreground p-4 md:p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
                     <div className="w-full h-[50px] bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />
                 </div>
@@ -689,8 +689,8 @@ function ProjectDetailsModal({
     const statsArray = Object.values(operatorStats);
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+            <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200 max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
@@ -698,7 +698,7 @@ function ProjectDetailsModal({
                                 <CodeBadge code={project.codigoProyecto} variant="project" size="sm" showCopy={true} />
                             )}
                         <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
                                 {project.codigoProyecto ? (
                                     <span className="text-primary group-hover:text-primary transition-colors font-mono">{project.codigoProyecto} | </span>
                                 ) : (
@@ -711,7 +711,7 @@ function ProjectDetailsModal({
                             <Building2 className="w-4 h-4" /> {project.client?.nombre || project.cliente || 'Sin cliente'}
                         </p>
                     </div>
-                    <button onClick={onClose} className="btn-icon-inline p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-all active:scale-95">
+                    <button onClick={onClose} className="btn-icon-inline p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-all">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
@@ -721,7 +721,7 @@ function ProjectDetailsModal({
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-20 space-y-4">
                             <Activity className="w-12 h-12 text-primary animate-spin" />
-                            <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Cargando detalles...</p>
+                            <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-xs">Cargando detalles...</p>
                         </div>
                     ) : (
                         <>
@@ -730,10 +730,10 @@ function ProjectDetailsModal({
                                 <Link href={`/timesheets?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-indigo-50/50 border border-indigo-100 p-5 rounded-3xl space-y-2 hover:bg-indigo-100 transition-colors shadow-sm block">
                                     <div className="flex items-center justify-between">
                                         <Clock className="w-5 h-5 text-indigo-500" />
-                                        <span className="text-xs font-black text-indigo-400 uppercase tracking-widest">Horas</span>
+                                        <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Horas</span>
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-black text-indigo-900">{project.horasConsumidas}h / {project.horasEstimadas}h</p>
+                                        <p className="text-2xl font-bold text-indigo-900">{project.horasConsumidas}h / {project.horasEstimadas}h</p>
                                         <p className="text-xs font-bold text-indigo-600/70 uppercase">Consumidas vs Estimadas</p>
                                     </div>
                                     <div className="w-full bg-indigo-100 h-1.5 rounded-full overflow-hidden">
@@ -744,13 +744,13 @@ function ProjectDetailsModal({
                                 <Link href={`/timesheets?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-3xl space-y-2 hover:bg-emerald-100 transition-colors shadow-sm block">
                                     <div className="flex items-center justify-between">
                                         <Timer className="w-5 h-5 text-emerald-500" />
-                                        <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">Restante</span>
+                                        <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Restante</span>
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-black text-emerald-900">{hoursRemaining}h</p>
+                                        <p className="text-2xl font-bold text-emerald-900">{hoursRemaining}h</p>
                                         <p className="text-xs font-bold text-emerald-600/70 uppercase">Tiempo disponible</p>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600/50 uppercase tracking-tight">
+                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600/50 uppercase tracking-tight">
                                         <Activity className="w-3 h-3" /> Eficiencia: {100 - progress > 0 ? 'En rango' : 'Límite'}
                                     </div>
                                 </Link>
@@ -758,10 +758,10 @@ function ProjectDetailsModal({
                                 <Link href={`/my-projects?search=${encodeURIComponent(project.nombre)}&all=true`} className="bg-amber-50/50 border border-amber-100 p-5 rounded-3xl space-y-2 hover:bg-amber-100 transition-colors shadow-sm block">
                                     <div className="flex items-center justify-between">
                                         <CheckSquare className="w-5 h-5 text-amber-500" />
-                                        <span className="text-xs font-black text-amber-400 uppercase tracking-widest">Tareas</span>
+                                        <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Tareas</span>
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-black text-amber-900">
+                                        <p className="text-2xl font-bold text-amber-900">
                                             {completedVisible} / {totalVisible}
                                         </p>
                                         <p className="text-xs font-bold text-amber-600/70 uppercase">Checklist completado</p>
@@ -774,13 +774,13 @@ function ProjectDetailsModal({
                                 <Link href={`/delays?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-red-50/50 border border-red-100 p-5 rounded-3xl space-y-2 hover:bg-red-100 transition-colors shadow-sm block">
                                     <div className="flex items-center justify-between">
                                         <AlertCircle className="w-5 h-5 text-red-500" />
-                                        <span className="text-xs font-black text-red-400 uppercase tracking-widest">Demoras</span>
+                                        <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">Demoras</span>
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-black text-red-900">{totalDemoras}</p>
+                                        <p className="text-2xl font-bold text-red-900">{totalDemoras}</p>
                                         <p className="text-xs font-bold text-red-600/70 uppercase">{hoursDemoras}h en total</p>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-red-600/50 uppercase tracking-tight">
+                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-red-600/50 uppercase tracking-tight">
                                         <MessageSquare className="w-3 h-3" /> {totalDemoras > 0 ? 'Con incidencias' : 'Sin demoras'}
                                     </div>
                                 </Link>
@@ -789,31 +789,31 @@ function ProjectDetailsModal({
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 {/* Personnel List */}
                                 <div className="space-y-4">
-                                    <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                         <Users className="w-4 h-4 text-primary" /> Personal Asignado
                                     </h4>
                                     <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-x-auto shadow-sm">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
-                                                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
-                                                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Horas Totales</th>
+                                                <tr className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800">
+                                                    <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operador</th>
+                                                    <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Horas Totales</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50">
                                                 {statsArray.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan={2} className="px-4 py-8 text-center text-slate-300 text-xs font-bold uppercase tracking-widest">No hay registros aún</td>
+                                                        <td colSpan={2} className="px-4 py-8 text-center text-slate-300 text-xs font-bold uppercase tracking-wider">No hay registros aún</td>
                                                     </tr>
                                                 ) : (
                                                     statsArray.map((stat: any) => (
                                                         <tr key={stat.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
                                                             <td className="px-4 py-3">
                                                                 <div className="font-bold text-slate-700 dark:text-slate-200 text-sm">{stat.name}</div>
-                                                                <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Carga: {stat.lastSeen}</div>
+                                                                <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Carga: {stat.lastSeen}</div>
                                                             </td>
                                                             <td className="px-4 py-3 text-right">
-                                                                <span className="inline-block px-3 py-1 rounded-xl bg-primary/5 text-primary font-black text-sm border border-primary/10">
+                                                                <span className="inline-block px-3 py-1 rounded-xl bg-primary/5 text-primary font-bold text-sm border border-primary/10">
                                                                     {stat.totalHours.toLocaleString()}h
                                                                 </span>
                                                             </td>
@@ -827,12 +827,12 @@ function ProjectDetailsModal({
                                     {/* Recent Activity Table */}
                                     {entries.length > 0 && (
                                         <div className="space-y-4 pt-4">
-                                            <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                            <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                                 <Activity className="w-4 h-4 text-primary" /> Historial Reciente
                                             </h4>
                                             <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-x-auto shadow-sm">
                                                 <table className="w-full text-left text-xs">
-                                                    <thead className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800 font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                                    <thead className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800 font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                                         <tr>
                                                             <th className="px-4 py-3">Fecha</th>
                                                             <th className="px-4 py-3">Operador</th>
@@ -845,10 +845,10 @@ function ProjectDetailsModal({
                                                                 <td className="px-4 py-2 text-slate-500 dark:text-slate-400 font-medium">{formatDate(entry.fecha)}</td>
                                                                 <td className="px-4 py-2 font-bold text-slate-700 dark:text-slate-200">
                                                                     {entry.operator.nombreCompleto}
-                                                                    {entry.isExtra && <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest ml-1.5">(Extra)</span>}
-                                                                    {entry.isDevolucion && <span className="text-[9px] font-black text-purple-500 uppercase tracking-widest ml-1.5">(Dev)</span>}
+                                                                    {entry.isExtra && <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-wider ml-1.5">(Extra)</span>}
+                                                                    {entry.isDevolucion && <span className="text-[11px] font-semibold text-purple-500 uppercase tracking-wider ml-1.5">(Dev)</span>}
                                                                 </td>
-                                                                <td className="px-4 py-2 text-right font-black text-slate-900 dark:text-slate-50">{entry.horasTrabajadas}h</td>
+                                                                <td className="px-4 py-2 text-right font-bold text-slate-900 dark:text-slate-50">{entry.horasTrabajadas}h</td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -860,12 +860,12 @@ function ProjectDetailsModal({
 
                                 {/* Checklist Detail */}
                                 <div className="space-y-4">
-                                    <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                         <CheckCircle2 className="w-4 h-4 text-primary" /> Avance Técnico (Checklist)
                                     </h4>
                                     <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin">
                                         {visibleItems.length === 0 ? (
-                                            <div className="bg-background text-foreground/50 rounded-3xl p-8 border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest">Sin tareas definidas para este proyecto</div>
+                                            <div className="bg-background text-foreground rounded-3xl p-8 border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider">Sin tareas definidas para este proyecto</div>
                                         ) : (
                                             visibleItems.map((item: any) => (
                                                 <div key={item.id} className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${item.excluded ? 'opacity-40 grayscale border-dashed border-slate-300 dark:border-slate-600' : item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-slate-50/50 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}>
@@ -873,7 +873,7 @@ function ProjectDetailsModal({
                                                         <button
                                                             disabled={item.confirmedBySupervisor}
                                                             onClick={() => onUpdateChecklist(item.id, { completed: !item.completed })}
-                                                            className={`btn-icon-inline mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'border-slate-200 dark:border-slate-700 bg-card text-card-foreground hover:border-primary/40'}`}
+                                                            className={`btn-icon-inline mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' : 'border-slate-200 dark:border-slate-700 bg-card text-card-foreground hover:border-primary/40'}`}
                                                         >
                                                             {item.completed && <CheckCircle2 className="w-4 h-4" />}
                                                         </button>
@@ -885,8 +885,8 @@ function ProjectDetailsModal({
                                                     <div className="min-w-0 flex-1">
                                                         <p className={`text-sm font-bold leading-snug ${item.excluded ? 'text-slate-400 dark:text-slate-500 line-through' : item.completed ? 'text-emerald-900' : 'text-slate-700 dark:text-slate-200'}`}>{item.description}</p>
                                                         <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-muted text-muted-foreground/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">{item.tag}</span>
-                                                            {item.excluded && <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase italic">(Excluido)</span>}
+                                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-muted px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">{item.tag}</span>
+                                                            {item.excluded && <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase italic">(Excluido)</span>}
                                                         </div>
                                                     </div>
                                                     {isSupervisor && (
@@ -910,7 +910,7 @@ function ProjectDetailsModal({
                             <div className="space-y-6 lg:col-span-2">
                                 <div className="bg-primary/5 border border-primary/10 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
                                     <div className="space-y-1 text-center md:text-left">
-                                        <h4 className="text-sm font-black text-primary uppercase tracking-widest flex items-center gap-2 justify-center md:justify-start">
+                                        <h4 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2 justify-center md:justify-start">
                                             <TrendingUp className="w-4 h-4" /> Link de Seguimiento Público
                                         </h4>
                                         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Comparte este enlace con el cliente para que vea los avances en tiempo real.</p>
@@ -919,7 +919,7 @@ function ProjectDetailsModal({
                                         <input
                                             readOnly
                                             value={`${typeof window !== 'undefined' ? window.location.origin : ''}/projects/${project.id}/report?token=${project.publicToken || ''}`}
-                                            className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-[10px] font-medium text-slate-500 dark:text-slate-400 flex-1 md:w-64 outline-none truncate"
+                                            className="bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-[11px] font-medium text-slate-500 dark:text-slate-400 flex-1 md:w-64 outline-none truncate"
                                         />
                                         <button
                                             onClick={() => {
@@ -927,7 +927,7 @@ function ProjectDetailsModal({
                                                 navigator.clipboard.writeText(url);
                                                 showToast('Link copiado al portapapeles', 'success');
                                             }}
-                                            className="btn-icon-inline bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-800/80 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm active:scale-90 shrink-0"
+                                            className="btn-icon-inline bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-800/80 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm shrink-0"
                                             title="Copiar Link"
                                         >
                                             <ClipboardList className="w-5 h-5" />
@@ -935,7 +935,7 @@ function ProjectDetailsModal({
                                         <Link
                                             href={`/projects/${project.id}/report?token=${project.publicToken || ''}`}
                                             target="_blank"
-                                            className="btn-icon-inline bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-90 shrink-0"
+                                            className="btn-icon-inline bg-primary text-white p-2 rounded-xl shadow-lg hover:bg-primary/90 transition-all shrink-0"
                                             title="Ver Vista Pública"
                                         >
                                             <ChevronRight className="w-5 h-5" />
@@ -946,22 +946,22 @@ function ProjectDetailsModal({
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                     {/* Add Log Form */}
                                     <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                        <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                             <MessageSquare className="w-4 h-4 text-primary" /> Registrar Seguimiento / Observación
                                         </h4>
-                                        <div className="bg-background text-foreground/50 rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-slate-800">
+                                        <div className="bg-background text-foreground rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-slate-800">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Fecha</label>
+                                                    <label className="ml-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha</label>
                                                     <input
                                                         type="date"
                                                         value={newLog.fecha}
                                                         onChange={e => setNewLog(prev => ({ ...prev, fecha: e.target.value }))}
-                                                        className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                        className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Responsable</label>
+                                                    <label className="ml-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Responsable</label>
                                                     <SearchableSelect
                                                         options={operators
                                                             .filter(op => op.role !== 'admin')
@@ -974,12 +974,12 @@ function ProjectDetailsModal({
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Observación</label>
+                                                <label className="ml-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Observación</label>
                                                 <textarea
                                                     value={newLog.observacion}
                                                     placeholder="Describe el avance o comentario..."
                                                     onChange={e => setNewLog(prev => ({ ...prev, observacion: e.target.value }))}
-                                                    className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none min-h-[100px] resize-none"
+                                                    className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none min-h-[100px] resize-none"
                                                 />
                                             </div>
                                             <button
@@ -988,7 +988,7 @@ function ProjectDetailsModal({
                                                     onSaveLog(newLog);
                                                     setNewLog({ fecha: new Date().toISOString().split('T')[0], responsable: '', observacion: '' });
                                                 }}
-                                                className="w-full bg-primary text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+                                                className="w-full bg-primary text-white py-3 rounded-xl font-semibold text-xs hover:bg-primary-hover transition-all disabled:opacity-50"
                                             >
                                                 {isSavingLog ? 'Guardando...' : 'Registrar Comentario'}
                                             </button>
@@ -997,12 +997,12 @@ function ProjectDetailsModal({
 
                                     {/* Logs List */}
                                     <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                        <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                             <Activity className="w-4 h-4 text-primary" /> Historial de Seguimiento
                                         </h4>
                                         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
                                             {logs.length === 0 ? (
-                                                <div className="bg-background text-foreground/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-10 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest">No hay registros aún</div>
+                                                <div className="bg-background text-foreground border border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-10 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider">No hay registros aún</div>
                                             ) : (
                                                 logs.map((log: any) => {
                                                     const cat = log.categoria || 'Nota';
@@ -1016,12 +1016,12 @@ function ProjectDetailsModal({
                                                     <div key={log.id} className={`bg-card text-card-foreground border p-4 rounded-2xl shadow-sm space-y-2 ${cat === 'Bloqueante' ? 'border-red-100' : 'border-slate-100 dark:border-slate-800'}`}>
                                                         <div className="flex justify-between items-start">
                                                             <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">{formatDate(log.fecha)}</span>
-                                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-widest ${catStyles[cat] || catStyles['Nota']}`}>
+                                                                <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded-md">{formatDate(log.fecha)}</span>
+                                                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border uppercase tracking-wider ${catStyles[cat] || catStyles['Nota']}`}>
                                                                     {cat === 'Bloqueante' && '🚨 '}{cat}
                                                                 </span>
                                                             </div>
-                                                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">Por: {log.responsable}</span>
+                                                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">Por: {log.responsable}</span>
                                                         </div>
                                                         <p className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed italic">"{log.observacion}"</p>
                                                     </div>
@@ -1037,10 +1037,10 @@ function ProjectDetailsModal({
                             {/* Observations */}
                             {project.observaciones && (
                                 <div className="space-y-3">
-                                    <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                         <FileText className="w-4 h-4 text-primary" /> Observaciones y Notas
                                     </h4>
-                                    <div className="bg-background text-foreground/50 rounded-3xl p-5 border border-slate-100 dark:border-slate-800">
+                                    <div className="bg-background text-foreground rounded-3xl p-5 border border-slate-100 dark:border-slate-800">
                                         <p className="text-slate-600 dark:text-slate-300 text-sm italic font-medium leading-relaxed">
                                             "{project.observaciones}"
                                         </p>
@@ -1053,7 +1053,7 @@ function ProjectDetailsModal({
 
                 {/* Footer */}
                 <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end shrink-0">
-                    <button onClick={onClose} className="px-8 py-3 bg-muted text-muted-foreground/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-black uppercase tracking-widest text-xs rounded-2xl transition-all active:scale-95">
+                    <button onClick={onClose} className="px-8 py-3 bg-muted hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-semibold text-xs rounded-2xl transition-all">
                         Cerrar Ventana
                     </button>
                 </div>
@@ -1101,8 +1101,8 @@ function ProjectModal({
     ];
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+            <div className="bg-card text-card-foreground w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200 max-h-[90vh] flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="p-5 md:p-7 pb-0 flex items-center justify-between flex-shrink-0">
                     <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">
@@ -1116,7 +1116,7 @@ function ProjectModal({
                 <div className="px-5 md:px-7 pt-4 flex gap-1 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
                     {MODAL_TABS.map(tab => (
                         <button key={tab.id} type="button" onClick={() => setModalTab(tab.id)}
-                            className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-t-xl transition-all border-b-2 ${modalTab === tab.id ? 'text-primary border-primary bg-primary/5' : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600'}`}>
+                            className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-t-xl transition-all border-b-2 ${modalTab === tab.id ? 'text-primary border-primary bg-primary/5' : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600'}`}>
                             {tab.label}
                         </button>
                     ))}
@@ -1130,31 +1130,31 @@ function ProjectModal({
                         {/* Nombre + Toggle Metricas */}
                         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                             <div className="flex-1 space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nombre del Proyecto *</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Nombre del Proyecto *</label>
                                 <input
                                     autoFocus
                                     type="text"
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.nombre}
                                     onChange={e => set('nombre', e.target.value)}
                                     required
                                 />
                             </div>
                             <div className="flex flex-col space-y-2 pb-1">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Activo</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Activo</label>
                                 <button
                                     type="button"
                                     onClick={() => set('activo', !formData.activo)}
                                     className={`relative inline-flex h-10 w-20 items-center rounded-xl transition-all duration-300 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20 ${formData.activo ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}
                                 >
                                     <span className={`inline-block h-6 w-6 transform rounded-lg bg-card text-card-foreground shadow-md transition-transform duration-300 ${formData.activo ? 'translate-x-11' : 'translate-x-3'}`} />
-                                    <span className={`absolute text-[9px] font-black uppercase tracking-tighter transition-opacity duration-300 ${formData.activo ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500 dark:text-slate-400'}`}>
+                                    <span className={`absolute text-[11px] font-semibold uppercase tracking-tight transition-opacity duration-300 ${formData.activo ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500 dark:text-slate-400'}`}>
                                         {formData.activo ? 'SÍ' : 'NO'}
                                     </span>
                                 </button>
                             </div>
                             <div className="flex flex-col space-y-2 pb-1">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                <label className="flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                     En Métricas <MetricTooltip def="Define si el proyecto se incluye en los cálculos del Panel de Análisis." />
                                 </label>
                                 <button
@@ -1163,7 +1163,7 @@ function ProjectModal({
                                     className={`relative inline-flex h-10 w-20 items-center rounded-xl transition-all duration-300 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20 ${!formData.noEnMetricas ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}
                                 >
                                     <span className={`inline-block h-6 w-6 transform rounded-lg bg-card text-card-foreground shadow-md transition-transform duration-300 ${!formData.noEnMetricas ? 'translate-x-11' : 'translate-x-3'}`} />
-                                    <span className={`absolute text-[9px] font-black uppercase tracking-tighter transition-opacity duration-300 ${!formData.noEnMetricas ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500 dark:text-slate-400'}`}>
+                                    <span className={`absolute text-[11px] font-semibold uppercase tracking-tight transition-opacity duration-300 ${!formData.noEnMetricas ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500 dark:text-slate-400'}`}>
                                         {!formData.noEnMetricas ? 'SÍ' : 'NO'}
                                     </span>
                                 </button>
@@ -1173,7 +1173,7 @@ function ProjectModal({
                         {/* Categoria + Tipo Actividad */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Categoría del Proyecto</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Categoría del Proyecto</label>
                                 <SearchableSelect
                                     options={categoryOptions.map(c => ({ id: c, label: c }))}
                                     value={formData.categoria}
@@ -1183,7 +1183,7 @@ function ProjectModal({
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tipo de Actividad</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Tipo de Actividad</label>
                                 <SearchableSelect
                                     options={activityOptions.map(t => ({ id: t, label: t }))}
                                     value={formData.tipoActividad}
@@ -1197,7 +1197,7 @@ function ProjectModal({
                         {/* Cliente + Responsable */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cliente</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Cliente</label>
                                 <SearchableSelect
                                     options={clients.map(c => ({ id: c.id, label: c.nombre }))}
                                     value={formData.clientId}
@@ -1222,7 +1222,7 @@ function ProjectModal({
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Responsable</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Responsable</label>
                                 <SearchableSelect
                                     options={operators.map(o => ({ id: o.id, label: o.nombreCompleto }))}
                                     value={formData.responsableId}
@@ -1242,8 +1242,8 @@ function ProjectModal({
 
                         {/* Etiquetas Técnicas */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Etiquetas Técnicas / Especialidades</label>
-                            <div className="flex flex-wrap gap-2 p-3 bg-background text-foreground/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Etiquetas Técnicas / Especialidades</label>
+                            <div className="flex flex-wrap gap-2 p-3 bg-background text-foreground rounded-2xl border border-slate-200 dark:border-slate-700">
                                 {systemTags.map(tagObj => {
                                     const tag = tagObj.name;
                                     const active = formData.tags.includes(tag);
@@ -1259,7 +1259,7 @@ function ProjectModal({
                                             }}
                                             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${active
                                                 ? 'bg-primary text-white border-primary shadow-sm'
-                                                : 'bg-card text-card-foreground text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                : 'bg-card text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                 }`}
                                         >
                                             {tag}
@@ -1271,7 +1271,7 @@ function ProjectModal({
 
                         {/* Estado */}
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Estado</label>
+                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 {ALL_STATUSES.map(s => {
                                     const cfg = STATUS_CONFIG[s];
@@ -1283,7 +1283,7 @@ function ProjectModal({
                                             onClick={() => set('estado', s)}
                                             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${active
                                                 ? `${cfg.bg} ${cfg.color} ring-1 ${cfg.ring} border-transparent`
-                                                : 'bg-card text-card-foreground text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                : 'bg-card text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                 }`}
                                         >
                                             <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
@@ -1297,23 +1297,23 @@ function ProjectModal({
                         {/* Horas */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Horas Estimadas</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Horas Estimadas</label>
                                 <input
                                     type="number"
                                     min={0}
                                     inputMode="decimal"
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.horasEstimadas}
                                     onChange={e => set('horasEstimadas', e.target.value)}
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Horas Consumidas</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Horas Consumidas</label>
                                 <input
                                     type="number"
                                     min={0}
                                     inputMode="decimal"
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.horasConsumidas}
                                     onChange={e => set('horasConsumidas', e.target.value)}
                                 />
@@ -1323,19 +1323,19 @@ function ProjectModal({
                         {/* Fechas */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Fecha Inicio</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Inicio</label>
                                 <input
                                     type="date"
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.fechaInicio}
                                     onChange={e => set('fechaInicio', e.target.value)}
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Fecha Fin</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Fin</label>
                                 <input
                                     type="date"
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.fechaFin}
                                     onChange={e => set('fechaFin', e.target.value)}
                                 />
@@ -1344,10 +1344,10 @@ function ProjectModal({
 
                         {/* Observaciones */}
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Observaciones</label>
+                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Observaciones</label>
                             <textarea
                                 rows={3}
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium resize-none"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium resize-none"
                                 value={formData.observaciones}
                                 onChange={e => set('observaciones', e.target.value)}
                                 placeholder="Notas adicionales..."
@@ -1391,13 +1391,13 @@ function ProjectModal({
 
                             {(formData as any).aprovisionamiento && (
                                 <div className="pt-3 border-t border-primary/10 space-y-1.5 animate-in fade-in duration-200">
-                                    <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                                    <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         Lista de Precios Aplicable (Gestión Comercial)
                                     </label>
                                     <select
                                         value={(formData as any).listaPrecioId || ''}
                                         onChange={(e) => set('listaPrecioId', e.target.value)}
-                                        className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-primary/20"
+                                        className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-primary/20"
                                     >
                                         <option value="">Precio Base (Predeterminado de Gestión Comercial)</option>
                                         {listasPrecios.filter((lp: any) => lp.activo).map((lp: any) => (
@@ -1406,14 +1406,14 @@ function ProjectModal({
                                             </option>
                                         ))}
                                     </select>
-                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                    <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                                         Aplica a los materiales de las órdenes de servicio generadas para este proyecto. Puede modificarse individualmente en cada OS.
                                     </p>
                                     {(() => {
                                         const selectedClient = clients.find(c => c.id === formData.clientId) as any;
                                         if (selectedClient?.listaPrecio) {
                                             return (
-                                                <div className="flex items-center gap-1.5 text-[10px] text-primary/80 font-semibold bg-primary/5 px-2.5 py-1.5 rounded-lg border border-primary/10">
+                                                <div className="flex items-center gap-1.5 text-[11px] text-primary/80 font-semibold bg-primary/5 px-2.5 py-1.5 rounded-lg border border-primary/10">
                                                     <span>ℹ️ Lista predeterminada del cliente: <strong>{selectedClient.listaPrecio.nombre}</strong>. Este proyecto respeta la lista seleccionada aquí independientemente de la del cliente.</span>
                                                 </div>
                                             );
@@ -1445,10 +1445,10 @@ function ProjectModal({
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                    <h4 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-2">
                                         <MapPin className="w-3.5 h-3.5" /> Fichaje GPS/QR
                                     </h4>
-                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Habilita fichado con geovalla y código QR para este proyecto</p>
+                                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Habilita fichado con geovalla y código QR para este proyecto</p>
                                 </div>
                                 <button type="button" onClick={() => set('fichajeHabilitado', !(formData as any).fichajeHabilitado)}
                                     className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${(formData as any).fichajeHabilitado ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}>
@@ -1457,39 +1457,39 @@ function ProjectModal({
                             </div>
 
                             {(formData as any).fichajeHabilitado && (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest italic px-1">Haz clic en el mapa para posicionar el centro de la geovalla</p>
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider italic px-1">Haz clic en el mapa para posicionar el centro de la geovalla</p>
                                     <MapPicker lat={(formData as any).geofenceLat} lng={(formData as any).geofenceLng} radius={(formData as any).geofenceRadius}
                                         onChange={(lat, lng, radius) => { set('geofenceLat', lat); set('geofenceLng', lng); set('geofenceRadius', radius); }} />
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Latitud</label>
-                                            <input type="number" step="any" placeholder="-34.123456" className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceLat || ''} onChange={e => set('geofenceLat', e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Latitud</label>
+                                            <input type="number" step="any" placeholder="-34.123456" className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceLat || ''} onChange={e => set('geofenceLat', e.target.value === '' ? null : parseFloat(e.target.value))} />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Longitud</label>
-                                            <input type="number" step="any" placeholder="-58.123456" className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceLng || ''} onChange={e => set('geofenceLng', e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Longitud</label>
+                                            <input type="number" step="any" placeholder="-58.123456" className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceLng || ''} onChange={e => set('geofenceLng', e.target.value === '' ? null : parseFloat(e.target.value))} />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Radio (Metros)</label>
-                                            <input type="number" placeholder="Ej: 100" className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceRadius || ''} onChange={e => set('geofenceRadius', e.target.value === '' ? null : parseInt(e.target.value))} />
+                                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Radio (Metros)</label>
+                                            <input type="number" placeholder="Ej: 100" className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceRadius || ''} onChange={e => set('geofenceRadius', e.target.value === '' ? null : parseInt(e.target.value))} />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">QR Token (Validación)</label>
+                                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">QR Token (Validación)</label>
                                             <div className="flex gap-2">
-                                                <input type="text" placeholder="Token único..." className="flex-1 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono text-sm" value={(formData as any).qrToken || ''} onChange={e => set('qrToken', e.target.value)} />
-                                                <button type="button" onClick={() => set('qrToken', Math.random().toString(36).substring(2, 10).toUpperCase())} className="px-3 bg-muted text-muted-foreground/50 hover:bg-slate-200 rounded-2xl text-slate-600 dark:text-slate-300 transition-all active:scale-95" title="Generar Token"><Play className="w-4 h-4 rotate-90" /></button>
+                                                <input type="text" placeholder="Token único..." className="flex-1 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono text-sm" value={(formData as any).qrToken || ''} onChange={e => set('qrToken', e.target.value)} />
+                                                <button type="button" onClick={() => set('qrToken', Math.random().toString(36).substring(2, 10).toUpperCase())} className="px-3 bg-muted hover:bg-slate-200 rounded-2xl text-slate-600 dark:text-slate-300 transition-all" title="Generar Token"><Play className="w-4 h-4 rotate-90" /></button>
                                             </div>
                                         </div>
                                     </div>
                                     {(formData as any).qrToken && (
-                                        <div className="p-4 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-300">
+                                        <div className="p-4 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-200">
                                             <div id="project-qr" className="p-4 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                                                 <QRCodeCanvas value={(formData as any).qrToken} size={160} level="H" includeMargin={true} />
                                             </div>
-                                            <button type="button" onClick={() => { const canvas = document.querySelector('#project-qr canvas') as HTMLCanvasElement; if (canvas) { const win = window.open('', '_blank'); if (win) { win.document.write(`<html><head><title>Imprimir QR - ${formData.nombre}</title><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;}.container{text-align:center;border:2px solid #000;padding:40px;border-radius:20px;}h1{margin-bottom:20px;font-size:24px;}h2{margin-bottom:10px;font-size:20px;}p{margin-top:20px;font-weight:bold;font-size:18px;color:#666;}img{width:300px;height:300px;}</style></head><body><div class="container"><h1>HDB SERVICIOS ELÉCTRICOS</h1><h2>PROYECTO: ${formData.nombre}</h2>${editingProject?.codigoProyecto ? `<h3>CÓDIGO: ${editingProject.codigoProyecto}</h3>` : ''}<img src="${canvas.toDataURL()}" /><p>TOKEN: ${(formData as any).qrToken}</p></div><script>window.onload=()=>{setTimeout(()=>{window.print();window.onafterprint=()=>window.close();},500);};</script></body></html>`); } } }} className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all active:scale-95"><QrCode className="w-4 h-4" /> Imprimir QR para Obra</button>
+                                            <button type="button" onClick={() => { const canvas = document.querySelector('#project-qr canvas') as HTMLCanvasElement; if (canvas) { const win = window.open('', '_blank'); if (win) { win.document.write(`<html><head><title>Imprimir QR - ${formData.nombre}</title><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;}.container{text-align:center;border:2px solid #000;padding:40px;border-radius:20px;}h1{margin-bottom:20px;font-size:24px;}h2{margin-bottom:10px;font-size:20px;}p{margin-top:20px;font-weight:bold;font-size:18px;color:#666;}img{width:300px;height:300px;}</style></head><body><div class="container"><h1>HDB SERVICIOS ELÉCTRICOS</h1><h2>PROYECTO: ${formData.nombre}</h2>${editingProject?.codigoProyecto ? `<h3>CÓDIGO: ${editingProject.codigoProyecto}</h3>` : ''}<img src="${canvas.toDataURL()}" /><p>TOKEN: ${(formData as any).qrToken}</p></div><script>window.onload=()=>{setTimeout(()=>{window.print();window.onafterprint=()=>window.close();},500);};</script></body></html>`); } } }} className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"><QrCode className="w-4 h-4" /> Imprimir QR para Obra</button>
                                         </div>
                                     )}
                                     <button type="button" onClick={async () => {
@@ -1501,7 +1501,7 @@ function ProjectModal({
                                             });
                                             showToast('Configuración de fichaje guardada correctamente.', 'success');
                                         } catch (e) { showToast('Error al guardar configuración de fichaje.', 'error'); }
-                                    }} className="w-full bg-emerald-600 text-white font-bold rounded-xl py-3 hover:bg-emerald-700 transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    }} className="w-full bg-emerald-600 text-white font-bold rounded-xl py-3 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
                                         <Save className="w-4 h-4" /> Guardar Config. Fichaje
                                     </button>
                                 </div>
@@ -1515,13 +1515,13 @@ function ProjectModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
+                            className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-muted hover:bg-slate-200 transition-all"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            className="flex-[2] bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95"
+                            className="flex-[2] bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary-hover transition-all"
                         >
                             {editingProject ? 'Guardar Cambios' : 'Crear Proyecto'}
                         </button>
@@ -1536,7 +1536,7 @@ function MetricTooltip({ def }: { def: string }) {
     return (
         <div className="group/tooltip relative inline-block">
             <Info className="w-3.5 h-3.5 text-slate-300 hover:text-primary transition-colors cursor-help" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900 text-white rounded-xl text-[10px] leading-snug hidden group-hover/tooltip:block z-[9999] shadow-2xl animate-in zoom-in-95 duration-200 pointer-events-none">
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900 text-white rounded-xl text-[11px] leading-snug hidden group-hover/tooltip:block z-[9999] shadow-2xl animate-in zoom-in-95 duration-200 pointer-events-none">
                 <p className="font-medium">{def}</p>
                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-900" />
             </div>

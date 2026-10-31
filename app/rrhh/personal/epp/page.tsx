@@ -123,7 +123,7 @@ export default function EppManagementPage() {
     ];
 
     return (
-        <div className="w-full max-w-[1700px] mx-auto p-3 sm:p-5 md:p-6 space-y-6 animate-in fade-in duration-300">
+        <div className="w-full space-y-6">
             {/* Cabecera del Módulo */}
             <ModuleHeader
                 title="Elementos de Protección Personal (EPP)"
@@ -180,7 +180,7 @@ export default function EppManagementPage() {
                             Cobertura Global
                         </span>
                         <div className="flex items-baseline gap-2 mt-1">
-                            <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                            <h3 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                                 {stats.porcentajeCobertura}%
                             </h3>
                             <span className="text-xs text-slate-400 font-medium">al día</span>
@@ -192,7 +192,7 @@ export default function EppManagementPage() {
                             EPP Vigentes
                         </span>
                         <div className="flex items-baseline gap-2 mt-1">
-                            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                                 {stats.vigentesCount}
                             </h3>
                             <span className="text-xs text-emerald-600 font-bold">cubiertos</span>
@@ -204,7 +204,7 @@ export default function EppManagementPage() {
                             Por Vencer (&le; 30d)
                         </span>
                         <div className="flex items-baseline gap-2 mt-1">
-                            <h3 className="text-2xl font-black text-amber-600 dark:text-amber-400">
+                            <h3 className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                                 {stats.porVencerCount}
                             </h3>
                             <span className="text-xs text-slate-400 font-medium">requieren recambio</span>
@@ -216,7 +216,7 @@ export default function EppManagementPage() {
                             EPP Vencidos
                         </span>
                         <div className="flex items-baseline gap-2 mt-1">
-                            <h3 className="text-2xl font-black text-rose-600 dark:text-rose-400">
+                            <h3 className="text-2xl font-bold text-rose-600 dark:text-rose-400">
                                 {stats.vencidosCount}
                             </h3>
                             <span className="text-xs text-slate-400 font-medium">atención urgente</span>
@@ -228,7 +228,7 @@ export default function EppManagementPage() {
                             Ptes. de Firma
                         </span>
                         <div className="flex items-baseline gap-2 mt-1">
-                            <h3 className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                            <h3 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                                 {stats.pendientesFirmaCount}
                             </h3>
                             <span className="text-xs text-slate-400 font-medium">en Mis EPP</span>
@@ -266,7 +266,7 @@ export default function EppManagementPage() {
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm p-6 space-y-4">
                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                                 <div>
-                                    <h3 className="font-black text-slate-900 dark:text-slate-100 text-base">
+                                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                                         Solicitudes de EPP Realizadas por Operadores
                                     </h3>
                                     <p className="text-xs text-slate-400 mt-0.5">
@@ -294,7 +294,7 @@ export default function EppManagementPage() {
                                                     <span className="text-xs text-slate-400">
                                                         (DNI: {req.operator?.dni || 'S/D'})
                                                     </span>
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                                    <span className={`px-2 py-0.5 rounded text-[11px] font-semibold uppercase ${
                                                         req.estado === 'PENDIENTE'
                                                             ? 'bg-amber-100 text-amber-700'
                                                             : req.estado === 'APROBADA'
@@ -329,7 +329,7 @@ export default function EppManagementPage() {
                                                             handleResolveRequest(req.id, 'APROBAR');
                                                             handleStartDelivery(req.operatorId);
                                                         }}
-                                                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+                                                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1"
                                                     >
                                                         <CheckCircle2 className="w-3.5 h-3.5" />
                                                         Aprobar y Despachar

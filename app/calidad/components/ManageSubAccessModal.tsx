@@ -297,7 +297,7 @@ export default function ManageSubAccessModal({
 
     return (
         <div
-            className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md transition-all ${
+            className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 transition-all ${
                 isFullscreen ? 'p-0' : 'p-2 sm:p-4 md:p-6'
             }`}
         >
@@ -318,10 +318,10 @@ export default function ManageSubAccessModal({
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h2 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100">
+                                <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                                     Gestor de Estructura y Sub-accesos SGI
                                 </h2>
-                                <span className="text-[10px] font-black uppercase font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                                <span className="text-[11px] font-semibold uppercase font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                                     {modules.length} Módulos • {totalSubAccesses} Sub-procesos
                                 </span>
                             </div>
@@ -378,7 +378,7 @@ export default function ManageSubAccessModal({
                                         {isEditing ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
                                             {isEditing ? 'Editar Sub-acceso Seleccionado' : 'Crear Nuevo Sub-acceso'}
                                         </h3>
                                         <p className="text-[11px] text-slate-400">
@@ -406,19 +406,19 @@ export default function ManageSubAccessModal({
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-1.5">
-                                            <span className="text-xs font-mono font-black text-slate-500">
+                                            <span className="text-xs font-mono font-bold text-slate-500">
                                                 {formData.codigo || 'X.X'}
                                             </span>
                                             <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
                                                 {formData.nombre || 'Nombre del Sub-acceso'}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 truncate">
+                                        <p className="text-[11px] text-slate-400 truncate">
                                             {currentSelectedModule ? `Módulo ${currentSelectedModule.codigo}: ${currentSelectedModule.nombre}` : 'Módulo'}
                                         </p>
                                     </div>
                                 </div>
-                                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-muted text-slate-500 shrink-0">
+                                <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-muted text-slate-500 shrink-0">
                                     Vista Previa
                                 </span>
                             </div>
@@ -427,13 +427,13 @@ export default function ManageSubAccessModal({
                             <form id="subAccessForm" onSubmit={handleSave} className="space-y-4 bg-card p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
                                 {/* Module Selector */}
                                 <div>
-                                    <label className="block text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         Módulo Principal Padre *
                                     </label>
                                     <select
                                         value={formData.moduleId}
                                         onChange={e => handleModuleChange(e.target.value)}
-                                        className="w-full px-3.5 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-primary cursor-pointer hover:border-primary/50 transition-colors"
+                                        className="w-full px-3.5 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-primary cursor-pointer hover:border-primary/50 transition-colors"
                                         required
                                     >
                                         {modules.map(m => (
@@ -447,7 +447,7 @@ export default function ManageSubAccessModal({
                                 {/* Codigo & Nombre */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div className="sm:col-span-1">
-                                        <label className="block text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                                        <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Código
                                         </label>
                                         <input
@@ -455,11 +455,11 @@ export default function ManageSubAccessModal({
                                             placeholder="ej. 1.4"
                                             value={formData.codigo}
                                             onChange={e => setFormData({ ...formData, codigo: e.target.value })}
-                                            className="w-full px-3.5 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-primary font-mono"
+                                            className="w-full px-3.5 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-primary font-mono"
                                         />
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <label className="block text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                                        <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Nombre del Sub-acceso *
                                         </label>
                                         <input
@@ -467,7 +467,7 @@ export default function ManageSubAccessModal({
                                             placeholder="ej. Gestión Ambiental y Sostenibilidad"
                                             value={formData.nombre}
                                             onChange={e => setFormData({ ...formData, nombre: e.target.value })}
-                                            className="w-full px-3.5 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-primary"
+                                            className="w-full px-3.5 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-primary"
                                             required
                                         />
                                     </div>
@@ -475,7 +475,7 @@ export default function ManageSubAccessModal({
 
                                 {/* Descripcion / Documentos Tipicos */}
                                 <div>
-                                    <label className="block text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         Descripción y Documentos Típicos / Referencias Normativas
                                     </label>
                                     <textarea
@@ -483,16 +483,16 @@ export default function ManageSubAccessModal({
                                         placeholder="ej. Procedimiento de Gestión Ambiental (PG-140-01), Matrices de aspectos e impactos ambientales, registros de disposición de residuos y manifiestos."
                                         value={formData.descripcion}
                                         onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none focus:border-primary resize-none leading-relaxed"
+                                        className="w-full px-3.5 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none focus:border-primary resize-none leading-relaxed"
                                     />
-                                    <p className="text-[10px] text-slate-400 mt-1">
+                                    <p className="text-[11px] text-slate-400 mt-1">
                                         Esta descripción servirá como guía visual y de inducción en la biblioteca documental.
                                     </p>
                                 </div>
 
                                 {/* Icon Picker */}
                                 <div>
-                                    <label className="block text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+                                    <label className="block mb-2 flex items-center justify-between text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         <span>Icono de Lucide</span>
                                         <span className="text-[11px] font-bold text-primary flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-md">
                                             <SelectedIconComponent className="w-3.5 h-3.5" /> {formData.icon}
@@ -538,7 +538,7 @@ export default function ManageSubAccessModal({
                                 type="submit"
                                 form="subAccessForm"
                                 disabled={loading}
-                                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-xl font-black text-xs shadow-md shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+                                className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-xl font-bold text-xs transition-all disabled:opacity-50"
                             >
                                 {loading ? (
                                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -620,10 +620,10 @@ export default function ManageSubAccessModal({
                                             }`}
                                         >
                                             <div className="flex items-center gap-2.5">
-                                                <span className="text-xs font-black uppercase font-mono px-2.5 py-0.5 rounded-lg bg-white/80 dark:bg-slate-900/60 shadow-xs">
+                                                <span className="text-xs font-semibold uppercase font-mono px-2.5 py-0.5 rounded-lg bg-white/80 dark:bg-slate-900/60 shadow-xs">
                                                     Módulo {mod.codigo}
                                                 </span>
-                                                <h4 className="text-sm font-black truncate">{mod.nombre}</h4>
+                                                <h4 className="text-sm font-bold truncate">{mod.nombre}</h4>
                                             </div>
 
                                             <div className="flex items-center gap-2">
@@ -668,7 +668,7 @@ export default function ManageSubAccessModal({
                                                             </div>
                                                             <div className="min-w-0 flex-1">
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <span className="text-xs font-mono font-black text-slate-500">
+                                                                    <span className="text-xs font-mono font-bold text-slate-500">
                                                                         {sub.codigo}
                                                                     </span>
                                                                     <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
@@ -685,7 +685,7 @@ export default function ManageSubAccessModal({
 
                                                         {/* Actions & Stats */}
                                                         <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800/60">
-                                                            <span className="text-[10px] font-bold bg-card border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-md text-slate-500">
+                                                            <span className="text-[11px] font-bold bg-card border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-md text-slate-500">
                                                                 {sub._count?.documentos || 0} docs vinculados
                                                             </span>
 
@@ -748,7 +748,7 @@ export default function ManageSubAccessModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-5 py-2 text-xs font-black bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl transition-colors text-slate-700 dark:text-slate-200 ml-auto"
+                        className="px-5 py-2 text-xs font-bold bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl transition-colors text-slate-700 dark:text-slate-200 ml-auto"
                     >
                         Cerrar Gestor
                     </button>

@@ -53,53 +53,53 @@ export default function DashboardTab({ user }: { user: any }) {
                 <div className="bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center h-[64px] md:h-[72px]">
                     <div className="flex items-center gap-1.5 mb-1">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">Vigentes</p>
+                        <p className="text-[11px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Vigentes</p>
                     </div>
-                    <p className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.vigentes}</p>
+                    <p className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.vigentes}</p>
                 </div>
                 
                 <div className="bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center h-[64px] md:h-[72px]">
                     <div className="flex items-center gap-1.5 mb-1">
                         <Clock className="w-3.5 h-3.5 text-amber-500" />
-                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">En Revisión</p>
+                        <p className="text-[11px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">En Revisión</p>
                     </div>
-                    <p className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.enRevision + totals.borradores}</p>
+                    <p className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.enRevision + totals.borradores}</p>
                 </div>
 
                 <div className="bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center h-[64px] md:h-[72px]">
                     <div className="flex items-center gap-1.5 mb-1">
                         <FileWarning className="w-3.5 h-3.5 text-rose-500" />
-                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">Vencidos</p>
+                        <p className="text-[11px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Vencidos</p>
                     </div>
-                    <p className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.vencidos}</p>
+                    <p className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.vencidos}</p>
                 </div>
 
                 <div className="bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center h-[64px] md:h-[72px]">
                     <div className="flex items-center gap-1.5 mb-1">
                         <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
-                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">Confirmaciones</p>
+                        <p className="text-[11px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Confirmaciones</p>
                     </div>
-                    <p className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.confirmacionesPendientes}</p>
+                    <p className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.confirmacionesPendientes}</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-card text-card-foreground rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-4 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4 uppercase tracking-wider flex items-center gap-2">
                         <FileText className="w-4 h-4 text-primary" /> Documentos por Tipo
                     </h3>
                     <div className="space-y-3">
                         {byType.map((item: any) => (
                             <div key={item.tipo} className="flex items-center justify-between">
                                 <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{item.tipo}</span>
-                                <span className="text-sm font-black text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">{item.count}</span>
+                                <span className="text-sm font-bold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-md">{item.count}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 <div className="bg-card text-card-foreground rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-4 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4 uppercase tracking-wider flex items-center gap-2">
                         <History className="w-4 h-4 text-primary" /> Actividad Reciente
                     </h3>
                     <div className="space-y-4">

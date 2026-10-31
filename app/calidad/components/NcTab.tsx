@@ -150,7 +150,7 @@ export default function NcTab({ user }: { user: any }) {
                                             <div key={nc.id} onClick={() => setSelectedNcId(nc.id)} className="bg-card p-3 rounded shadow-sm border text-sm cursor-pointer hover:border-primary transition-colors">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <span className="font-semibold text-primary">{nc.codigoNC}</span>
-                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${nc.criticidad === 'Crítica' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                    <span className={`text-[11px] px-1.5 py-0.5 rounded ${nc.criticidad === 'Crítica' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
                                                         {nc.criticidad}
                                                     </span>
                                                 </div>

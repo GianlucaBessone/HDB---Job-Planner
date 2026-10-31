@@ -335,10 +335,10 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
             <div className="shrink-0 flex items-center justify-between p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                 <div className="flex flex-col gap-1 pr-4 flex-1">
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                        <h3 className="text-lg sm:text-2xl font-black text-slate-800 dark:text-slate-100">
+                        <h3 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
                             {osTitle}
                         </h3>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider ${
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold uppercase tracking-wider ${
                             os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700' :
                             os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700' :
                             os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700' :
@@ -386,11 +386,11 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
                 {/* Tarjeta Info General */}
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     <div className="bg-slate-50 dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Cliente</span>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Cliente</span>
                         <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{clienteName}</span>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Emisión</span>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Emisión</span>
                         <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
                             {new Date(os.fechaCreacion).toLocaleDateString()}
                         </span>
@@ -399,7 +399,7 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
 
                 {/* Reporte de Trabajo */}
                 <div className="space-y-2 sm:space-y-3">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5 ml-1">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 ml-1">
                         <FileText className="w-3.5 h-3.5" /> Reporte Técnico
                     </h4>
                     <div className="bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-4 sm:p-5 rounded-2xl sm:rounded-3xl shadow-inner text-sm sm:text-base text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed font-medium">
@@ -411,12 +411,12 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     {os.operadores && os.operadores.length > 0 && (
                         <div className="space-y-2 sm:space-y-3">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Personal Asignado</h4>
+                            <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 ml-1">Personal Asignado</h4>
                             <ul className="space-y-2">
                                 {os.operadores.map((op: any, i: number) => (
                                     <li key={i} className="flex justify-between items-center text-sm font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800">
                                         <span>{op.operador?.nombreCompleto || op.operadorNombre || op.nombre || ''}</span>
-                                        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-lg text-xs font-black">{op.horas} hrs</span>
+                                        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-lg text-xs font-bold">{op.horas} hrs</span>
                                     </li>
                                 ))}
                             </ul>
@@ -426,9 +426,9 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
                     {os.materiales && os.materiales.length > 0 && (
                         <div className="space-y-2 sm:space-y-3">
                             <div className="flex items-center justify-between ml-1">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Materiales Utilizados</h4>
+                                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Materiales Utilizados</h4>
                                 {os.listaPrecio?.nombre && (
-                                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                    <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
                                         {os.listaPrecio.nombre}
                                     </span>
                                 )}
@@ -441,24 +441,24 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
                                             <div className="flex flex-col min-w-0 pr-2">
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     {m.codigo && (
-                                                        <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-200 dark:bg-slate-800 px-1.5 py-0.2 rounded">
+                                                        <span className="font-mono text-[11px] font-bold text-slate-500 bg-slate-200 dark:bg-slate-800 px-1.5 py-0.2 rounded">
                                                             {m.codigo}
                                                         </span>
                                                     )}
                                                     {m.skuProveedor && (
-                                                        <span className="font-mono text-[9px] text-slate-400">
+                                                        <span className="font-mono text-[11px] text-slate-400">
                                                             (Prov: {m.skuProveedor})
                                                         </span>
                                                     )}
                                                     {isManual && (
-                                                        <span className="text-[9px] bg-amber-100 text-amber-800 px-1 rounded">
+                                                        <span className="text-[11px] bg-amber-100 text-amber-800 px-1 rounded">
                                                             Manual
                                                         </span>
                                                     )}
                                                 </div>
                                                 <span className="line-clamp-1 text-xs sm:text-sm">{m.material || m.nombre || ''}</span>
                                             </div>
-                                            <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-lg text-xs font-black shrink-0">
+                                            <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-lg text-xs font-bold shrink-0">
                                                 {m.cantidad} {m.unidadMedida || ''}
                                             </span>
                                         </li>
@@ -472,23 +472,23 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
                 {/* Firma de Conformidad */}
                 {isFirmada && (
                     <div className="space-y-2 sm:space-y-3 pt-2 sm:pt-4 border-t border-slate-100 dark:border-slate-800/50">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 flex items-center gap-1.5">
+                        <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 ml-1 flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> 
                             Firma del Cliente
                         </h4>
                         <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 p-4 sm:p-5 rounded-2xl sm:rounded-3xl">
                             <div className="grid grid-cols-2 gap-y-4 gap-x-2 text-xs sm:text-sm">
                                 <div>
-                                    <span className="block text-[10px] font-black uppercase tracking-widest text-emerald-600/60 dark:text-emerald-400/60 mb-0.5">Aclaración</span>
+                                    <span className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-600/60 dark:text-emerald-400/60 mb-0.5">Aclaración</span>
                                     <span className="font-bold text-slate-800 dark:text-slate-200">{os.firma?.aclaracion || '-'}</span>
                                 </div>
                                 <div>
-                                    <span className="block text-[10px] font-black uppercase tracking-widest text-emerald-600/60 dark:text-emerald-400/60 mb-0.5">DNI</span>
+                                    <span className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-600/60 dark:text-emerald-400/60 mb-0.5">DNI</span>
                                     <span className="font-bold text-slate-800 dark:text-slate-200">{os.firma?.dni || '-'}</span>
                                 </div>
                                 {os.firma?.cargo && (
                                     <div className="col-span-2">
-                                        <span className="block text-[10px] font-black uppercase tracking-widest text-emerald-600/60 dark:text-emerald-400/60 mb-0.5">Cargo</span>
+                                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-emerald-600/60 dark:text-emerald-400/60 mb-0.5">Cargo</span>
                                         <span className="font-bold text-slate-800 dark:text-slate-200">{os.firma.cargo}</span>
                                     </div>
                                 )}
@@ -513,14 +513,14 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
             <div className="shrink-0 flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                 <button 
                     onClick={handleDownload}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-[0.98] shadow-lg shadow-slate-900/20"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-lg"
                 >
                     <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                     Descargar PDF
                 </button>
                 <button 
                     onClick={handlePrint}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black text-slate-700 dark:text-slate-200 transition-all active:scale-[0.98]"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 transition-all"
                 >
                     <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
                     Imprimir
@@ -530,7 +530,7 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
                     <>
                         <button 
                             onClick={handleGenerarCobro}
-                            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 border py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-[0.98] ${
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 border py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all ${
                                 os.cobroGenerado 
                                 ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900/50' 
                                 : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
@@ -541,7 +541,7 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
                         </button>
                         <button 
                             onClick={handleShowNota}
-                            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 border py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-[0.98] ${
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 border py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all ${
                                 os.notaInterna
                                 ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/50'
                                 : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-200'

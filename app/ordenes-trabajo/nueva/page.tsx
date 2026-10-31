@@ -184,7 +184,7 @@ export default function NuevaOrdenTrabajoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-8 space-y-6">
+    <div className="space-y-6">
       {/* Top Back Navigation */}
       <div className="flex items-center justify-between">
         <Link
@@ -208,7 +208,7 @@ export default function NuevaOrdenTrabajoPage() {
               <FileText className="w-4 h-4" />
               <span>Alta Operativa</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+            <h1 className="text-title text-slate-900 dark:text-slate-100">
               Nueva Orden de Trabajo
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -228,7 +228,7 @@ export default function NuevaOrdenTrabajoPage() {
 
           {/* Section 1: Ubicación & Entidades */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
-            <h2 className="text-sm font-black uppercase text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <h2 className="text-sm font-semibold uppercase text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
               <Building2 className="w-4 h-4 text-primary" />
               1. Cliente y Proyecto
             </h2>
@@ -287,7 +287,7 @@ export default function NuevaOrdenTrabajoPage() {
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
                   <span>Ref. Cliente</span>
-                  <span className="text-[10px] font-normal text-slate-400">Manual / Alfanumérico</span>
+                  <span className="text-[11px] font-normal text-slate-400">Manual / Alfanumérico</span>
                 </label>
                 <div className="relative">
                   <Tag className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
@@ -305,7 +305,7 @@ export default function NuevaOrdenTrabajoPage() {
               <div className="md:col-span-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
                   <span>Ubicación / Sector / Planta</span>
-                  <span className="text-[10px] font-normal text-slate-400">Seleccione o escriba una nueva</span>
+                  <span className="text-[11px] font-normal text-slate-400">Seleccione o escriba una nueva</span>
                 </label>
                 <SearchableCombobox
                   options={sectors
@@ -350,7 +350,7 @@ export default function NuevaOrdenTrabajoPage() {
 
           {/* Section 2: Responsable */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
-            <h2 className="text-sm font-black uppercase text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <h2 className="text-sm font-semibold uppercase text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
               <User className="w-4 h-4 text-primary" />
               2. Asignación Técnica
             </h2>
@@ -379,7 +379,7 @@ export default function NuevaOrdenTrabajoPage() {
           {/* Section 3: Reporte de Trabajo Inicial */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h2 className="text-sm font-black uppercase text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <h2 className="text-sm font-semibold uppercase text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-primary" />
                 3. Reporte de Trabajo a Realizar <span className="text-rose-500">*</span>
               </h2>
@@ -410,7 +410,7 @@ export default function NuevaOrdenTrabajoPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-xl shadow-md transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {submitting ? (
                 <>

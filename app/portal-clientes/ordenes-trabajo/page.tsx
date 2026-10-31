@@ -182,7 +182,7 @@ export default function PortalOrdenesTrabajoPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-title text-slate-900 dark:text-slate-100">
             Órdenes de Trabajo
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -199,7 +199,7 @@ export default function PortalOrdenesTrabajoPage() {
               setSignSuccessResult(null);
               setPassword('');
             }}
-            className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg animate-in fade-in transition-all"
+            className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in transition-all"
           >
             <FileSignature className="w-4 h-4" />
             Firmar y cerrar ciclo ({selectedOtIds.length})
@@ -241,7 +241,7 @@ export default function PortalOrdenesTrabajoPage() {
             placeholder="Buscar por OT (ej: OT-2026-0001), Ref. Cliente o Sector..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full pl-10 pr-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-card text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
@@ -321,7 +321,7 @@ export default function PortalOrdenesTrabajoPage() {
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       <Link
                         href={`/portal-clientes/ordenes-trabajo/${ot.id}`}
-                        className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 font-mono hover:text-primary transition-colors"
+                        className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 font-mono hover:text-primary transition-colors"
                       >
                         {ot.numeroOT}
                       </Link>
@@ -333,7 +333,7 @@ export default function PortalOrdenesTrabajoPage() {
                       )}
 
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
                           ot.estado === 'ABIERTA'
                             ? 'bg-blue-500/10 text-blue-600'
                             : ot.estado === 'PAUSADA'
@@ -361,15 +361,15 @@ export default function PortalOrdenesTrabajoPage() {
                 <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-5">
                     <div className="text-right">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Horas</span>
+                      <span className="text-[11px] uppercase font-bold text-slate-400 block">Horas</span>
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                         {totalHoras.toFixed(1)} h
                       </span>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Total</span>
-                      <span className="text-xs font-black text-slate-900 dark:text-slate-100 font-mono">
+                      <span className="text-[11px] uppercase font-bold text-slate-400 block">Total</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 font-mono">
                         ${totalCosto.toLocaleString('es-AR')}
                       </span>
                     </div>
@@ -391,7 +391,7 @@ export default function PortalOrdenesTrabajoPage() {
 
       {/* MODAL: FIRMAR Y CERRAR CICLO */}
       {isSignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
@@ -399,7 +399,7 @@ export default function PortalOrdenesTrabajoPage() {
                   <FileSignature className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     Cierre de Ciclo y Firma
                   </h3>
                   <p className="text-xs text-slate-500">Autorización y firma digital</p>
@@ -418,7 +418,7 @@ export default function PortalOrdenesTrabajoPage() {
                 <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
                   <ShieldCheck className="w-7 h-7" />
                 </div>
-                <h4 className="text-base font-black text-slate-900 dark:text-slate-100">
+                <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   ¡Firma Criptográfica Registrada!
                 </h4>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
@@ -450,26 +450,26 @@ export default function PortalOrdenesTrabajoPage() {
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Órdenes</span>
-                      <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
+                      <span className="text-slate-400 block text-[11px]">Órdenes</span>
+                      <strong className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         {selectedSummary.count} OTs
                       </strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Horas</span>
-                      <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
+                      <span className="text-slate-400 block text-[11px]">Horas</span>
+                      <strong className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         {selectedSummary.totalHoras} h
                       </strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Materiales</span>
-                      <strong className="text-sm font-black text-slate-900 dark:text-slate-100">
+                      <span className="text-slate-400 block text-[11px]">Materiales</span>
+                      <strong className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         ${selectedSummary.totalMat.toLocaleString('es-AR')}
                       </strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Costo Total</span>
-                      <strong className="text-sm font-black text-primary font-mono">
+                      <span className="text-slate-400 block text-[11px]">Costo Total</span>
+                      <strong className="text-sm font-bold text-primary font-mono">
                         ${selectedSummary.totalCosto.toLocaleString('es-AR')}
                       </strong>
                     </div>
@@ -491,7 +491,7 @@ export default function PortalOrdenesTrabajoPage() {
                           : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
                       }`}
                     >
-                      <div className="text-xs font-black mb-1">Cierre Parcial</div>
+                      <div className="text-xs font-bold mb-1">Cierre Parcial</div>
                       <p className="text-[11px] opacity-80 leading-relaxed font-normal">
                         Cierra y congela el período actual. La OT continúa abierta abriendo un nuevo ciclo.
                       </p>
@@ -506,7 +506,7 @@ export default function PortalOrdenesTrabajoPage() {
                           : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
                       }`}
                     >
-                      <div className="text-xs font-black mb-1">Cerrar OT Incompleta</div>
+                      <div className="text-xs font-bold mb-1">Cerrar OT Incompleta</div>
                       <p className="text-[11px] opacity-80 leading-relaxed font-normal">
                         Cierra la OT en su estado actual. Para continuar el trabajo se deberá abrir una nueva OT.
                       </p>
@@ -550,7 +550,7 @@ export default function PortalOrdenesTrabajoPage() {
                   <button
                     type="submit"
                     disabled={signing || !password}
-                    className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all disabled:opacity-50"
+                    className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-50"
                   >
                     {signing ? (
                       <>

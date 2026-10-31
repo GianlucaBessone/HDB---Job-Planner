@@ -67,7 +67,7 @@ export function VerificacionEficaciaModal({ isOpen, onClose, ncId, accionMejoraI
 
     return (
         <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in"
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
@@ -93,7 +93,7 @@ export function VerificacionEficaciaModal({ isOpen, onClose, ncId, accionMejoraI
                             <input 
                                 type="date" 
                                 required
-                                className="w-full bg-background border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                                className="w-full bg-card border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
                                 value={formData.fechaVerificacion}
                                 onChange={(e) => setFormData({...formData, fechaVerificacion: e.target.value})}
                             />
@@ -103,7 +103,7 @@ export function VerificacionEficaciaModal({ isOpen, onClose, ncId, accionMejoraI
                             <label className="text-sm font-semibold">Resultado de la Verificación *</label>
                             <textarea 
                                 required
-                                className="w-full bg-background border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none"
+                                className="w-full bg-card border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none"
                                 placeholder="Describa cómo se verificó y qué se encontró..."
                                 value={formData.resultado}
                                 onChange={(e) => setFormData({...formData, resultado: e.target.value})}
@@ -114,7 +114,7 @@ export function VerificacionEficaciaModal({ isOpen, onClose, ncId, accionMejoraI
                         <div className="space-y-2">
                             <label className="text-sm font-semibold">Observaciones</label>
                             <textarea 
-                                className="w-full bg-background border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none"
+                                className="w-full bg-card border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none"
                                 placeholder="Observaciones adicionales (opcional)..."
                                 value={formData.observaciones}
                                 onChange={(e) => setFormData({...formData, observaciones: e.target.value})}

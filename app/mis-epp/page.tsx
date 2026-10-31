@@ -195,7 +195,7 @@ export default function MisEppPage() {
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-in fade-in duration-300">
+        <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6">
             {/* Header del Módulo */}
             <ModuleHeader
                 title="Mis Elementos de Protección Personal"
@@ -246,7 +246,7 @@ export default function MisEppPage() {
             {/* SECCIÓN 1: ENTREGAS PENDIENTES DE FIRMA (ATENCIÓN INMEDIATA) */}
             {pendingDeliveries.length > 0 && (
                 <div className="space-y-4">
-                    <h2 className="text-sm font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    <h2 className="text-sm font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-2">
                         <Clock className="w-4 h-4" />
                         Entregas Pendientes de Firma ({pendingDeliveries.length})
                     </h2>
@@ -259,11 +259,11 @@ export default function MisEppPage() {
                             return (
                                 <div
                                     key={del.id}
-                                    className="bg-gradient-to-br from-amber-500/10 via-white to-emerald-500/10 dark:from-amber-950/30 dark:via-slate-900 dark:to-emerald-950/20 border-2 border-amber-500/40 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-md space-y-4"
+                                    className="bg-amber-500/10 dark:bg-amber-950/30 border-2 border-amber-500/40 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-md space-y-4"
                                 >
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-500/20 pb-3">
                                         <div>
-                                            <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-xs font-black uppercase tracking-wider inline-block mb-1">
+                                            <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-xs font-semibold uppercase tracking-wider inline-block mb-1">
                                                 Acta de Entrega: {del.codigoActa}
                                             </span>
                                             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -290,7 +290,7 @@ export default function MisEppPage() {
                                                     <div
                                                         key={item.id}
                                                         onClick={() => toggleItemSelection(del.id, item.id)}
-                                                        className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between active:scale-[0.99] select-none ${
+                                                        className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between select-none ${
                                                             isChecked
                                                                 ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500/60 ring-2 ring-emerald-500/20'
                                                                 : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 opacity-70'
@@ -305,7 +305,7 @@ export default function MisEppPage() {
                                                                 )}
                                                             </div>
                                                             <div>
-                                                                <span className="font-black text-xs text-slate-900 dark:text-slate-100 block">
+                                                                <span className="font-bold text-xs text-slate-900 dark:text-slate-100 block">
                                                                     {item.cantidad}x {item.eppItem?.nombre}
                                                                 </span>
                                                                 <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
@@ -335,7 +335,7 @@ export default function MisEppPage() {
                                         <button
                                             onClick={() => handleSignDelivery(del)}
                                             disabled={isSigningThis || selectedItems.length === 0}
-                                            className="w-full sm:w-auto px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-2xl text-xs sm:text-sm font-black transition-all shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 min-h-[46px]"
+                                            className="w-full sm:w-auto px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 min-h-[46px]"
                                         >
                                             {isSigningThis ? (
                                                 <>
@@ -360,7 +360,7 @@ export default function MisEppPage() {
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-base font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                             <ShieldCheck className="w-5 h-5 text-emerald-600" />
                             Mis Elementos de Protección Activos ({assignedItems.length})
                         </h2>
@@ -415,7 +415,7 @@ export default function MisEppPage() {
                                                     <ShieldCheck className="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-black text-sm text-slate-900 dark:text-slate-100">
+                                                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                                                         {item.eppItem?.nombre}
                                                     </h4>
                                                     <span className="text-[11px] text-slate-400">
@@ -424,7 +424,7 @@ export default function MisEppPage() {
                                                 </div>
                                             </div>
 
-                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                                            <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase ${
                                                 isVigente
                                                     ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
                                                     : isPorVencer
@@ -445,14 +445,14 @@ export default function MisEppPage() {
 
                                             <div className="flex items-center justify-between text-slate-500">
                                                 <span>Fecha de Vencimiento:</span>
-                                                <strong className={`${isVencido ? 'text-rose-600 font-black' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                <strong className={`${isVencido ? 'text-rose-600 font-bold' : 'text-slate-800 dark:text-slate-200'}`}>
                                                     {new Date(item.fechaVencimiento).toLocaleDateString()}
                                                 </strong>
                                             </div>
 
                                             <div className="flex items-center justify-between text-slate-500 pt-1 border-t border-slate-200/60 dark:border-slate-700">
                                                 <span>Días Restantes:</span>
-                                                <span className={`font-black ${
+                                                <span className={`font-bold ${
                                                     isVigente ? 'text-emerald-600' : isPorVencer ? 'text-amber-600' : 'text-rose-600'
                                                 }`}>
                                                     {isVencido ? `Venció hace ${Math.abs(item.diasRestantes)}d` : `${item.diasRestantes} días`}
@@ -496,7 +496,7 @@ export default function MisEppPage() {
             {/* SECCIÓN 3: SOLICITUDES EN CURSO */}
             {requests.length > 0 && (
                 <div className="space-y-3">
-                    <h3 className="text-sm font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-2">
                         <Package className="w-4 h-4 text-indigo-500" />
                         Tus Solicitudes de EPP ({requests.length})
                     </h3>
@@ -516,7 +516,7 @@ export default function MisEppPage() {
                                     </span>
                                 </div>
 
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                                <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase ${
                                     req.estado === 'PENDIENTE'
                                         ? 'bg-amber-100 text-amber-700'
                                         : req.estado === 'APROBADA'

@@ -139,7 +139,7 @@ export default function ModificarPrecioModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
       <div className="bg-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 flex flex-col space-y-4 animate-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -148,7 +148,7 @@ export default function ModificarPrecioModal({
               <Edit2 className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Modificar Precio Unitario
               </h3>
               <p className="text-[11px] text-slate-400">
@@ -168,10 +168,10 @@ export default function ModificarPrecioModal({
         {/* Info del Producto */}
         <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1">
           <div className="flex items-center justify-between">
-            <span className="font-mono font-black text-slate-900 dark:text-slate-100">
+            <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
               {item.sku}
             </span>
-            <span className="text-[10px] text-slate-400">
+            <span className="text-[11px] text-slate-400">
               Cant: {item.cantidad}
             </span>
           </div>
@@ -187,7 +187,7 @@ export default function ModificarPrecioModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Input Nuevo Precio */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
               Nuevo Precio Unitario ($ ARS)
             </label>
             <div className="relative">
@@ -198,7 +198,7 @@ export default function ModificarPrecioModal({
                 min="0"
                 value={nuevoPrecio}
                 onChange={(e) => setNuevoPrecio(e.target.value)}
-                className="w-full px-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-base font-black text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40"
+                className="w-full px-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-base font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40"
               />
             </div>
 
@@ -207,7 +207,7 @@ export default function ModificarPrecioModal({
               <div className="flex items-center justify-between mt-1.5 text-[11px] px-1">
                 <span className="text-slate-400">Diferencia sobre lista:</span>
                 <span
-                  className={`font-black ${
+                  className={`font-bold ${
                     difMonto < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'
                   }`}
                 >
@@ -220,7 +220,7 @@ export default function ModificarPrecioModal({
 
           {/* Motivo de Modificación */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
               Motivo del Ajuste
             </label>
             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -229,7 +229,7 @@ export default function ModificarPrecioModal({
                   key={m}
                   type="button"
                   onClick={() => setMotivo(m)}
-                  className={`text-[10px] px-2 py-0.5 rounded-lg border transition-colors ${
+                  className={`text-[11px] px-2 py-0.5 rounded-lg border transition-colors ${
                     motivo === m
                       ? 'bg-indigo-600 text-white border-indigo-600 font-bold'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
@@ -244,7 +244,7 @@ export default function ModificarPrecioModal({
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
               placeholder="Escriba el motivo del ajuste..."
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
+              className="w-full px-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
             />
           </div>
 
@@ -295,7 +295,7 @@ export default function ModificarPrecioModal({
             <button
               type="submit"
               disabled={isValidating || isNaN(precioNum) || precioNum < 0}
-              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black shadow-xs disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs disabled:opacity-50 transition-all"
             >
               {isValidating ? (
                 <>

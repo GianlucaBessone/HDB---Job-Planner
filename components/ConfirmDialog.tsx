@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AlertCircle, X, Loader2 } from 'lucide-react';
+import { ConfirmDialogBase } from '@/components/ui/Dialog';
 
 interface ConfirmDialogProps {
     isOpen: boolean;
@@ -28,69 +28,18 @@ export default function ConfirmDialog({
     isLoading = false,
     loadingLabel = 'Procesando...'
 }: ConfirmDialogProps) {
-    if (!isOpen) return null;
-
-    const variantStyles = {
-        danger: 'bg-red-600 hover:bg-red-700 shadow-red-200 text-white',
-        warning: 'bg-amber-500 hover:bg-amber-600 shadow-amber-200 text-white',
-        info: 'bg-primary hover:bg-primary/90 shadow-primary/20 text-white',
-    };
-
-    const iconStyles = {
-        danger: 'text-red-500 bg-red-50',
-        warning: 'text-amber-500 bg-amber-50',
-        info: 'text-primary bg-primary/5',
-    };
-
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-sm rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="p-8">
-                    <div className="flex justify-between items-start mb-6">
-                        <div className={`p-3 rounded-2xl ${iconStyles[variant]}`}>
-                            <AlertCircle className="w-6 h-6" />
-                        </div>
-                        <button
-                            onClick={onCancel}
-                            disabled={isLoading}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-colors disabled:opacity-50"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <div className="space-y-2 mb-8">
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">{title}</h3>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-medium">
-                            {message}
-                        </p>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button
-                            onClick={onCancel}
-                            disabled={isLoading}
-                            className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50"
-                        >
-                            {cancelLabel}
-                        </button>
-                        <button
-                            onClick={onConfirm}
-                            disabled={isLoading}
-                            className={`flex-[1.5] px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-75 ${variantStyles[variant]}`}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>{loadingLabel}</span>
-                                </>
-                            ) : (
-                                confirmLabel
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <ConfirmDialogBase
+            open={isOpen}
+            onCancel={onCancel}
+            onConfirm={onConfirm}
+            title={title}
+            message={message}
+            confirmLabel={confirmLabel}
+            cancelLabel={cancelLabel}
+            tone={variant === 'info' ? 'primary' : variant}
+            loading={isLoading}
+            loadingLabel={loadingLabel}
+        />
     );
 }
