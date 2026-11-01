@@ -186,7 +186,7 @@ export default function AiAuditPage() {
                         Monitoreo e Auditoría de IA
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium italic">
-                        Control de consumo de tokens, costos estimados de Gemini y registro histórico de consultas.
+                        Control de consumo de tokens, costos estimados de la IA y registro histórico de consultas.
                     </p>
                 </div>
 
@@ -244,7 +244,7 @@ export default function AiAuditPage() {
                                 {formatCost(stats.totalCost)}
                             </p>
                             <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-1 block">
-                                USD (gemini-2.5-flash)
+                                USD (claude-haiku-5-5)
                             </span>
                         </div>
                     </div>
@@ -565,7 +565,7 @@ export default function AiAuditPage() {
                                 Auditoría de Transcripción de Chats
                             </h3>
                             <p className="text-xs text-slate-450 dark:text-slate-400 font-medium mt-1">
-                                Permite revisar las conversaciones mantenidas por el personal operativo con el asistente inteligente de Gemini.
+                                Permite revisar las conversaciones mantenidas por el personal operativo con el asistente inteligente (Claude).
                             </p>
                         </div>
 

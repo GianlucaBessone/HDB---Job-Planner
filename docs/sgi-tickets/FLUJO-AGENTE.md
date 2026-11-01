@@ -27,7 +27,7 @@ Copiar para agente  ──── texto ───────▶ lee /instruccion
                                        POST /tickets/{codigo}/solucion ────▶ en_revision + aviso a gestores
                                          (o /escalar si no corresponde) ──▶ pendiente_aprobacion + aviso
 Revisa el PR, mergea y publica
-Marca "resuelto" en /tickets ─────────────────────────────────────────────▶ respuesta de Gemini + push al usuario
+Marca "resuelto" en /tickets ─────────────────────────────────────────────▶ respuesta de Claude + push al usuario
 ```
 
 El agente **no puede** marcar un ticket como resuelto ni cerrarlo: no existe un endpoint para eso.
@@ -36,7 +36,7 @@ El agente **no puede** marcar un ticket como resuelto ni cerrarlo: no existe un 
 ## 3. Delegar un ticket
 
 1. Abrí el ticket en `/tickets` → pestaña **Análisis del agente**.
-2. Si hace falta, **Analizar con IA** para que Gemini deje un diagnóstico previo.
+2. Si hace falta, **Analizar con IA** para que Claude deje un diagnóstico previo.
 3. **Copiar para agente**. Se copia un texto como este:
 
    ```text
