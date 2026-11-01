@@ -275,6 +275,17 @@
   @media (max-width: 1024px) {
     html { font-size: 14px; }
   }
+
+  /* Sin flechas nativas en inputs numéricos: los controles +/− los pone la UI */
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
   @media (max-width: 768px) {
     html { font-size: 14.5px; }
   }
