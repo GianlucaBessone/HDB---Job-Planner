@@ -463,7 +463,7 @@ function AddMaterialForm({
     );
 
   const qtyClass =
-    "border border-slate-200 dark:border-slate-700 rounded-xl px-1.5 py-2 text-sm font-bold outline-none focus:border-primary text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+    "border border-slate-200 dark:border-slate-700 rounded-xl px-1.5 py-2 text-sm font-bold outline-none focus:border-primary text-center";
 
   return (
     <div

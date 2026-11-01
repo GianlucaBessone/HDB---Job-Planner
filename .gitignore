@@ -47,3 +47,7 @@ next-env.d.ts
 
 # El proyecto usa npm (package-lock.json); un pnpm-lock.yaml hace que Vercel use pnpm
 pnpm-lock.yaml
+
+# reportes de Playwright
+/playwright-report/
+/test-results/

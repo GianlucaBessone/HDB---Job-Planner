@@ -4,9 +4,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation';
 import VentasNavTabs from '@/components/ventas/VentasNavTabs';
 import {
-    Search, FileText, User, History, Trash2, Plus, Printer,
-    RotateCcw, Package, Edit3, Loader2, Wrench, ShoppingCart, RefreshCw,
-    ArrowUpDown, ArrowUp, ArrowDown, X, FileCheck2, Save
+    Search, FileText, Trash2, Plus, Minus, Loader2, Wrench, ShoppingCart, RefreshCw,
+    X, Save, Package, FilePlus2, History, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import {
     buildCatalogIndex,
@@ -15,12 +14,21 @@ import {
     ProductoPDV,
 } from '@/lib/ventas/pdvSearchEngine';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
+import {
+    CONDICIONES_PAGO,
+    PLAZOS_ENTREGA,
+    VALIDEZ_DIAS,
+    CONDICION_PAGO_DEFAULT,
+    PLAZO_ENTREGA_DEFAULT,
+    opcionesConValor,
+} from '@/lib/ventas/cotizacionOpciones';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { Badge, Button, EmptyState, Field, SegmentedControl } from '@/components/ui';
 import SeleccionarClienteModal from '@/components/ventas/pdv/SeleccionarClienteModal';
 import ImprimirCotizacionModal from '@/components/ventas/cotizaciones/ImprimirCotizacionModal';
 import AgregarItemManualModal, { ItemManualOutput } from '@/components/ventas/cotizaciones/AgregarItemManualModal';
-import HistorialCotizacionesModal from '@/components/ventas/cotizaciones/HistorialCotizacionesModal';
+import HistorialCotizaciones from '@/components/ventas/cotizaciones/HistorialCotizaciones';
 
 interface ItemCotizador {
     id: string;
@@ -50,9 +58,19 @@ interface ListaPrecioItem {
     ivaDiscriminado?: boolean;
 }
 
+type Vista = 'cotizador' | 'historial';
+
+const fmt = (n: number) =>
+    (n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// Controles compactos de la grilla (32 px de alto en lugar de 36)
+const CONTROL = 'input h-8 text-[13px]';
+const CELDA_NUM = 'input h-7 px-2 text-right text-[13px] tabular-nums';
+
 export default function CotizacionesPage() {
     const router = useRouter();
 
+    const [vista, setVista] = useState<Vista>('cotizador');
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [cotizacionEditandoId, setCotizacionEditandoId] = useState<string | null>(null);
     const [cotizacionEditandoNumero, setCotizacionEditandoNumero] = useState<string | null>(null);
@@ -66,10 +84,6 @@ export default function CotizacionesPage() {
     const [visibleCatalogLimit, setVisibleCatalogLimit] = useState<number>(60);
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
-    // Ordenamiento de la tabla de ítems cotizados
-    const [itemSortBy, setItemSortBy] = useState<'none' | 'nombre' | 'cantidad' | 'precioUnitario' | 'descuentoPct' | 'subtotal'>('none');
-    const [itemSortOrder, setItemSortOrder] = useState<'asc' | 'desc'>('asc');
-
     // Listas de precios
     const [listasPrecios, setListasPrecios] = useState<ListaPrecioItem[]>([]);
     const [listaSeleccionadaId, setListaSeleccionadaId] = useState<string>('');
@@ -81,12 +95,12 @@ export default function CotizacionesPage() {
     const [clienteTelefono, setClienteTelefono] = useState('');
     const [clienteEmail, setClienteEmail] = useState('');
     const [clienteDireccion, setClienteDireccion] = useState('');
-    const [mostrarDatosProspecto, setMostrarDatosProspecto] = useState(false);
+    const [mostrarDatosCliente, setMostrarDatosCliente] = useState(false);
 
     // Condiciones comerciales de la cotización
     const [validezDias, setValidezDias] = useState<number>(15);
-    const [condicionPago, setCondicionPago] = useState('Contado / Transferencia');
-    const [plazoEntrega, setPlazoEntrega] = useState('Inmediata s/stock');
+    const [condicionPago, setCondicionPago] = useState<string>(CONDICION_PAGO_DEFAULT);
+    const [plazoEntrega, setPlazoEntrega] = useState<string>(PLAZO_ENTREGA_DEFAULT);
     const [referenciaObra, setReferenciaObra] = useState('');
     const [observaciones, setObservaciones] = useState('');
     const [descuentoGlobalPct, setDescuentoGlobalPct] = useState<number>(0);
@@ -95,17 +109,14 @@ export default function CotizacionesPage() {
     const [items, setItems] = useState<ItemCotizador[]>([]);
     const [guardando, setGuardando] = useState(false);
 
-    // Modales
+    // Modales y vistas auxiliares
     const [showClienteModal, setShowClienteModal] = useState(false);
     const [showItemManualModal, setShowItemManualModal] = useState(false);
-    const [showHistorialModal, setShowHistorialModal] = useState(false);
-    const [cotizacionImprimir, setCotizacionImprimir] = useState<any | null>(null);
+    const [documento, setDocumento] = useState<{ cotizacion: any; recienGuardada: boolean } | null>(null);
     const [showConfirmReiniciar, setShowConfirmReiniciar] = useState(false);
+    const [historialToken, setHistorialToken] = useState(0);
 
     const searchInputRef = useRef<HTMLInputElement>(null);
-
-    const fmt = (n: number) =>
-        (n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     // 1. Cargar operador actual
     useEffect(() => {
@@ -178,27 +189,6 @@ export default function CotizacionesPage() {
         [allSearchMatches, visibleCatalogLimit]
     );
 
-    const itemsOrdenados = useMemo(() => {
-        if (itemSortBy === 'none') return items;
-        const dir = itemSortOrder === 'desc' ? -1 : 1;
-        return [...items].sort((a, b) => {
-            switch (itemSortBy) {
-                case 'nombre':
-                    return a.nombre.localeCompare(b.nombre) * dir;
-                case 'cantidad':
-                    return (a.cantidad - b.cantidad) * dir;
-                case 'precioUnitario':
-                    return (a.precioUnitario - b.precioUnitario) * dir;
-                case 'descuentoPct':
-                    return (a.descuentoPct - b.descuentoPct) * dir;
-                case 'subtotal':
-                    return (a.subtotal - b.subtotal) * dir;
-                default:
-                    return 0;
-            }
-        });
-    }, [items, itemSortBy, itemSortOrder]);
-
     const listaActiva = useMemo(
         () => listasPrecios.find((l) => l.id === listaSeleccionadaId) || null,
         [listasPrecios, listaSeleccionadaId]
@@ -270,7 +260,7 @@ export default function CotizacionesPage() {
             observacion: itemMan.observacion,
         };
         setItems((prev) => [...prev, nuevo]);
-        showToast('Ítem personalizado agregado a la cotización', 'success');
+        showToast('Ítem libre agregado', 'success');
     };
 
     // Cambio de lista de precios recalcula ítems de catálogo
@@ -394,16 +384,18 @@ export default function CotizacionesPage() {
         setClienteTelefono('');
         setClienteEmail('');
         setClienteDireccion('');
+        setMostrarDatosCliente(false);
         setReferenciaObra('');
         setObservaciones('');
         setDescuentoGlobalPct(0);
         setValidezDias(15);
-        setCondicionPago('Contado / Transferencia');
-        setPlazoEntrega('Inmediata s/stock');
-        searchInputRef.current?.focus();
+        setCondicionPago(CONDICION_PAGO_DEFAULT);
+        setPlazoEntrega(PLAZO_ENTREGA_DEFAULT);
+        setVista('cotizador');
+        setTimeout(() => searchInputRef.current?.focus(), 0);
     }, []);
 
-    const handleSolicitarReiniciar = () => {
+    const handleSolicitarNueva = () => {
         if (items.length > 0) {
             setShowConfirmReiniciar(true);
         } else {
@@ -411,16 +403,16 @@ export default function CotizacionesPage() {
         }
     };
 
-    // Guardar cotización (y opcionalmente imprimir o enviar a PDV)
-    const handleGuardarCotizacion = async (accionPosterior: 'IMPRIMIR' | 'ENVIAR_PDV' | 'SOLO_GUARDAR') => {
+    // Guardar cotización y luego abrir el documento o pasarla al PDV
+    const handleGuardarCotizacion = async (accionPosterior: 'VER_DOCUMENTO' | 'ENVIAR_PDV') => {
         if (items.length === 0) {
-            showToast('Agregue al menos un ítem para generar la cotización', 'error');
+            showToast('Agregá al menos un artículo a la cotización', 'error');
             return;
         }
 
         const itemInvalido = items.find((it) => !it.nombre?.trim() || Number(it.cantidad) <= 0);
         if (itemInvalido) {
-            showToast('Todos los artículos deben tener descripción y cantidad mayor a 0', 'error');
+            showToast('Todos los artículos necesitan descripción y cantidad mayor a 0', 'error');
             return;
         }
 
@@ -492,21 +484,22 @@ export default function CotizacionesPage() {
 
             showToast(
                 isUpdate
-                    ? `Cotización ${cotGuardada.numero} actualizada con éxito`
-                    : `Cotización ${cotGuardada.numero} generada con éxito`,
+                    ? `Cotización ${cotGuardada.numero} actualizada`
+                    : `Cotización ${cotGuardada.numero} guardada`,
                 'success'
             );
 
             setCotizacionEditandoId(cotGuardada.id);
             setCotizacionEditandoNumero(cotGuardada.numero);
+            setHistorialToken((t) => t + 1);
 
             if (accionPosterior === 'ENVIAR_PDV') {
                 router.push(`/ventas/pdv?cotizacionId=${cotGuardada.id}`);
-            } else if (accionPosterior === 'IMPRIMIR') {
-                setCotizacionImprimir(cotGuardada);
+            } else {
+                setDocumento({ cotizacion: cotGuardada, recienGuardada: true });
             }
         } catch (err: any) {
-            showToast(err.message || 'Error al registrar cotización', 'error');
+            showToast(err.message || 'Error al guardar la cotización', 'error');
         } finally {
             setGuardando(false);
         }
@@ -521,13 +514,13 @@ export default function CotizacionesPage() {
         setClienteTelefono(cot.clienteTelefono || '');
         setClienteEmail(cot.clienteEmail || '');
         setClienteDireccion(cot.clienteDireccion || '');
-        if (cot.clienteIdentificacion || cot.clienteTelefono || cot.clienteEmail || cot.clienteDireccion) {
-            setMostrarDatosProspecto(true);
-        }
+        setMostrarDatosCliente(
+            Boolean(cot.clienteIdentificacion || cot.clienteTelefono || cot.clienteEmail || cot.clienteDireccion)
+        );
         if (cot.listaPrecioId) setListaSeleccionadaId(cot.listaPrecioId);
         setValidezDias(cot.validezDias || 15);
-        setCondicionPago(cot.condicionPago || 'Contado / Transferencia');
-        setPlazoEntrega(cot.plazoEntrega || 'Inmediata s/stock');
+        setCondicionPago(cot.condicionPago || CONDICION_PAGO_DEFAULT);
+        setPlazoEntrega(cot.plazoEntrega || PLAZO_ENTREGA_DEFAULT);
         setReferenciaObra(cot.referenciaObra || '');
         setObservaciones(cot.observaciones || '');
         setDescuentoGlobalPct(cot.descuentoPorcentaje || 0);
@@ -549,19 +542,30 @@ export default function CotizacionesPage() {
             observacion: it.motivoModificacion || it.observacion || '',
         }));
         setItems(loadedItems);
-        setShowHistorialModal(false);
-        setCotizacionImprimir(null);
+        setDocumento(null);
+        setVista('cotizador');
         showToast(
             comoDuplicado
-                ? `Cotización ${cot.numero} duplicada como nuevo borrador`
-                : `Editando cotización ${cot.numero}`,
+                ? `Copia de ${cot.numero} lista para editar`
+                : `Editando ${cot.numero}`,
             'info'
         );
     };
 
-    // Atajos de teclado rápidos (estilo PDV)
+    const handleEnviarAPdv = (cot: any) => {
+        setDocumento(null);
+        router.push(`/ventas/pdv?cotizacionId=${cot.id}`);
+    };
+
+    // Atajos de teclado (mismos que el PDV)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'F8') {
+                e.preventDefault();
+                setVista((v) => (v === 'historial' ? 'cotizador' : 'historial'));
+                return;
+            }
+            if (vista !== 'cotizador') return;
             if (e.key === 'F2') {
                 e.preventDefault();
                 searchInputRef.current?.focus();
@@ -570,677 +574,525 @@ export default function CotizacionesPage() {
                 setShowClienteModal(true);
             } else if (e.key === 'F4') {
                 e.preventDefault();
-                if (items.length === 0) {
-                    showToast('Agregue al menos un ítem para generar la cotización', 'info');
-                } else if (!guardando) {
-                    handleGuardarCotizacion('IMPRIMIR');
-                }
+                if (!guardando) handleGuardarCotizacion('VER_DOCUMENTO');
             } else if (e.key === 'F6') {
                 e.preventDefault();
                 setShowItemManualModal(true);
-            } else if (e.key === 'F8') {
-                e.preventDefault();
-                setShowHistorialModal(true);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     });
 
+    const totalDescuentos = totales.descuentoLineasMonto + totales.descuentoGlobalMonto;
+
     return (
         <div className="flex flex-col h-full w-full min-h-0 max-h-full overflow-hidden gap-2">
-            {/* Barra superior de navegación + Estado del Cotizador */}
-            <div className="flex flex-wrap items-center justify-between gap-2 shrink-0">
-                <VentasNavTabs currentTab="cotizaciones" />
+            <h1 className="sr-only">Cotizaciones</h1>
+            <VentasNavTabs currentTab="cotizaciones" className="mb-0 shrink-0" />
 
-                <div className="flex items-center gap-2 flex-wrap">
-                    {cotizacionEditandoNumero && (
-                        <div className="px-3 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center gap-2 whitespace-nowrap">
-                            <span>Editando {cotizacionEditandoNumero}</span>
-                            <button
-                                onClick={handleSolicitarReiniciar}
-                                className="text-[11px] underline hover:text-amber-950 dark:hover:text-white"
-                            >
-                                Salir / Nueva
-                            </button>
-                        </div>
+            {/* Barra de la vista */}
+            <header className="flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2">
+                    <SegmentedControl<Vista>
+                        label="Vista de cotizaciones"
+                        value={vista}
+                        onChange={setVista}
+                        options={[
+                            { value: 'cotizador', label: 'Cotizador', icon: <FileText /> },
+                            { value: 'historial', label: <>Historial <span className="kbd ml-1">F8</span></>, icon: <History /> },
+                        ]}
+                    />
+                    {vista === 'cotizador' && cotizacionEditandoNumero && (
+                        <Badge tone="warning" dot>Editando {cotizacionEditandoNumero}</Badge>
                     )}
-
-                    <button
-                        onClick={() => setShowItemManualModal(true)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors whitespace-nowrap"
-                    >
-                        <Wrench className="w-3.5 h-3.5 shrink-0" />
-                        <span>+ Ítem Libre / M.O. [F6]</span>
-                    </button>
-
-                    <button
-                        onClick={() => setShowHistorialModal(true)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-card hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 transition-colors shadow-2xs whitespace-nowrap"
-                    >
-                        <History className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                        <span>Historial Cotizaciones [F8]</span>
-                    </button>
                 </div>
-            </div>
 
-            {/* Cuerpo Split-Pane estilo PDV */}
-            <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2.5 overflow-y-auto lg:overflow-hidden">
-                {/* Panel Izquierdo: Buscador de Catálogo Ultra-Rápido (5 cols) */}
-                <div className="lg:col-span-5 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col min-h-[350px] lg:min-h-0 h-full overflow-hidden">
-                    <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-2.5 shrink-0">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-                                <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                                Catálogo de Materiales ({allSearchMatches.length} / {rawCatalogo.length})
-                            </span>
-                            <button
-                                onClick={cargarCatalogoYListas}
-                                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                                title="Recargar catálogo"
-                            >
-                                <RefreshCw className={`w-3.5 h-3.5 ${isLoadingCatalogo ? 'animate-spin' : ''}`} />
-                            </button>
+                {vista === 'cotizador' && (
+                    <div className="flex items-center gap-1.5">
+                        <Button variant="ghost" size="sm" icon={<Wrench />} onClick={() => setShowItemManualModal(true)}>
+                            Ítem libre <span className="kbd">F6</span>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={<FilePlus2 />}
+                            onClick={handleSolicitarNueva}
+                            disabled={items.length === 0 && !cotizacionEditandoId}
+                        >
+                            Nueva
+                        </Button>
+                    </div>
+                )}
+            </header>
+
+            {vista === 'historial' ? (
+                <HistorialCotizaciones
+                    recargarToken={historialToken}
+                    onVer={(cot) => setDocumento({ cotizacion: cot, recienGuardada: false })}
+                    onEditar={(cot) => handleCargarCotizacionEnEditor(cot, false)}
+                    onDuplicar={(cot) => handleCargarCotizacionEnEditor(cot, true)}
+                    onEnviarAPdv={handleEnviarAPdv}
+                />
+            ) : (
+                <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-2 overflow-y-auto lg:overflow-hidden">
+                    {/* Catálogo */}
+                    <section className="h-[42dvh] min-h-[260px] lg:h-auto lg:min-h-0 lg:w-[36%] xl:w-[32%] shrink-0 bg-card border border-border rounded-xl flex flex-col overflow-hidden">
+                        <div className="p-3 space-y-2 border-b border-border shrink-0">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-[13px] font-semibold text-slate-900 dark:text-slate-100">
+                                    Catálogo
+                                    <span className="ml-1.5 font-normal text-slate-500 tabular-nums">
+                                        {searchQuery
+                                            ? `${allSearchMatches.length.toLocaleString('es-AR')} de ${rawCatalogo.length.toLocaleString('es-AR')}`
+                                            : rawCatalogo.length.toLocaleString('es-AR')}
+                                    </span>
+                                </h2>
+                                <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    onClick={cargarCatalogoYListas}
+                                    aria-label="Recargar catálogo"
+                                    title="Recargar catálogo"
+                                >
+                                    <RefreshCw className={isLoadingCatalogo ? 'animate-spin' : ''} />
+                                </Button>
+                            </div>
+                            <div className="relative">
+                                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    autoFocus
+                                    aria-label="Buscar en el catálogo"
+                                    placeholder="Código, descripción o marca (F2)"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Escape' && searchQuery) {
+                                            e.preventDefault();
+                                            setSearchQuery('');
+                                        } else if (e.key === 'ArrowDown') {
+                                            e.preventDefault();
+                                            setSelectedIndex((prev) =>
+                                                Math.min(resultadosBusqueda.length - 1, prev + 1)
+                                            );
+                                        } else if (e.key === 'ArrowUp') {
+                                            e.preventDefault();
+                                            setSelectedIndex((prev) => Math.max(0, prev - 1));
+                                        } else if (e.key === 'Enter' && resultadosBusqueda.length > 0) {
+                                            e.preventDefault();
+                                            const idx = selectedIndex >= 0 ? selectedIndex : 0;
+                                            if (resultadosBusqueda[idx]) {
+                                                handleAgregarProducto(resultadosBusqueda[idx]);
+                                            }
+                                        }
+                                    }}
+                                    className="input pl-9 pr-8"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery('')}
+                                        className="btn btn-ghost btn-icon btn-sm absolute right-0.5 top-1/2 -translate-y-1/2"
+                                        aria-label="Limpiar búsqueda"
+                                    >
+                                        <X />
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="relative">
-                            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                placeholder="[F2] Buscar por código, descripción, marca o escáner..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Escape' && searchQuery) {
-                                        e.preventDefault();
-                                        setSearchQuery('');
-                                    } else if (e.key === 'ArrowDown') {
-                                        e.preventDefault();
-                                        setSelectedIndex((prev) =>
-                                            Math.min(resultadosBusqueda.length - 1, prev + 1)
-                                        );
-                                    } else if (e.key === 'ArrowUp') {
-                                        e.preventDefault();
-                                        setSelectedIndex((prev) => Math.max(0, prev - 1));
-                                    } else if (e.key === 'Enter' && resultadosBusqueda.length > 0) {
-                                        e.preventDefault();
-                                        const idx = selectedIndex >= 0 ? selectedIndex : 0;
-                                        if (resultadosBusqueda[idx]) {
-                                            handleAgregarProducto(resultadosBusqueda[idx]);
-                                        }
+                        <div
+                            className="flex-1 overflow-y-auto divide-y divide-border"
+                            onScroll={(e) => {
+                                const target = e.currentTarget;
+                                if (
+                                    target.scrollHeight - target.scrollTop - target.clientHeight < 180 &&
+                                    visibleCatalogLimit < allSearchMatches.length
+                                ) {
+                                    setVisibleCatalogLimit((prev) =>
+                                        Math.min(allSearchMatches.length, prev + 60)
+                                    );
+                                }
+                            }}
+                        >
+                            {isLoadingCatalogo && rawCatalogo.length === 0 ? (
+                                <div className="py-12 flex flex-col items-center gap-2 text-[13px] text-slate-500">
+                                    <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                                    Cargando catálogo…
+                                </div>
+                            ) : resultadosBusqueda.length === 0 ? (
+                                <EmptyState
+                                    compact
+                                    icon={<Package />}
+                                    title="Sin resultados"
+                                    description={`Nada coincide con “${searchQuery}”. Podés cotizarlo como ítem libre.`}
+                                    action={
+                                        <Button variant="tonal" size="sm" icon={<Plus />} onClick={() => setShowItemManualModal(true)}>
+                                            Ítem libre
+                                        </Button>
                                     }
-                                }}
-                                className="w-full pl-10 pr-8 py-2.5 text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
-                            />
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    onClick={() => setSearchQuery('')}
-                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                                >
-                                    <X className="w-3.5 h-3.5" />
-                                </button>
+                                />
+                            ) : (
+                                resultadosBusqueda.map((prod, idx) => {
+                                    const { precio } = resolverPrecioProducto(prod, listaActiva);
+                                    const isSelected = idx === selectedIndex;
+                                    return (
+                                        <button
+                                            key={prod.id}
+                                            type="button"
+                                            onClick={() => handleAgregarProducto(prod)}
+                                            className={`group w-full px-3 py-2 flex items-center gap-3 text-left transition-colors ${
+                                                isSelected
+                                                    ? 'bg-brand-50 dark:bg-brand-950/40'
+                                                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                                            }`}
+                                        >
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                                    <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
+                                                        {prod.sku}
+                                                    </span>
+                                                    {prod.marca && <span className="truncate">{prod.marca}</span>}
+                                                    <span
+                                                        className={`shrink-0 tabular-nums ${
+                                                            prod.stockActual > 0 ? 'text-success-700 dark:text-success-400' : 'text-warning-700 dark:text-warning-400'
+                                                        }`}
+                                                    >
+                                                        {prod.stockActual > 0 ? `Stock ${prod.stockActual}` : 'Sin stock'}
+                                                    </span>
+                                                </div>
+                                                <div className="text-[13px] text-slate-900 dark:text-slate-100 truncate" title={prod.descripcion}>
+                                                    {prod.descripcion}
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0 text-right text-[13px] font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                                                $ {fmt(precio)}
+                                            </div>
+                                            <Plus
+                                                className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-primary"
+                                                aria-hidden="true"
+                                            />
+                                        </button>
+                                    );
+                                })
                             )}
                         </div>
-                    </div>
+                    </section>
 
-                    {/* Resultados del Catálogo con Scroll Progresivo */}
-                    <div
-                        className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/80"
-                        onScroll={(e) => {
-                            const target = e.currentTarget;
-                            if (
-                                target.scrollHeight - target.scrollTop - target.clientHeight < 180 &&
-                                visibleCatalogLimit < allSearchMatches.length
-                            ) {
-                                setVisibleCatalogLimit((prev) =>
-                                    Math.min(allSearchMatches.length, prev + 60)
-                                );
-                            }
-                        }}
-                    >
-                        {isLoadingCatalogo ? (
-                            <div className="p-12 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
-                                <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
-                                Indexando catálogo para cotización rápida...
-                            </div>
-                        ) : resultadosBusqueda.length === 0 ? (
-                            <div className="p-8 text-center space-y-3">
-                                <p className="text-xs text-slate-500">
-                                    No se encontraron artículos en catálogo para &ldquo;{searchQuery}&rdquo;.
-                                </p>
-                                <button
-                                    onClick={() => setShowItemManualModal(true)}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    Cotizar como Ítem Especial / Fuera de Catálogo
-                                </button>
-                            </div>
-                        ) : (
-                            resultadosBusqueda.map((prod, idx) => {
-                                const { precio } = resolverPrecioProducto(prod, listaActiva);
-                                const isSelected = idx === selectedIndex;
-
-                                return (
-                                    <div
-                                        key={prod.id}
-                                        onClick={() => handleAgregarProducto(prod)}
-                                        className={`p-3 cursor-pointer transition-colors flex items-center justify-between gap-3 ${
-                                            isSelected
-                                                ? 'bg-indigo-50/90 dark:bg-indigo-950/40'
-                                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                                        }`}
-                                    >
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-mono text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded">
-                                                    {prod.sku}
-                                                </span>
-                                                {prod.marca && (
-                                                    <span className="text-[11px] font-bold uppercase text-slate-400">
-                                                        {prod.marca}
-                                                    </span>
-                                                )}
-                                                <span
-                                                    className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
-                                                        prod.stockActual > 0
-                                                            ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300'
-                                                            : 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300'
-                                                    }`}
-                                                >
-                                                    {prod.stockActual > 0
-                                                        ? `Stock: ${prod.stockActual} ${prod.unidad || 'u'}`
-                                                        : 'S/Stock (Cotizable)'}
-                                                </span>
-                                            </div>
-                                            <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate mt-1">
-                                                {prod.descripcion}
-                                            </div>
-                                        </div>
-
-                                        <div className="text-right shrink-0">
-                                            <div className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
-                                                $ {fmt(precio)}{' '}
-                                                <span className="text-[11px] font-sans font-bold text-slate-400">ARS</span>
-                                            </div>
-                                            <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold">
-                                                + Agregar
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-
-                {/* Panel Derecho: Armador de Cotización Profesional (7 cols) */}
-                <div className="lg:col-span-7 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col min-h-[450px] lg:min-h-0 h-full overflow-hidden">
-                    {/* Cabecera Comercial: Cliente + Lista + Validez + Condiciones */}
-                    <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 space-y-2.5 shrink-0">
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
-                            {/* Selector de Cliente */}
-                            <div className="sm:col-span-5 flex items-center gap-2 bg-background px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                    <div className="text-[11px] font-bold uppercase text-slate-400">
-                                        Cliente / Destinatario [F3]
-                                    </div>
+                    {/* Cotización */}
+                    <section className="shrink-0 lg:shrink lg:flex-1 min-w-0 bg-card border border-border rounded-xl flex flex-col lg:min-h-0 overflow-hidden">
+                        {/* Datos comerciales */}
+                        <div className="p-3 border-b border-border grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-2.5 gap-y-2 shrink-0">
+                            <Field label="Cliente" className="col-span-2" htmlFor="cot-cliente">
+                                <div className="flex items-center gap-1">
                                     <input
+                                        id="cot-cliente"
                                         type="text"
                                         value={clienteNombre}
                                         onChange={(e) => setClienteNombre(e.target.value)}
-                                        placeholder="Nombre de Empresa o Cliente..."
-                                        className="w-full text-xs font-bold text-slate-900 dark:text-slate-100 bg-transparent focus:outline-none"
+                                        placeholder="Nombre o razón social"
+                                        className={`${CONTROL} flex-1 min-w-0 font-medium`}
                                     />
+                                    <Button variant="secondary" size="sm" onClick={() => setShowClienteModal(true)} title="Elegir cliente (F3)">
+                                        Elegir
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        onClick={() => setMostrarDatosCliente((v) => !v)}
+                                        aria-expanded={mostrarDatosCliente}
+                                        aria-label="Datos de contacto del cliente"
+                                        title="CUIT, teléfono, email y dirección"
+                                    >
+                                        {mostrarDatosCliente ? <ChevronUp /> : <ChevronDown />}
+                                    </Button>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowClienteModal(true)}
-                                    className="px-2 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 shrink-0"
-                                >
-                                    Elegir
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setMostrarDatosProspecto(!mostrarDatosProspecto)}
-                                    className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                                    title="Editar CUIT, Teléfono y Email del destinatario"
-                                >
-                                    <Edit3 className="w-3.5 h-3.5" />
-                                </button>
-                            </div>
-
-                            {/* Lista de Precios */}
-                            <div className="sm:col-span-4 bg-background px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                    Lista de Precios
-                                </label>
+                            </Field>
+                            <Field label="Lista de precios" htmlFor="cot-lista">
                                 <select
+                                    id="cot-lista"
                                     value={listaSeleccionadaId}
                                     onChange={(e) => handleCambiarLista(e.target.value)}
-                                    className="w-full text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none bg-transparent"
+                                    className={`${CONTROL} pr-8`}
                                 >
                                     {listasPrecios.map((l) => (
                                         <option key={l.id} value={l.id}>
-                                            {l.nombre} {l.ivaDiscriminado ? '(+IVA)' : '(Final)'}
+                                            {l.nombre}{l.ivaDiscriminado ? ' (+IVA)' : ''}
                                         </option>
                                     ))}
                                 </select>
-                            </div>
-
-                            {/* Validez en días */}
-                            <div className="sm:col-span-3 bg-background px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                    Validez Oferta
-                                </label>
+                            </Field>
+                            <Field label="Validez" htmlFor="cot-validez">
                                 <select
+                                    id="cot-validez"
                                     value={validezDias}
                                     onChange={(e) => setValidezDias(Number(e.target.value))}
-                                    className="w-full text-xs font-bold text-amber-800 dark:text-amber-300 focus:outline-none bg-transparent"
+                                    className={`${CONTROL} pr-8`}
                                 >
-                                    <option value={3}>3 días corridos</option>
-                                    <option value={7}>7 días corridos</option>
-                                    <option value={15}>15 días corridos</option>
-                                    <option value={30}>30 días corridos</option>
-                                    <option value={60}>60 días corridos</option>
+                                    {Array.from(new Set([...VALIDEZ_DIAS, validezDias])).sort((a, b) => a - b).map((d) => (
+                                        <option key={d} value={d}>{d} días</option>
+                                    ))}
                                 </select>
-                            </div>
+                            </Field>
+                            <Field label="Forma de pago" htmlFor="cot-pago">
+                                <select
+                                    id="cot-pago"
+                                    value={condicionPago}
+                                    onChange={(e) => setCondicionPago(e.target.value)}
+                                    className={`${CONTROL} pr-8`}
+                                >
+                                    {opcionesConValor(CONDICIONES_PAGO, condicionPago).map((o) => (
+                                        <option key={o} value={o}>{o}</option>
+                                    ))}
+                                </select>
+                            </Field>
+                            <Field label="Entrega" htmlFor="cot-entrega">
+                                <select
+                                    id="cot-entrega"
+                                    value={plazoEntrega}
+                                    onChange={(e) => setPlazoEntrega(e.target.value)}
+                                    className={`${CONTROL} pr-8`}
+                                >
+                                    {opcionesConValor(PLAZOS_ENTREGA, plazoEntrega).map((o) => (
+                                        <option key={o} value={o}>{o}</option>
+                                    ))}
+                                </select>
+                            </Field>
+
+                            {mostrarDatosCliente && (
+                                <>
+                                    <Field label="CUIT / DNI" htmlFor="cot-cuit">
+                                        <input id="cot-cuit" type="text" value={clienteCuit} onChange={(e) => setClienteCuit(e.target.value)} className={`${CONTROL} font-mono`} />
+                                    </Field>
+                                    <Field label="Teléfono" htmlFor="cot-tel">
+                                        <input id="cot-tel" type="tel" value={clienteTelefono} onChange={(e) => setClienteTelefono(e.target.value)} className={CONTROL} />
+                                    </Field>
+                                    <Field label="Email" htmlFor="cot-email" className="col-span-2 md:col-span-1 xl:col-span-2">
+                                        <input id="cot-email" type="email" value={clienteEmail} onChange={(e) => setClienteEmail(e.target.value)} className={CONTROL} />
+                                    </Field>
+                                    <Field label="Dirección" htmlFor="cot-dir" className="col-span-2">
+                                        <input id="cot-dir" type="text" value={clienteDireccion} onChange={(e) => setClienteDireccion(e.target.value)} className={CONTROL} />
+                                    </Field>
+                                </>
+                            )}
+
+                            <Field label="Referencia u obra" htmlFor="cot-ref" className="col-span-2">
+                                <input
+                                    id="cot-ref"
+                                    type="text"
+                                    value={referenciaObra}
+                                    onChange={(e) => setReferenciaObra(e.target.value)}
+                                    placeholder="Obra, licitación u orden de compra"
+                                    className={CONTROL}
+                                />
+                            </Field>
+                            <Field label="Observaciones" htmlFor="cot-obs" className="col-span-2 xl:col-span-4">
+                                <input
+                                    id="cot-obs"
+                                    type="text"
+                                    value={observaciones}
+                                    onChange={(e) => setObservaciones(e.target.value)}
+                                    placeholder="Se imprimen al pie del documento"
+                                    className={CONTROL}
+                                />
+                            </Field>
                         </div>
 
-                        {/* Barra de Condiciones Comerciales y Obra */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <input
-                                type="text"
-                                value={condicionPago}
-                                onChange={(e) => setCondicionPago(e.target.value)}
-                                placeholder="Condición de pago (Ej: Contado / 30 días)"
-                                className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground"
-                            />
-                            <input
-                                type="text"
-                                value={plazoEntrega}
-                                onChange={(e) => setPlazoEntrega(e.target.value)}
-                                placeholder="Plazo de entrega (Ej: Inmediata s/stock)"
-                                className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground"
-                            />
-                            <input
-                                type="text"
-                                value={referenciaObra}
-                                onChange={(e) => setReferenciaObra(e.target.value)}
-                                placeholder="Referencia Obra / Licitación / OC..."
-                                className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground font-medium"
-                            />
-                        </div>
-
-                        {mostrarDatosProspecto && (
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 border-t border-slate-200 dark:border-slate-700 animate-in fade-in duration-150">
-                                <input
-                                    type="text"
-                                    value={clienteCuit}
-                                    onChange={(e) => setClienteCuit(e.target.value)}
-                                    placeholder="CUIT / DNI del destinatario"
-                                    className="px-2.5 py-1.5 text-xs font-mono rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground"
+                        {/* Ítems */}
+                        <div className="flex-1 min-h-[220px] lg:min-h-0 overflow-auto">
+                            {items.length === 0 ? (
+                                <EmptyState
+                                    icon={<FileText />}
+                                    title="La cotización está vacía"
+                                    description="Elegí artículos del catálogo o agregá un ítem libre para servicios y mano de obra."
+                                    action={
+                                        <Button variant="tonal" size="sm" icon={<Wrench />} onClick={() => setShowItemManualModal(true)}>
+                                            Agregar ítem libre
+                                        </Button>
+                                    }
+                                    className="h-full"
                                 />
-                                <input
-                                    type="text"
-                                    value={clienteTelefono}
-                                    onChange={(e) => setClienteTelefono(e.target.value)}
-                                    placeholder="Teléfono / WhatsApp"
-                                    className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground"
-                                />
-                                <input
-                                    type="text"
-                                    value={clienteEmail}
-                                    onChange={(e) => setClienteEmail(e.target.value)}
-                                    placeholder="Email de contacto"
-                                    className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground"
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Grilla de Ítems de la Cotización */}
-                    <div className="flex-1 overflow-y-auto">
-                        {items.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center p-8 text-center text-slate-400">
-                                <FileText className="w-10 h-10 text-slate-300 dark:text-slate-600 mb-2" />
-                                <div className="text-sm font-bold text-slate-600 dark:text-slate-300">
-                                    Cotización vacía
-                                </div>
-                                <p className="text-xs text-slate-400 max-w-sm mt-1">
-                                    Seleccione materiales del catálogo izquierdo o presione{' '}
-                                    <button
-                                        onClick={() => setShowItemManualModal(true)}
-                                        className="text-indigo-600 dark:text-indigo-400 font-bold underline"
-                                    >
-                                        + Ítem Libre [F6]
-                                    </button>{' '}
-                                    para cotizar tableros, mano de obra o artículos bajo pedido.
-                                </p>
-                            </div>
-                        ) : (
-                            <table className="w-full text-xs">
-                                <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 select-none whitespace-nowrap">
-                                    <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                                        {[
-                                            { key: 'nombre', label: 'Material / Concepto', align: 'left', className: 'py-2 px-3 text-left' },
-                                            { key: 'cantidad', label: 'Cant.', align: 'center', className: 'py-2 px-2 text-center w-24' },
-                                            { key: 'precioUnitario', label: 'Precio Unit. (ARS)', align: 'right', className: 'py-2 px-2 text-right w-36' },
-                                            { key: 'descuentoPct', label: 'Bonif %', align: 'right', className: 'py-2 px-2 text-right w-24' },
-                                            { key: 'subtotal', label: 'Subtotal (ARS)', align: 'right', className: 'py-2 px-3 text-right w-32' },
-                                        ].map((col) => {
-                                            const isSorted = itemSortBy === col.key;
-                                            return (
-                                                <th
-                                                    key={col.key}
-                                                    onClick={() => {
-                                                        if (itemSortBy === col.key) {
-                                                            setItemSortOrder(itemSortOrder === 'asc' ? 'desc' : 'asc');
-                                                        } else {
-                                                            setItemSortBy(col.key as any);
-                                                            setItemSortOrder('asc');
-                                                        }
-                                                    }}
-                                                    className={`${col.className} cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
-                                                        isSorted ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/30 dark:bg-indigo-950/20' : ''
-                                                    }`}
-                                                >
-                                                    <div
-                                                        className={`inline-flex items-center gap-1 ${
-                                                            col.align === 'right' ? 'justify-end w-full' : col.align === 'center' ? 'justify-center w-full' : ''
-                                                        }`}
-                                                    >
-                                                        <span>{col.label}</span>
-                                                        {isSorted ? (
-                                                            itemSortOrder === 'asc' ? (
-                                                                <ArrowUp className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                                                            ) : (
-                                                                <ArrowDown className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                                                            )
-                                                        ) : (
-                                                            <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
-                                                        )}
+                            ) : (
+                                <table className="w-full min-w-[640px] text-[13px]">
+                                    <thead className="sticky top-0 z-10 bg-card">
+                                        <tr className="border-b border-border">
+                                            <th className="py-2 px-3 text-left">Artículo</th>
+                                            <th className="py-2 px-2 text-center w-28">Cant.</th>
+                                            <th className="py-2 px-2 text-right w-32">P. unitario</th>
+                                            <th className="py-2 px-2 text-right w-20 whitespace-nowrap">Bonif. %</th>
+                                            <th className="py-2 px-3 text-right w-32">Subtotal</th>
+                                            <th className="py-2 px-2 w-10"><span className="sr-only">Quitar</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                        {items.map((it) => (
+                                            <tr key={it.id} className="align-middle hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                                <td className="py-1.5 px-3 max-w-0">
+                                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                                        <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{it.codigo}</span>
+                                                        {it.esManual && <span>Ítem libre</span>}
+                                                        {it.marca && <span className="truncate">{it.marca}</span>}
                                                     </div>
-                                                </th>
-                                            );
-                                        })}
-                                        <th className="py-2 px-2 w-9"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                    {itemsOrdenados.map((it) => (
-                                        <tr key={it.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
-                                            <td className="py-2.5 px-3">
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className="font-mono text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                                                        {it.codigo}
-                                                    </span>
-                                                    {it.esManual && (
-                                                        <span className="text-[11px] font-semibold uppercase px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
-                                                            Especial
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="font-bold text-slate-900 dark:text-slate-100 mt-0.5">
-                                                    {it.nombre}
-                                                </div>
-                                                <input
-                                                    type="text"
-                                                    value={it.observacion}
-                                                    onChange={(e) =>
-                                                        handleActualizarItem(
-                                                            it.id,
-                                                            'observacion',
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    placeholder="+ Agregar nota técnica o marca..."
-                                                    className="w-full text-[11px] text-slate-500 italic bg-transparent focus:outline-none focus:text-slate-800 dark:focus:text-slate-200 mt-0.5"
-                                                />
-                                            </td>
-
-                                            <td className="py-2.5 px-2 text-center">
-                                                <div className="inline-flex items-center border border-slate-200 dark:border-slate-700 rounded-lg bg-background">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleActualizarItem(
-                                                                it.id,
-                                                                'cantidad',
-                                                                Math.max(1, it.cantidad - 1)
-                                                            )
-                                                        }
-                                                        className="px-1.5 py-1 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                                                    >
-                                                        -
-                                                    </button>
+                                                    <div className="truncate text-slate-900 dark:text-slate-100" title={it.nombre}>
+                                                        {it.nombre}
+                                                    </div>
                                                     <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0.01"
-                                                        value={it.cantidad}
-                                                        onChange={(e) =>
-                                                            handleActualizarItem(
-                                                                it.id,
-                                                                'cantidad',
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-12 text-center font-mono font-bold text-xs bg-transparent text-foreground focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        type="text"
+                                                        value={it.observacion}
+                                                        onChange={(e) => handleActualizarItem(it.id, 'observacion', e.target.value)}
+                                                        placeholder="Agregar nota"
+                                                        aria-label={`Nota de ${it.nombre}`}
+                                                        className="w-full bg-transparent text-xs text-slate-600 dark:text-slate-300 placeholder:text-slate-400 focus:outline-none"
                                                     />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleActualizarItem(
-                                                                it.id,
-                                                                'cantidad',
-                                                                it.cantidad + 1
-                                                            )
-                                                        }
-                                                        className="px-1.5 py-1 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                                                    >
-                                                        +
-                                                    </button>
-                                                </div>
-                                            </td>
-
-                                            <td className="py-2.5 px-2 text-right">
-                                                <div className="inline-flex items-center justify-end">
-                                                    <span className="text-xs font-bold text-slate-400 mr-1 select-none">$</span>
+                                                </td>
+                                                <td className="py-1.5 px-2">
+                                                    <div className="mx-auto flex items-center w-fit h-7 border border-input rounded-lg bg-card overflow-hidden">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleActualizarItem(it.id, 'cantidad', Math.max(1, (Number(it.cantidad) || 0) - 1))}
+                                                            className="w-7 h-full flex items-center justify-center text-slate-500 hover:bg-muted"
+                                                            aria-label="Restar 1"
+                                                        >
+                                                            <Minus className="w-3 h-3" />
+                                                        </button>
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0.01"
+                                                            value={it.cantidad}
+                                                            onChange={(e) => handleActualizarItem(it.id, 'cantidad', e.target.value)}
+                                                            aria-label={`Cantidad de ${it.nombre}`}
+                                                            className="w-12 h-full text-center tabular-nums bg-transparent focus:outline-none"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleActualizarItem(it.id, 'cantidad', (Number(it.cantidad) || 0) + 1)}
+                                                            className="w-7 h-full flex items-center justify-center text-slate-500 hover:bg-muted"
+                                                            aria-label="Sumar 1"
+                                                        >
+                                                            <Plus className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td className="py-1.5 px-2">
                                                     <input
                                                         type="number"
                                                         step="0.01"
                                                         min="0"
                                                         value={it.precioUnitario}
-                                                        onChange={(e) =>
-                                                            handleActualizarItem(
-                                                                it.id,
-                                                                'precioUnitario',
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-28 px-2 py-1 text-right font-mono font-bold text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        onChange={(e) => handleActualizarItem(it.id, 'precioUnitario', e.target.value)}
+                                                        aria-label={`Precio unitario de ${it.nombre}`}
+                                                        className={`${CELDA_NUM} w-full`}
                                                     />
-                                                </div>
-                                            </td>
-
-                                            <td className="py-2.5 px-2 text-right">
-                                                <div className="inline-flex items-center justify-end">
+                                                </td>
+                                                <td className="py-1.5 px-2">
                                                     <input
                                                         type="number"
                                                         step="0.5"
                                                         min="0"
                                                         max="100"
                                                         value={it.descuentoPct}
-                                                        onChange={(e) =>
-                                                            handleActualizarItem(
-                                                                it.id,
-                                                                'descuentoPct',
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-14 px-2 py-1 text-right font-mono text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        onChange={(e) => handleActualizarItem(it.id, 'descuentoPct', e.target.value)}
+                                                        aria-label={`Bonificación de ${it.nombre}`}
+                                                        className={`${CELDA_NUM} w-full`}
                                                     />
-                                                    <span className="text-[11px] font-bold text-slate-400 ml-1 select-none">%</span>
-                                                </div>
-                                            </td>
+                                                </td>
+                                                <td className="py-1.5 px-3 text-right font-semibold tabular-nums text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                                                    $ {fmt(it.subtotal)}
+                                                </td>
+                                                <td className="py-1.5 px-2">
+                                                    <Button
+                                                        variant="danger-ghost"
+                                                        size="icon-sm"
+                                                        onClick={() => handleEliminarItem(it.id)}
+                                                        aria-label={`Quitar ${it.nombre}`}
+                                                        title="Quitar"
+                                                    >
+                                                        <Trash2 />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
 
-                                            <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
-                                                ${fmt(it.subtotal)}
-                                            </td>
+                        {/* Totales y acciones */}
+                        <footer className="px-3 py-2.5 border-t border-border bg-surface-sunken flex flex-wrap items-center gap-x-6 gap-y-2 shrink-0">
+                            <label className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-300">
+                                Descuento general
+                                <span className="relative">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.5"
+                                        value={descuentoGlobalPct === 0 ? '' : descuentoGlobalPct}
+                                        placeholder="0"
+                                        onChange={(e) => {
+                                            const parsed = parseFloat(e.target.value);
+                                            setDescuentoGlobalPct(isNaN(parsed) ? 0 : Math.min(100, Math.max(0, parsed)));
+                                        }}
+                                        className="input h-8 w-20 pr-6 text-right tabular-nums"
+                                    />
+                                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">%</span>
+                                </span>
+                            </label>
 
-                                            <td className="py-2.5 px-2 text-center">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleEliminarItem(it.id)}
-                                                    className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-
-                    {/* Pie de Totales + Observaciones + Botonera de Emisión */}
-                    <div className="p-4 border-t border-slate-200 bg-slate-900 text-white space-y-3 shrink-0">
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                            <div className="sm:col-span-6 space-y-1.5">
-                                <input
-                                    type="text"
-                                    value={observaciones}
-                                    onChange={(e) => setObservaciones(e.target.value)}
-                                    placeholder="Observaciones al pie del presupuesto (Ej: Precios sujetos a variación del dólar BNA)..."
-                                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-slate-800 border border-slate-700 text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-400"
-                                />
-                                <div className="flex items-center gap-3 text-xs text-slate-300">
-                                    <label className="flex items-center gap-1.5">
-                                        <span>Desc. Global:</span>
-                                        <div className="relative inline-flex items-center">
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                step="0.5"
-                                                value={descuentoGlobalPct === 0 ? '' : descuentoGlobalPct}
-                                                placeholder="0"
-                                                onChange={(e) => {
-                                                    const raw = e.target.value;
-                                                    if (raw === '') {
-                                                        setDescuentoGlobalPct(0);
-                                                    } else {
-                                                        const parsed = parseFloat(raw);
-                                                        setDescuentoGlobalPct(
-                                                            isNaN(parsed)
-                                                                ? 0
-                                                                : Math.min(100, Math.max(0, parsed))
-                                                        );
-                                                    }
-                                                }}
-                                                className="w-16 px-2 py-0.5 text-right font-mono font-bold rounded bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                            />
-                                            <span className="text-xs font-bold text-slate-400 ml-1 select-none">%</span>
-                                        </div>
-                                    </label>
-                                    {totales.descuentoLineasMonto + totales.descuentoGlobalMonto >
-                                        0 && (
-                                        <span className="text-emerald-400 font-mono">
-                                            Ahorro: -$ {fmt(
-                                                totales.descuentoLineasMonto +
-                                                    totales.descuentoGlobalMonto
-                                            )} ARS
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="sm:col-span-6 flex items-center justify-end gap-5">
-                                {esIvaDiscriminado && (
-                                    <div className="text-right text-xs text-slate-400">
-                                        <div>
-                                            Neto:{' '}
-                                            <span className="font-mono text-slate-200">
-                                                $ {fmt(totales.baseImponible)}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            IVA:{' '}
-                                            <span className="font-mono text-slate-200">
-                                                $ {fmt(totales.montoIvaTotal)}
-                                            </span>
-                                        </div>
+                            <dl className="flex items-center gap-x-5 gap-y-1 text-[13px] tabular-nums ml-auto">
+                                {totalDescuentos > 0 && (
+                                    <div className="text-right">
+                                        <dt className="text-xs text-slate-500">Bonificaciones</dt>
+                                        <dd className="text-success-700 dark:text-success-400">− $ {fmt(totalDescuentos)}</dd>
                                     </div>
                                 )}
+                                {esIvaDiscriminado && (
+                                    <>
+                                        <div className="text-right">
+                                            <dt className="text-xs text-slate-500">Neto</dt>
+                                            <dd className="text-slate-800 dark:text-slate-200">$ {fmt(totales.baseImponible)}</dd>
+                                        </div>
+                                        <div className="text-right">
+                                            <dt className="text-xs text-slate-500">IVA</dt>
+                                            <dd className="text-slate-800 dark:text-slate-200">$ {fmt(totales.montoIvaTotal)}</dd>
+                                        </div>
+                                    </>
+                                )}
                                 <div className="text-right">
-                                    <div className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400">
-                                        Total Cotizado ({items.length} ítems)
-                                    </div>
-                                    <div className="text-2xl font-bold font-mono text-white">
-                                        $ {fmt(totales.totalFinal)}{' '}
-                                        <span className="text-xs font-sans font-bold text-slate-400">ARS</span>
-                                    </div>
+                                    <dt className="text-xs text-slate-500">
+                                        Total · {items.length} {items.length === 1 ? 'ítem' : 'ítems'}
+                                    </dt>
+                                    <dd className="text-title font-semibold text-slate-900 dark:text-slate-50">$ {fmt(totales.totalFinal)}</dd>
                                 </div>
-                            </div>
-                        </div>
+                            </dl>
 
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
-                            <button
-                                type="button"
-                                onClick={handleSolicitarReiniciar}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
-                            >
-                                <RotateCcw className="w-3.5 h-3.5" />
-                                Reiniciar
-                            </button>
-
-                            <div className="flex flex-wrap items-center gap-2">
-                                <button
-                                    type="button"
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="secondary"
+                                    icon={<ShoppingCart />}
                                     disabled={guardando || items.length === 0}
                                     onClick={() => handleGuardarCotizacion('ENVIAR_PDV')}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 disabled:opacity-40 transition-all shadow-xs"
-                                    title="Guardar cotización y pasarla inmediatamente al Punto de Venta para cobrar"
+                                    title="Guarda la cotización y la abre en el Punto de Venta"
                                 >
-                                    <ShoppingCart className="w-4 h-4" />
-                                    Guardar y Facturar en PDV
-                                </button>
-
-                                <button
-                                    type="button"
-                                    disabled={guardando || items.length === 0}
-                                    onClick={() => handleGuardarCotizacion('SOLO_GUARDAR')}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 disabled:opacity-40 transition-all"
-                                    title="Guardar cotización sin abrir el visor de impresión"
+                                    Facturar en PDV
+                                </Button>
+                                <Button
+                                    icon={<Save />}
+                                    isLoading={guardando}
+                                    disabled={items.length === 0}
+                                    onClick={() => handleGuardarCotizacion('VER_DOCUMENTO')}
+                                    title="Guarda la cotización y muestra el documento (F4)"
                                 >
-                                    <Save className="w-4 h-4" />
-                                    {cotizacionEditandoId ? 'Guardar Cambios' : 'Guardar'}
-                                </button>
-
-                                <button
-                                    type="button"
-                                    disabled={guardando || items.length === 0}
-                                    onClick={() => handleGuardarCotizacion('IMPRIMIR')}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 transition-all"
-                                    title="Generar la cotización oficial y ver opciones de impresión o PDF"
-                                >
-                                    <FileCheck2 className="w-4 h-4" />
-                                    {guardando
-                                        ? 'Generando...'
-                                        : cotizacionEditandoId
-                                        ? '[F4] Actualizar Cotización'
-                                        : '[F4] Generar Cotización'}
-                                </button>
+                                    {cotizacionEditandoId ? 'Guardar cambios' : 'Guardar'}
+                                </Button>
                             </div>
-                        </div>
-                    </div>
+                        </footer>
+                    </section>
                 </div>
-            </div>
+            )}
 
             {/* Modales */}
             <SeleccionarClienteModal
@@ -1271,42 +1123,27 @@ export default function CotizacionesPage() {
                 onAdd={handleAgregarItemManual}
             />
 
-            <HistorialCotizacionesModal
-                isOpen={showHistorialModal}
-                onClose={() => setShowHistorialModal(false)}
-                onImprimir={(cot) => {
-                    setShowHistorialModal(false);
-                    setCotizacionImprimir(cot);
-                }}
-                onEditar={(cot) => handleCargarCotizacionEnEditor(cot, false)}
-                onDuplicar={(cot) => handleCargarCotizacionEnEditor(cot, true)}
-                onEnviarAPdv={(cot) => {
-                    setShowHistorialModal(false);
-                    router.push(`/ventas/pdv?cotizacionId=${cot.id}`);
-                }}
-            />
-
             <ImprimirCotizacionModal
-                isOpen={!!cotizacionImprimir}
-                cotizacion={cotizacionImprimir}
-                onClose={() => setCotizacionImprimir(null)}
-                onNuevaCotizacion={() => {
-                    setCotizacionImprimir(null);
-                    handleLimpiarCotizador();
-                }}
-                onDuplicar={(cot) => handleCargarCotizacionEnEditor(cot, true)}
-                onEnviarAPdv={(cot) => {
-                    setCotizacionImprimir(null);
-                    router.push(`/ventas/pdv?cotizacionId=${cot.id}`);
-                }}
+                isOpen={!!documento}
+                cotizacion={documento?.cotizacion}
+                onClose={() => setDocumento(null)}
+                onNuevaCotizacion={
+                    documento?.recienGuardada
+                        ? () => {
+                              setDocumento(null);
+                              handleLimpiarCotizador();
+                          }
+                        : undefined
+                }
+                onEnviarAPdv={handleEnviarAPdv}
             />
 
             <ConfirmDialog
                 isOpen={showConfirmReiniciar}
-                title="¿Reiniciar cotización?"
-                message="Se descartarán los artículos y datos cargados en el cotizador actual. Esta acción no se puede deshacer."
-                confirmLabel="Sí, reiniciar"
-                cancelLabel="Continuar editando"
+                title="¿Empezar una cotización nueva?"
+                message="Se descartan los artículos y datos cargados que no hayas guardado."
+                confirmLabel="Empezar de nuevo"
+                cancelLabel="Seguir editando"
                 variant="danger"
                 onConfirm={() => {
                     handleLimpiarCotizador();
