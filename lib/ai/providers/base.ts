@@ -14,6 +14,8 @@ export type AICapability =
     | 'EMBEDDING'
     | 'CHAT';
 
+export type AIEffort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+
 export interface AIAttachment {
     data: string;       // base64 content (without data URI prefix)
     mimeType: string;   // e.g. 'image/jpeg', 'application/pdf'
@@ -29,6 +31,7 @@ export interface AIProviderRequest {
     responseSchema?: object;
     attachments?: AIAttachment[];
     timeoutMs?: number;
+    effort?: AIEffort;
 }
 
 export interface AIProviderResponse {
@@ -41,7 +44,7 @@ export interface AIProviderResponse {
 }
 
 /**
- * Contract for all AI providers (Gemini, OpenAI, Anthropic, etc.)
+ * Contract for all AI providers (Anthropic, OpenAI, etc.)
  */
 export interface AIProvider {
     readonly name: string;

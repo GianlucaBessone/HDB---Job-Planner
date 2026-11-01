@@ -1,6 +1,6 @@
 # Tickets de Soporte — HDB SGI
 
-Sistema de tickets para que cualquier usuario reporte fallas, pida funciones o deje sugerencias desde el buscador del header, con una vista de gestión, triaje con Gemini y una API para que cualquier agente con acceso al repositorio proponga la corrección.
+Sistema de tickets para que cualquier usuario reporte fallas, pida funciones o deje sugerencias desde el buscador del header, con una vista de gestión, triaje con Claude y una API para que cualquier agente con acceso al repositorio proponga la corrección.
 
 ---
 
@@ -59,9 +59,9 @@ Entrar a **Calidad y Mejora Continua → Tickets de Soporte** (`/tickets`).
 - `admin`, `qa` y `supervisor` ven todos y pueden clasificar, asignar y cambiar estados.
 - El detalle tiene 4 pestañas: Detalle, Análisis del agente, Historial y Comentarios.
 
-### Triaje online con Gemini
+### Triaje online con Claude
 
-Al crear un ticket desde el buscador, la app dispara automáticamente un triaje online contra Gemini
+Al crear un ticket desde el buscador, la app dispara automáticamente un triaje online contra Claude
 (`POST /api/tickets/[id]/analizar`). El análisis llena las pestañas **Análisis** del ticket con:
 
 - tipo, urgencia, impacto y prioridad recalculada con las reglas de `lib/tickets.ts`;
@@ -75,7 +75,7 @@ pasados 30 segundos.
 
 **Qué no hace el triaje online:** no edita archivos, no ejecuta `tsc`, no crea respaldos y no
 despliega. Para corregir código hace falta un agente con acceso al repositorio (ver "Delegar a un agente").
-Si Gemini no está disponible (`GEMINI_API_KEY` ausente o error de red), el ticket se crea igual y
+Si Claude no está disponible (`ANTHROPIC_API_KEY` ausente o error de red), el ticket se crea igual y
 queda para análisis manual.
 
 Reglas de seguridad aplicadas en código, no en el prompt:
@@ -91,7 +91,7 @@ Reglas de seguridad aplicadas en código, no en el prompt:
 
 Cuando una persona pasa un ticket a estado `resuelto` desde `/tickets` (un agente no puede hacerlo), el sistema:
 
-1. Genera la respuesta final con el prompt `TICKET_RESOLUTION_RESPONSE` (Gemini, `gemini-2.5-flash`).
+1. Genera la respuesta final con el prompt `TICKET_RESOLUTION_RESPONSE` (Claude, `gemini-2.5-flash`).
 2. Guarda la respuesta como comentario **público** del ticket (autor `Equipo de soporte`).
 3. Crea una actividad en el inbox (`Activity`, tipo `STATUS_UPDATED`) para el reportante.
 4. Envía push vía OneSignal al reportante.
@@ -99,7 +99,7 @@ Cuando una persona pasa un ticket a estado `resuelto` desde `/tickets` (un agent
 
 Reglas:
 
-- Si falta `GEMINI_API_KEY`, la resolución igual se guarda; la respuesta automática se omite sin romper el flujo.
+- Si falta `ANTHROPIC_API_KEY`, la resolución igual se guarda; la respuesta automática se omite sin romper el flujo.
 - La respuesta nunca se envía si el ticket no llegó a `resuelto`.
 - El mensaje es orientado al usuario final: sin markdown, sin promesas de fechas, máximo 1500 caracteres.
 
@@ -145,8 +145,8 @@ El detalle está en [FLUJO-AGENTE.md](./FLUJO-AGENTE.md) y [POLITICA-TICKETS.md]
 - [ ] `npm run lint` sin errores nuevos (si hay configuración de ESLint).
 - [ ] `Ctrl/Cmd + K` muestra la acción de reporte.
 - [ ] Crear un ticket de prueba y verlo en `/tickets`.
-- [ ] Crear un ticket con `GEMINI_API_KEY` configurada y ver el análisis en la pestaña **Análisis**.
+- [ ] Crear un ticket con `ANTHROPIC_API_KEY` configurada y ver el análisis en la pestaña **Análisis**.
 - [ ] Verificar que un ticket sensible (login, permisos, pagos) quede con riesgo `alto` y sin auto-fix.
-- [ ] Cerrar un ticket resuelto y verificar que se genere la respuesta automática con Gemini y quede como comentario público.
+- [ ] Cerrar un ticket resuelto y verificar que se genere la respuesta automática con Claude y quede como comentario público.
 - [ ] **Copiar para agente** en un ticket, pegarlo en un agente y verificar que el ticket pase a `en_progreso` y luego a `en_revision` con rama y PR.
 - [ ] Generar un acceso nuevo y verificar que el anterior devuelva `401`.

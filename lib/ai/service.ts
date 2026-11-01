@@ -5,7 +5,7 @@
  * It orchestrates: prompt resolution → sanitization → rate limiting → 
  * provider dispatch → cost calculation → audit logging.
  * 
- * Replaces the monolithic lib/ai/gemini.ts with a provider-agnostic facade.
+ * Provider-agnostic facade: business routes never talk to an SDK directly.
  */
 
 import { prisma } from '../prisma';
@@ -27,7 +27,7 @@ export async function generateObject<T = any>(
     options: AiRequestOptions = {}
 ): Promise<AiServiceResponse<T>> {
     const start = Date.now();
-    const { provider, model, providerName } = resolveRoute(promptKey, options.model);
+    const { provider, model, providerName, effort } = resolveRoute(promptKey, options.model);
 
     let systemInstruction = '';
     let userPromptTemplate = '';
@@ -70,6 +70,7 @@ export async function generateObject<T = any>(
             temperature: options.temperature ?? 0.2,
             maxOutputTokens: options.maxOutputTokens,
             timeoutMs: options.timeoutMs || 30000,
+            effort,
         });
 
         const latencyMs = Date.now() - start;
@@ -146,7 +147,7 @@ export async function analyzeImage(
     options: AiRequestOptions = {}
 ): Promise<AiServiceResponse> {
     const start = Date.now();
-    const { provider, model, providerName } = resolveRoute(promptKey, options.model);
+    const { provider, model, providerName, effort } = resolveRoute(promptKey, options.model);
 
     try {
         const defaultPrompt = DEFAULT_PROMPTS[promptKey];
@@ -171,6 +172,7 @@ export async function analyzeImage(
             temperature: options.temperature ?? 0.2,
             attachments: [attachment],
             timeoutMs: options.timeoutMs || 45000,
+            effort,
         });
 
         const latencyMs = Date.now() - start;
@@ -244,7 +246,7 @@ export async function performOCR(
     }
 ): Promise<AiServiceResponse> {
     const start = Date.now();
-    const { provider, model, providerName } = resolveRoute(promptKey, options.model);
+    const { provider, model, providerName, effort } = resolveRoute(promptKey, options.model);
 
     try {
         const defaultPrompt = DEFAULT_PROMPTS[promptKey];
@@ -273,6 +275,7 @@ export async function performOCR(
             temperature: 0.1,
             attachments: [attachment],
             timeoutMs: options.timeoutMs || 45000,
+            effort,
         });
 
         const latencyMs = Date.now() - start;

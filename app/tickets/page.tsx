@@ -267,7 +267,9 @@ export default function TicketsPage() {
     ]), [metrics]);
 
     const transiciones = detail ? getTransiciones(detail.estado) : [];
-    const analisisEsGemini = detail?.analisisAgente?.origen === 'gemini';
+    // Los análisis previos a la migración quedaron con origen 'gemini'
+    const origenIA = detail?.analisisAgente?.origen;
+    const analisisEsIA = origenIA === 'claude' || origenIA === 'gemini';
     const puedeAnalizar = !!detail && (canManage || detail.reportadoPorId === user?.id);
 
     return (
@@ -611,7 +613,7 @@ export default function TicketsPage() {
                                                 <div className="flex items-center gap-2 min-w-0">
                                                     <Brain className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
                                                     <p className="text-[11px] font-bold text-violet-700 dark:text-violet-300">
-                                                        {analisisEsGemini ? 'Triaje automático con Gemini' : 'Evaluación registrada por el agente'}.
+                                                        {analisisEsIA ? `Triaje automático con ${origenIA === 'gemini' ? 'Gemini' : 'Claude'}` : 'Evaluación registrada por el agente'}.
                                                         {' '}Riesgo: {(TICKET_RIESGO_LABEL as any)[detail.riesgo] || detail.riesgo}
                                                     </p>
                                                 </div>
@@ -730,7 +732,7 @@ export default function TicketsPage() {
                                             </div>
                                             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Todavía no hay evaluación</p>
                                             <p className="text-xs text-slate-400 font-medium mt-1 max-w-md mx-auto">
-                                                Gemini puede clasificar el ticket, estimar el riesgo y proponer un plan ahora mismo.
+                                                Claude puede clasificar el ticket, estimar el riesgo y proponer un plan ahora mismo.
                                                 La corrección del código, si hace falta, la hace un agente con acceso al repositorio.
                                             </p>
 

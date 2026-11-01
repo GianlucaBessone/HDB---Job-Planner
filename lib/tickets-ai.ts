@@ -1,5 +1,5 @@
 /**
- * Triaje online de tickets con Gemini.
+ * Triaje online de tickets con Claude.
  *
  * Este módulo es server-only: usa Prisma y la capa de IA.
  * No aplica cambios de código ni toca el repositorio. Solo clasifica el ticket,
@@ -104,7 +104,7 @@ const RIESGO_RANK: Record<TicketRiesgo, number> = {
     critico: 4,
 };
 
-const MODELO = getRouteTable()['TICKET_TRIAGE']?.model || 'gemini-2.5-flash';
+const MODELO = getRouteTable()['TICKET_TRIAGE']?.model || 'claude-haiku-5-5';
 
 export interface TriageActor {
     userId?: string | null;
@@ -142,11 +142,11 @@ function textoDelTicket(ticket: {
  * No lanza excepciones de negocio: devuelve un resultado tipado.
  */
 export async function triageTicket(ticketId: string, actor: TriageActor = {}): Promise<TriageResult> {
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY) {
         return {
             ok: false,
             status: 503,
-            error: 'La IA no está configurada: falta GEMINI_API_KEY en el entorno.',
+            error: 'La IA no está configurada: falta ANTHROPIC_API_KEY en el entorno.',
         };
     }
 
@@ -283,7 +283,7 @@ export async function triageTicket(ticketId: string, actor: TriageActor = {}): P
         preguntasAlUsuario: analysis.preguntasAlUsuario,
         respuestaSugerida: analysis.respuestaSugerida,
         duplicadosProbables: analysis.duplicadosProbables,
-        origen: 'gemini',
+        origen: 'claude',
         modelo: MODELO,
         generadoEn,
     };
@@ -328,7 +328,7 @@ export async function triageTicket(ticketId: string, actor: TriageActor = {}): P
         await tx.ticketEventoAgente.create({
             data: {
                 ticketId: ticket.id,
-                agente: 'gemini',
+                agente: 'claude',
                 tipo: 'analisis',
                 payload: {
                     analysis,
@@ -366,11 +366,11 @@ export type ResolutionResult =
  * no al equipo técnico.
  */
 export async function generateResolutionResponse(ticketId: string, actor: TriageActor = {}): Promise<ResolutionResult> {
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY) {
         return {
             ok: false,
             status: 503,
-            error: 'La IA no está configurada: falta GEMINI_API_KEY en el entorno.',
+            error: 'La IA no está configurada: falta ANTHROPIC_API_KEY en el entorno.',
         };
     }
 

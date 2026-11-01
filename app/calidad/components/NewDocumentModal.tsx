@@ -1224,7 +1224,7 @@ export default function NewDocumentModal({
                                 </div>
                                 <div>
                                     <span className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider block">Redactor Inteligente IA</span>
-                                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Google Gemini</span>
+                                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Anthropic Claude</span>
                                 </div>
                             </div>
                             <button type="button" onClick={() => setShowAiDrawer(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
@@ -1362,7 +1362,7 @@ export default function NewDocumentModal({
                                         className="w-full py-3 bg-purple-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all"
                                     >
                                         {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                                        <span>{aiLoading ? "Redactando borrador..." : "Redactar Borrador con Gemini"}</span>
+                                        <span>{aiLoading ? "Redactando borrador..." : "Redactar Borrador con Claude"}</span>
                                     </button>
                                 </div>
                             </div>

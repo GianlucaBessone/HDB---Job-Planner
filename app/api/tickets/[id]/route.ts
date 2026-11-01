@@ -15,7 +15,7 @@ import {
 import { generateResolutionResponse } from '@/lib/tickets-ai';
 
 export const dynamic = 'force-dynamic';
-// La resolución puede disparar el redactado de respuesta con Gemini.
+// La resolución puede disparar el redactado de respuesta con Claude.
 export const maxDuration = 60;
 
 const GESTORES = ['admin', 'qa', 'supervisor'];
@@ -228,9 +228,9 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
         });
 
         // ── Flujo automático de respuesta al usuario ────────────────────────
-        // Si el ticket pasa a `resuelto`, redactamos la respuesta final con Gemini
+        // Si el ticket pasa a `resuelto`, redactamos la respuesta final con Claude
         // y la guardamos como comentario público. El aviso al usuario sale siempre,
-        // aunque Gemini falle: el comentario de la IA es un extra.
+        // aunque Claude falle: el comentario de la IA es un extra.
         if (data.estado === 'resuelto' && data.estado !== ticket.estado) {
             let respuestaIA = false;
             try {
@@ -241,7 +241,7 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
                 });
 
                 if ('error' in respuesta) {
-                    console.error('[TICKET_RESOLUTION] Gemini no respondió:', respuesta.error);
+                    console.error('[TICKET_RESOLUTION] Claude no respondió:', respuesta.error);
                 } else if (respuesta.mensaje) {
                     await prisma.ticketComentario.create({
                         data: {

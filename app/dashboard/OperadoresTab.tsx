@@ -473,25 +473,25 @@ export default function OperadoresTab() {
 
         if (score >= 90) {
             diagnosis = `${name} posee un desempeño sobresaliente en HDB Servicios Eléctricos, liderando el tablero de control de calidad.`;
-            recommendation = `SGI Gemini aconseja considerarlo como mentor para nuevos ingresos y asignarle proyectos de alta complejidad técnica.`;
+            recommendation = `El SGI aconseja considerarlo como mentor para nuevos ingresos y asignarle proyectos de alta complejidad técnica.`;
         } else if (metrics.safetyInfractionsCount > 0) {
             diagnosis = `${name} presenta un desvío crítico de seguridad (-${metrics.safetyPenalty} pts) debido a ${metrics.safetyInfractionsCount} infracciones o desvíos detectados en auditorías SST.`;
-            recommendation = `SGI Gemini recomienda de manera prioritaria coordinar una re-capacitación en Normativa de Seguridad Eléctrica y uso obligatorio de EPP / LOTO.`;
+            recommendation = `El SGI recomienda de manera prioritaria coordinar una re-capacitación en Normativa de Seguridad Eléctrica y uso obligatorio de EPP / LOTO.`;
         } else if (metrics.reworkCount > 0) {
             diagnosis = `${name} registra ${metrics.reworkCount} órdenes de servicio catalogadas como Re-Trabajo (FTFR), afectando negativamente la penalización de calidad.`;
-            recommendation = `SGI Gemini sugiere revisar el procedimiento técnico en campo, auditar las órdenes originales y coordinar feedback técnico de mejora continua.`;
+            recommendation = `El SGI sugiere revisar el procedimiento técnico en campo, auditar las órdenes originales y coordinar feedback técnico de mejora continua.`;
         } else if (metrics.unjustifiedAbsences > 0) {
             diagnosis = `${name} presenta un desvío en el score global debido a inasistencias injustificadas registradas (${metrics.unjustifiedAbsences} injustificadas).`;
-            recommendation = `SGI Gemini sugiere programar una sesión de feedback con su supervisor directo para evaluar estas inasistencias y reajustar cronogramas en HDB Servicios Eléctricos.`;
+            recommendation = `El SGI sugiere programar una sesión de feedback con su supervisor directo para evaluar estas inasistencias y reajustar cronogramas en HDB Servicios Eléctricos.`;
         } else if (metrics.csat < 8.5) {
             diagnosis = `Se detecta margen de mejora en las calificaciones CSAT otorgadas por los clientes (${metrics.csat}/10).`;
-            recommendation = `SGI Gemini recomienda inscribirlo en las capacitaciones internas de Calidad de Servicio y Habilidades Blandas del Formación LMS.`;
+            recommendation = `El SGI recomienda inscribirlo en las capacitaciones internas de Calidad de Servicio y Habilidades Blandas del Formación LMS.`;
         } else if (metrics.completedTrainings < metrics.totalTrainings) {
             diagnosis = `El score de ${name} está penalizado por tener capacitaciones internas obligatorias aún pendientes de aprobación.`;
-            recommendation = `SGI Gemini aconseja enviarle una notificación push automática para recordarle completar sus cuestionarios teóricos antes del vencimiento.`;
+            recommendation = `El SGI aconseja enviarle una notificación push automática para recordarle completar sus cuestionarios teóricos antes del vencimiento.`;
         } else {
             diagnosis = `${name} muestra un rendimiento sólido e íntegro en sus fichajes y trabajos técnicos.`;
-            recommendation = `SGI Gemini sugiere continuar con el monitoreo preventivo estándar en el panel general de HDB SGI.`;
+            recommendation = `El SGI sugiere continuar con el monitoreo preventivo estándar en el panel general de HDB SGI.`;
         }
 
         return { diagnosis, recommendation };
@@ -850,7 +850,7 @@ export default function OperadoresTab() {
 
                             </div>
 
-                            {/* Gemini AI Smart Insight Card */}
+                            {/* Smart Insight Card */}
                             {(() => {
                                 const insights = getAiInsights(selectedOperator);
                                 return (
@@ -881,7 +881,7 @@ export default function OperadoresTab() {
                                                 <div className="py-6 flex flex-col items-center justify-center gap-3 text-center">
                                                     <Loader2 className="w-8 h-8 text-yellow-300 animate-spin" />
                                                     <div className="space-y-1 animate-pulse">
-                                                        <p className="text-xs font-bold text-indigo-100">SGI Gemini cruzando métricas...</p>
+                                                        <p className="text-xs font-bold text-indigo-100">SGI cruzando métricas...</p>
                                                         <p className="text-[11px] text-indigo-200">Analizando presentismo, calificaciones CSAT y matriz de competencias</p>
                                                     </div>
                                                 </div>
@@ -1066,7 +1066,7 @@ export default function OperadoresTab() {
                                                         {((aiData.habilidadesRelevantes && aiData.habilidadesRelevantes.length > 0) || 
                                                           (aiData.otrasHabilidades && aiData.otrasHabilidades.length > 0)) && (
                                                             <div className="mt-2 p-3 bg-violet-500/10 dark:bg-violet-950/20 rounded-xl border border-violet-100 dark:border-violet-900/40 text-xs text-violet-700 dark:text-violet-300">
-                                                                <span className="font-semibold text-[11px] uppercase tracking-wider block text-violet-600 dark:text-violet-400 mb-1">Extracción Gemini AI</span>
+                                                                <span className="font-semibold text-[11px] uppercase tracking-wider block text-violet-600 dark:text-violet-400 mb-1">Extracción con Claude</span>
                                                                 {aiData.habilidadesRelevantes && aiData.habilidadesRelevantes.length > 0 && (
                                                                     <div className="mb-1">
                                                                         <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider block">Habilidades Relevantes</span>
@@ -1295,7 +1295,7 @@ export default function OperadoresTab() {
                                             {/* AI Data Skills */}
                                             {previewCert.aiData && (
                                                 <div className="mt-3 space-y-3 pt-3 border-t border-slate-100 dark:border-slate-700">
-                                                    <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider block">Extracción Gemini AI</p>
+                                                    <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider block">Extracción con Claude</p>
                                                     
                                                     {previewCert.aiData.habilidadesRelevantes?.length > 0 && (
                                                         <div className="space-y-1">

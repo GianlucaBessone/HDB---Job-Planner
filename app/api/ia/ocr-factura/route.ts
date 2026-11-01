@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenAI, Type } from '@google/genai';
 import { logAiRequest } from '@/lib/ai/audit';
+import { resolveRoute } from '@/lib/ai/router';
+import { calculateCost } from '@/lib/ai/costs';
+import { getRateLimiter } from '@/lib/ai/rate-limiter';
 
-// Initialize the new Gemini SDK
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const { provider, model, providerName, effort } = resolveRoute('INVOICE_OCR');
 
 const SYSTEM_INSTRUCTION = `
 Actúa como un extractor profesional de datos de comprobantes fiscales argentinos.
@@ -24,49 +25,49 @@ REGLAS OBLIGATORIAS:
 `;
 
 const RESPONSE_SCHEMA = {
-  type: Type.OBJECT,
+  type: 'OBJECT',
   properties: {
-    es_factura: { type: Type.BOOLEAN },
-    tipo_comprobante: { type: Type.STRING, nullable: true },
-    letra_comprobante: { type: Type.STRING, nullable: true },
-    numero_comprobante: { type: Type.STRING, nullable: true },
-    punto_venta: { type: Type.STRING, nullable: true },
-    fecha_emision: { type: Type.STRING, nullable: true },
-    fecha_vencimiento: { type: Type.STRING, nullable: true },
+    es_factura: { type: 'BOOLEAN' },
+    tipo_comprobante: { type: 'STRING', nullable: true },
+    letra_comprobante: { type: 'STRING', nullable: true },
+    numero_comprobante: { type: 'STRING', nullable: true },
+    punto_venta: { type: 'STRING', nullable: true },
+    fecha_emision: { type: 'STRING', nullable: true },
+    fecha_vencimiento: { type: 'STRING', nullable: true },
     proveedor: {
-      type: Type.OBJECT,
+      type: 'OBJECT',
       nullable: true,
       properties: {
-        razon_social: { type: Type.STRING, nullable: true },
-        nombre_fantasia: { type: Type.STRING, nullable: true },
-        cuit: { type: Type.STRING, nullable: true },
-        condicion_iva: { type: Type.STRING, nullable: true },
-        domicilio: { type: Type.STRING, nullable: true },
+        razon_social: { type: 'STRING', nullable: true },
+        nombre_fantasia: { type: 'STRING', nullable: true },
+        cuit: { type: 'STRING', nullable: true },
+        condicion_iva: { type: 'STRING', nullable: true },
+        domicilio: { type: 'STRING', nullable: true },
       }
     },
     totales: {
-      type: Type.OBJECT,
+      type: 'OBJECT',
       nullable: true,
       properties: {
-        subtotal: { type: Type.NUMBER, nullable: true },
-        neto_21: { type: Type.NUMBER, nullable: true },
-        neto_10_5: { type: Type.NUMBER, nullable: true },
-        neto_27: { type: Type.NUMBER, nullable: true },
-        iva_21: { type: Type.NUMBER, nullable: true },
-        iva_10_5: { type: Type.NUMBER, nullable: true },
-        iva_27: { type: Type.NUMBER, nullable: true },
-        no_gravado: { type: Type.NUMBER, nullable: true },
-        percepciones_iva: { type: Type.NUMBER, nullable: true },
-        percepciones_iibb: { type: Type.NUMBER, nullable: true },
-        impuestos_internos: { type: Type.NUMBER, nullable: true },
-        otros_impuestos: { type: Type.NUMBER, nullable: true },
-        total: { type: Type.NUMBER, nullable: true },
-        moneda: { type: Type.STRING, nullable: true },
+        subtotal: { type: 'NUMBER', nullable: true },
+        neto_21: { type: 'NUMBER', nullable: true },
+        neto_10_5: { type: 'NUMBER', nullable: true },
+        neto_27: { type: 'NUMBER', nullable: true },
+        iva_21: { type: 'NUMBER', nullable: true },
+        iva_10_5: { type: 'NUMBER', nullable: true },
+        iva_27: { type: 'NUMBER', nullable: true },
+        no_gravado: { type: 'NUMBER', nullable: true },
+        percepciones_iva: { type: 'NUMBER', nullable: true },
+        percepciones_iibb: { type: 'NUMBER', nullable: true },
+        impuestos_internos: { type: 'NUMBER', nullable: true },
+        otros_impuestos: { type: 'NUMBER', nullable: true },
+        total: { type: 'NUMBER', nullable: true },
+        moneda: { type: 'STRING', nullable: true },
       }
     },
-    cae: { type: Type.STRING, nullable: true },
-    fecha_vencimiento_cae: { type: Type.STRING, nullable: true },
-    confianza_extraccion: { type: Type.NUMBER }
+    cae: { type: 'STRING', nullable: true },
+    fecha_vencimiento_cae: { type: 'STRING', nullable: true },
+    confianza_extraccion: { type: 'NUMBER' }
   },
   required: ["es_factura", "confianza_extraccion"]
 };
@@ -97,50 +98,34 @@ export async function POST(req: NextRequest) {
     const base64Data = buffer.toString('base64');
     const mimeType = file.type || 'image/jpeg';
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: "Extrae los datos de esta factura." },
-            {
-              inlineData: {
-                data: base64Data,
-                mimeType: mimeType
-              }
-            }
-          ]
-        }
-      ],
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        responseMimeType: 'application/json',
-        responseSchema: RESPONSE_SCHEMA,
-        temperature: 0.1, // Low temperature for factual extraction
-      }
+    await getRateLimiter(providerName).waitIfLimitReached();
+
+    const response = await provider.generate({
+      prompt: 'Extrae los datos de esta factura.',
+      systemInstruction: SYSTEM_INSTRUCTION,
+      model,
+      effort,
+      responseMimeType: 'application/json',
+      responseSchema: RESPONSE_SCHEMA,
+      attachments: [{ data: base64Data, mimeType }],
+      timeoutMs: 45000,
     });
 
-    const resultText = response.text;
-    if (!resultText) {
-      throw new Error('No text returned from Gemini');
+    if (!response.text) {
+      throw new Error('La IA no devolvió datos de la factura.');
     }
 
-    const jsonData = JSON.parse(resultText);
-    
+    const jsonData = JSON.parse(response.text);
+
     // Log success
-    const inputTokens = response.usageMetadata?.promptTokenCount || 0;
-    const outputTokens = response.usageMetadata?.candidatesTokenCount || 0;
-    const totalTokens = response.usageMetadata?.totalTokenCount || 0;
-    
     await logAiRequest({
       action: 'OCR',
-      model: 'gemini-2.5-flash',
-      provider: 'google',
-      inputTokens,
-      outputTokens,
-      totalTokens,
-      estimatedCost: (inputTokens * 0.000000075) + (outputTokens * 0.0000003), // Approximate 2.5-flash cost
+      model: response.model,
+      provider: response.provider,
+      inputTokens: response.inputTokens,
+      outputTokens: response.outputTokens,
+      totalTokens: response.totalTokens,
+      estimatedCost: calculateCost(response.model, response.inputTokens, response.outputTokens),
       latencyMs: Date.now() - startTime,
       userId,
       userName,
@@ -157,8 +142,8 @@ export async function POST(req: NextRequest) {
     // Log failure
     await logAiRequest({
       action: 'OCR',
-      model: 'gemini-2.5-flash',
-      provider: 'google',
+      model,
+      provider: providerName,
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,

@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
-
-// Initialize Gemini SDK
-// Assumes GEMINI_API_KEY is available in the environment variables
-const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
+import { resolveRoute } from '@/lib/ai/router';
+import { getRateLimiter } from '@/lib/ai/rate-limiter';
 
 export async function POST(req: Request) {
     try {
@@ -13,8 +10,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Falta el texto del CV' }, { status: 400 });
         }
 
-        if (!ai) {
-            console.warn("GEMINI_API_KEY is not set. Returning mock data.");
+        if (!process.env.ANTHROPIC_API_KEY) {
+            console.warn("ANTHROPIC_API_KEY is not set. Returning mock data.");
             return NextResponse.json({
                 score: 85,
                 skills: ["Liderazgo", "Resolución de problemas"],
@@ -28,23 +25,23 @@ export async function POST(req: Request) {
 
         const prompt = `
             Actúa como un experto reclutador (Headhunter y ATS IA).
-            
+
             CV DEL CANDIDATO:
             """
             ${text}
             """
-            
+
             DESCRIPCIÓN DE LA VACANTE:
             """
             ${vacancyDescription || 'No especificada. Extrae la información general del perfil.'}
             """
-            
+
             Tareas:
             1. Analiza el CV y extrae: habilidades (skills), experiencias laborales y educación.
             2. Si hay descripción de la vacante, compara el perfil del candidato con la vacante y asigna un puntaje de "Match" de 0 a 100.
             3. Detecta fortalezas, debilidades y posibles riesgos de contratación (ej. mucha rotación, lejanía geográfica, sobrecalificación).
             4. Genera una breve explicación en formato HTML (con párrafos <p> y negritas <b>) de por qué se asignó ese puntaje y si lo recomiendas.
-            
+
             Devuelve ÚNICAMENTE un objeto JSON con el siguiente formato exacto (sin bloques de código markdown, solo el texto JSON válido):
             {
                 "score": number,
@@ -58,21 +55,19 @@ export async function POST(req: Request) {
             }
         `;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                temperature: 0.2, // Low temperature for more deterministic/structured output
-            }
+        const { provider, model, providerName, effort } = resolveRoute('CV_PARSE');
+        await getRateLimiter(providerName).waitIfLimitReached();
+
+        // The provider strips Markdown fences from JSON responses
+        const response = await provider.generate({
+            prompt,
+            model,
+            effort,
+            responseMimeType: 'application/json',
+            timeoutMs: 45000,
         });
 
-        let jsonText = response.text || "{}";
-        // Clean up markdown block if the model included it
-        if (jsonText.startsWith('```json')) {
-            jsonText = jsonText.replace(/^```json\n/, '').replace(/\n```$/, '');
-        }
-
-        const parsedResult = JSON.parse(jsonText);
+        const parsedResult = JSON.parse(response.text || "{}");
 
         return NextResponse.json(parsedResult);
     } catch (error: any) {
