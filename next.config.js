@@ -9,7 +9,9 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@react-pdf/renderer'],
+  // react-pdf trae su propio reconciler: si Next lo empaqueta en la capa de servidor
+  // usa la build "react-server" de React 19 y falla ("reading 'S'"). Se carga desde node_modules.
+  serverExternalPackages: ['@react-pdf/renderer'],
 };
 
 module.exports = withPWA(nextConfig);

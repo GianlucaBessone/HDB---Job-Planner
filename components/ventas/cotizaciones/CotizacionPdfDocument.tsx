@@ -1,5 +1,9 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
+import { CONDICION_PAGO_DEFAULT, PLAZO_ENTREGA_DEFAULT } from '@/lib/ventas/cotizacionOpciones';
+
+// Sin guiones de corte: "FACTURA" no debe partirse en "FAC-TURA".
+Font.registerHyphenationCallback((word) => [word]);
 
 const S = StyleSheet.create({
     page: {
@@ -492,9 +496,7 @@ export function CotizacionPdfDocument({ cotizacion, logoBase64 }: CotizacionPdfD
                         <View style={S.metaRow}>
                             <Text style={S.metaLabel}>CUIT / DNI:</Text>
                             <Text style={S.metaValue}>
-                                {cotizacion?.clienteIdentificacion ||
-                                    cotizacion?.clienteCuit ||
-                                    'Consumidor Final'}
+                                {cotizacion?.clienteIdentificacion || cotizacion?.clienteCuit || '—'}
                             </Text>
                         </View>
                         <View style={S.metaRow}>
@@ -519,13 +521,13 @@ export function CotizacionPdfDocument({ cotizacion, logoBase64 }: CotizacionPdfD
                         <View style={S.metaRow}>
                             <Text style={S.metaLabel}>Cond. Pago:</Text>
                             <Text style={[S.metaValue, S.metaValueBold]}>
-                                {cotizacion?.condicionPago || 'Contado / Transferencia'}
+                                {cotizacion?.condicionPago || CONDICION_PAGO_DEFAULT}
                             </Text>
                         </View>
                         <View style={S.metaRow}>
                             <Text style={S.metaLabel}>Plazo Entrega:</Text>
                             <Text style={S.metaValue}>
-                                {cotizacion?.plazoEntrega || 'Inmediata s/stock'}
+                                {cotizacion?.plazoEntrega || PLAZO_ENTREGA_DEFAULT}
                             </Text>
                         </View>
                         <View style={S.metaRow}>
@@ -548,11 +550,11 @@ export function CotizacionPdfDocument({ cotizacion, logoBase64 }: CotizacionPdfD
                     <View style={S.tableHeader} fixed>
                         <Text style={[S.thText, S.colIdx]}>#</Text>
                         <Text style={[S.thText, S.colSku]}>Código</Text>
-                        <Text style={[S.thText, S.colDesc]}>Descripción del Material / Servicio</Text>
+                        <Text style={[S.thText, S.colDesc]}>Descripción</Text>
                         <Text style={[S.thText, S.colCant, S.tdCenter]}>Cant.</Text>
-                        <Text style={[S.thText, S.colPrice, S.tdRight]}>P. Unit. (ARS)</Text>
-                        <Text style={[S.thText, S.colDisc, S.tdCenter]}>Bonif%</Text>
-                        <Text style={[S.thText, S.colSub, S.tdRight]}>Subtotal (ARS)</Text>
+                        <Text style={[S.thText, S.colPrice, S.tdRight]}>P. unitario</Text>
+                        <Text style={[S.thText, S.colDisc, S.tdCenter]}>Bonif.</Text>
+                        <Text style={[S.thText, S.colSub, S.tdRight]}>Subtotal</Text>
                     </View>
 
                     {items.map((it: any, index: number) => {
@@ -627,7 +629,9 @@ export function CotizacionPdfDocument({ cotizacion, logoBase64 }: CotizacionPdfD
                         <View style={S.totalesBox}>
                             <View style={S.totalesBody}>
                                 <View style={S.totRow}>
-                                    <Text style={S.totLabel}>Subtotal ({items.length} ítems):</Text>
+                                    <Text style={S.totLabel}>
+                                        Subtotal ({items.length} {items.length === 1 ? 'ítem' : 'ítems'}):
+                                    </Text>
                                     <Text style={S.totValue}>
                                         {fmtARS(
                                             Number(cotizacion?.subtotal) ||
@@ -658,17 +662,19 @@ export function CotizacionPdfDocument({ cotizacion, logoBase64 }: CotizacionPdfD
 
                                 {cotizacion?.ivaDiscriminado && (
                                     <>
+                                        {Number(cotizacion?.descuentoMonto) > 0 && (
+                                            <View style={S.totRow}>
+                                                <Text style={S.totLabel}>Neto gravado:</Text>
+                                                <Text style={S.totValue}>
+                                                    {fmtARS(
+                                                        (Number(cotizacion?.subtotal) || 0) -
+                                                            (Number(cotizacion?.descuentoMonto) || 0)
+                                                    )}
+                                                </Text>
+                                            </View>
+                                        )}
                                         <View style={S.totRow}>
-                                            <Text style={S.totLabel}>Subtotal Neto Gravado:</Text>
-                                            <Text style={S.totValue}>
-                                                {fmtARS(
-                                                    (Number(cotizacion?.subtotal) || 0) -
-                                                        (Number(cotizacion?.descuentoMonto) || 0)
-                                                )}
-                                            </Text>
-                                        </View>
-                                        <View style={S.totRow}>
-                                            <Text style={S.totLabel}>IVA Discriminado:</Text>
+                                            <Text style={S.totLabel}>IVA:</Text>
                                             <Text style={S.totValue}>
                                                 {fmtARS(Number(cotizacion?.impuestosMonto) || 0)}
                                             </Text>

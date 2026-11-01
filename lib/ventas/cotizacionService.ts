@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { calcularTotalesVenta } from '@/lib/ventas/pdvService';
+import { CONDICION_PAGO_DEFAULT, PLAZO_ENTREGA_DEFAULT } from '@/lib/ventas/cotizacionOpciones';
 
 let cotizacionTablesPromise: Promise<void> | null = null;
 
@@ -336,8 +337,8 @@ export async function guardarCotizacion(input: GuardarCotizacionInput, userId?: 
             ivaDiscriminado,
             vendedorId: validVendedorId,
             vendedorNombre,
-            condicionPago: input.condicionPago?.trim() || 'Contado / Transferencia',
-            plazoEntrega: input.plazoEntrega?.trim() || 'Inmediata (según disponibilidad)',
+            condicionPago: input.condicionPago?.trim() || CONDICION_PAGO_DEFAULT,
+            plazoEntrega: input.plazoEntrega?.trim() || PLAZO_ENTREGA_DEFAULT,
             referenciaObra: input.referenciaObra?.trim() || null,
             subtotal: calculo.subtotal,
             descuentoPorcentaje: calculo.descuentoPorcentaje,
@@ -408,8 +409,8 @@ export async function guardarCotizacion(input: GuardarCotizacionInput, userId?: 
           ivaDiscriminado,
           vendedorId: validVendedorId,
           vendedorNombre,
-          condicionPago: input.condicionPago?.trim() || 'Contado / Transferencia',
-          plazoEntrega: input.plazoEntrega?.trim() || 'Inmediata (según disponibilidad)',
+          condicionPago: input.condicionPago?.trim() || CONDICION_PAGO_DEFAULT,
+          plazoEntrega: input.plazoEntrega?.trim() || PLAZO_ENTREGA_DEFAULT,
           referenciaObra: input.referenciaObra?.trim() || null,
           subtotal: calculo.subtotal,
           descuentoPorcentaje: calculo.descuentoPorcentaje,
