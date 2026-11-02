@@ -15,10 +15,9 @@ interface AppTopbarProps {
     /** Con la barra lateral fija, el botón de menú solo aparece por debajo de lg. */
     sidebarDocked: boolean;
     onOpenMenu: () => void;
-    showBreadcrumbs: boolean;
 }
 
-export function AppTopbar({ user, sidebarDocked, onOpenMenu, showBreadcrumbs }: AppTopbarProps) {
+export function AppTopbar({ user, sidebarDocked, onOpenMenu }: AppTopbarProps) {
     const mobileOnly = sidebarDocked ? 'lg:hidden' : '';
     return (
         <header className="sticky top-0 z-[60] shrink-0 h-[var(--topbar-h)] bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75 border-b border-border safe-area-top">
@@ -31,7 +30,7 @@ export function AppTopbar({ user, sidebarDocked, onOpenMenu, showBreadcrumbs }: 
                 </Link>
 
                 <div className="min-w-0 flex-1">
-                    {showBreadcrumbs && <Breadcrumbs />}
+                    <Breadcrumbs />
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">

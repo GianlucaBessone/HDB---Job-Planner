@@ -135,7 +135,10 @@ export default function RootLayout({
         pathname.startsWith('/ventas/cotizaciones/')
     ) : false;
 
-    const role = currentUser?.role?.toLowerCase() || 'operador';
+    // El resto del módulo Ventas comparte con el PDV el margen ajustado, así las pestañas no saltan
+    const isVentasPage = pathname ? pathname.startsWith('/ventas/') : false;
+
+    const role =currentUser?.role?.toLowerCase() || 'operador';
     const effectiveViews = viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;
     const sidebarDocked = sidebarPinned && !isPdvPage;
 
@@ -208,14 +211,15 @@ export default function RootLayout({
                             if (!isPdvPage && !sidebarPinned && window.matchMedia('(min-width: 1024px)').matches) setPinned(true);
                             else setIsSidebarOpen(true);
                         }}
-                        showBreadcrumbs={!isPdvPage}
                     />
 
                     <main
                         id="contenido"
                         className={isPdvPage
                             ? "flex-1 w-full p-2 h-full min-h-0 max-h-full overflow-hidden flex flex-col"
-                            : "flex-1 w-full max-w-page mx-auto px-4 md:px-6 xl:px-8 pt-5 md:pt-6 pb-28 md:pb-10 min-w-0"}
+                            : isVentasPage
+                                ? "flex-1 w-full p-2 pb-28 md:pb-10 min-w-0"
+                                : "flex-1 w-full max-w-page mx-auto px-4 md:px-6 xl:px-8 pt-5 md:pt-6 pb-28 md:pb-10 min-w-0"}
                     >
                         {children}
                         <SpeedInsights />
