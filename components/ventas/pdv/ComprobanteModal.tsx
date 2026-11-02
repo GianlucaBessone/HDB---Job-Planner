@@ -66,7 +66,7 @@ export default function ComprobanteModal({
   const fechaFormateada = safeFormatDateTime(venta.fecha || venta.createdAt);
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-950/50-xs">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/50">
       {/* Estilos para impresión física limpia de ticket/comprobante */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {

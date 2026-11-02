@@ -8,6 +8,7 @@ import {
     Ban, Eye, Phone, Mail, TrendingUp, ArrowUp, ArrowDown, ArrowUpDown, X
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import { Button, Dialog, Field, Tabs } from '@/components/ui';
 import RegistrarCobranzaModal, { ComprobantePendienteItem } from '@/components/ventas/cuentas-corrientes/RegistrarCobranzaModal';
 import RegistrarAjusteCCModal from '@/components/ventas/cuentas-corrientes/RegistrarAjusteCCModal';
 import ConfigCreditoModal from '@/components/ventas/cuentas-corrientes/ConfigCreditoModal';
@@ -264,6 +265,12 @@ export default function CuentasCorrientesPage() {
         }
     };
 
+    const cerrarAnulacion = () => {
+        setMovimientoAnular(null);
+        setMotivoAnulacion('');
+        setSupervisorPinAnulacion('');
+    };
+
     const clientesFiltrados = useMemo(() => {
         const filtrados = clientes.filter((c) => {
             if (filtro === 'CON_DEUDA' && c.saldoActual <= 0.01) return false;
@@ -430,12 +437,14 @@ export default function CuentasCorrientesPage() {
 
             {/* Barra de KPIs Globales */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div
+                <button
+                    type="button"
+                    aria-pressed={filtro === 'CON_DEUDA'}
                     onClick={() => setFiltro(filtro === 'CON_DEUDA' ? 'TODOS' : 'CON_DEUDA')}
-                    className={`rounded-2xl border p-4 shadow-2xs flex items-center justify-between cursor-pointer transition-all ${
+                    className={`w-full text-left rounded-2xl border p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
                         filtro === 'CON_DEUDA'
                             ? 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-400 ring-2 ring-indigo-400/20'
-                            : 'bg-card border-slate-200 dark:border-slate-800 hover:border-indigo-300'
+                            : 'bg-card border-border hover:border-indigo-300'
                     }`}
                 >
                     <div>
@@ -456,14 +465,16 @@ export default function CuentasCorrientesPage() {
                     <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                         <DollarSign className="w-6 h-6" />
                     </div>
-                </div>
+                </button>
 
-                <div
+                <button
+                    type="button"
+                    aria-pressed={filtro === 'VENCIDOS'}
                     onClick={() => setFiltro(filtro === 'VENCIDOS' ? 'TODOS' : 'VENCIDOS')}
-                    className={`rounded-2xl border p-4 shadow-2xs flex items-center justify-between cursor-pointer transition-all ${
+                    className={`w-full text-left rounded-2xl border p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
                         filtro === 'VENCIDOS'
                             ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-400 ring-2 ring-amber-400/20'
-                            : 'bg-card border-slate-200 dark:border-slate-800 hover:border-amber-300'
+                            : 'bg-card border-border hover:border-amber-300'
                     }`}
                 >
                     <div>
@@ -480,9 +491,9 @@ export default function CuentasCorrientesPage() {
                     <div className="w-11 h-11 rounded-2xl bg-amber-100/80 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
                         <Clock className="w-6 h-6" />
                     </div>
-                </div>
+                </button>
 
-                <div className="bg-card rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-2xs flex items-center justify-between">
+                <div className="bg-card rounded-2xl border border-border p-4 flex items-center justify-between gap-3">
                     <div>
                         <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                             Cobranzas del Mes Actual
@@ -499,12 +510,14 @@ export default function CuentasCorrientesPage() {
                     </div>
                 </div>
 
-                <div
+                <button
+                    type="button"
+                    aria-pressed={filtro === 'EXCEDIDOS'}
                     onClick={() => setFiltro(filtro === 'EXCEDIDOS' ? 'TODOS' : 'EXCEDIDOS')}
-                    className={`rounded-2xl border p-4 shadow-2xs flex items-center justify-between cursor-pointer transition-all ${
+                    className={`w-full text-left rounded-2xl border p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
                         filtro === 'EXCEDIDOS'
                             ? 'bg-red-50 dark:bg-red-950/30 border-red-400 ring-2 ring-red-400/20'
-                            : 'bg-card border-slate-200 dark:border-slate-800 hover:border-red-300'
+                            : 'bg-card border-border hover:border-red-300'
                     }`}
                 >
                     <div>
@@ -525,14 +538,14 @@ export default function CuentasCorrientesPage() {
                     <div className="w-11 h-11 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
                         <ShieldAlert className="w-6 h-6" />
                     </div>
-                </div>
+                </button>
             </div>
 
             {/* Layout Principal: Cartera de Clientes (Izquierda) + Detalle Cuenta Corriente (Derecha) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
                 {/* Columna Izquierda: Cartera de Clientes */}
-                <div className="lg:col-span-4 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden flex flex-col max-h-[760px]">
-                    <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 space-y-2.5 bg-slate-50/50 dark:bg-slate-900/40">
+                <div className="lg:col-span-4 bg-card rounded-2xl border border-border shadow-2xs overflow-hidden flex flex-col max-h-[760px]">
+                    <div className="p-3.5 border-b border-border space-y-2.5 bg-slate-50/50 dark:bg-slate-900/40">
                         <div className="flex items-center justify-between gap-2">
                             <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
                                 <UserCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
@@ -542,8 +555,9 @@ export default function CuentasCorrientesPage() {
                                 <select
                                     value={ordenCartera}
                                     onChange={(e) => setOrdenCartera(e.target.value as OrdenCartera)}
-                                    className="px-2 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-slate-700 dark:text-slate-200 focus:outline-none"
+                                    className="px-2 py-1 text-[11px] font-bold rounded-lg border border-border bg-card text-slate-700 dark:text-slate-200 focus:outline-none"
                                     title="Ordenar cartera de clientes"
+                                    aria-label="Ordenar cartera de clientes"
                                 >
                                     <option value="MAYOR_DEUDA">Mayor Deuda</option>
                                     <option value="MAYOR_MORA">Mayor Mora</option>
@@ -553,6 +567,7 @@ export default function CuentasCorrientesPage() {
                                     onClick={handleRefreshTodo}
                                     className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
                                     title="Actualizar saldos"
+                                    aria-label="Actualizar saldos"
                                 >
                                     <RefreshCw className={`w-3.5 h-3.5 ${loadingCartera ? 'animate-spin' : ''}`} />
                                 </button>
@@ -573,7 +588,7 @@ export default function CuentasCorrientesPage() {
                                         setBusqueda('');
                                     }
                                 }}
-                                className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-border bg-card text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
                             {busqueda && (
                                 <button
@@ -581,6 +596,7 @@ export default function CuentasCorrientesPage() {
                                     onClick={() => setBusqueda('')}
                                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded"
                                     title="Limpiar búsqueda (Esc)"
+                                    aria-label="Limpiar búsqueda (Esc)"
                                 >
                                     <X className="w-3.5 h-3.5" />
                                 </button>
@@ -605,7 +621,7 @@ export default function CuentasCorrientesPage() {
                                     className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors whitespace-nowrap ${
                                         filtro === tab.id
                                             ? 'bg-indigo-600 text-white shadow-2xs'
-                                            : 'bg-card border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                            : 'bg-card border border-border text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                                     }`}
                                 >
                                     {tab.label}
@@ -615,7 +631,7 @@ export default function CuentasCorrientesPage() {
                     </div>
 
                     {/* Lista de clientes */}
-                    <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+                    <div className="flex-1 overflow-y-auto divide-y divide-border">
                         {loadingCartera && clientes.length === 0 ? (
                             <div className="p-8 text-center text-xs text-slate-400">Cargando cartera de clientes...</div>
                         ) : clientesFiltrados.length === 0 ? (
@@ -726,7 +742,7 @@ export default function CuentasCorrientesPage() {
                 {/* Columna Derecha: Detalle de Cuenta Corriente del Cliente */}
                 <div className="lg:col-span-8 space-y-4 min-w-0">
                     {!selectedClienteId || !detalleCliente ? (
-                        <div className="bg-card rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-400">
+                        <div className="bg-card rounded-2xl border border-border p-12 text-center text-slate-400">
                             {loadingDetalle ? (
                                 <span>Cargando ficha de cuenta corriente...</span>
                             ) : (
@@ -736,7 +752,7 @@ export default function CuentasCorrientesPage() {
                     ) : (
                         <>
                             {/* Ficha Superior del Cliente y Acciones */}
-                            <div className="bg-card rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xs space-y-4">
+                            <div className="bg-card rounded-2xl border border-border p-5 shadow-2xs space-y-4">
                                 <div className="flex flex-wrap items-start justify-between gap-4">
                                     <div>
                                         <div className="flex items-center gap-2.5 flex-wrap">
@@ -777,50 +793,44 @@ export default function CuentasCorrientesPage() {
 
                                     {/* Botonera Principal */}
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <button
-                                            onClick={() => setShowCobranzaModal(true)}
-                                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all whitespace-nowrap"
-                                        >
-                                            <DollarSign className="w-4 h-4 shrink-0" />
-                                            Registrar Cobranza / Recibo
-                                        </button>
+                                        <Button onClick={() => setShowCobranzaModal(true)} icon={<DollarSign />}>
+                                            Registrar cobranza
+                                        </Button>
 
-                                        <button
-                                            onClick={() => setShowAjusteModal(true)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors whitespace-nowrap"
-                                        >
-                                            <FilePlus2 className="w-4 h-4 shrink-0" />
-                                            Nota Déb. / Créd. / Ajuste
-                                        </button>
+                                        <Button variant="tonal" onClick={() => setShowAjusteModal(true)} icon={<FilePlus2 />}>
+                                            Nota déb. / créd.
+                                        </Button>
 
-                                        <button
+                                        <Button
+                                            variant="secondary"
                                             onClick={() => setShowEstadoCuentaModal(true)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-card hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-colors whitespace-nowrap"
-                                            title="Imprimir Resumen de Cuenta"
+                                            icon={<Printer />}
+                                            title="Imprimir resumen de cuenta"
                                         >
-                                            <Printer className="w-4 h-4 text-slate-500 shrink-0" />
-                                            Estado de Cuenta
-                                        </button>
+                                            Estado de cuenta
+                                        </Button>
 
-                                        <button
+                                        <Button
+                                            variant="secondary"
+                                            size="icon"
                                             onClick={() => setShowConfigModal(true)}
-                                            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors shrink-0"
-                                            title="Configurar Límite y Plazo de Crédito"
+                                            title="Configurar límite y plazo de crédito"
+                                            aria-label="Configurar límite y plazo de crédito"
                                         >
-                                            <Settings2 className="w-4 h-4" />
-                                        </button>
+                                            <Settings2 />
+                                        </Button>
                                     </div>
                                 </div>
 
                                 {/* Métricas del Cliente */}
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-border">
                                     <div
                                         className={`p-3 rounded-xl border ${
                                             saldoDeudorActual > 0
                                                 ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
                                                 : saldoAFavorActual > 0
                                                 ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
-                                                : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800'
+                                                : 'bg-slate-50 dark:bg-slate-900/50 border-border'
                                         }`}
                                     >
                                         <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -839,7 +849,7 @@ export default function CuentasCorrientesPage() {
                                         </div>
                                     </div>
 
-                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-border">
                                         <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                             Deuda Vencida ({detalleCliente.cliente.config.plazoDias}d)
                                         </div>
@@ -857,7 +867,7 @@ export default function CuentasCorrientesPage() {
                                         )}
                                     </div>
 
-                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-border">
                                         <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                             Límite de Crédito
                                         </div>
@@ -881,7 +891,7 @@ export default function CuentasCorrientesPage() {
                                         )}
                                     </div>
 
-                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+                                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-border">
                                         <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                             Total Histórico Operado
                                         </div>
@@ -903,41 +913,18 @@ export default function CuentasCorrientesPage() {
                             </div>
 
                             {/* Sub-pestañas del Detalle */}
-                            <div className="bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden">
-                                <div className="px-4 pt-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/40 overflow-x-auto no-scrollbar">
-                                    <div className="flex items-center gap-1 min-w-max">
-                                        <button
-                                            onClick={() => setSubTab('PENDIENTES')}
-                                            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-                                                subTab === 'PENDIENTES'
-                                                    ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-card rounded-t-xl'
-                                                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                                            }`}
-                                        >
-                                            Comprobantes Pendientes ({detalleCliente.comprobantesPendientes.length})
-                                        </button>
-                                        <button
-                                            onClick={() => setSubTab('MAYOR')}
-                                            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-                                                subTab === 'MAYOR'
-                                                    ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-card rounded-t-xl'
-                                                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                                            }`}
-                                        >
-                                            Libro Mayor / Movimientos ({detalleCliente.libroMayor.length})
-                                        </button>
-                                        <button
-                                            onClick={() => setSubTab('RECIBOS')}
-                                            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-                                                subTab === 'RECIBOS'
-                                                    ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400 bg-card rounded-t-xl'
-                                                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                                            }`}
-                                        >
-                                            Recibos y Notas de Crédito ({detalleCliente.recibos.length})
-                                        </button>
-                                    </div>
-                                </div>
+                            <div className="bg-card rounded-2xl border border-border shadow-2xs overflow-hidden">
+                                <Tabs
+                                    label="Detalle de cuenta corriente"
+                                    className="px-4"
+                                    value={subTab}
+                                    onChange={(id) => setSubTab(id as SubTabDetalle)}
+                                    tabs={[
+                                        { id: 'PENDIENTES', label: 'Comprobantes pendientes', count: detalleCliente.comprobantesPendientes.length },
+                                        { id: 'MAYOR', label: 'Libro mayor', count: detalleCliente.libroMayor.length },
+                                        { id: 'RECIBOS', label: 'Recibos y notas de crédito', count: detalleCliente.recibos.length },
+                                    ]}
+                                />
 
                                 {/* Contenido de Sub-pestaña 1: Comprobantes Pendientes */}
                                 {subTab === 'PENDIENTES' && (
@@ -956,7 +943,7 @@ export default function CuentasCorrientesPage() {
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-xs">
                                                     <thead>
-                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
+                                                        <tr className="border-b border-border text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
                                                             <th
                                                                 onClick={() => handlePendientesSort('numero')}
                                                                 className="py-2.5 px-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap"
@@ -1023,7 +1010,7 @@ export default function CuentasCorrientesPage() {
                                                             <th className="py-2.5 px-3 text-right whitespace-nowrap">Acciones</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                                    <tbody className="divide-y divide-border">
                                                         {comprobantesPendientesSorted.map((comp) => (
                                                             <tr key={comp.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                                                                 <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
@@ -1067,6 +1054,7 @@ export default function CuentasCorrientesPage() {
                                                                                 onClick={() => handleVerVenta(comp.id)}
                                                                                 className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"
                                                                                 title="Ver comprobante de venta"
+                                                                                aria-label="Ver comprobante de venta"
                                                                             >
                                                                                 <Eye className="w-4 h-4" />
                                                                             </button>
@@ -1099,7 +1087,7 @@ export default function CuentasCorrientesPage() {
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-xs">
                                                     <thead>
-                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
+                                                        <tr className="border-b border-border text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
                                                             <th
                                                                 onClick={() => handleMayorSort('fecha')}
                                                                 className="py-2.5 px-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap"
@@ -1166,7 +1154,7 @@ export default function CuentasCorrientesPage() {
                                                             <th className="py-2.5 px-3 text-right whitespace-nowrap">Acciones</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                                    <tbody className="divide-y divide-border">
                                                         {libroMayorSorted.map((row: any) => {
                                                             const isAnulado =
                                                                 row.estado === 'ANULADO' || row.estado === 'ANULADA';
@@ -1223,6 +1211,7 @@ export default function CuentasCorrientesPage() {
                                                                                 }
                                                                                 className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50"
                                                                                 title="Ver venta original"
+                                                                                aria-label="Ver venta original"
                                                                             >
                                                                                 <Eye className="w-4 h-4" />
                                                                             </button>
@@ -1239,6 +1228,7 @@ export default function CuentasCorrientesPage() {
                                                                                             }
                                                                                             className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50"
                                                                                             title="Imprimir Recibo / Nota de Crédito"
+                                                                                            aria-label="Imprimir Recibo / Nota de Crédito"
                                                                                         >
                                                                                             <Printer className="w-4 h-4" />
                                                                                         </button>
@@ -1258,6 +1248,7 @@ export default function CuentasCorrientesPage() {
                                                                                         }
                                                                                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"
                                                                                         title="Anular movimiento"
+                                                                                        aria-label="Anular movimiento"
                                                                                     >
                                                                                         <Ban className="w-4 h-4" />
                                                                                     </button>
@@ -1286,7 +1277,7 @@ export default function CuentasCorrientesPage() {
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-xs">
                                                     <thead>
-                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
+                                                        <tr className="border-b border-border text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
                                                             <th
                                                                 onClick={() => handleRecibosSort('numero')}
                                                                 className="py-2.5 px-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap"
@@ -1335,7 +1326,7 @@ export default function CuentasCorrientesPage() {
                                                             <th className="py-2.5 px-3 text-right whitespace-nowrap">Acciones</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                                    <tbody className="divide-y divide-border">
                                                         {recibosSorted.map((rec: any) => {
                                                             const mediosArr = Array.isArray(rec.mediosPago)
                                                                 ? rec.mediosPago
@@ -1394,6 +1385,7 @@ export default function CuentasCorrientesPage() {
                                                                                     }
                                                                                     className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"
                                                                                     title="Anular recibo y revertir imputaciones"
+                                                                                    aria-label="Anular recibo y revertir imputaciones"
                                                                                 >
                                                                                     <Ban className="w-4 h-4" />
                                                                                 </button>
@@ -1486,82 +1478,79 @@ export default function CuentasCorrientesPage() {
             )}
 
             {/* Modal de Confirmación de Anulación */}
-            {movimientoAnular && (
-                <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
-                    <div className="bg-card rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden">
-                        <div className="px-6 py-4 bg-red-600 text-white flex items-center justify-between">
-                            <h3 className="font-bold text-sm">Anular Movimiento {movimientoAnular.numero}</h3>
-                            <button
-                                onClick={() => {
-                                    setMovimientoAnular(null);
-                                    setSupervisorPinAnulacion('');
-                                }}
-                                className="text-white/80 hover:text-white"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <form onSubmit={handleConfirmarAnulacion} className="p-6 space-y-4">
-                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                                Está por anular el comprobante <strong>{movimientoAnular.numero}</strong> (
-                                {movimientoAnular.concepto}) por <strong>${fmt(movimientoAnular.monto)}</strong>. Si tenía facturas imputadas, el saldo pendiente de dichas facturas será restaurado automáticamente.
-                            </p>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                                    Motivo de anulación *
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    minLength={3}
-                                    placeholder="Ej: Error en carga de importe / Cheque rechazado"
-                                    value={motivoAnulacion}
-                                    onChange={(e) => setMotivoAnulacion(e.target.value)}
-                                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-card focus:outline-none focus:ring-2 focus:ring-red-500"
-                                />
-                            </div>
-                            {!esSupervisorOAdmin && (
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                                        PIN de Supervisor / Administrador *
-                                    </label>
-                                    <input
-                                        type="password"
-                                        required
-                                        placeholder="Ingrese PIN de autorización"
-                                        value={supervisorPinAnulacion}
-                                        onChange={(e) => setSupervisorPinAnulacion(e.target.value)}
-                                        className="w-full px-3 py-2 text-xs rounded-xl border border-amber-300 bg-amber-50/40 dark:bg-amber-950/30 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                                    />
-                                </div>
-                            )}
-                            <div className="flex justify-end gap-2 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setMovimientoAnular(null);
-                                        setSupervisorPinAnulacion('');
-                                    }}
-                                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={
-                                        anulando ||
-                                        motivoAnulacion.trim().length < 3 ||
-                                        (!esSupervisorOAdmin && !supervisorPinAnulacion.trim())
-                                    }
-                                    className="px-4 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
-                                >
-                                    {anulando ? 'Anulando...' : 'Confirmar Anulación'}
-                                </button>
-                            </div>
-                        </form>
+            <Dialog
+                open={!!movimientoAnular}
+                onClose={cerrarAnulacion}
+                dismissible={!anulando}
+                size="sm"
+                icon={
+                    <div className="w-9 h-9 rounded-xl bg-danger-50 text-danger-600 dark:bg-danger-950 dark:text-danger-300 flex items-center justify-center">
+                        <Ban className="w-[18px] h-[18px]" />
                     </div>
-                </div>
-            )}
+                }
+                title={`Anular ${movimientoAnular?.numero ?? ''}`}
+                description={
+                    movimientoAnular && (
+                        <>
+                            {movimientoAnular.concepto} por <strong>${fmt(movimientoAnular.monto)}</strong>. Si tenía
+                            comprobantes imputados, su saldo pendiente se restaura automáticamente.
+                        </>
+                    )
+                }
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={cerrarAnulacion} disabled={anulando} data-autofocus>
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            form="anular-movimiento-cc"
+                            variant="danger"
+                            isLoading={anulando}
+                            disabled={
+                                motivoAnulacion.trim().length < 3 ||
+                                (!esSupervisorOAdmin && !supervisorPinAnulacion.trim())
+                            }
+                        >
+                            {anulando ? 'Anulando...' : 'Anular movimiento'}
+                        </Button>
+                    </>
+                }
+            >
+                <form id="anular-movimiento-cc" onSubmit={handleConfirmarAnulacion} className="space-y-4">
+                    <Field label="Motivo de anulación" required htmlFor="anulacion-motivo">
+                        <input
+                            id="anulacion-motivo"
+                            type="text"
+                            required
+                            minLength={3}
+                            placeholder="Ej: Error en carga de importe / Cheque rechazado"
+                            value={motivoAnulacion}
+                            onChange={(e) => setMotivoAnulacion(e.target.value)}
+                            className="input"
+                        />
+                    </Field>
+                    {!esSupervisorOAdmin && (
+                        <Field
+                            label="PIN de supervisor o administrador"
+                            required
+                            hint="Tu rol necesita autorización para anular."
+                            htmlFor="anulacion-pin"
+                        >
+                            <input
+                                id="anulacion-pin"
+                                type="password"
+                                required
+                                autoComplete="off"
+                                placeholder="PIN de autorización"
+                                value={supervisorPinAnulacion}
+                                onChange={(e) => setSupervisorPinAnulacion(e.target.value)}
+                                className="input"
+                            />
+                        </Field>
+                    )}
+                </form>
+            </Dialog>
         </div>
     );
 }
