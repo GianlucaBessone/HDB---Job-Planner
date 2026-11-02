@@ -64,7 +64,7 @@ export default function AutorizacionPrecioModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50-xs">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/50">
       <div className="bg-card w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">

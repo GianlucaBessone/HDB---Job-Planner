@@ -139,7 +139,7 @@ export default function ModificarPrecioModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-150">
       <div className="bg-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 flex flex-col space-y-4 animate-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
