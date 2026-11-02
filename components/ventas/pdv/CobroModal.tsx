@@ -284,7 +284,7 @@ export default function CobroModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/50-xs">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/50">
       <div className="bg-card w-full max-w-2xl rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">

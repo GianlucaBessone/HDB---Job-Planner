@@ -118,7 +118,7 @@ export default function ImprimirRemitoModal({
   const receptor = remito.receptorNombre || clienteNombre;
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-3 sm:p-4 bg-slate-950/50-xs">
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-3 sm:p-4 bg-slate-950/50">
       {/* Estilos para impresión física de remito comercial sobrio */}
       <style
         dangerouslySetInnerHTML={{

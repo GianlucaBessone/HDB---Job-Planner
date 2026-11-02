@@ -112,7 +112,7 @@ export default function PendientesEntregaModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[85] flex items-center justify-center p-2 sm:p-3 bg-slate-950/50-xs">
+    <div className="fixed inset-0 z-[85] flex items-center justify-center p-2 sm:p-3 bg-slate-950/50">
       <div className="bg-card w-[98vw] max-w-none h-[96vh] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -338,7 +338,7 @@ export default function PendientesEntregaModal({
 
         {/* Modal interno para Confirmar Cancelación */}
         {ventaACancelar && (
-          <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-950/50-xs">
+          <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-950/50">
             <div className="bg-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95">
               <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                 <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/60 flex items-center justify-center">

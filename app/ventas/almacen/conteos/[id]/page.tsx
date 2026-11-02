@@ -675,7 +675,7 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
 
       {/* Modal Confirmar y Ajustar */}
       {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center gap-2.5 text-primary">
               <CheckCircle2 className="w-5 h-5" />
@@ -740,7 +740,7 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
 
       {/* Modal Cancelar Conteo */}
       {isCancelModalOpen && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center gap-2 text-rose-600">
               <XCircle className="w-5 h-5" />
