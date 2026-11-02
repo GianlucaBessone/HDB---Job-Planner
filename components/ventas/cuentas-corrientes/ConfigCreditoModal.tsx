@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ShieldAlert, CheckCircle2, Settings2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Settings2, AlertCircle } from 'lucide-react';
+import { Button, Dialog, Field } from '@/components/ui';
+import { cn } from '@/lib/cn';
 
 interface Props {
     cliente: {
@@ -19,6 +21,31 @@ interface Props {
     onSuccess: () => void;
 }
 
+type EstadoCredito = 'ACTIVO' | 'OBSERVADO' | 'SUSPENDIDO';
+
+const ESTADOS: Array<{ id: EstadoCredito; label: string; selected: string; hint: string }> = [
+    {
+        id: 'ACTIVO',
+        label: 'Activo',
+        selected: 'border-success-500 bg-success-50 text-success-800 ring-2 ring-success-500/20 dark:bg-success-950 dark:text-success-200',
+        hint: 'Habilitado para operar normalmente en cuenta corriente.',
+    },
+    {
+        id: 'OBSERVADO',
+        label: 'Observado',
+        selected: 'border-warning-500 bg-warning-50 text-warning-800 ring-2 ring-warning-500/20 dark:bg-warning-950 dark:text-warning-200',
+        hint: 'Muestra una alerta preventiva pero permite operar dentro del límite.',
+    },
+    {
+        id: 'SUSPENDIDO',
+        label: 'Suspendido',
+        selected: 'border-danger-500 bg-danger-50 text-danger-800 ring-2 ring-danger-500/20 dark:bg-danger-950 dark:text-danger-200',
+        hint: 'Bloquea nuevas ventas en cuenta corriente desde el PDV.',
+    },
+];
+
+const FORM_ID = 'config-credito-cc';
+
 export default function ConfigCreditoModal({
     cliente,
     configActual,
@@ -28,8 +55,8 @@ export default function ConfigCreditoModal({
 }: Props) {
     const [limiteCredito, setLimiteCredito] = useState(String(configActual.limiteCredito || 0));
     const [plazoDias, setPlazoDias] = useState(String(configActual.plazoDias || 30));
-    const [estadoCredito, setEstadoCredito] = useState<'ACTIVO' | 'OBSERVADO' | 'SUSPENDIDO'>(
-        (configActual.estadoCredito as any) || 'ACTIVO'
+    const [estadoCredito, setEstadoCredito] = useState<EstadoCredito>(
+        (configActual.estadoCredito as EstadoCredito) || 'ACTIVO'
     );
     const [observaciones, setObservaciones] = useState(configActual.observaciones || '');
     const [submitting, setSubmitting] = useState(false);
@@ -63,130 +90,100 @@ export default function ConfigCreditoModal({
         }
     };
 
+    const estadoActual = ESTADOS.find((e) => e.id === estadoCredito);
+
     return (
-        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
-                            <Settings2 className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-sm">Política Crediticia del Cliente</h3>
-                            <p className="text-xs text-slate-400">{cliente.name}</p>
-                        </div>
+        <Dialog
+            open
+            onClose={onClose}
+            dismissible={!submitting}
+            size="md"
+            icon={
+                <div className="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-200 flex items-center justify-center">
+                    <Settings2 className="w-[18px] h-[18px]" />
+                </div>
+            }
+            title="Política crediticia"
+            description={cliente.name}
+            footer={
+                <>
+                    <Button variant="secondary" onClick={onClose} disabled={submitting}>
+                        Cancelar
+                    </Button>
+                    <Button type="submit" form={FORM_ID} isLoading={submitting} icon={<CheckCircle2 />}>
+                        {submitting ? 'Guardando...' : 'Guardar configuración'}
+                    </Button>
+                </>
+            }
+        >
+            <form id={FORM_ID} onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                    <div role="alert" className="p-3 rounded-lg border border-danger-200 bg-danger-50 text-danger-800 dark:border-danger-900 dark:bg-danger-950 dark:text-danger-200 flex items-start gap-2 text-[13px]">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>{error}</span>
                     </div>
-                    <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
-                        <X className="w-5 h-5" />
-                    </button>
+                )}
+
+                <div>
+                    <span className="field-label">Estado crediticio en PDV</span>
+                    <div role="radiogroup" aria-label="Estado crediticio" className="grid grid-cols-3 gap-2">
+                        {ESTADOS.map((est) => (
+                            <button
+                                key={est.id}
+                                type="button"
+                                role="radio"
+                                aria-checked={estadoCredito === est.id}
+                                onClick={() => setEstadoCredito(est.id)}
+                                className={cn(
+                                    'h-9 px-3 rounded-lg text-[13px] font-medium border transition-colors',
+                                    estadoCredito === est.id
+                                        ? est.selected
+                                        : 'border-border bg-card text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700/50'
+                                )}
+                            >
+                                {est.label}
+                            </button>
+                        ))}
+                    </div>
+                    <p className="field-hint">{estadoActual?.hint}</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {error && (
-                        <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2 text-red-700 text-xs font-medium">
-                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span>{error}</span>
-                        </div>
-                    )}
-
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Estado Crediticio en PDV
-                        </label>
-                        <div className="grid grid-cols-3 gap-2">
-                            {(['ACTIVO', 'OBSERVADO', 'SUSPENDIDO'] as const).map((est) => (
-                                <button
-                                    key={est}
-                                    type="button"
-                                    onClick={() => setEstadoCredito(est)}
-                                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
-                                        estadoCredito === est
-                                            ? est === 'ACTIVO'
-                                                ? 'bg-emerald-50 border-emerald-500 text-emerald-800 ring-2 ring-emerald-500/20'
-                                                : est === 'OBSERVADO'
-                                                ? 'bg-amber-50 border-amber-500 text-amber-800 ring-2 ring-amber-500/20'
-                                                : 'bg-red-50 border-red-500 text-red-800 ring-2 ring-red-500/20'
-                                            : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                                    }`}
-                                >
-                                    {est}
-                                </button>
-                            ))}
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-1">
-                            {estadoCredito === 'SUSPENDIDO'
-                                ? '⚠️ Bloquea nuevas ventas fiadas en Cuenta Corriente desde el PDV.'
-                                : estadoCredito === 'OBSERVADO'
-                                ? 'Muestra alerta preventiva pero permite operar dentro del límite.'
-                                : 'Habilitado para operar normalmente en Cuenta Corriente.'}
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">
-                                Límite de Crédito ($ ARS)
-                            </label>
-                            <input
-                                type="number"
-                                step="100"
-                                min="0"
-                                value={limiteCredito}
-                                onChange={(e) => setLimiteCredito(e.target.value)}
-                                className="w-full px-3 py-2 text-sm font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                            <span className="text-[11px] text-slate-400">0 = Sin tope fijo</span>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">
-                                Plazo de Vencimiento (Días)
-                            </label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="365"
-                                value={plazoDias}
-                                onChange={(e) => setPlazoDias(e.target.value)}
-                                className="w-full px-3 py-2 text-sm font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                            <span className="text-[11px] text-slate-400">Ej: 15, 30, 60 días</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Acuerdos / Condiciones Comerciales
-                        </label>
-                        <textarea
-                            rows={3}
-                            placeholder="Ej: Autorizado a retirar por obra Ing. Gómez. Facturación quincenal."
-                            value={observaciones}
-                            onChange={(e) => setObservaciones(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Field label="Límite de crédito ($ ARS)" hint="0 = sin tope" htmlFor="cc-limite">
+                        <input
+                            id="cc-limite"
+                            type="number"
+                            step="100"
+                            min="0"
+                            value={limiteCredito}
+                            onChange={(e) => setLimiteCredito(e.target.value)}
+                            className="input font-mono tabular-nums"
                         />
-                    </div>
+                    </Field>
+                    <Field label="Plazo de vencimiento (días)" hint="Ej: 15, 30, 60" htmlFor="cc-plazo">
+                        <input
+                            id="cc-plazo"
+                            type="number"
+                            min="0"
+                            max="365"
+                            value={plazoDias}
+                            onChange={(e) => setPlazoDias(e.target.value)}
+                            className="input font-mono tabular-nums"
+                        />
+                    </Field>
+                </div>
 
-                    <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            disabled={submitting}
-                            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
-                        >
-                            <CheckCircle2 className="w-4 h-4" />
-                            {submitting ? 'Guardando...' : 'Guardar Configuración'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <Field label="Acuerdos y condiciones comerciales" htmlFor="cc-obs">
+                    <textarea
+                        id="cc-obs"
+                        rows={3}
+                        placeholder="Ej: Autorizado a retirar por obra Ing. Gómez. Facturación quincenal."
+                        value={observaciones}
+                        onChange={(e) => setObservaciones(e.target.value)}
+                        className="input resize-none"
+                    />
+                </Field>
+            </form>
+        </Dialog>
     );
 }

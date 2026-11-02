@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, FilePlus2, AlertCircle, CheckCircle2, ArrowUpRight, ArrowDownLeft, Scale } from 'lucide-react';
+import { FilePlus2, AlertCircle, CheckCircle2, ArrowUpRight, ArrowDownLeft, Scale } from 'lucide-react';
+import { Button, Dialog, Field } from '@/components/ui';
+import { cn } from '@/lib/cn';
 
 interface Props {
     cliente: {
@@ -14,13 +16,51 @@ interface Props {
     onSuccess: () => void;
 }
 
+type TipoAjuste = 'SALDO_INICIAL' | 'CARGO_MANUAL' | 'NOTA_CREDITO';
+
+const TIPOS: Array<{
+    id: TipoAjuste;
+    label: string;
+    hint: string;
+    icon: React.ElementType;
+    selected: string;
+    iconColor: string;
+}> = [
+    {
+        id: 'CARGO_MANUAL',
+        label: 'Nota de débito',
+        hint: 'Aumenta la deuda (+)',
+        icon: ArrowUpRight,
+        selected: 'border-warning-500 bg-warning-50 ring-2 ring-warning-500/20 dark:bg-warning-950',
+        iconColor: 'text-warning-600 dark:text-warning-300',
+    },
+    {
+        id: 'NOTA_CREDITO',
+        label: 'Nota de crédito',
+        hint: 'Disminuye la deuda (−)',
+        icon: ArrowDownLeft,
+        selected: 'border-success-500 bg-success-50 ring-2 ring-success-500/20 dark:bg-success-950',
+        iconColor: 'text-success-600 dark:text-success-300',
+    },
+    {
+        id: 'SALDO_INICIAL',
+        label: 'Saldo inicial',
+        hint: 'Migración de sistema previo',
+        icon: Scale,
+        selected: 'border-brand-500 bg-brand-50 ring-2 ring-brand-500/20 dark:bg-brand-950',
+        iconColor: 'text-brand-600 dark:text-brand-300',
+    },
+];
+
+const FORM_ID = 'registrar-ajuste-cc';
+
 export default function RegistrarAjusteCCModal({
     cliente,
     operadorNombre,
     onClose,
     onSuccess,
 }: Props) {
-    const [tipo, setTipo] = useState<'SALDO_INICIAL' | 'CARGO_MANUAL' | 'NOTA_CREDITO'>('CARGO_MANUAL');
+    const [tipo, setTipo] = useState<TipoAjuste>('CARGO_MANUAL');
     const [sentidoSaldoInicial, setSentidoSaldoInicial] = useState<'DEBE' | 'HABER'>('DEBE');
     const [monto, setMonto] = useState('');
     const [concepto, setConcepto] = useState('');
@@ -76,186 +116,154 @@ export default function RegistrarAjusteCCModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
-                            <FilePlus2 className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-sm">Registrar Nota Débito / Crédito / Saldo Inicial</h3>
-                            <p className="text-xs text-slate-400">{cliente.name}</p>
-                        </div>
+        <Dialog
+            open
+            onClose={onClose}
+            dismissible={!submitting}
+            size="md"
+            icon={
+                <div className="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-200 flex items-center justify-center">
+                    <FilePlus2 className="w-[18px] h-[18px]" />
+                </div>
+            }
+            title="Nota de débito, crédito o saldo inicial"
+            description={cliente.name}
+            footer={
+                <>
+                    <Button variant="secondary" onClick={onClose} disabled={submitting}>
+                        Cancelar
+                    </Button>
+                    <Button type="submit" form={FORM_ID} isLoading={submitting} icon={<CheckCircle2 />}>
+                        {submitting ? 'Guardando...' : 'Registrar movimiento'}
+                    </Button>
+                </>
+            }
+        >
+            <form id={FORM_ID} onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                    <div role="alert" className="p-3 rounded-lg border border-danger-200 bg-danger-50 text-danger-800 dark:border-danger-900 dark:bg-danger-950 dark:text-danger-200 flex items-start gap-2 text-[13px]">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>{error}</span>
                     </div>
-                    <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
-                        <X className="w-5 h-5" />
-                    </button>
+                )}
+
+                {/* Selector de tipo */}
+                <div>
+                    <span className="field-label">Tipo de comprobante</span>
+                    <div role="radiogroup" aria-label="Tipo de comprobante" className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {TIPOS.map((t) => {
+                            const active = tipo === t.id;
+                            const Icon = t.icon;
+                            return (
+                                <button
+                                    key={t.id}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={active}
+                                    onClick={() => setTipo(t.id)}
+                                    className={cn(
+                                        'p-3 rounded-xl border text-left transition-colors',
+                                        active
+                                            ? t.selected
+                                            : 'border-border bg-card hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                                    )}
+                                >
+                                    <Icon className={cn('w-4 h-4 mb-1', t.iconColor)} />
+                                    <div className="text-[13px] font-semibold text-slate-900 dark:text-slate-50">{t.label}</div>
+                                    <div className="text-xs text-slate-600 dark:text-slate-300">{t.hint}</div>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {error && (
-                        <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2 text-red-700 text-xs font-medium">
-                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span>{error}</span>
-                        </div>
-                    )}
-
-                    {/* Selector de Tipo */}
+                {tipo === 'SALDO_INICIAL' && (
                     <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1.5">Tipo de Ajuste / Comprobante</label>
-                        <div className="grid grid-cols-3 gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setTipo('CARGO_MANUAL')}
-                                className={`p-3 rounded-xl border text-left transition-all ${
-                                    tipo === 'CARGO_MANUAL'
-                                        ? 'border-amber-500 bg-amber-50/70 text-amber-900 ring-2 ring-amber-500/20'
-                                        : 'border-slate-200 hover:bg-slate-50 text-slate-600'
-                                }`}
-                            >
-                                <ArrowUpRight className="w-4 h-4 text-amber-600 mb-1" />
-                                <div className="text-xs font-bold">Nota de Débito</div>
-                                <div className="text-[11px] opacity-75">Aumenta deuda (+)</div>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setTipo('NOTA_CREDITO')}
-                                className={`p-3 rounded-xl border text-left transition-all ${
-                                    tipo === 'NOTA_CREDITO'
-                                        ? 'border-emerald-500 bg-emerald-50/70 text-emerald-900 ring-2 ring-emerald-500/20'
-                                        : 'border-slate-200 hover:bg-slate-50 text-slate-600'
-                                }`}
-                            >
-                                <ArrowDownLeft className="w-4 h-4 text-emerald-600 mb-1" />
-                                <div className="text-xs font-bold">Nota de Crédito</div>
-                                <div className="text-[11px] opacity-75">Disminuye deuda (-)</div>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setTipo('SALDO_INICIAL')}
-                                className={`p-3 rounded-xl border text-left transition-all ${
-                                    tipo === 'SALDO_INICIAL'
-                                        ? 'border-indigo-500 bg-indigo-50/70 text-indigo-900 ring-2 ring-indigo-500/20'
-                                        : 'border-slate-200 hover:bg-slate-50 text-slate-600'
-                                }`}
-                            >
-                                <Scale className="w-4 h-4 text-indigo-600 mb-1" />
-                                <div className="text-xs font-bold">Saldo Inicial</div>
-                                <div className="text-[11px] opacity-75">Migración previa</div>
-                            </button>
+                        <span className="field-label">Sentido del saldo inicial</span>
+                        <div role="radiogroup" aria-label="Sentido del saldo inicial" className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {([
+                                { id: 'DEBE', label: 'Saldo deudor (el cliente debe)', selected: 'border-warning-500 bg-warning-50 dark:bg-warning-950' },
+                                { id: 'HABER', label: 'Saldo a favor (anticipo del cliente)', selected: 'border-success-500 bg-success-50 dark:bg-success-950' },
+                            ] as const).map((s) => {
+                                const active = sentidoSaldoInicial === s.id;
+                                return (
+                                    <button
+                                        key={s.id}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={active}
+                                        onClick={() => setSentidoSaldoInicial(s.id)}
+                                        className={cn(
+                                            'py-2 px-3 rounded-lg text-[13px] font-medium border text-left transition-colors text-slate-900 dark:text-slate-50',
+                                            active ? s.selected : 'border-border bg-card hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                                        )}
+                                    >
+                                        {s.label}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
+                )}
 
-                    {tipo === 'SALDO_INICIAL' && (
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">Sentido del Saldo Inicial</label>
-                            <div className="grid grid-cols-2 gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setSentidoSaldoInicial('DEBE')}
-                                    className={`py-2 px-3 rounded-xl text-xs font-bold border ${
-                                        sentidoSaldoInicial === 'DEBE'
-                                            ? 'bg-amber-50 border-amber-400 text-amber-800'
-                                            : 'border-slate-200 text-slate-600'
-                                    }`}
-                                >
-                                    Saldo Deudor (El cliente debe)
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setSentidoSaldoInicial('HABER')}
-                                    className={`py-2 px-3 rounded-xl text-xs font-bold border ${
-                                        sentidoSaldoInicial === 'HABER'
-                                            ? 'bg-emerald-50 border-emerald-400 text-emerald-800'
-                                            : 'border-slate-200 text-slate-600'
-                                    }`}
-                                >
-                                    Saldo a Favor (Anticipo del cliente)
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                <Field label="Importe ($ ARS)" required htmlFor="ajuste-monto">
+                    <input
+                        id="ajuste-monto"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        required
+                        placeholder="0,00"
+                        value={monto}
+                        onChange={(e) => setMonto(e.target.value)}
+                        className="input h-11 text-base font-mono font-semibold tabular-nums"
+                        data-autofocus
+                    />
+                </Field>
 
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Importe ($ ARS)</label>
+                <Field label="Concepto o motivo" required htmlFor="ajuste-concepto">
+                    <input
+                        id="ajuste-concepto"
+                        type="text"
+                        required
+                        placeholder={
+                            tipo === 'CARGO_MANUAL'
+                                ? 'Ej: Recargo por flete / Diferencia de cotización'
+                                : tipo === 'NOTA_CREDITO'
+                                ? 'Ej: Bonificación comercial / Devolución de mercadería'
+                                : 'Ej: Saldo arrastrado de sistema anterior al 01/10'
+                        }
+                        value={concepto}
+                        onChange={(e) => setConcepto(e.target.value)}
+                        className="input"
+                    />
+                </Field>
+
+                {tipo === 'NOTA_CREDITO' && (
+                    <label className="flex items-start gap-2.5 p-3 rounded-lg border border-success-200 bg-success-50 dark:border-success-900 dark:bg-success-950 cursor-pointer">
                         <input
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            required
-                            placeholder="0.00"
-                            value={monto}
-                            onChange={(e) => setMonto(e.target.value)}
-                            className="w-full px-3.5 py-2.5 text-base font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            type="checkbox"
+                            checked={imputarFifo}
+                            onChange={(e) => setImputarFifo(e.target.checked)}
+                            className="mt-0.5 rounded border-input text-success-600 focus:ring-success-500"
                         />
-                    </div>
+                        <span className="text-[13px] text-success-900 dark:text-success-100">
+                            Descontar automáticamente de los comprobantes pendientes más antiguos (FIFO)
+                        </span>
+                    </label>
+                )}
 
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Concepto / Motivo *</label>
-                        <input
-                            type="text"
-                            required
-                            placeholder={
-                                tipo === 'CARGO_MANUAL'
-                                    ? 'Ej: Recargo por flete / Diferencia de cotización'
-                                    : tipo === 'NOTA_CREDITO'
-                                    ? 'Ej: Bonificación comercial / Devolución de mercadería'
-                                    : 'Ej: Saldo arrastrado de sistema anterior al 01/10'
-                            }
-                            value={concepto}
-                            onChange={(e) => setConcepto(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                    </div>
-
-                    {tipo === 'NOTA_CREDITO' && (
-                        <label className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={imputarFifo}
-                                onChange={(e) => setImputarFifo(e.target.checked)}
-                                className="rounded border-emerald-400 text-emerald-600 focus:ring-emerald-500"
-                            />
-                            <span className="text-xs font-medium text-emerald-900">
-                                Descontar automáticamente de los comprobantes pendientes más antiguos (FIFO)
-                            </span>
-                        </label>
-                    )}
-
-                    <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Observaciones adicionales (Opcional)</label>
-                        <textarea
-                            rows={2}
-                            placeholder="Detalle interno de respaldo..."
-                            value={observaciones}
-                            onChange={(e) => setObservaciones(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                        />
-                    </div>
-
-                    <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            disabled={submitting}
-                            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
-                        >
-                            <CheckCircle2 className="w-4 h-4" />
-                            {submitting ? 'Guardando...' : 'Registrar Movimiento'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <Field label="Observaciones internas" hint="Opcional" htmlFor="ajuste-obs">
+                    <textarea
+                        id="ajuste-obs"
+                        rows={2}
+                        placeholder="Detalle interno de respaldo..."
+                        value={observaciones}
+                        onChange={(e) => setObservaciones(e.target.value)}
+                        className="input resize-none"
+                    />
+                </Field>
+            </form>
+        </Dialog>
     );
 }

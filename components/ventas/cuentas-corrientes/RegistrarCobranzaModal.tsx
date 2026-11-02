@@ -2,9 +2,11 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-    X, DollarSign, CheckCircle2, AlertCircle, Plus, Trash2,
+    DollarSign, CheckCircle2, AlertCircle, Plus, Trash2,
     Layers, CreditCard, Banknote, Building2, FileText
 } from 'lucide-react';
+import { Badge, Button, Dialog, Field, SegmentedControl } from '@/components/ui';
+import { cn } from '@/lib/cn';
 import { MedioPagoCobranzaInput, ImputacionManualInput } from '@/lib/ventas/cuentaCorrienteService';
 
 export interface ComprobantePendienteItem {
@@ -47,6 +49,8 @@ const MEDIOS_PAGO: Array<{
     { id: 'TARJETA_CREDITO', label: 'Tarjeta Crédito', icon: CreditCard },
     { id: 'OTRO', label: 'Otro Medio', icon: DollarSign },
 ];
+
+const FORM_ID = 'registrar-cobranza-cc';
 
 export default function RegistrarCobranzaModal({
     cliente,
@@ -273,453 +277,390 @@ export default function RegistrarCobranzaModal({
 
     const saldoRestanteEstimado = Math.round((saldoDeudor - totalCobranza) * 100) / 100;
 
+
     return (
-        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                {/* Header */}
-                <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
-                            <DollarSign className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-base tracking-tight">
-                                Registrar Cobranza / Recibo de Cuenta Corriente
-                            </h3>
-                            <p className="text-xs text-slate-400">
-                                Cliente: <span className="text-white font-semibold">{cliente.nombre}</span>
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+        <Dialog
+            open
+            onClose={onClose}
+            dismissible={!submitting}
+            size="xl"
+            icon={
+                <div className="w-9 h-9 rounded-xl bg-success-50 text-success-700 dark:bg-success-950 dark:text-success-300 flex items-center justify-center">
+                    <DollarSign className="w-[18px] h-[18px]" />
                 </div>
-
-                {/* Body */}
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-                    {error && (
-                        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5 text-red-700 text-xs font-medium">
-                            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                            <span>{error}</span>
-                        </div>
-                    )}
-
-                    {/* Resumen superior y botones rápidos */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                            <div>
-                                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                    Deuda Actual
-                                </div>
-                                <div className="text-lg font-bold font-mono text-slate-900">
-                                    ${fmt(saldoDeudor)}
-                                </div>
-                            </div>
-                            {saldoDeudor > 0 && (
-                                <button
-                                    type="button"
-                                    onClick={() => handleSetMontoRapido(saldoDeudor)}
-                                    className="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-colors"
-                                >
-                                    Saldar Total
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/80 flex items-center justify-between">
-                            <div>
-                                <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
-                                    Deuda Vencida
-                                </div>
-                                <div className="text-lg font-bold font-mono text-amber-800">
-                                    ${fmt(cliente.deudaVencida)}
-                                </div>
-                            </div>
-                            {cliente.deudaVencida > 0 && (
-                                <button
-                                    type="button"
-                                    onClick={() => handleSetMontoRapido(cliente.deudaVencida)}
-                                    className="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs transition-colors"
-                                >
-                                    Cobrar Vencido
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
-                            <div>
-                                <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
-                                    Total Recibo a Emitir
-                                </div>
-                                <div className="text-xl font-bold font-mono text-emerald-700">
-                                    ${fmt(totalCobranza)}
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-[11px] text-emerald-600 font-semibold">Saldo Posterior</div>
-                                <div
-                                    className={`text-xs font-bold font-mono ${
-                                        saldoRestanteEstimado > 0 ? 'text-slate-700' : 'text-emerald-700'
-                                    }`}
-                                >
-                                    ${fmt(Math.max(0, saldoRestanteEstimado))}
-                                    {saldoRestanteEstimado < -0.01 &&
-                                        ` (A favor: $${fmt(Math.abs(saldoRestanteEstimado))})`}
-                                </div>
-                            </div>
-                        </div>
+            }
+            title="Registrar cobranza"
+            description={
+                <>
+                    Recibo de cuenta corriente de{' '}
+                    <strong className="font-semibold text-slate-900 dark:text-slate-50">{cliente.nombre}</strong>
+                </>
+            }
+            footer={
+                <>
+                    <Button variant="secondary" onClick={onClose} disabled={submitting}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        form={FORM_ID}
+                        isLoading={submitting}
+                        disabled={totalCobranza <= 0}
+                        icon={<CheckCircle2 />}
+                    >
+                        {submitting ? 'Emitiendo recibo...' : `Emitir recibo por $${fmt(totalCobranza)}`}
+                    </Button>
+                </>
+            }
+        >
+            <form id={FORM_ID} onSubmit={handleSubmit} className="space-y-5">
+                {error && (
+                    <div role="alert" className="p-3 rounded-lg border border-danger-200 bg-danger-50 text-danger-800 dark:border-danger-900 dark:bg-danger-950 dark:text-danger-200 flex items-start gap-2 text-[13px]">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>{error}</span>
                     </div>
+                )}
 
-                    {/* Medios de pago */}
-                    <div className="bg-slate-50/70 rounded-xl border border-slate-200 p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                                <CreditCard className="w-4 h-4 text-indigo-600" />
-                                1. Medios de Pago Recibidos
-                            </h4>
-                            <button
-                                type="button"
-                                onClick={handleAddPago}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors shadow-2xs"
-                            >
-                                <Plus className="w-3.5 h-3.5" /> Agregar Medio
-                            </button>
-                        </div>
-
-                        <div className="space-y-2">
-                            {pagos.map((pago, index) => (
-                                <div
-                                    key={pago.id}
-                                    className="grid grid-cols-12 gap-2.5 items-center bg-white p-2.5 rounded-xl border border-slate-200"
-                                >
-                                    <div className="col-span-12 sm:col-span-4">
-                                        <label className="block mb-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                            Medio #{index + 1}
-                                        </label>
-                                        <select
-                                            value={pago.metodo}
-                                            onChange={(e) =>
-                                                handleChangePago(pago.id, 'metodo', e.target.value)
-                                            }
-                                            className="w-full px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        >
-                                            {MEDIOS_PAGO.map((m) => (
-                                                <option key={m.id} value={m.id}>
-                                                    {m.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="col-span-6 sm:col-span-3">
-                                        <label className="block mb-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                            Importe ($)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            placeholder="0.00"
-                                            value={pago.monto}
-                                            onChange={(e) =>
-                                                handleChangePago(pago.id, 'monto', e.target.value)
-                                            }
-                                            className="w-full px-2.5 py-1.5 text-xs font-mono font-bold rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-right"
-                                        />
-                                    </div>
-
-                                    <div className="col-span-5 sm:col-span-4">
-                                        <label className="block mb-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                            N° Comprobante / Cheque / Ref.
-                                        </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Ej: Transf #84920 / Cheque Bco Nación"
-                                            value={pago.referencia}
-                                            onChange={(e) =>
-                                                handleChangePago(pago.id, 'referencia', e.target.value)
-                                            }
-                                            className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        />
-                                    </div>
-
-                                    <div className="col-span-1 flex justify-end pt-4">
-                                        <button
-                                            type="button"
-                                            disabled={pagos.length <= 1}
-                                            onClick={() => handleRemovePago(pago.id)}
-                                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 transition-colors"
-                                            title="Quitar medio de pago"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Imputación de Comprobantes */}
-                    <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div>
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                                    <Layers className="w-4 h-4 text-indigo-600" />
-                                    2. Imputación a Comprobantes Pendientes ({comprobantesPendientes.length})
-                                </h4>
-                                <p className="text-[11px] text-slate-500">
-                                    Elija si desea cancelar automáticamente desde la deuda más antigua (FIFO) o seleccionar manualmente cada factura.
-                                </p>
-                            </div>
-
-                            <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
-                                <button
-                                    type="button"
-                                    onClick={() => setModoImputacion('FIFO')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                        modoImputacion === 'FIFO'
-                                            ? 'bg-white text-indigo-700 shadow-xs'
-                                            : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                                >
-                                    Automático (FIFO Antiguo → Nuevo)
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setModoImputacion('MANUAL')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                        modoImputacion === 'MANUAL'
-                                            ? 'bg-white text-indigo-700 shadow-xs'
-                                            : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                                >
-                                    Selección Manual
-                                </button>
+                {/* Resumen superior y montos rápidos */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="p-3.5 rounded-xl border border-border bg-surface-sunken flex items-center justify-between gap-2">
+                        <div>
+                            <div className="eyebrow">Deuda actual</div>
+                            <div className="text-lg font-semibold font-mono tabular-nums text-slate-900 dark:text-slate-50">
+                                ${fmt(saldoDeudor)}
                             </div>
                         </div>
-
-                        {comprobantesPendientes.length === 0 ? (
-                            <div className="p-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 text-xs text-slate-500">
-                                El cliente no registra comprobantes con saldo pendiente de cancelación. El pago quedará registrado como saldo a favor / anticipo en su cuenta corriente.
-                            </div>
-                        ) : (
-                            <div className="border border-slate-200 rounded-xl overflow-hidden">
-                                <div className="max-h-60 overflow-y-auto">
-                                    <table className="w-full text-xs">
-                                        <thead className="bg-slate-50 border-b border-slate-200 sticky top-0">
-                                            <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                                                {modoImputacion === 'MANUAL' && (
-                                                    <th className="py-2 px-3 text-center w-10">Sel.</th>
-                                                )}
-                                                <th className="py-2 px-3 text-left">Comprobante</th>
-                                                <th className="py-2 px-3 text-left">Emisión / Vto.</th>
-                                                <th className="py-2 px-3 text-right">Total Orig.</th>
-                                                <th className="py-2 px-3 text-right">Saldo Pend.</th>
-                                                <th className="py-2 px-3 text-right w-36">Monto a Imputar</th>
-                                                <th className="py-2 px-3 text-right">Saldo Restante</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {comprobantesPendientes.map((comp) => {
-                                                const imputado =
-                                                    modoImputacion === 'FIFO'
-                                                        ? previewFifo.porComprobante[comp.id] || 0
-                                                        : parseFloat(imputacionesManuales[comp.id] || '0') || 0;
-                                                const restante = Math.max(
-                                                    0,
-                                                    Math.round((comp.saldoPendiente - imputado) * 100) / 100
-                                                );
-                                                const quedaSaldado = restante <= 0.009 && imputado > 0;
-
-                                                return (
-                                                    <tr
-                                                        key={comp.id}
-                                                        className={`transition-colors ${
-                                                            imputado > 0
-                                                                ? 'bg-emerald-50/40'
-                                                                : 'hover:bg-slate-50'
-                                                        }`}
-                                                    >
-                                                        {modoImputacion === 'MANUAL' && (
-                                                            <td className="py-2 px-3 text-center">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={imputado > 0}
-                                                                    onChange={() =>
-                                                                        handleToggleComprobanteManual(comp)
-                                                                    }
-                                                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                                                                />
-                                                            </td>
-                                                        )}
-                                                        <td className="py-2 px-3">
-                                                            <div className="font-mono font-bold text-slate-800">
-                                                                {comp.numero}
-                                                            </div>
-                                                            <div className="text-[11px] text-slate-500 truncate max-w-[180px]">
-                                                                {comp.concepto}
-                                                            </div>
-                                                        </td>
-                                                        <td className="py-2 px-3">
-                                                            <div className="text-slate-700">
-                                                                {fmtDate(comp.fecha)}
-                                                            </div>
-                                                            <div className="text-[11px]">
-                                                                {comp.vencido ? (
-                                                                    <span className="text-red-600 font-bold">
-                                                                        Vencido ({comp.diasVencido}d)
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-slate-400">
-                                                                        Vto: {fmtDate(comp.fechaVencimiento)}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                        <td className="py-2 px-3 text-right font-mono text-slate-500">
-                                                            ${fmt(comp.montoOriginalCC)}
-                                                        </td>
-                                                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-800">
-                                                            ${fmt(comp.saldoPendiente)}
-                                                        </td>
-                                                        <td className="py-2 px-3 text-right">
-                                                            {modoImputacion === 'FIFO' ? (
-                                                                <span
-                                                                    className={`font-mono font-bold ${
-                                                                        imputado > 0
-                                                                            ? 'text-emerald-700'
-                                                                            : 'text-slate-300'
-                                                                    }`}
-                                                                >
-                                                                    ${fmt(imputado)}
-                                                                </span>
-                                                            ) : (
-                                                                <input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    min="0"
-                                                                    max={comp.saldoPendiente}
-                                                                    value={imputacionesManuales[comp.id] ?? ''}
-                                                                    placeholder="0.00"
-                                                                    onChange={(e) =>
-                                                                        setImputacionesManuales((prev) => ({
-                                                                            ...prev,
-                                                                            [comp.id]: e.target.value,
-                                                                        }))
-                                                                    }
-                                                                    className="w-28 px-2 py-1 text-right font-mono font-bold text-xs rounded border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                                                                />
-                                                            )}
-                                                        </td>
-                                                        <td className="py-2 px-3 text-right font-mono">
-                                                            {quedaSaldado ? (
-                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                                                                    <CheckCircle2 className="w-3 h-3" /> Saldado
-                                                                </span>
-                                                            ) : imputado > 0 ? (
-                                                                <span className="text-amber-700 font-bold">
-                                                                    Parcial (${fmt(restante)})
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-slate-400">
-                                                                    ${fmt(restante)}
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {modoImputacion === 'MANUAL' && (
-                                    <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs">
-                                        <div className="flex items-center gap-4">
-                                            <span>
-                                                Suma Imputada:{' '}
-                                                <strong className="font-mono text-indigo-700">
-                                                    ${fmt(totalImputadoManual)}
-                                                </strong>
-                                            </span>
-                                            <span>
-                                                Sin Imputar (A cuenta):{' '}
-                                                <strong className="font-mono text-slate-700">
-                                                    ${fmt(Math.max(0, totalCobranza - totalImputadoManual))}
-                                                </strong>
-                                            </span>
-                                        </div>
-                                        {totalImputadoManual > 0 &&
-                                            Math.abs(totalImputadoManual - totalCobranza) > 0.01 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={handleSincronizarMontoDesdeManual}
-                                                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline"
-                                                >
-                                                    Ajustar cobro a ${fmt(totalImputadoManual)}
-                                                </button>
-                                            )}
-                                    </div>
-                                )}
-                            </div>
+                        {saldoDeudor > 0 && (
+                            <Button variant="tonal" size="sm" onClick={() => handleSetMontoRapido(saldoDeudor)}>
+                                Saldar total
+                            </Button>
                         )}
                     </div>
 
-                    {/* Concepto y Observaciones */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-3.5 rounded-xl border border-warning-200 bg-warning-50 dark:border-warning-900 dark:bg-warning-950 flex items-center justify-between gap-2">
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">
-                                Concepto del Recibo (Opcional)
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="Ej: Cancelación parcial facturas mes anterior"
-                                value={concepto}
-                                onChange={(e) => setConcepto(e.target.value)}
-                                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <div className="text-eyebrow uppercase text-warning-800 dark:text-warning-300">Deuda vencida</div>
+                            <div className="text-lg font-semibold font-mono tabular-nums text-warning-900 dark:text-warning-100">
+                                ${fmt(cliente.deudaVencida)}
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 mb-1">
-                                Observaciones / Notas Internas
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="Ej: Entregó comprobante por WhatsApp"
-                                value={observaciones}
-                                onChange={(e) => setObservaciones(e.target.value)}
-                                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                        </div>
+                        {cliente.deudaVencida > 0 && (
+                            <Button variant="secondary" size="sm" onClick={() => handleSetMontoRapido(cliente.deudaVencida)}>
+                                Cobrar vencido
+                            </Button>
+                        )}
                     </div>
 
-                    {/* Footer */}
-                    <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            disabled={submitting}
-                            className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={submitting || totalCobranza <= 0}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 transition-all"
-                        >
-                            <CheckCircle2 className="w-4 h-4" />
-                            {submitting
-                                ? 'Emitiendo Recibo...'
-                                : `Confirmar y Emitir Recibo ($${fmt(totalCobranza)})`}
-                        </button>
+                    <div className="p-3.5 rounded-xl border border-success-200 bg-success-50 dark:border-success-900 dark:bg-success-950 flex items-center justify-between gap-2">
+                        <div>
+                            <div className="text-eyebrow uppercase text-success-800 dark:text-success-300">Total del recibo</div>
+                            <div className="text-lg font-semibold font-mono tabular-nums text-success-800 dark:text-success-200">
+                                ${fmt(totalCobranza)}
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-xs text-success-800 dark:text-success-300">Saldo posterior</div>
+                            <div className="text-[13px] font-semibold font-mono tabular-nums text-slate-900 dark:text-slate-50">
+                                ${fmt(Math.max(0, saldoRestanteEstimado))}
+                            </div>
+                            {saldoRestanteEstimado < -0.01 && (
+                                <div className="text-xs font-medium text-success-800 dark:text-success-300">
+                                    A favor: ${fmt(Math.abs(saldoRestanteEstimado))}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </form>
-            </div>
-        </div>
+                </div>
+
+                {/* Medios de pago */}
+                <section className="rounded-xl border border-border p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-[13px] font-semibold text-slate-900 dark:text-slate-50 flex items-center gap-1.5">
+                            <CreditCard className="w-4 h-4 text-brand-600 dark:text-brand-300" />
+                            1. Medios de pago recibidos
+                        </h3>
+                        <Button variant="secondary" size="sm" onClick={handleAddPago} icon={<Plus />}>
+                            Agregar medio
+                        </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                        {pagos.map((pago, index) => (
+                            <div
+                                key={pago.id}
+                                className="grid grid-cols-12 gap-2.5 items-end p-2.5 rounded-lg border border-border bg-surface-sunken"
+                            >
+                                <div className="col-span-12 sm:col-span-4">
+                                    <label htmlFor={`pago-metodo-${pago.id}`} className="field-label">
+                                        Medio #{index + 1}
+                                    </label>
+                                    <select
+                                        id={`pago-metodo-${pago.id}`}
+                                        value={pago.metodo}
+                                        onChange={(e) => handleChangePago(pago.id, 'metodo', e.target.value)}
+                                        className="input pr-8"
+                                    >
+                                        {MEDIOS_PAGO.map((m) => (
+                                            <option key={m.id} value={m.id}>
+                                                {m.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="col-span-6 sm:col-span-3">
+                                    <label htmlFor={`pago-monto-${pago.id}`} className="field-label">
+                                        Importe ($)
+                                    </label>
+                                    <input
+                                        id={`pago-monto-${pago.id}`}
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        placeholder="0,00"
+                                        value={pago.monto}
+                                        onChange={(e) => handleChangePago(pago.id, 'monto', e.target.value)}
+                                        className="input font-mono font-semibold tabular-nums text-right"
+                                    />
+                                </div>
+
+                                <div className="col-span-6 sm:col-span-4">
+                                    <label htmlFor={`pago-ref-${pago.id}`} className="field-label">
+                                        N° comprobante / cheque
+                                    </label>
+                                    <input
+                                        id={`pago-ref-${pago.id}`}
+                                        type="text"
+                                        placeholder="Ej: Transf #84920"
+                                        value={pago.referencia}
+                                        onChange={(e) => handleChangePago(pago.id, 'referencia', e.target.value)}
+                                        className="input"
+                                    />
+                                </div>
+
+                                <div className="col-span-12 sm:col-span-1 flex justify-end">
+                                    <Button
+                                        variant="danger-ghost"
+                                        size="icon"
+                                        disabled={pagos.length <= 1}
+                                        onClick={() => handleRemovePago(pago.id)}
+                                        aria-label="Quitar medio de pago"
+                                        title="Quitar medio de pago"
+                                    >
+                                        <Trash2 />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Imputación de comprobantes */}
+                <section className="rounded-xl border border-border p-4 space-y-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="text-[13px] font-semibold text-slate-900 dark:text-slate-50 flex items-center gap-1.5">
+                                <Layers className="w-4 h-4 text-brand-600 dark:text-brand-300" />
+                                2. Imputación a comprobantes pendientes ({comprobantesPendientes.length})
+                            </h3>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                                Cancelá automáticamente desde la deuda más antigua (FIFO) o elegí cada comprobante.
+                            </p>
+                        </div>
+
+                        <SegmentedControl
+                            label="Modo de imputación"
+                            value={modoImputacion}
+                            onChange={(v) => setModoImputacion(v as 'FIFO' | 'MANUAL')}
+                            options={[
+                                { value: 'FIFO', label: 'Automático (FIFO)' },
+                                { value: 'MANUAL', label: 'Manual' },
+                            ]}
+                        />
+                    </div>
+
+                    {comprobantesPendientes.length === 0 ? (
+                        <div className="p-5 text-center rounded-lg border border-dashed border-border bg-surface-sunken text-[13px] text-slate-600 dark:text-slate-300">
+                            El cliente no tiene comprobantes con saldo pendiente. El pago quedará como saldo a favor en su cuenta corriente.
+                        </div>
+                    ) : (
+                        <div className="border border-border rounded-lg overflow-hidden">
+                            <div className="max-h-60 overflow-auto">
+                                <table className="w-full text-xs">
+                                    <thead className="bg-surface-sunken border-b border-border sticky top-0 z-10">
+                                        <tr className="text-left text-slate-600 dark:text-slate-300">
+                                            {modoImputacion === 'MANUAL' && (
+                                                <th className="py-2 px-3 text-center w-10 font-medium">
+                                                    <span className="sr-only">Seleccionar</span>
+                                                </th>
+                                            )}
+                                            <th className="py-2 px-3 font-medium">Comprobante</th>
+                                            <th className="py-2 px-3 font-medium">Emisión / Vto.</th>
+                                            <th className="py-2 px-3 font-medium text-right">Total orig.</th>
+                                            <th className="py-2 px-3 font-medium text-right">Saldo pend.</th>
+                                            <th className="py-2 px-3 font-medium text-right w-36">A imputar</th>
+                                            <th className="py-2 px-3 font-medium text-right">Restante</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                        {comprobantesPendientes.map((comp) => {
+                                            const imputado =
+                                                modoImputacion === 'FIFO'
+                                                    ? previewFifo.porComprobante[comp.id] || 0
+                                                    : parseFloat(imputacionesManuales[comp.id] || '0') || 0;
+                                            const restante = Math.max(
+                                                0,
+                                                Math.round((comp.saldoPendiente - imputado) * 100) / 100
+                                            );
+                                            const quedaSaldado = restante <= 0.009 && imputado > 0;
+
+                                            return (
+                                                <tr
+                                                    key={comp.id}
+                                                    className={imputado > 0 ? 'bg-success-50/60 dark:bg-success-950/40' : undefined}
+                                                >
+                                                    {modoImputacion === 'MANUAL' && (
+                                                        <td className="py-2 px-3 text-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={imputado > 0}
+                                                                onChange={() => handleToggleComprobanteManual(comp)}
+                                                                aria-label={`Imputar ${comp.numero}`}
+                                                                className="rounded border-input text-brand-600 focus:ring-brand-500"
+                                                            />
+                                                        </td>
+                                                    )}
+                                                    <td className="py-2 px-3">
+                                                        <div className="font-mono font-semibold text-slate-900 dark:text-slate-50">
+                                                            {comp.numero}
+                                                        </div>
+                                                        <div className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
+                                                            {comp.concepto}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-2 px-3 whitespace-nowrap">
+                                                        <div className="text-slate-700 dark:text-slate-200">{fmtDate(comp.fecha)}</div>
+                                                        <div className="text-xs">
+                                                            {comp.vencido ? (
+                                                                <span className="text-danger-700 dark:text-danger-300 font-medium">
+                                                                    Vencido ({comp.diasVencido}d)
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-slate-600 dark:text-slate-400">
+                                                                    Vto: {fmtDate(comp.fechaVencimiento)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-2 px-3 text-right font-mono tabular-nums text-slate-600 dark:text-slate-300">
+                                                        ${fmt(comp.montoOriginalCC)}
+                                                    </td>
+                                                    <td className="py-2 px-3 text-right font-mono tabular-nums font-semibold text-slate-900 dark:text-slate-50">
+                                                        ${fmt(comp.saldoPendiente)}
+                                                    </td>
+                                                    <td className="py-2 px-3 text-right">
+                                                        {modoImputacion === 'FIFO' ? (
+                                                            <span
+                                                                className={cn(
+                                                                    'font-mono tabular-nums font-semibold',
+                                                                    imputado > 0
+                                                                        ? 'text-success-700 dark:text-success-300'
+                                                                        : 'text-slate-500 dark:text-slate-400'
+                                                                )}
+                                                            >
+                                                                ${fmt(imputado)}
+                                                            </span>
+                                                        ) : (
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                min="0"
+                                                                max={comp.saldoPendiente}
+                                                                value={imputacionesManuales[comp.id] ?? ''}
+                                                                placeholder="0,00"
+                                                                aria-label={`Monto a imputar a ${comp.numero}`}
+                                                                onChange={(e) =>
+                                                                    setImputacionesManuales((prev) => ({
+                                                                        ...prev,
+                                                                        [comp.id]: e.target.value,
+                                                                    }))
+                                                                }
+                                                                className="input h-8 w-28 ml-auto px-2 text-right text-xs font-mono font-semibold tabular-nums"
+                                                            />
+                                                        )}
+                                                    </td>
+                                                    <td className="py-2 px-3 text-right font-mono tabular-nums whitespace-nowrap">
+                                                        {quedaSaldado ? (
+                                                            <Badge tone="success">
+                                                                <CheckCircle2 /> Saldado
+                                                            </Badge>
+                                                        ) : imputado > 0 ? (
+                                                            <span className="text-warning-700 dark:text-warning-300 font-semibold">
+                                                                Parcial (${fmt(restante)})
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-slate-600 dark:text-slate-400">${fmt(restante)}</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {modoImputacion === 'MANUAL' && (
+                                <div className="px-4 py-2.5 bg-surface-sunken border-t border-border flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-200">
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        <span>
+                                            Imputado:{' '}
+                                            <strong className="font-mono tabular-nums text-brand-700 dark:text-brand-300">
+                                                ${fmt(totalImputadoManual)}
+                                            </strong>
+                                        </span>
+                                        <span>
+                                            Sin imputar (a cuenta):{' '}
+                                            <strong className="font-mono tabular-nums text-slate-900 dark:text-slate-50">
+                                                ${fmt(Math.max(0, totalCobranza - totalImputadoManual))}
+                                            </strong>
+                                        </span>
+                                    </div>
+                                    {totalImputadoManual > 0 &&
+                                        Math.abs(totalImputadoManual - totalCobranza) > 0.01 && (
+                                            <Button variant="ghost" size="sm" onClick={handleSincronizarMontoDesdeManual}>
+                                                Ajustar cobro a ${fmt(totalImputadoManual)}
+                                            </Button>
+                                        )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </section>
+
+                {/* Concepto y observaciones */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Concepto del recibo" hint="Opcional" htmlFor="cobranza-concepto">
+                        <input
+                            id="cobranza-concepto"
+                            type="text"
+                            placeholder="Ej: Cancelación parcial facturas mes anterior"
+                            value={concepto}
+                            onChange={(e) => setConcepto(e.target.value)}
+                            className="input"
+                        />
+                    </Field>
+                    <Field label="Observaciones internas" hint="Opcional" htmlFor="cobranza-obs">
+                        <input
+                            id="cobranza-obs"
+                            type="text"
+                            placeholder="Ej: Entregó comprobante por WhatsApp"
+                            value={observaciones}
+                            onChange={(e) => setObservaciones(e.target.value)}
+                            className="input"
+                        />
+                    </Field>
+                </div>
+            </form>
+        </Dialog>
     );
 }
