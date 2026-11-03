@@ -3,6 +3,14 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Search, X, Check } from 'lucide-react';
 
+export interface SearchableSelectAction {
+  /** Texto del botón; recibe lo que se escribió en el buscador. */
+  label: string | ((search: string) => string);
+  icon?: React.ReactNode;
+  /** Se ejecuta al elegir la acción; el menú se cierra antes. */
+  onSelect: (search: string) => void;
+}
+
 export interface SearchableOption {
   id: string;
   nombre: string;
@@ -19,6 +27,8 @@ interface SearchableSelectProps {
   allowClear?: boolean;
   className?: string;
   emptyMessage?: string;
+  /** Acciones fijas al pie del menú (p. ej., "Crear nuevo…"). */
+  actions?: SearchableSelectAction[];
 }
 
 export default function SearchableSelect({
@@ -31,6 +41,7 @@ export default function SearchableSelect({
   allowClear = true,
   className = '',
   emptyMessage = 'No se encontraron resultados',
+  actions,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -229,6 +240,29 @@ export default function SearchableSelect({
               })
             )}
           </div>
+
+          {/* Footer Actions */}
+          {actions && actions.length > 0 && (
+            <div className="p-1 border-t border-slate-100 dark:border-slate-800 space-y-0.5">
+              {actions.map((action, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    const term = search.trim();
+                    setIsOpen(false);
+                    action.onSelect(term);
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-semibold text-left text-primary hover:bg-primary/10 transition-colors [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:shrink-0"
+                >
+                  {action.icon}
+                  <span className="truncate">
+                    {typeof action.label === 'function' ? action.label(search.trim()) : action.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
