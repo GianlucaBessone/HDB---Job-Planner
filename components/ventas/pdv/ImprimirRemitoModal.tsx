@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Printer, PackageCheck } from 'lucide-react';
 
 interface RemitoItem {
@@ -11,8 +11,18 @@ interface RemitoItem {
   cantidad: number;
 }
 
+interface SaldoPendienteItem {
+  ventaItemId: string;
+  sku: string;
+  descripcion: string;
+  unidad?: string | null;
+  cantidadPendiente: number;
+}
+
 interface RemitoData {
   id: string;
+  /** Saldo pendiente de retiro inmediatamente después de este remito (calculado por el servidor). */
+  saldoPendiente?: SaldoPendienteItem[];
   numero: string;
   fecha: string | Date;
   clienteNombre?: string | null;
@@ -71,6 +81,38 @@ export default function ImprimirRemitoModal({
 }: ImprimirRemitoModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Saldo pendiente "a la fecha del remito": lo calcula el servidor (no descuenta entregas posteriores
+  // y sí incluye la de este remito). Si el remito no lo trae, se consulta.
+  const [saldoServidor, setSaldoServidor] = useState<SaldoPendienteItem[] | null>(null);
+  const [saldoError, setSaldoError] = useState(false);
+  useEffect(() => {
+    setSaldoServidor(null);
+    setSaldoError(false);
+    if (!isOpen || !remito?.id) return;
+    if (Array.isArray(remito.saldoPendiente)) {
+      setSaldoServidor(remito.saldoPendiente);
+      return;
+    }
+    let cancelado = false;
+    fetch(`/api/ventas/pdv/remitos?id=${encodeURIComponent(remito.id)}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Error al consultar remito'))))
+      .then((data) => {
+        if (cancelado) return;
+        const encontrado = (data?.remitos || []).find((r: any) => r.id === remito.id);
+        if (encontrado && Array.isArray(encontrado.saldoPendiente)) {
+          setSaldoServidor(encontrado.saldoPendiente);
+        } else {
+          setSaldoError(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelado) setSaldoError(true);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [isOpen, remito?.id, remito?.saldoPendiente]);
+
   // Atajos de teclado: ESC para cerrar, Ctrl+P o Enter para imprimir
   React.useEffect(() => {
     if (!isOpen) return;
@@ -97,21 +139,27 @@ export default function ImprimirRemitoModal({
   const items = remito.items || [];
   const isVentaAnulada = remito.venta?.estado === 'ANULADA' || remito.estado === 'ANULADO';
 
-  // Calcular items pendientes si vienen en la venta asociada (sin romper si no están; omitir si la venta está anulada)
-  const itemsPendientes = isVentaAnulada
-    ? []
-    : (remito.venta?.items || [])
-        .map((it) => {
-          const cant = Number(it.cantidad) || 0;
-          const entregada = Number(it.cantidadEntregada) || 0;
-          const cancelada = Number(it.cantidadCancelada) || 0;
-          const pendiente = Math.max(0, cant - entregada - cancelada);
-          return {
-            ...it,
-            cantidadPendiente: Math.round(pendiente * 1000) / 1000,
-          };
-        })
-        .filter((it) => it.cantidadPendiente > 0);
+  // Materiales pendientes de retiro después de esta entrega
+  const itemsPendientes: Array<{ id: string; sku: string; descripcion: string; unidad?: string | null; cantidadPendiente: number }> =
+    isVentaAnulada
+      ? []
+      : saldoServidor
+      ? saldoServidor.map((it) => ({ ...it, id: it.ventaItemId }))
+      : saldoError
+      ? // Respaldo si no se pudo consultar: lo que figure como pendiente en la venta asociada
+        (remito.venta?.items || [])
+          .map((it) => {
+            const cant = Number(it.cantidad) || 0;
+            const entregada = Number(it.cantidadEntregada) || 0;
+            const cancelada = Number(it.cantidadCancelada) || 0;
+            return {
+              ...it,
+              cantidadPendiente: Math.round(Math.max(0, cant - entregada - cancelada) * 1000) / 1000,
+            };
+          })
+          .filter((it) => it.cantidadPendiente > 0)
+      : [];
+  const saldoCargando = !isVentaAnulada && !saldoServidor && !saldoError;
 
   const clienteNombre = remito.clienteNombre || 'Consumidor Final';
   const vendedor = remito.vendedorNombre || 'Personal de Ventas';
@@ -176,7 +224,8 @@ export default function ImprimirRemitoModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors"
+              disabled={saldoCargando}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors disabled:opacity-60"
             >
               <Printer className="w-4 h-4" />
               Imprimir Remito (Ctrl+P)
@@ -353,6 +402,10 @@ export default function ImprimirRemitoModal({
                 Total artículos entregados: <span className="font-bold text-slate-800">{items.length}</span>
               </div>
             </div>
+
+            {saldoCargando && (
+              <div className="text-[11px] text-slate-500 italic print:hidden">Calculando saldo pendiente de retiro…</div>
+            )}
 
             {/* Sección de Saldo Pendiente de Retiro (Sober y tabular) */}
             {itemsPendientes.length > 0 && (

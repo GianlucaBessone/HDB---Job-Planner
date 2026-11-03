@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { formatARS } from '@/lib/formatCurrency';
+import { MoneyInput } from '@/components/ui/MoneyInput';
+import ListasPreciosSimulacion, { ListaPrecioSimulable } from '@/components/ventas/ListasPreciosSimulacion';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import VentasNavTabs from '@/components/ventas/VentasNavTabs';
 import { normalizeSku } from '@/lib/ventas/skuUtils';
@@ -39,14 +41,7 @@ export interface MetaData {
   unidades: Array<{ id: string; codigo: string; nombre: string }>;
   almacenes: Array<{ id: string; codigo: string; nombre: string; ubicaciones: Array<{ id: string; codigo: string }> }>;
   alicuotasIva: Array<{ id: string; porcentaje: number; nombre: string; predeterminado: boolean }>;
-  listasPrecios: Array<{
-    id: string;
-    codigo: string;
-    nombre: string;
-    orden: number;
-    tipoAjuste?: string | null;
-    valorAjuste?: number | null;
-  }>;
+  listasPrecios: ListaPrecioSimulable[];
 }
 
 interface ProductoFormViewProps {
@@ -246,6 +241,14 @@ export default function ProductoFormView({
   // Dynamic ubicaciones based on selected Almacén
   const currentAlmacen = meta.almacenes.find((a) => a.id === formData.almacenId);
   const availableUbicaciones = currentAlmacen?.ubicaciones || [];
+
+  // Alícuota del producto: la elegida, o la predeterminada, o 21%
+  const ivaPorcentajeSeleccionado = React.useMemo(() => {
+    const sel = meta.alicuotasIva.find((a) => a.id === formData.ivaId);
+    const def = meta.alicuotasIva.find((a) => a.predeterminado);
+    const porc = sel?.porcentaje ?? def?.porcentaje;
+    return typeof porc === 'number' && isFinite(porc) ? porc : 21;
+  }, [meta.alicuotasIva, formData.ivaId]);
 
   // Suggest Price Calculation: Costo + Rentabilidad -> Suggested Precio Base
   // User can manually edit, and later cost changes DO NOT overwrite manually set price
@@ -697,24 +700,13 @@ export default function ProductoFormView({
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">$</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                    <MoneyInput
                       value={formData.costo}
-                      onChange={(e) => setFormData({ ...formData, costo: e.target.value })}
-                      placeholder="0.00"
+                      onValueChange={(v) => setFormData((prev) => ({ ...prev, costo: v }))}
                       className="w-full h-9 pl-7 pr-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-xs font-mono font-bold focus:outline-none focus:ring-1 focus:ring-primary shadow-inner"
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[11px] mt-1">
-                    <span className="text-slate-400">Costo neto antes de impuestos.</span>
-                    {formData.costo !== '' && (
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                        {formatARS(formData.costo)}
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-[11px] mt-1 text-slate-400">Costo neto antes de impuestos.</p>
                 </div>
               </div>
             </div>
@@ -794,70 +786,35 @@ export default function ProductoFormView({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                    <MoneyInput
                       required
                       value={formData.precioBase}
-                      onChange={(e) => setFormData({ ...formData, precioBase: e.target.value })}
-                      placeholder="0.00"
+                      onValueChange={(v) => setFormData((prev) => ({ ...prev, precioBase: v }))}
                       className="w-full h-10 pl-7 pr-3 rounded-lg border border-primary/40 bg-card text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/40 shadow-inner"
                     />
                   </div>
 
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-background/80 border border-slate-200 dark:border-slate-800">
-                    <span className="text-xs text-slate-500">Formato ARS:</span>
+                    <span className="text-xs text-slate-500">Con IVA ({ivaPorcentajeSeleccionado}%):</span>
                     <span className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">
-                      {formData.precioBase !== '' ? formatARS(formData.precioBase) : '$ 0,00'}
+                      {formatARS(
+                        Math.round((parseFloat(String(formData.precioBase)) || 0) * (1 + ivaPorcentajeSeleccionado / 100) * 100) / 100
+                      )}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Dynamic Price Lists Simulation */}
-              <div className="pt-2">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                    <Layers className="w-3 h-3 text-primary" />
-                    Listas de Precios Configuradas ({meta.listasPrecios.length})
-                  </span>
-                  <span className="text-[11px] text-slate-400">Calculadas dinámicamente en PDV</span>
-                </div>
-
-                {meta.listasPrecios.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">No hay listas de precios activas.</p>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {meta.listasPrecios.map((lp) => {
-                      const numBase = parseFloat(String(formData.precioBase)) || 0;
-                      const numCosto = parseFloat(String(formData.costo)) || 0;
-                      let simPrice = numBase;
-                      if (lp.tipoAjuste === 'PORCENTAJE_COSTO') {
-                        simPrice = Math.round(numCosto * (1 + (lp.valorAjuste || 0) / 100) * 100) / 100;
-                      } else if (lp.tipoAjuste === 'DESCUENTO_BASE') {
-                        simPrice = Math.round(numBase * (1 - (lp.valorAjuste || 0) / 100) * 100) / 100;
-                      } else if (lp.tipoAjuste === 'RECARGO_BASE') {
-                        simPrice = Math.round(numBase * (1 + (lp.valorAjuste || 0) / 100) * 100) / 100;
-                      }
-
-                      return (
-                        <div
-                          key={lp.id}
-                          className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs"
-                        >
-                          <span className="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
-                            {lp.nombre}
-                          </span>
-                          <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                            {formatARS(simPrice)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              {/* Precio final por lista (misma regla que el PDV, IVA incluido si la lista no lo discrimina) */}
+              <ListasPreciosSimulacion
+                listas={meta.listasPrecios}
+                precioBase={formData.precioBase}
+                costo={formData.costo}
+                rentabilidad={formData.rentabilidad}
+                familiaId={formData.familiaId}
+                marcaId={formData.marcaId}
+                ivaPorcentaje={ivaPorcentajeSeleccionado}
+              />
             </div>
           )}
 

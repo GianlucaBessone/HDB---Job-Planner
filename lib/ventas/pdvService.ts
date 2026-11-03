@@ -789,7 +789,101 @@ export async function crearRemitoEntrega(
     return remito;
   });
 
-  return remitoCreado;
+  // El remito se armó dentro de la transacción antes de sumar las cantidades entregadas:
+  // se devuelve con la venta actualizada y con el saldo pendiente posterior a esta entrega.
+  const [remitoConSaldo] = await adjuntarSaldoPendienteRemitos([
+    await prisma.remitoEntrega.findUniqueOrThrow({
+      where: { id: remitoCreado.id },
+      include: { items: true, venta: { include: { items: true } } },
+    }),
+  ]);
+
+  return remitoConSaldo;
+}
+
+export interface SaldoPendienteRemitoItem {
+  ventaItemId: string;
+  sku: string;
+  descripcion: string;
+  unidad: string | null;
+  cantidad: number;
+  cantidadEntregada: number;
+  cantidadPendiente: number;
+}
+
+/**
+ * Calcula, para cada remito, los materiales que quedaban pendientes de retiro inmediatamente
+ * después de esa entrega (incluye ese remito y los anteriores; ignora entregas posteriores y
+ * remitos anulados). Así la reimpresión de un remito viejo muestra el saldo de ese momento.
+ */
+export async function adjuntarSaldoPendienteRemitos<
+  T extends {
+    id: string;
+    ventaId: string;
+    createdAt: Date;
+    venta?: {
+      estado?: string | null;
+      items: Array<{
+        id: string;
+        sku: string;
+        descripcion: string;
+        unidad: string | null;
+        cantidad: number;
+        cantidadCancelada?: number | null;
+      }>;
+    } | null;
+  }
+>(remitos: T[]): Promise<Array<T & { saldoPendiente: SaldoPendienteRemitoItem[] }>> {
+  if (remitos.length === 0) return [];
+
+  const ventaIds = Array.from(new Set(remitos.map((r) => r.ventaId)));
+  const remitosVentas = await prisma.remitoEntrega.findMany({
+    where: { ventaId: { in: ventaIds }, estado: { not: 'ANULADO' } },
+    select: {
+      id: true,
+      ventaId: true,
+      createdAt: true,
+      items: { select: { ventaItemId: true, cantidad: true } },
+    },
+  });
+
+  const round3 = (n: number) => Math.round(n * 1000) / 1000;
+
+  return remitos.map((remito) => {
+    const venta = remito.venta;
+    if (!venta || venta.estado === 'ANULADA') {
+      return { ...remito, saldoPendiente: [] };
+    }
+
+    const corte = new Date(remito.createdAt).getTime();
+    const entregadoHasta = new Map<string, number>();
+    for (const r of remitosVentas) {
+      if (r.ventaId !== remito.ventaId) continue;
+      if (r.id !== remito.id && new Date(r.createdAt).getTime() > corte) continue;
+      for (const it of r.items) {
+        entregadoHasta.set(it.ventaItemId, (entregadoHasta.get(it.ventaItemId) || 0) + (Number(it.cantidad) || 0));
+      }
+    }
+
+    const saldoPendiente = venta.items
+      .map((it) => {
+        const cantidad = Number(it.cantidad) || 0;
+        const entregada = round3(entregadoHasta.get(it.id) || 0);
+        const cancelada = Number(it.cantidadCancelada) || 0;
+        return {
+          ventaItemId: it.id,
+          sku: it.sku,
+          descripcion: it.descripcion,
+          unidad: it.unidad,
+          cantidad,
+          cantidadEntregada: entregada,
+          cantidadPendiente: round3(Math.max(0, cantidad - entregada - cancelada)),
+        };
+      })
+      .filter((it) => it.cantidadPendiente > 0.0005);
+
+    return { ...remito, saldoPendiente };
+  });
 }
 
 /**

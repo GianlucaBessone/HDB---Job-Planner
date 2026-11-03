@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, AlertCircle, Info, Sparkles, RefreshCw, Check, Layers } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { formatARS } from '@/lib/formatCurrency';
-import { calculateSuggestedPrice, doesRuleApply, ListaPrecioConfig } from '@/lib/ventas/priceRules';
+import { MoneyInput } from '@/components/ui/MoneyInput';
+import ListasPreciosSimulacion from '@/components/ventas/ListasPreciosSimulacion';
+import { ListaPrecioConfig } from '@/lib/ventas/priceRules';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { normalizeSku } from '@/lib/ventas/skuUtils';
 
@@ -14,7 +16,7 @@ interface MetaData {
   familias: Array<{ id: string; nombre: string; subfamilias: Array<{ id: string; nombre: string }> }>;
   almacenes: Array<{ id: string; codigo: string; nombre: string; ubicaciones: Array<{ id: string; codigo: string }> }>;
   alicuotasIva: Array<{ id: string; porcentaje: number; nombre: string; predeterminado: boolean }>;
-  listasPrecios: ListaPrecioConfig[];
+  listasPrecios: Array<ListaPrecioConfig & { ivaDiscriminado?: boolean | null }>;
 }
 
 interface ProductoFormModalProps {
@@ -145,6 +147,14 @@ export default function ProductoFormModal({
   const availableUbicaciones = currentAlmacen?.ubicaciones || [];
 
   // Auto-calculate suggested base price from Costo + Rentabilidad
+  // Alícuota del producto: la elegida, o la predeterminada, o 21%
+  const ivaPorcentajeSeleccionado = React.useMemo(() => {
+    const sel = meta.alicuotasIva.find((a) => a.id === formData.ivaId);
+    const def = meta.alicuotasIva.find((a) => a.predeterminado);
+    const porc = sel?.porcentaje ?? def?.porcentaje;
+    return typeof porc === 'number' && isFinite(porc) ? porc : 21;
+  }, [meta.alicuotasIva, formData.ivaId]);
+
   const handleAutoCalcPrecioBase = () => {
     const numCosto = parseFloat(String(formData.costo)) || 0;
     const numRentabilidad = parseFloat(String(formData.rentabilidad)) || 30;
@@ -481,24 +491,13 @@ export default function ProductoFormModal({
                   </label>
                   <div className="relative">
                     <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold">$</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                    <MoneyInput
                       value={formData.costo}
-                      onChange={(e) => setFormData({ ...formData, costo: e.target.value })}
-                      placeholder="0.00"
+                      onValueChange={(v) => setFormData((prev) => ({ ...prev, costo: v }))}
                       className="w-full h-10 pl-8 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[11px] mt-1">
-                    <span className="text-slate-400">Costo neto antes de IVA.</span>
-                    {formData.costo !== '' && (
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                        {formatARS(formData.costo)}
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-[11px] mt-1 text-slate-400">Costo neto antes de IVA.</p>
                 </div>
               </div>
             </div>
@@ -577,90 +576,34 @@ export default function ProductoFormModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                   <div className="relative">
                     <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">$</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                    <MoneyInput
                       value={formData.precioBase}
-                      onChange={(e) => setFormData({ ...formData, precioBase: e.target.value })}
-                      placeholder="0.00"
+                      onValueChange={(v) => setFormData((prev) => ({ ...prev, precioBase: v }))}
                       className="w-full h-11 pl-8 pr-3.5 rounded-xl border border-primary/30 bg-card text-base font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-inner"
                     />
                   </div>
 
                   <div className="flex items-center gap-3 p-2.5 rounded-xl bg-background/80 border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Formato ARS:</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Con IVA ({ivaPorcentajeSeleccionado}%):</div>
                     <div className="text-base font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      {formData.precioBase !== '' ? formatARS(formData.precioBase) : '$ 0,00'}
+                      {formatARS(
+                        Math.round((parseFloat(String(formData.precioBase)) || 0) * (1 + ivaPorcentajeSeleccionado / 100) * 100) / 100
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Dynamic Rules Preview */}
-              <div className="pt-2">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-primary" />
-                    Listas de Precios Configuradas ({meta.listasPrecios.length})
-                  </h4>
-                  <span className="text-[11px] text-slate-400">Calculadas dinámicamente en PDV</span>
-                </div>
-
-                {meta.listasPrecios.length === 0 ? (
-                  <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-center text-xs text-slate-400">
-                    No hay listas de precios configuradas. Podés crearlas desde "Precios ▾ → Configurar Listas".
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                    {meta.listasPrecios.map((lp) => {
-                      const numBase = parseFloat(String(formData.precioBase)) || 0;
-                      const numCosto = parseFloat(String(formData.costo)) || 0;
-                      let simPrice = numBase;
-                      if (lp.tipoAjuste === 'PORCENTAJE_COSTO') {
-                        simPrice = Math.round(numCosto * (1 + lp.valorAjuste / 100) * 100) / 100;
-                      } else if (lp.tipoAjuste === 'MARGEN_COSTO') {
-                        const m = Math.min(99.9, lp.valorAjuste);
-                        simPrice = Math.round((numCosto / (1 - m / 100)) * 100) / 100;
-                      } else if (lp.tipoAjuste === 'DESCUENTO_BASE') {
-                        simPrice = Math.round(numBase * (1 - lp.valorAjuste / 100) * 100) / 100;
-                      } else if (lp.tipoAjuste === 'RECARGO_BASE') {
-                        simPrice = Math.round(numBase * (1 + lp.valorAjuste / 100) * 100) / 100;
-                      }
-
-                      return (
-                        <div
-                          key={lp.id}
-                          className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex flex-col justify-between"
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                              {lp.nombre}
-                            </span>
-                            <span className="text-[11px] font-mono text-slate-400 font-semibold">
-                              {lp.codigo}
-                            </span>
-                          </div>
-                          <div className="flex items-baseline justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-xs">
-                            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                              {lp.tipoAjuste === 'MANUAL'
-                                ? 'Base'
-                                : lp.tipoAjuste === 'DESCUENTO_BASE'
-                                ? `-${lp.valorAjuste}% Base`
-                                : lp.tipoAjuste === 'RECARGO_BASE'
-                                ? `+${lp.valorAjuste}% Base`
-                                : `Costo +${lp.valorAjuste}%`}
-                            </span>
-                            <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
-                              {formatARS(simPrice)}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              {/* Precio final por lista (misma regla que el PDV, IVA incluido si la lista no lo discrimina) */}
+              <ListasPreciosSimulacion
+                listas={meta.listasPrecios}
+                precioBase={formData.precioBase}
+                costo={formData.costo}
+                rentabilidad={formData.rentabilidad}
+                familiaId={formData.familiaId}
+                marcaId={formData.marcaId}
+                ivaPorcentaje={ivaPorcentajeSeleccionado}
+              />
             </div>
           )}
 

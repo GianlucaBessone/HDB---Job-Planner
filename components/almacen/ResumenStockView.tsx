@@ -21,6 +21,9 @@ import {
   Sliders,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import { ColumnPicker } from '@/components/ui/ColumnPicker';
+import { useConfigurableColumns } from '@/lib/hooks/useConfigurableColumns';
+import type { ColumnConfigItem } from '@/lib/viewPreferences';
 
 interface StockItem {
   id: string;
@@ -30,6 +33,8 @@ interface StockItem {
   marca: string | null;
   familia: string | null;
   subFamilia: string | null;
+  categoria?: string | null;
+  proveedorNombre?: string | null;
   unidad: string;
   unidadDecimales: number;
   almacenId: string | null;
@@ -51,6 +56,220 @@ interface MetaData {
   almacenes: Array<{ id: string; codigo: string; nombre: string; ubicaciones: Array<{ id: string; codigo: string }> }>;
   familias: Array<{ id: string; nombre: string }>;
   marcas: Array<{ id: string; nombre: string }>;
+}
+
+
+type ColumnKey =
+  | 'sku'
+  | 'codigoBarras'
+  | 'descripcion'
+  | 'categoria'
+  | 'marca'
+  | 'familia'
+  | 'subFamilia'
+  | 'proveedor'
+  | 'almacen'
+  | 'ubicacion'
+  | 'stockActual'
+  | 'stockMinimo'
+  | 'stockMaximo'
+  | 'unidad'
+  | 'estadoStock'
+  | 'cantidadSugeridaReposicion'
+  | 'ultimoMovimiento';
+
+const COLUMN_LABELS: Record<ColumnKey, string> = {
+  sku: 'SKU',
+  codigoBarras: 'Código Barras',
+  descripcion: 'Descripción',
+  categoria: 'Categoría',
+  marca: 'Marca',
+  familia: 'Familia',
+  subFamilia: 'SubFamilia',
+  proveedor: 'Proveedor',
+  almacen: 'Almacén',
+  ubicacion: 'Ubicación',
+  stockActual: 'Disponible',
+  stockMinimo: 'Mín',
+  stockMaximo: 'Máx',
+  unidad: 'Unid',
+  estadoStock: 'Estado',
+  cantidadSugeridaReposicion: 'Sugerido Repos.',
+  ultimoMovimiento: 'Último Mov.',
+};
+
+const DEFAULT_COLUMN_ORDER: ColumnConfigItem[] = [
+  { key: 'sku', visible: true },
+  { key: 'codigoBarras', visible: true },
+  { key: 'descripcion', visible: true },
+  { key: 'categoria', visible: false },
+  { key: 'marca', visible: true },
+  { key: 'familia', visible: true },
+  { key: 'subFamilia', visible: false },
+  { key: 'proveedor', visible: false },
+  { key: 'almacen', visible: true },
+  { key: 'ubicacion', visible: true },
+  { key: 'stockActual', visible: true },
+  { key: 'stockMinimo', visible: true },
+  { key: 'stockMaximo', visible: true },
+  { key: 'unidad', visible: true },
+  { key: 'estadoStock', visible: true },
+  { key: 'cantidadSugeridaReposicion', visible: false },
+  { key: 'ultimoMovimiento', visible: false },
+];
+
+const DEFAULT_COLUMN_WIDTHS: Record<string, number> = {
+  sku: 100,
+  codigoBarras: 130,
+  descripcion: 280,
+  categoria: 120,
+  marca: 110,
+  familia: 150,
+  subFamilia: 130,
+  proveedor: 150,
+  almacen: 140,
+  ubicacion: 100,
+  stockActual: 100,
+  stockMinimo: 70,
+  stockMaximo: 70,
+  unidad: 70,
+  estadoStock: 120,
+  cantidadSugeridaReposicion: 110,
+  ultimoMovimiento: 140,
+};
+
+const ACTIONS_WIDTH = 88;
+
+/** Columnas que el endpoint sabe ordenar (las demás no muestran el control de orden). */
+const SORTABLE: Partial<Record<ColumnKey, string>> = {
+  sku: 'sku',
+  codigoBarras: 'codigoBarras',
+  descripcion: 'descripcion',
+  categoria: 'categoria',
+  marca: 'marca',
+  familia: 'familia',
+  subFamilia: 'subFamilia',
+  proveedor: 'proveedor',
+  almacen: 'almacen',
+  ubicacion: 'ubicacion',
+  stockActual: 'stockActual',
+  stockMinimo: 'stockMinimo',
+  stockMaximo: 'stockMaximo',
+  estadoStock: 'estadoStock',
+  cantidadSugeridaReposicion: 'cantidadSugeridaReposicion',
+};
+
+const ALIGN: Partial<Record<ColumnKey, 'right' | 'center'>> = {
+  stockActual: 'right',
+  stockMinimo: 'right',
+  stockMaximo: 'right',
+  cantidadSugeridaReposicion: 'right',
+  unidad: 'center',
+  estadoStock: 'center',
+};
+
+const formatFechaHora = (val: string | null) =>
+  val
+    ? new Date(val).toLocaleString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '';
+
+/** Valor plano de una columna (para exportar a CSV). */
+function csvValue(key: ColumnKey, it: StockItem): string | number {
+  switch (key) {
+    case 'sku': return it.sku;
+    case 'codigoBarras': return it.codigoBarras || '';
+    case 'descripcion': return it.descripcion || '';
+    case 'categoria': return it.categoria || '';
+    case 'marca': return it.marca || '';
+    case 'familia': return it.familia || '';
+    case 'subFamilia': return it.subFamilia || '';
+    case 'proveedor': return it.proveedorNombre || '';
+    case 'almacen': return it.almacenNombre;
+    case 'ubicacion': return it.ubicacionCodigo || 'Sin Asignar';
+    case 'stockActual': return it.stockActual;
+    case 'stockMinimo': return it.stockMinimo;
+    case 'stockMaximo': return it.stockMaximo;
+    case 'unidad': return it.unidad;
+    case 'estadoStock': return it.estadoLabel;
+    case 'cantidadSugeridaReposicion': return it.cantidadSugeridaReposicion;
+    case 'ultimoMovimiento': return it.ultimoMovimientoAt ? formatFechaHora(it.ultimoMovimientoAt) : 'Sin movimientos';
+  }
+}
+
+function renderCell(key: ColumnKey, prod: StockItem): React.ReactNode {
+  const dash = <span className="text-slate-400">—</span>;
+  switch (key) {
+    case 'sku':
+      return <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{prod.sku}</span>;
+    case 'codigoBarras':
+      return <span className="font-mono text-[11px] text-slate-500">{prod.codigoBarras || '—'}</span>;
+    case 'descripcion':
+      return <span className="font-semibold text-slate-900 dark:text-slate-100" title={prod.descripcion}>{prod.descripcion}</span>;
+    case 'categoria':
+      return <span className="text-slate-600 dark:text-slate-300">{prod.categoria || '—'}</span>;
+    case 'marca':
+      return <span className="text-slate-600 dark:text-slate-300">{prod.marca || '—'}</span>;
+    case 'familia':
+      return <span className="text-slate-500">{prod.familia || '—'}</span>;
+    case 'subFamilia':
+      return <span className="text-slate-500">{prod.subFamilia || '—'}</span>;
+    case 'proveedor':
+      return <span className="text-slate-600 dark:text-slate-300">{prod.proveedorNombre || '—'}</span>;
+    case 'almacen':
+      return <span className="text-slate-700 dark:text-slate-300 font-medium">{prod.almacenNombre}</span>;
+    case 'ubicacion':
+      return prod.ubicacionCodigo ? (
+        <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold font-mono text-[11px]">
+          {prod.ubicacionCodigo}
+        </span>
+      ) : (
+        dash
+      );
+    case 'stockActual':
+      return (
+        <span
+          className={`font-mono text-xs font-bold ${
+            prod.stockActual <= 0
+              ? 'text-rose-600 dark:text-rose-400'
+              : prod.stockMinimo > 0 && prod.stockActual <= prod.stockMinimo
+              ? 'text-amber-600 dark:text-amber-400'
+              : 'text-slate-900 dark:text-slate-100'
+          }`}
+        >
+          {prod.stockActual}
+        </span>
+      );
+    case 'stockMinimo':
+      return <span className="font-mono text-[11px] text-slate-500">{prod.stockMinimo > 0 ? prod.stockMinimo : '—'}</span>;
+    case 'stockMaximo':
+      return <span className="font-mono text-[11px] text-slate-500">{prod.stockMaximo > 0 ? prod.stockMaximo : '—'}</span>;
+    case 'unidad':
+      return <span className="font-bold text-slate-500 text-[11px] uppercase">{prod.unidad}</span>;
+    case 'estadoStock':
+      return (
+        <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold border uppercase tracking-wider ${prod.estadoBadge}`}>
+          {prod.estadoLabel}
+        </span>
+      );
+    case 'cantidadSugeridaReposicion':
+      return (
+        <span className="font-mono text-[11px] text-slate-600 dark:text-slate-300">
+          {prod.cantidadSugeridaReposicion > 0 ? prod.cantidadSugeridaReposicion : '—'}
+        </span>
+      );
+    case 'ultimoMovimiento':
+      return prod.ultimoMovimientoAt ? (
+        <span className="text-[11px] text-slate-500">{formatFechaHora(prod.ultimoMovimientoAt)}</span>
+      ) : (
+        dash
+      );
+  }
 }
 
 interface ResumenStockViewProps {
@@ -85,6 +304,16 @@ export default function ResumenStockView({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Columnas configurables (orden, visibilidad y ancho por usuario), como en Gestión Comercial
+  const cols = useConfigurableColumns({
+    moduleKey: 'almacen_resumen_stock',
+    defaultOrder: DEFAULT_COLUMN_ORDER,
+    defaultWidths: DEFAULT_COLUMN_WIDTHS,
+  });
+  const visibleKeys = cols.visibleColumns.map((c) => c.key as ColumnKey);
+  const totalTableWidth =
+    visibleKeys.reduce((acc, k) => acc + cols.getWidth(k), 0) + ACTIONS_WIDTH;
 
   // Debounce search
   useEffect(() => {
@@ -140,37 +369,9 @@ export default function ResumenStockView({
       return;
     }
 
-    const headers = [
-      'SKU',
-      'Código Barras',
-      'Descripción',
-      'Marca',
-      'Familia',
-      'Almacén',
-      'Ubicación',
-      'Stock Disponible',
-      'Stock Mínimo',
-      'Stock Máximo',
-      'Unidad',
-      'Estado',
-      'Último Movimiento',
-    ];
-
-    const rows = items.map((it) => [
-      `"${it.sku}"`,
-      `"${it.codigoBarras || ''}"`,
-      `"${(it.descripcion || '').replace(/"/g, '""')}"`,
-      `"${it.marca || ''}"`,
-      `"${it.familia || ''}"`,
-      `"${it.almacenNombre}"`,
-      `"${it.ubicacionCodigo || 'Sin Asignar'}"`,
-      it.stockActual,
-      it.stockMinimo,
-      it.stockMaximo,
-      `"${it.unidad}"`,
-      `"${it.estadoLabel}"`,
-      `"${it.ultimoMovimientoAt ? new Date(it.ultimoMovimientoAt).toLocaleString() : 'Sin movimientos'}"`,
-    ]);
+    const esc = (v: string | number) => (typeof v === 'number' ? String(v) : `"${String(v).replace(/"/g, '""')}"`);
+    const headers = visibleKeys.map((k) => COLUMN_LABELS[k]);
+    const rows = items.map((it) => visibleKeys.map((k) => esc(csvValue(k, it))));
 
     const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -300,6 +501,16 @@ export default function ResumenStockView({
 
           {/* Acciones Rápidas (CSV y Refrescar) */}
           <div className="flex items-center gap-1 ml-auto shrink-0">
+            <ColumnPicker
+              columnOrder={cols.columnOrder}
+              labels={COLUMN_LABELS}
+              draggedIdx={cols.draggedIdx}
+              onToggle={cols.toggleColumn}
+              onReset={cols.resetColumns}
+              onDragStart={cols.onDragStart}
+              onDragOver={cols.onDragOver}
+              onDragEnd={cols.onDragEnd}
+            />
             <button
               onClick={handleExportCSV}
               className="flex items-center gap-1 px-2.5 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all whitespace-nowrap"
@@ -320,98 +531,86 @@ export default function ResumenStockView({
         </div>
       </div>
 
-      {/* Tabla Operativa Densa de Stock */}
+      {/* Tabla Operativa Densa de Stock (columnas configurables) */}
       <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table
+            className="text-left text-xs border-collapse"
+            style={{ tableLayout: 'fixed', width: totalTableWidth, minWidth: '100%' }}
+          >
+            <colgroup>
+              {visibleKeys.map((k) => (
+                <col key={k} style={{ width: cols.getWidth(k) }} />
+              ))}
+              <col style={{ width: ACTIONS_WIDTH }} />
+            </colgroup>
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
-                {[
-                  { key: 'sku', label: 'SKU', className: 'py-2.5 px-3 w-28', align: 'left' },
-                  { key: 'codigoBarras', label: 'Código Barras', className: 'py-2.5 px-2 w-32 hidden md:table-cell', align: 'left' },
-                  { key: 'descripcion', label: 'Descripción', className: 'py-2.5 px-3', align: 'left' },
-                  { key: 'marca', label: 'Marca', className: 'py-2.5 px-2 hidden lg:table-cell', align: 'left' },
-                  { key: 'familia', label: 'Familia', className: 'py-2.5 px-2 hidden xl:table-cell', align: 'left' },
-                  { key: 'almacen', label: 'Almacén', className: 'py-2.5 px-2.5', align: 'left' },
-                  { key: 'ubicacion', label: 'Ubicación', className: 'py-2.5 px-2.5', align: 'left' },
-                  { key: 'stockActual', label: 'Disponible', className: 'py-2.5 px-3 text-right', align: 'right' },
-                  { key: 'stockMinimo', label: 'Mín', className: 'py-2.5 px-2 text-right hidden sm:table-cell', align: 'right' },
-                  { key: 'stockMaximo', label: 'Máx', className: 'py-2.5 px-2 text-right hidden sm:table-cell', align: 'right' },
-                ].map((col) => {
-                  const isSorted = sortBy === col.key;
+                {visibleKeys.map((k) => {
+                  const sortKey = SORTABLE[k];
+                  const isSorted = !!sortKey && sortBy === sortKey;
+                  const align = ALIGN[k];
                   return (
                     <th
-                      key={col.key}
+                      key={k}
                       onClick={() => {
-                        if (sortBy === col.key) {
+                        if (!sortKey) return;
+                        if (sortBy === sortKey) {
                           setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
                         } else {
-                          setSortBy(col.key);
+                          setSortBy(sortKey);
                           setSortOrder('asc');
                         }
                         setPage(1);
                       }}
-                      className={`${col.className} cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
-                        isSorted ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                      className={`py-2.5 px-2.5 relative group/resize overflow-hidden transition-colors ${
+                        sortKey ? 'cursor-pointer hover:text-slate-800 dark:hover:text-slate-200' : ''
+                      } ${isSorted ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''} ${
+                        align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : ''
                       }`}
+                      title={sortKey ? `Ordenar por ${COLUMN_LABELS[k]}` : COLUMN_LABELS[k]}
                     >
-                      <div className={`inline-flex items-center gap-1 ${col.align === 'right' ? 'justify-end w-full' : ''}`}>
-                        <span>{col.label}</span>
-                        {isSorted ? (
-                          sortOrder === 'asc' ? (
-                            <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                      <div
+                        className={`flex items-center gap-1 overflow-hidden ${
+                          align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : ''
+                        }`}
+                      >
+                        <span className="truncate">{COLUMN_LABELS[k]}</span>
+                        {sortKey &&
+                          (isSorted ? (
+                            sortOrder === 'asc' ? (
+                              <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                            ) : (
+                              <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                            )
                           ) : (
-                            <ArrowDown className="w-3 h-3 text-primary shrink-0" />
-                          )
-                        ) : (
-                          <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
-                        )}
+                            <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                          ))}
                       </div>
+                      {/* Redimensionar columna */}
+                      <div
+                        onMouseDown={(e) => cols.startResize(e, k)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute top-0 right-0 w-[5px] h-full cursor-col-resize group-hover/resize:bg-primary/30 hover:!bg-primary/60 transition-colors"
+                        title="Arrastrar para redimensionar"
+                      />
                     </th>
                   );
                 })}
-                <th className="py-2.5 px-2 text-center w-14">Unid</th>
-                <th
-                  onClick={() => {
-                    if (sortBy === 'estadoStock') {
-                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                    } else {
-                      setSortBy('estadoStock');
-                      setSortOrder('asc');
-                    }
-                    setPage(1);
-                  }}
-                  className={`py-2.5 px-2.5 text-center cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
-                    sortBy === 'estadoStock' ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
-                  }`}
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span>Estado</span>
-                    {sortBy === 'estadoStock' ? (
-                      sortOrder === 'asc' ? (
-                        <ArrowUp className="w-3 h-3 text-primary shrink-0" />
-                      ) : (
-                        <ArrowDown className="w-3 h-3 text-primary shrink-0" />
-                      )
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
-                    )}
-                  </div>
-                </th>
-                <th className="py-2.5 px-2.5 text-right w-24">Acciones</th>
+                <th className="py-2.5 px-2.5 text-right sticky right-0 bg-slate-50 dark:bg-slate-900">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
               {loading ? (
                 <tr>
-                  <td colSpan={13} className="py-12 text-center text-slate-400">
+                  <td colSpan={visibleKeys.length + 1} className="py-12 text-center text-slate-400">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
                     <span>Consultando existencias de almacén...</span>
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={13} className="py-10 text-center text-slate-400">
+                  <td colSpan={visibleKeys.length + 1} className="py-10 text-center text-slate-400">
                     <AlertCircle className="w-7 h-7 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
                     <p className="font-semibold text-slate-600 dark:text-slate-300">No se encontraron existencias</p>
                     <p className="text-[11px] mt-0.5">Pruebe ajustando o limpiando los filtros de búsqueda.</p>
@@ -423,63 +622,20 @@ export default function ResumenStockView({
                     key={`${prod.id}_${prod.almacenId}`}
                     className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors group"
                   >
-                    <td className="py-2 px-3 font-mono font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
-                      {prod.sku}
-                    </td>
-                    <td className="py-2 px-2 font-mono text-[11px] text-slate-500 hidden md:table-cell whitespace-nowrap">
-                      {prod.codigoBarras || '—'}
-                    </td>
-                    <td className="py-2 px-3 font-semibold text-slate-900 dark:text-slate-100 max-w-xs truncate" title={prod.descripcion}>
-                      {prod.descripcion}
-                    </td>
-                    <td className="py-2 px-2 text-slate-600 dark:text-slate-300 hidden lg:table-cell truncate">
-                      {prod.marca || '—'}
-                    </td>
-                    <td className="py-2 px-2 text-slate-500 hidden xl:table-cell truncate">
-                      {prod.familia || '—'}
-                    </td>
-                    <td className="py-2 px-2.5 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap">
-                      {prod.almacenNombre}
-                    </td>
-                    <td className="py-2 px-2.5 whitespace-nowrap font-mono text-[11px]">
-                      {prod.ubicacionCodigo ? (
-                        <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
-                          {prod.ubicacionCodigo}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-3 text-right whitespace-nowrap">
-                      <span
-                        className={`font-mono text-xs font-bold ${
-                          prod.stockActual <= 0
-                            ? 'text-rose-600 dark:text-rose-400'
-                            : prod.stockMinimo > 0 && prod.stockActual <= prod.stockMinimo
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-slate-900 dark:text-slate-100'
-                        }`}
-                      >
-                        {prod.stockActual}
-                      </span>
-                    </td>
-                    <td className="py-2 px-2 text-right font-mono text-[11px] text-slate-500 hidden sm:table-cell">
-                      {prod.stockMinimo > 0 ? prod.stockMinimo : '—'}
-                    </td>
-                    <td className="py-2 px-2 text-right font-mono text-[11px] text-slate-500 hidden sm:table-cell">
-                      {prod.stockMaximo > 0 ? prod.stockMaximo : '—'}
-                    </td>
-                    <td className="py-2 px-2 text-center font-bold text-slate-500 text-[11px] uppercase">
-                      {prod.unidad}
-                    </td>
-                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold border uppercase tracking-wider ${prod.estadoBadge}`}
-                      >
-                        {prod.estadoLabel}
-                      </span>
-                    </td>
-                    <td className="py-2 px-2.5 text-right whitespace-nowrap">
+                    {visibleKeys.map((k) => {
+                      const align = ALIGN[k];
+                      return (
+                        <td
+                          key={k}
+                          className={`py-2 px-2.5 whitespace-nowrap overflow-hidden text-ellipsis ${
+                            align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : ''
+                          }`}
+                        >
+                          {renderCell(k, prod)}
+                        </td>
+                      );
+                    })}
+                    <td className="py-2 px-2.5 text-right whitespace-nowrap sticky right-0 bg-card">
                       <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => onNavigateToAjuste && onNavigateToAjuste(prod)}
