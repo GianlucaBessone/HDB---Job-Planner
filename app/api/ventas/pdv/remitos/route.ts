@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { crearRemitoEntrega } from '@/lib/ventas/pdvService';
+import { adjuntarSaldoPendienteRemitos, crearRemitoEntrega } from '@/lib/ventas/pdvService';
 
 const itemRemitoSchema = z.object({
   ventaItemId: z.string().min(1, 'El ID de ítem de venta es obligatorio'),
@@ -21,10 +21,14 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const ventaId = searchParams.get('ventaId');
+    const remitoId = searchParams.get('id');
 
     const where: any = {};
     if (ventaId) {
       where.ventaId = ventaId;
+    }
+    if (remitoId) {
+      where.id = remitoId;
     }
 
     const remitos = await prisma.remitoEntrega.findMany({
@@ -43,7 +47,10 @@ export async function GET(req: NextRequest) {
       take: 50,
     });
 
-    return NextResponse.json({ success: true, remitos });
+    // Saldo pendiente de retiro tal como quedó después de cada entrega
+    const remitosConSaldo = await adjuntarSaldoPendienteRemitos(remitos);
+
+    return NextResponse.json({ success: true, remitos: remitosConSaldo });
   } catch (error: any) {
     console.error('Error al consultar remitos:', error);
     return NextResponse.json(

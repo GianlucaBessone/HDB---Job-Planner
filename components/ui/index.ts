@@ -2,6 +2,8 @@
 export { Button } from './Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 export { Field, Input, Select, Textarea } from './Input';
+export { MoneyInput } from './MoneyInput';
+export type { MoneyInputProps } from './MoneyInput';
 export { Badge } from './Badge';
 export type { BadgeTone } from './Badge';
 export { Panel, Stat } from './Panel';

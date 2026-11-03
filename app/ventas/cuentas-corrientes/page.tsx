@@ -11,6 +11,7 @@ import { showToast } from '@/components/Toast';
 import { Button, Dialog, Field, Tabs } from '@/components/ui';
 import RegistrarCobranzaModal, { ComprobantePendienteItem } from '@/components/ventas/cuentas-corrientes/RegistrarCobranzaModal';
 import RegistrarAjusteCCModal from '@/components/ventas/cuentas-corrientes/RegistrarAjusteCCModal';
+import ActualizarDeudaPreciosModal from '@/components/ventas/cuentas-corrientes/ActualizarDeudaPreciosModal';
 import ConfigCreditoModal from '@/components/ventas/cuentas-corrientes/ConfigCreditoModal';
 import ImprimirReciboCCModal from '@/components/ventas/cuentas-corrientes/ImprimirReciboCCModal';
 import ImprimirEstadoCuentaModal from '@/components/ventas/cuentas-corrientes/ImprimirEstadoCuentaModal';
@@ -107,6 +108,7 @@ export default function CuentasCorrientesPage() {
     // Modales
     const [showCobranzaModal, setShowCobranzaModal] = useState(false);
     const [showAjusteModal, setShowAjusteModal] = useState(false);
+    const [showActualizarPreciosModal, setShowActualizarPreciosModal] = useState(false);
     const [showConfigModal, setShowConfigModal] = useState(false);
     const [showEstadoCuentaModal, setShowEstadoCuentaModal] = useState(false);
     const [reciboImprimir, setReciboImprimir] = useState<any | null>(null);
@@ -803,6 +805,15 @@ export default function CuentasCorrientesPage() {
 
                                         <Button
                                             variant="secondary"
+                                            onClick={() => setShowActualizarPreciosModal(true)}
+                                            icon={<TrendingUp />}
+                                            title="Recalcular facturas impagas a precios vigentes y emitir notas de débito por la diferencia"
+                                        >
+                                            Actualizar precios
+                                        </Button>
+
+                                        <Button
+                                            variant="secondary"
                                             onClick={() => setShowEstadoCuentaModal(true)}
                                             icon={<Printer />}
                                             title="Imprimir resumen de cuenta"
@@ -1436,6 +1447,22 @@ export default function CuentasCorrientesPage() {
                     onClose={() => setShowAjusteModal(false)}
                     onSuccess={async () => {
                         setShowAjusteModal(false);
+                        await handleRefreshTodo();
+                    }}
+                />
+            )}
+
+            {showActualizarPreciosModal && detalleCliente && (
+                <ActualizarDeudaPreciosModal
+                    cliente={{
+                        id: detalleCliente.cliente.id,
+                        name: detalleCliente.cliente.nombre,
+                    }}
+                    operadorNombre={currentUser?.nombreCompleto || currentUser?.name || currentUser?.nombre || undefined}
+                    onClose={() => setShowActualizarPreciosModal(false)}
+                    onSuccess={async (mensaje) => {
+                        setShowActualizarPreciosModal(false);
+                        showToast(mensaje, 'success');
                         await handleRefreshTodo();
                     }}
                 />
