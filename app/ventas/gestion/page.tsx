@@ -30,6 +30,7 @@ import {
   AlertTriangle,
   Copy,
   GripVertical,
+  Building2,
 } from 'lucide-react';
 import VentasNavTabs from '@/components/ventas/VentasNavTabs';
 import ProductoFormModal from '@/components/ventas/ProductoFormModal';
@@ -288,6 +289,10 @@ export default function VentasGestionPage() {
 
   useEffect(() => {
     loadMeta();
+
+    // Filtro inicial por proveedor (enlace "Ver productos" desde el listado de proveedores)
+    const proveedorParam = new URLSearchParams(window.location.search).get('proveedorId');
+    if (proveedorParam) setSelectedProveedor(proveedorParam);
 
     const uid = getUserId();
     const savedConfig = getColumnConfig(uid, 'ventas_gestion');
@@ -769,6 +774,16 @@ export default function VentasGestionPage() {
                 </div>
               )}
             </div>
+
+            {/* Maestro de Proveedores */}
+            <button
+              onClick={() => router.push('/ventas/gestion/proveedores')}
+              className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm whitespace-nowrap"
+              title="Alta, edición y baja de proveedores de ventas"
+            >
+              <Building2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+              <span>Proveedores</span>
+            </button>
 
             {/* Importar Productos (Pantalla Completa) */}
             <button

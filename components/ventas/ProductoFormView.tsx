@@ -18,15 +18,21 @@ import {
   Tag,
   Boxes,
   HelpCircle,
+  Plus,
+  ExternalLink,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { formatARS } from '@/lib/formatCurrency';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import VentasNavTabs from '@/components/ventas/VentasNavTabs';
 import { normalizeSku } from '@/lib/ventas/skuUtils';
+import { proveedorLabel } from '@/lib/ventas/proveedorVentas';
+import ProveedorVentasFormModal from '@/components/ventas/proveedores/ProveedorVentasFormModal';
+
+type ProveedorOption = { id: string; razonSocial: string; nombreFantasia?: string | null; cuit?: string | null };
 
 export interface MetaData {
-  proveedores: Array<{ id: string; razonSocial: string; nombreFantasia?: string | null; cuit: string }>;
+  proveedores: ProveedorOption[];
   marcas: Array<{ id: string; nombre: string }>;
   categorias: Array<{ id: string; nombre: string }>;
   familias: Array<{ id: string; nombre: string; subfamilias: Array<{ id: string; nombre: string }> }>;
@@ -66,6 +72,39 @@ export default function ProductoFormView({
   const [activeSection, setActiveSection] = useState<'identificacion' | 'proveedor' | 'comercial' | 'inventario'>('identificacion');
   const [isSaving, setIsSaving] = useState(false);
   const [plantillaOriginal, setPlantillaOriginal] = useState<{ descripcion: string; sku: string } | null>(null);
+
+  // Proveedores: lista local para sumar los creados desde el formulario sin recargar la página
+  const [proveedores, setProveedores] = useState<ProveedorOption[]>(meta.proveedores);
+  // Proveedor ya vinculado al producto que no figura entre los activos (dado de baja)
+  const [proveedorVinculado, setProveedorVinculado] = useState<ProveedorOption | null>(null);
+  const [isProveedorModalOpen, setIsProveedorModalOpen] = useState(false);
+  const [proveedorModalSearch, setProveedorModalSearch] = useState('');
+
+  useEffect(() => {
+    setProveedores(meta.proveedores);
+  }, [meta.proveedores]);
+
+  // Al volver a esta pestaña (p. ej., desde "Administrar proveedores") se refresca la lista
+  useEffect(() => {
+    const refresh = () => {
+      fetch('/api/ventas/proveedores?estado=activos')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.proveedores) setProveedores(data.proveedores);
+        })
+        .catch(() => {});
+    };
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, []);
+
+  const proveedorOptions = React.useMemo(() => {
+    const opts = proveedores.map((p) => ({ id: p.id, nombre: proveedorLabel(p) }));
+    if (proveedorVinculado && !proveedores.some((p) => p.id === proveedorVinculado.id)) {
+      opts.push({ id: proveedorVinculado.id, nombre: `${proveedorLabel(proveedorVinculado)} · inactivo` });
+    }
+    return opts;
+  }, [proveedores, proveedorVinculado]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -112,6 +151,7 @@ export default function ProductoFormView({
       // EDIT MODE: Populate all fields, stock actual is READ-ONLY
       const primaryStock = initialProducto.stocks?.[0] || null;
       const primaryProv = initialProducto.proveedores?.[0] || null;
+      setProveedorVinculado(primaryProv?.proveedor || null);
 
       setFormData({
         sku: initialProducto.sku || '',
@@ -152,6 +192,7 @@ export default function ProductoFormView({
             setPlantillaOriginal({ descripcion: prod.descripcion, sku: prod.sku });
             const primaryStock = prod.stocks?.[0] || null;
             const primaryProv = prod.proveedores?.[0] || null;
+            setProveedorVinculado(primaryProv?.proveedor || null);
 
             setFormData({
               sku: '', // STRICT RULE: SKU empty to prevent conflicts
@@ -310,9 +351,9 @@ export default function ProductoFormView({
       <VentasNavTabs currentTab="gestion" />
 
       {/* Main ERP Card */}
-      <form onSubmit={handleSubmit} className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
+      <form onSubmit={handleSubmit} className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex flex-col">
         {/* Compact ERP Header */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div className="px-4 py-2.5 rounded-t-xl bg-slate-50 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
           {/* Left: Back + Title + Template Badge */}
           <div className="flex items-center gap-2.5">
             <button
@@ -600,18 +641,38 @@ export default function ProductoFormView({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Proveedor Ventas (Principal)
-                  </label>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Proveedor Ventas (Principal)
+                    </label>
+                    <a
+                      href="/ventas/gestion/proveedores"
+                      target="_blank"
+                      rel="noopener"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                      title="Abre el listado de proveedores en otra pestaña sin perder este formulario"
+                    >
+                      Administrar proveedores
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                   <SearchableSelect
-                    options={meta.proveedores.map((p) => ({
-                      id: p.id,
-                      nombre: `${p.razonSocial}${p.nombreFantasia ? ` (${p.nombreFantasia})` : ''} — CUIT: ${p.cuit}`,
-                    }))}
+                    options={proveedorOptions}
                     value={formData.proveedorId}
                     onChange={(val) => setFormData({ ...formData, proveedorId: val })}
                     placeholder="Seleccionar proveedor de ventas..."
                     searchPlaceholder="Buscar por razón social o CUIT..."
+                    emptyMessage="No hay proveedores que coincidan"
+                    actions={[
+                      {
+                        label: (q) => (q ? `Crear proveedor "${q}"` : 'Crear nuevo proveedor'),
+                        icon: <Plus />,
+                        onSelect: (q) => {
+                          setProveedorModalSearch(q);
+                          setIsProveedorModalOpen(true);
+                        },
+                      },
+                    ]}
                   />
                 </div>
 
@@ -920,7 +981,7 @@ export default function ProductoFormView({
         </div>
 
         {/* Compact Footer Actions */}
-        <div className="px-4 py-3 bg-slate-50/50 dark:bg-slate-900/30 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div className="px-4 py-3 rounded-b-xl bg-slate-50/50 dark:bg-slate-900/30 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <button
             type="button"
             onClick={() => router.push('/ventas/gestion')}
@@ -939,6 +1000,19 @@ export default function ProductoFormView({
           </button>
         </div>
       </form>
+
+      {/* Alta de proveedor sin salir del formulario (fuera del <form> para no anidar formularios) */}
+      <ProveedorVentasFormModal
+        open={isProveedorModalOpen}
+        onClose={() => setIsProveedorModalOpen(false)}
+        initialRazonSocial={proveedorModalSearch}
+        onSaved={(nuevo) => {
+          setProveedores((prev) =>
+            [...prev.filter((p) => p.id !== nuevo.id), nuevo].sort((a, b) => a.razonSocial.localeCompare(b.razonSocial))
+          );
+          setFormData((prev) => ({ ...prev, proveedorId: nuevo.id }));
+        }}
+      />
     </div>
   );
 }
