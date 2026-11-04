@@ -241,9 +241,9 @@ export default function RootLayout({
                 <meta name="apple-mobile-web-app-title" content="HDB SGI" />
                 <meta name="theme-color" content="#1f60c1" />
                 <link rel="manifest" href="/manifest.json" />
-                <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-                <link rel="icon" href="/images/ios/32.png" sizes="32x32" type="image/png" />
-                <link rel="apple-touch-icon" href="/images/ios/180.png" />
+                <link rel="icon" href="/icon.svg?v=2" type="image/svg+xml" />
+                <link rel="icon" href="/images/ios/32.png?v=2" sizes="32x32" type="image/png" />
+                <link rel="apple-touch-icon" href="/images/ios/180.png?v=2" />
 
                 {/* Carga manual de fuentes (next/font/google falla en builds locales sin red) */}
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
