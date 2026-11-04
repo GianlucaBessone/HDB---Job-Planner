@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { triageTicket } from '@/lib/tickets-ai';
 
 export const dynamic = 'force-dynamic';
-// El triaje llama a Claude y puede tardar unos segundos.
+// El triaje llama a Gemini y puede tardar unos segundos.
 export const maxDuration = 60;
 
 const GESTORES = ['admin', 'qa', 'supervisor'];

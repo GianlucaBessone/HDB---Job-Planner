@@ -883,7 +883,7 @@ export default function CapacitacionPage() {
                 </p>
                 <p className="text-xs text-slate-500">
                   Suba certificados de capacitaciones externas. El sistema HDB
-                  SGI utilizará Claude para analizar, validar y extraer los
+                  SGI utilizará IA Gemini para analizar, validar y extraer los
                   detalles clave del certificado.
                 </p>
               </div>
@@ -1310,12 +1310,12 @@ export default function CapacitacionPage() {
                 </div>
               </div>
 
-              {/* Additional details - Optional fields to guide Claude */}
+              {/* Additional details - Optional fields to guide Gemini */}
               <div className="space-y-3 pt-2">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
                     Nombre del Curso{" "}
-                    <span title="Opcional. Si lo deja vacío, Claude lo extraerá de manera automática.">
+                    <span title="Opcional. Si lo deja vacío, Gemini lo extraerá de manera automática.">
                       <HelpCircle className="w-3.5 h-3.5 text-slate-300" />
                     </span>
                   </label>
@@ -1331,7 +1331,7 @@ export default function CapacitacionPage() {
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
                     Institución Organizadora{" "}
-                    <span title="Opcional. Si lo deja vacío, Claude lo extraerá de manera automática.">
+                    <span title="Opcional. Si lo deja vacío, Gemini lo extraerá de manera automática.">
                       <HelpCircle className="w-3.5 h-3.5 text-slate-300" />
                     </span>
                   </label>
@@ -1376,7 +1376,7 @@ export default function CapacitacionPage() {
                   {analyzingCert ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Analizando con Claude...</span>
+                      <span>Analizando con Gemini IA...</span>
                     </>
                   ) : (
                     <>

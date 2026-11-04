@@ -155,7 +155,7 @@ export default function TemplatesTab({ user }: { user: any }) {
 
                 setIsAiModalOpen(false);
                 setIsModalOpen(true);
-                showToast('Checklist generado con éxito por Claude', 'success');
+                showToast('Checklist generado con éxito por Gemini', 'success');
             } else {
                 showToast(result.error || 'Error al generar checklist', 'error');
             }
@@ -750,7 +750,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                             <div className="flex items-center gap-3">
                                 <Sparkles className="w-6 h-6 text-indigo-500" />
                                 <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">
-                                    Generar Checklist con Claude
+                                    Generar Checklist con Gemini
                                 </h3>
                             </div>
                             <button onClick={() => setIsAiModalOpen(false)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500">

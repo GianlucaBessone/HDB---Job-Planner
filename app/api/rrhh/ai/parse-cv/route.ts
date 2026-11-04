@@ -10,8 +10,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Falta el texto del CV' }, { status: 400 });
         }
 
-        if (!process.env.ANTHROPIC_API_KEY) {
-            console.warn("ANTHROPIC_API_KEY is not set. Returning mock data.");
+        if (!process.env.GEMINI_API_KEY) {
+            console.warn("GEMINI_API_KEY is not set. Returning mock data.");
             return NextResponse.json({
                 score: 85,
                 skills: ["Liderazgo", "Resolución de problemas"],

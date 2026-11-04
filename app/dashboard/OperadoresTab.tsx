@@ -1066,7 +1066,7 @@ export default function OperadoresTab() {
                                                         {((aiData.habilidadesRelevantes && aiData.habilidadesRelevantes.length > 0) || 
                                                           (aiData.otrasHabilidades && aiData.otrasHabilidades.length > 0)) && (
                                                             <div className="mt-2 p-3 bg-violet-500/10 dark:bg-violet-950/20 rounded-xl border border-violet-100 dark:border-violet-900/40 text-xs text-violet-700 dark:text-violet-300">
-                                                                <span className="font-semibold text-[11px] uppercase tracking-wider block text-violet-600 dark:text-violet-400 mb-1">Extracción con Claude</span>
+                                                                <span className="font-semibold text-[11px] uppercase tracking-wider block text-violet-600 dark:text-violet-400 mb-1">Extracción con Gemini</span>
                                                                 {aiData.habilidadesRelevantes && aiData.habilidadesRelevantes.length > 0 && (
                                                                     <div className="mb-1">
                                                                         <span className="font-bold text-[11px] text-slate-400 uppercase tracking-wider block">Habilidades Relevantes</span>
@@ -1295,7 +1295,7 @@ export default function OperadoresTab() {
                                             {/* AI Data Skills */}
                                             {previewCert.aiData && (
                                                 <div className="mt-3 space-y-3 pt-3 border-t border-slate-100 dark:border-slate-700">
-                                                    <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider block">Extracción con Claude</p>
+                                                    <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider block">Extracción con Gemini</p>
                                                     
                                                     {previewCert.aiData.habilidadesRelevantes?.length > 0 && (
                                                         <div className="space-y-1">
