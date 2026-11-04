@@ -188,3 +188,13 @@ export function groupViewsBySection(
         .filter(s => groups.has(s.key))
         .map(s => ({ section: s, views: groups.get(s.key)! }));
 }
+
+// ── Funciones dentro de una vista ──────────────────────────────────
+// Accesos que no son una vista del menú sino una función de otra vista.
+
+/** Control horario (botón en Registro de Tiempos → /timesheets/control-horario). */
+export const CONTROL_HORARIO_ROLES = ['admin', 'supervisor'];
+
+export function canUseControlHorario(role: string | null | undefined): boolean {
+    return CONTROL_HORARIO_ROLES.includes((role || '').toLowerCase());
+}
