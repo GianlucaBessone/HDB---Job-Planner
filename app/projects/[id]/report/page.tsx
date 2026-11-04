@@ -12,7 +12,9 @@ export default async function ProjectReportPage({ params: paramsPromise, searchP
         include: {
             client: true,
             timeEntries: {
-                where: { estadoConfirmado: true, deviceId: null },
+                // Mismo criterio que el resumen interno (/api/time-entries) y que
+                // project.horasConsumidas: todos los registros manuales, confirmados o no.
+                where: { deviceId: null },
                 include: { operator: true },
                 orderBy: { fecha: 'asc' }
             },
