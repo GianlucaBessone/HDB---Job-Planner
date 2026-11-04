@@ -242,11 +242,13 @@ export default function PunchInPage() {
 
         setIsLoading(true);
         try {
-            // Because the project is no longer manually selectable, and out-of-bounds maps to empty (Base).
-            const targetProjId = projId || selectedProjectId;
+            // Al cerrar se usa el destino de la jornada abierta (null = Base), nunca el autodetectado por GPS.
+            // Al iniciar, el destino sale de la geovalla (fuera de toda geovalla = Base).
+            const targetProjId = action === 'OUT' ? (projId ?? null) : (projId || selectedProjectId);
             const body = {
                 operatorId: currentUser.id,
                 action,
+                entryId: action === 'OUT' ? entryId : undefined,
                 projectId: targetProjId || null,
                 deviceId,
                 latitude: location?.lat ?? null,
@@ -280,9 +282,9 @@ export default function PunchInPage() {
                     setForceConfirmed(false);
                     return;
                 }
-                // Jornada was already closed (e.g. auto-close) — refresh UI to remove stale button
+                // La jornada ya no está abierta (cerrada desde otro dispositivo o por un supervisor)
                 if (res.status === 404 && action === 'OUT') {
-                    showToast("Esta jornada ya fue cerrada automáticamente.", "info");
+                    showToast("Esta jornada ya estaba cerrada.", "info");
                     await loadData(currentUser.id);
                     return;
                 }
@@ -349,6 +351,8 @@ export default function PunchInPage() {
     const selectedProject = projects.find(p => p.id === selectedProjectId);
     const needsQR = selectedProjectId ? selectedProject?.qrToken : systemSetting?.companyQrToken;
 
+    const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
+
     return (
         <div className="max-w-md mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
             {/* Header Status */}
@@ -413,7 +417,7 @@ export default function PunchInPage() {
                                     <h4 className="font-bold text-slate-800 dark:text-slate-100 text-lg leading-tight">{entry.project?.nombre || 'Base / Empresa'}</h4>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="px-2 py-0.5 bg-primary text-white text-[11px] font-semibold rounded-md uppercase tracking-wider">Activa</span>
-                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500">Desde: {entry.horaIngreso}hs</p>
+                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500">Desde: {entry.fecha !== todayStr ? `${formatDate(entry.fecha)} ` : ''}{entry.horaIngreso}hs</p>
                                     </div>
                                 </div>
                                 <div className="p-3 bg-primary/10 rounded-2xl text-primary">

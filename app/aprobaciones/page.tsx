@@ -337,6 +337,7 @@ function getFlagLabel(flag: string) {
         'OVERLAP_DETECTED': 'Superposición de Horarios',
         'RETROACTIVE_CHARGE': 'Carga Retroactiva (>48h)',
         'VERY_SHORT_SHIFT': 'Jornada Demasiado Corta',
+        'CIERRE_ADMINISTRATIVO': 'Cierre Administrativo (egreso del registro manual)',
         'EXCESSIVE_SHIFT': 'Jornada Excesiva (>12h)',
         'QR_INVALID': 'Token QR Inválido',
         'NO_LOCATION': 'Sin Ubicación',

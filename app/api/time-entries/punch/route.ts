@@ -5,7 +5,7 @@ import { format, differenceInMinutes, parseISO } from 'date-fns';
 import { sendPushNotification } from '@/lib/onesignal';
 import { logAudit } from '@/lib/audit';
 
-function calculateHours(start: string, end: string): number {
+function calculateHours(start: string, end: string, daysElapsed: number = 0): number {
     if (!start || !end) return 0;
     const [h1, m1] = start.split(':').map(Number);
     const [h2, m2] = end.split(':').map(Number);
@@ -13,7 +13,7 @@ function calculateHours(start: string, end: string): number {
     const startMinsTotal = h1 * 60 + m1;
     const roundedStartMins = Math.ceil(startMinsTotal / 30) * 30;
 
-    let endMinsTotal = h2 * 60 + m2;
+    let endMinsTotal = h2 * 60 + m2 + Math.max(0, daysElapsed) * 24 * 60;
     if (endMinsTotal < startMinsTotal) endMinsTotal += 24 * 60;
     const roundedEndMins = Math.floor(endMinsTotal / 30) * 30;
 
@@ -21,13 +21,42 @@ function calculateHours(start: string, end: string): number {
     return Math.max(0, Math.round(diffHours * 100) / 100);
 }
 
+// Días calendario entre dos fechas YYYY-MM-DD (b - a)
+function daysBetween(a: string, b: string): number {
+    const da = Date.UTC(+a.slice(0, 4), +a.slice(5, 7) - 1, +a.slice(8, 10));
+    const db = Date.UTC(+b.slice(0, 4), +b.slice(5, 7) - 1, +b.slice(8, 10));
+    if (isNaN(da) || isNaN(db)) return 0;
+    return Math.round((db - da) / 86400000);
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { operatorId, action, projectId, deviceId, latitude, longitude, qrToken, isOfflinePending, timestamp, forceConfirmed } = body;
+        const { operatorId, action, entryId, deviceId, latitude, longitude, qrToken, isOfflinePending, timestamp, forceConfirmed } = body;
+        let projectId: string | null = body.projectId || null;
 
         if (!operatorId || !action || !deviceId) {
             return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
+        }
+
+        // Al cerrar, la jornada a cerrar manda: se busca por id (o la última abierta del operador
+        // en ese destino) sin restringir la fecha, para permitir cerrar turnos que cruzan la medianoche.
+        let openEntry: Awaited<ReturnType<typeof prisma.fichada.findFirst>> = null;
+        if (action === 'OUT') {
+            if (entryId) {
+                openEntry = await prisma.fichada.findFirst({
+                    where: { id: entryId, operatorId, horaEgreso: null }
+                });
+            } else {
+                openEntry = await prisma.fichada.findFirst({
+                    where: { operatorId, projectId, horaEgreso: null },
+                    orderBy: { createdAt: 'desc' }
+                });
+            }
+            if (!openEntry) {
+                return NextResponse.json({ error: 'No se encontró una jornada activa.' }, { status: 404 });
+            }
+            projectId = openEntry.projectId;
         }
 
         const operator = await prisma.operator.findUnique({ where: { id: operatorId } });
@@ -235,15 +264,17 @@ export async function POST(req: Request) {
         }
 
         const targetProjectId = projectId || null;
-        let existing = await prisma.fichada.findFirst({
-            where: { 
-                operatorId, 
-                projectId: targetProjectId, 
-                fecha: dateStr, 
-                horaEgreso: null 
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+        const existing = action === 'OUT'
+            ? openEntry
+            : await prisma.fichada.findFirst({
+                where: {
+                    operatorId,
+                    projectId: targetProjectId,
+                    fecha: dateStr,
+                    horaEgreso: null
+                },
+                orderBy: { createdAt: 'desc' }
+            });
 
         let entry;
         if (action === 'IN') {
@@ -270,7 +301,7 @@ export async function POST(req: Request) {
             });
         } else {
             if (!existing) return NextResponse.json({ error: 'No se encontró una jornada activa.' }, { status: 404 });
-            const horasTrabajadas = calculateHours(existing.horaIngreso || '00:00', timeStr);
+            const horasTrabajadas = calculateHours(existing.horaIngreso || '00:00', timeStr, daysBetween(existing.fecha, dateStr));
             
             // Duration checks
             if (horasTrabajadas < 0.16) validationFlags.push('VERY_SHORT_SHIFT'); // < 10min
