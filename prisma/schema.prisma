@@ -197,6 +197,9 @@ model Operator {
   // Tickets de soporte
   ticketsReportados         Ticket[]                    @relation("TicketReportadoPor")
   ticketsAsignados          Ticket[]                    @relation("TicketAsignadoA")
+
+  // Control horario (ajustes de ingreso/egreso validados por supervisión)
+  controlHorarioAjustes     ControlHorarioAjuste[]
 }
 
 model FavoriteBlock {
@@ -603,6 +606,27 @@ model Fichada {
   @@index([fecha])
   @@index([projectId])
   @@index([operatorId])
+}
+
+// Ajuste manual del control horario: el horario validado por un supervisor o
+// administrador para un operador en un día, comparando registro de tiempos y fichada GPS.
+model ControlHorarioAjuste {
+  id                String   @id @default(cuid())
+  operatorId        String
+  operator          Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  fecha             String // YYYY-MM-DD
+  horaIngreso       String // HH:mm
+  horaEgreso        String // HH:mm
+  horas             Float
+  observacion       String?  @db.Text
+  ajustadoPorId     String?
+  ajustadoPorNombre String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([operatorId, fecha])
+  @@index([fecha])
 }
 
 // ═══════════════════════════════════════════════════════

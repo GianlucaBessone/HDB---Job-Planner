@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity, FileSpreadsheet, Briefcase, UserX, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity, FileSpreadsheet, Briefcase, UserX, ToggleLeft, ToggleRight, ClipboardCheck } from 'lucide-react';
+import { canUseControlHorario } from '@/lib/viewAccess';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
@@ -636,13 +637,21 @@ export default function TimesheetsPage() {
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Gestión de jornadas de los operadores e ingresos por proyecto</p>
                 </div>
-                <button
-                    onClick={() => openEditModal()}
-                    className="bg-muted text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-lg transition-all text-sm w-full md:w-auto justify-center"
-                >
-                    <Plus className="w-4 h-4" />
-                    Carga Manual
-                </button>
+                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    {canUseControlHorario(currentUser?.role) && (
+                        <Link href="/timesheets/control-horario" className="btn btn-secondary w-full md:w-auto justify-center">
+                            <ClipboardCheck />
+                            Control horario
+                        </Link>
+                    )}
+                    <button
+                        onClick={() => openEditModal()}
+                        className="bg-muted text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-lg transition-all text-sm w-full md:w-auto justify-center"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Carga Manual
+                    </button>
+                </div>
             </div>
 
             {/* Past Entries / Reports Content */}
