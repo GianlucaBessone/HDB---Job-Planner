@@ -61,6 +61,7 @@ model Project {
   ordenesTrabajo          OrdenTrabajo[]
   responsablesCliente     ClientResponsableProyecto[]
   sectoresCliente         ClientSector[]
+  viajes                  Viaje[]
 
   @@index([qrToken])
 }
@@ -200,6 +201,11 @@ model Operator {
 
   // Control horario (ajustes de ingreso/egreso validados por supervisión)
   controlHorarioAjustes     ControlHorarioAjuste[]
+
+  // Viajes y viáticos
+  viajesResponsable         Viaje[]                     @relation("ViajeResponsable")
+  viajesCreados             Viaje[]                     @relation("ViajeCreador")
+  viajesParticipante        ViajeParticipante[]
 }
 
 model FavoriteBlock {
@@ -3661,4 +3667,180 @@ model TicketEventoAgente {
   createdAt DateTime @default(now())
 
   @@index([ticketId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VIAJES Y VIÁTICOS (docs/viajes/INFORME-IMPLEMENTACION.md)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model ViajeCounter {
+  year          Int @id
+  currentNumber Int @default(0)
+}
+
+model Viaje {
+  id               String   @id @default(cuid())
+  codigo           String   @unique // VJE-2026-0001
+  motivo           String
+  descripcion      String?  @db.Text
+  origen           String
+  destino          String
+  fechaInicio      DateTime @db.Date
+  fechaFin         DateTime @db.Date // se mueve al extender la estadía
+  fechaFinOriginal DateTime @db.Date
+  estado           String   @default("planificado") // planificado | en_curso | finalizado | cerrado | cancelado
+  modalidadFondos  String   @default("anticipo") // anticipo (pre-viaje) | rendicion (contra rendición)
+  montoAnticipo    Float    @default(0)
+  moneda           String   @default("ARS")
+
+  responsableId String
+  responsable   Operator  @relation("ViajeResponsable", fields: [responsableId], references: [id], onDelete: Restrict)
+  creadoPorId   String?
+  creadoPor     Operator? @relation("ViajeCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  projectId     String?
+  project       Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  fechaInicioReal DateTime?
+  fechaConclusion DateTime?
+  notaConclusion  String?   @db.Text
+
+  // Cierre de la rendición (totales congelados al cerrar)
+  fechaCierre       DateTime?
+  cerradoPorId      String?
+  cerradoPorNombre  String?
+  observacionCierre String?   @db.Text
+  cierre            Json? // { estimado, gastado, aprobado, rechazado, anticipo, propios, resultado }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participantes ViajeParticipante[]
+  costos        ViajeCostoEstimado[]
+  gastos        ViajeGasto[]
+  extensiones   ViajeExtension[]
+  historial     ViajeHistorial[]
+  comprobantes  ViajeComprobante[]
+
+  @@index([estado])
+  @@index([responsableId])
+  @@index([projectId])
+  @@index([fechaInicio])
+}
+
+// Persona que viaja: operador del sistema o externo (solo nombre).
+model ViajeParticipante {
+  id         String               @id @default(cuid())
+  viajeId    String
+  viaje      Viaje                @relation(fields: [viajeId], references: [id], onDelete: Cascade)
+  operatorId String?
+  operator   Operator?            @relation(fields: [operatorId], references: [id], onDelete: SetNull)
+  nombre     String
+  orden      Int                  @default(0)
+  gastos     ViajeGastoAfectado[]
+
+  @@index([viajeId])
+  @@index([operatorId])
+}
+
+model ViajeCostoEstimado {
+  id          String  @id @default(cuid())
+  viajeId     String
+  viaje       Viaje   @relation(fields: [viajeId], references: [id], onDelete: Cascade)
+  categoria   String // combustible | peajes | alojamiento | comidas | transporte | movilidad | otros
+  descripcion String?
+  base        String  @default("total") // total | por_dia | por_noche | por_persona | por_persona_dia | por_persona_noche
+  monto       Float   @default(0) // monto unitario según la base
+  orden       Int     @default(0)
+
+  @@index([viajeId])
+}
+
+model ViajeGasto {
+  id                  String   @id @default(cuid())
+  viajeId             String
+  viaje               Viaje    @relation(fields: [viajeId], references: [id], onDelete: Cascade)
+  fecha               DateTime @db.Date
+  categoria           String
+  descripcion         String?
+  comercio            String?
+  numeroComprobante   String?
+  monto               Float
+  alcance             String   @default("global") // global | individual
+  medioPago           String   @default("fondos") // fondos | propio
+  registradoPorId     String?
+  registradoPorNombre String?
+
+  // Rendición
+  estadoVerificacion  String    @default("pendiente") // pendiente | aprobado | observado | rechazado
+  montoAprobado       Float?
+  observacion         String?   @db.Text
+  verificadoPorId     String?
+  verificadoPorNombre String?
+  verificadoEn        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  afectados    ViajeGastoAfectado[]
+  comprobantes ViajeComprobante[]
+
+  @@index([viajeId])
+  @@index([estadoVerificacion])
+}
+
+model ViajeGastoAfectado {
+  gastoId        String
+  gasto          ViajeGasto        @relation(fields: [gastoId], references: [id], onDelete: Cascade)
+  participanteId String
+  participante   ViajeParticipante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@id([gastoId, participanteId])
+  @@index([participanteId])
+}
+
+// Foto o PDF del ticket guardado en la base (Vercel no tiene disco escribible).
+// Se crea suelto (sin gasto) al subirlo y se vincula al registrar el gasto.
+model ViajeComprobante {
+  id          String      @id @default(cuid())
+  viajeId     String?
+  viaje       Viaje?      @relation(fields: [viajeId], references: [id], onDelete: Cascade)
+  gastoId     String?
+  gasto       ViajeGasto? @relation(fields: [gastoId], references: [id], onDelete: Cascade)
+  subidoPorId String
+  nombre      String
+  mime        String
+  size        Int
+  datos       Bytes
+  createdAt   DateTime    @default(now())
+
+  @@index([viajeId])
+  @@index([gastoId])
+  @@index([subidoPorId])
+}
+
+model ViajeExtension {
+  id               String   @id @default(cuid())
+  viajeId          String
+  viaje            Viaje    @relation(fields: [viajeId], references: [id], onDelete: Cascade)
+  fechaFinAnterior DateTime @db.Date
+  fechaFinNueva    DateTime @db.Date
+  motivo           String   @db.Text
+  usuarioId        String?
+  usuarioNombre    String
+  createdAt        DateTime @default(now())
+
+  @@index([viajeId])
+}
+
+model ViajeHistorial {
+  id            String   @id @default(cuid())
+  viajeId       String
+  viaje         Viaje    @relation(fields: [viajeId], references: [id], onDelete: Cascade)
+  accion        String // creado | editado | iniciado | gasto_* | extendido | concluido | devuelto | verificado | cerrado | cancelado
+  detalle       String?  @db.Text
+  usuarioId     String?
+  usuarioNombre String
+  createdAt     DateTime @default(now())
+
+  @@index([viajeId])
 }
