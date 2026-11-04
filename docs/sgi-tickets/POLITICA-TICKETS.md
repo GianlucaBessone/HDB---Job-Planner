@@ -104,10 +104,10 @@ El vencimiento se calcula desde `createdAt` hasta `fechaResolucion`. Un ticket a
 | Estado | Significado | Quién lo mueve |
 |---|---|---|
 | `nuevo` | Reportado, sin revisar. | Sistema / usuario |
-| `triaje` | Se está clasificando y verificando. | Gestor / Claude |
+| `triaje` | Se está clasificando y verificando. | Gestor / Gemini |
 | `en_analisis` | Se evalúa causa y alcance. | Gestor |
-| `pendiente_aprobacion` | Requiere decisión humana. | Gestor / Claude / agente (escalar) |
-| `listo_para_fix` | Analizado y aprobado para implementar. | Gestor / Claude (riesgo bajo) |
+| `pendiente_aprobacion` | Requiere decisión humana. | Gestor / Gemini / agente (escalar) |
+| `listo_para_fix` | Analizado y aprobado para implementar. | Gestor / Gemini (riesgo bajo) |
 | `en_progreso` | Se está implementando. | Gestor / agente (tomar) |
 | `en_revision` | Cambio propuesto, pendiente de validar y publicar. | Agente (solución) / gestor |
 | `resuelto` | Validado y disponible. | Gestor |
@@ -128,7 +128,7 @@ Las transiciones inválidas se rechazan en la API. Un agente solo puede llevar u
 
 1. **Reporte**: formulario guiado. Se captura ruta, navegador, SO, resolución, zona horaria y versión automáticamente. Adjuntos opcionales.
 2. **Registro**: se calcula prioridad, se crea `TCK-AAAA-####` y el historial inicial.
-3. **Triaje**: Claude (o el gestor) confirma tipo, urgencia, impacto y posibles duplicados.
+3. **Triaje**: Gemini (o el gestor) confirma tipo, urgencia, impacto y posibles duplicados.
 4. **Análisis**: causa raíz, alcance, esfuerzo, horas, confianza, riesgo y plan.
 5. **Decisión**:
    - riesgo bajo + tipo error + auto-fix habilitado → `listo_para_fix`;
@@ -228,4 +228,4 @@ La vista `/tickets` muestra los cuatro primeros. El resto se puede consultar en 
 3. Un agente propone y deja el ticket en revisión; nunca lo resuelve, cierra ni publica.
 4. No se agregó una migración formal porque el proyecto usa `db push` en desarrollo. Si se adopta `migrate`, generar la migración correspondiente antes de desplegar.
 5. Los adjuntos se guardan en la base porque en Vercel el disco es de solo lectura.
-6. Claude hace el triaje online (sin acceso al código); el análisis con contexto real del código lo hace el agente al que se delega el ticket.
+6. Gemini hace el triaje online (sin acceso al código); el análisis con contexto real del código lo hace el agente al que se delega el ticket.

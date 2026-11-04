@@ -44,7 +44,7 @@ export interface AIProviderResponse {
 }
 
 /**
- * Contract for all AI providers (Anthropic, OpenAI, etc.)
+ * Contract for all AI providers (Gemini, Anthropic, OpenAI, etc.)
  */
 export interface AIProvider {
     readonly name: string;

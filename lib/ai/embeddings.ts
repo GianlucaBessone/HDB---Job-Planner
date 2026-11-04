@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 
-// Embeddings stay on Gemini: Anthropic has no embeddings API, and the vectors
-// already stored for non-conformities were generated with this model.
+// Embeddings use Gemini: the vectors already stored for non-conformities
+// were generated with this model.
 const apiKey = process.env.GEMINI_API_KEY || 'DUMMY_API_KEY_FOR_BUILD';
 const gatewayUrl = process.env.VERCEL_AI_GATEWAY_URL;
 

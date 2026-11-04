@@ -6,7 +6,7 @@ const GESTORES = ['admin', 'qa', 'supervisor'];
 
 export async function POST(request: Request) {
     try {
-        // Consume cuota de Claude y pisa el análisis guardado: solo quienes gestionan sugerencias.
+        // Consume cuota de Gemini y pisa el análisis guardado: solo quienes gestionan sugerencias.
         const userId = request.headers.get('x-user-id');
         const role = (request.headers.get('x-user-role') || '').toLowerCase();
         if (!userId || !GESTORES.includes(role)) {

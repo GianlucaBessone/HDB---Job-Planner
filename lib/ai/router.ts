@@ -10,6 +10,7 @@
  */
 
 import { AIProvider, AIEffort } from './providers/base';
+import { GeminiProvider } from './providers/gemini';
 import { AnthropicProvider } from './providers/anthropic';
 
 export interface RouteConfig {
@@ -22,15 +23,18 @@ export interface RouteConfig {
     };
 }
 
-const DEFAULT_PROVIDER = 'anthropic';
-const DEFAULT_MODEL = 'claude-haiku-5-5';
+const DEFAULT_PROVIDER = 'gemini';
+const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 /**
  * Route table: promptKey → provider + model + effort
  *
- * Currently all routes point to Claude Haiku 5.5. `effort` controls how much
- * the model thinks before answering: `low` for extraction and classification,
- * `medium` for drafting and conversation.
+ * Currently all routes point to Gemini 2.5 Flash (GEMINI_API_KEY).
+ *
+ * Claude stays registered as an alternative provider (needs ANTHROPIC_API_KEY).
+ * To move a use case to Claude, change its entry to
+ * { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' | 'medium' }.
+ * `effort` only applies to Claude; Gemini ignores it.
  *
  * To activate another provider:
  * 1. Install the target SDK (e.g. `npm install openai`)
@@ -40,33 +44,34 @@ const DEFAULT_MODEL = 'claude-haiku-5-5';
  */
 const ROUTE_TABLE: Record<string, RouteConfig> = {
     // TEXT_GENERATION
-    'ISO_DOC_GEN':          { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'medium' },
-    'GENERATE_OBS':         { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' },
-    'SUGGESTION_ANALYSIS':  { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'medium' },
-    'TICKET_TRIAGE':        { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' },
-    'TICKET_RESOLUTION_RESPONSE': { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' },
-    'CHECKLIST_GEN':        { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'medium' },
-    'CV_PARSE':             { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'medium' },
+    'ISO_DOC_GEN':          { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'GENERATE_OBS':         { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'SUGGESTION_ANALYSIS':  { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'TICKET_TRIAGE':        { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'TICKET_RESOLUTION_RESPONSE': { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'CHECKLIST_GEN':        { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'CV_PARSE':             { provider: 'gemini', model: 'gemini-2.5-flash' },
 
     // VISION
-    'IMAGE_ANALYSIS':       { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' },
-    'CERTIFICATE_ANALYSIS': { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' },
+    'IMAGE_ANALYSIS':       { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'CERTIFICATE_ANALYSIS': { provider: 'gemini', model: 'gemini-2.5-flash' },
 
     // OCR
-    'OCR_ANALYSIS':         { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' },
-    'INVOICE_OCR':          { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' },
+    'OCR_ANALYSIS':         { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'INVOICE_OCR':          { provider: 'gemini', model: 'gemini-2.5-flash' },
 
     // RAG_SEARCH
-    'TECH_ASSISTANT':       { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'medium' },
-    'SEMANTIC_SEARCH':      { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'low' },
-    'RCA_CHAT':             { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'medium' },
+    'TECH_ASSISTANT':       { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'SEMANTIC_SEARCH':      { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'RCA_CHAT':             { provider: 'gemini', model: 'gemini-2.5-flash' },
 
     // TRAINING
-    'TRAINING_GEN':         { provider: 'anthropic', model: 'claude-haiku-5-5', effort: 'medium' },
+    'TRAINING_GEN':         { provider: 'gemini', model: 'gemini-2.5-flash' },
 };
 
 // Provider registry (add new providers here when activated)
 const PROVIDERS: Record<string, AIProvider> = {
+    gemini: new GeminiProvider(),
     anthropic: new AnthropicProvider(),
 };
 

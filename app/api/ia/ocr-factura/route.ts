@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
       systemInstruction: SYSTEM_INSTRUCTION,
       model,
       effort,
+      temperature: 0.1, // Low temperature for factual extraction
       responseMimeType: 'application/json',
       responseSchema: RESPONSE_SCHEMA,
       attachments: [{ data: base64Data, mimeType }],

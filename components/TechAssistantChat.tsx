@@ -302,7 +302,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                         <h3 className="text-sm font-semibold text-slate-850 dark:text-slate-100 uppercase tracking-wider block">
                                             {activeMode === 'FIELD' ? 'Asistencia de Campo' : 'Ayuda del Sistema'}
                                         </h3>
-                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Claude</p>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Gemini AI</p>
                                     </div>
                                 </div>
                             )}
@@ -360,7 +360,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                     {!diagnosis ? (
                                         <form onSubmit={handleStartDiagnosis} className="space-y-4">
                                             <div className="text-[11px] text-slate-400 font-bold leading-relaxed">
-                                                ¿Tenés algún inconveniente en la instalación? Describí la falla y los síntomas. Claude cruzará datos con el historial del proyecto para recomendarte un diagnóstico ordenado.
+                                                ¿Tenés algún inconveniente en la instalación? Describí la falla y los síntomas. Gemini cruzará datos con el historial del proyecto para recomendarte un diagnóstico ordenado.
                                             </div>
                                             <div className="space-y-3.5">
                                                 <div className="relative space-y-1.5">
@@ -479,7 +479,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                             </div>
                                                         </div>
                                                     ))}
-                                                    {followUpLoading && <div className="flex justify-start"><div className="bg-card border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 flex items-center gap-2"><Loader2 className="w-4 h-4 text-purple-600 animate-spin" /><span className="text-xs font-bold text-slate-400 animate-pulse">Claude refinando...</span></div></div>}
+                                                    {followUpLoading && <div className="flex justify-start"><div className="bg-card border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 flex items-center gap-2"><Loader2 className="w-4 h-4 text-purple-600 animate-spin" /><span className="text-xs font-bold text-slate-400 animate-pulse">Gemini refinando...</span></div></div>}
                                                     <div ref={messagesEndRef} />
                                                 </div>
                                             </div>

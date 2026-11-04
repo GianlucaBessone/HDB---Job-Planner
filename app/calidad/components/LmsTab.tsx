@@ -1390,10 +1390,10 @@ export default function LmsTab({ user }: { user: any }) {
                     <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-2xl border border-indigo-100/80 dark:border-indigo-900/50">
                       <p className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                         <Sparkles className="w-3.5 h-3.5" /> Metadatos del
-                        Análisis de IA con Claude
+                        Análisis de IA Gemini
                       </p>
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        Claude ha escaneado la imagen/PDF y extrajo la siguiente
+                        Gemini ha escaneado la imagen/PDF y extrajo la siguiente
                         información del certificado. Puede corregir cualquier
                         campo a continuación.
                       </p>
@@ -1508,7 +1508,7 @@ export default function LmsTab({ user }: { user: any }) {
               <div className="flex items-center gap-3">
                 <Sparkles className="w-6 h-6 text-indigo-500" />
                 <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">
-                  Diseñar Cuestionario con Claude
+                  Diseñar Cuestionario con Gemini
                 </h3>
               </div>
               <button

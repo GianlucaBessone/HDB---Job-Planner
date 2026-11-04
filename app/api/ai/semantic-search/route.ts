@@ -13,7 +13,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Falta el parámetro obligatorio: query.' }, { status: 400 });
         }
 
-        // 1. Invocar a Claude para expandir semánticamente la búsqueda (intenciones + sinónimos)
+        // 1. Invocar a Gemini para expandir semánticamente la búsqueda (intenciones + sinónimos)
         const aiResponse = await generateObject<{
             intencion: string;
             keywords: string[];

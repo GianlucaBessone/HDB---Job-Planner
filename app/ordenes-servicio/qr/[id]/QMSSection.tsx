@@ -136,7 +136,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
             const data = await res.json();
             if (res.ok && data.success) {
                 onUpdate();
-                alert('¡Resumen técnico y observaciones autogenerados con éxito por Claude!');
+                alert('¡Resumen técnico y observaciones autogenerados con éxito por Gemini!');
             } else {
                 alert(data.error || 'Error al generar observaciones.');
             }
@@ -620,7 +620,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                         <div className="flex items-center justify-between">
                                                                             <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
                                                                                 <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
-                                                                                <span className="text-[11px] font-semibold uppercase tracking-wider">Reporte de Anomalías (Claude)</span>
+                                                                                <span className="text-[11px] font-semibold uppercase tracking-wider">Reporte de Anomalías Gemini</span>
                                                                             </div>
                                                                             <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${
                                                                                 analysisResult.estadoGeneral === 'critico' ? 'bg-red-100 border-red-200 text-red-700' :

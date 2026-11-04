@@ -129,7 +129,7 @@ export async function POST(req: Request) {
                             posicion: userPosition,
                             action: 'ai_draft_generated',
                             date: new Date().toISOString(),
-                            comment: 'Borrador generado automáticamente mediante Inteligencia Artificial Claude (Anthropic).',
+                            comment: 'Borrador generado automáticamente mediante Inteligencia Artificial Google Gemini.',
                             signature: null
                         }
                     ]

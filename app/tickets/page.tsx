@@ -267,7 +267,7 @@ export default function TicketsPage() {
     ]), [metrics]);
 
     const transiciones = detail ? getTransiciones(detail.estado) : [];
-    // Los análisis previos a la migración quedaron con origen 'gemini'
+    // Hubo un período con triaje de Claude: esos análisis quedaron con origen 'claude'
     const origenIA = detail?.analisisAgente?.origen;
     const analisisEsIA = origenIA === 'claude' || origenIA === 'gemini';
     const puedeAnalizar = !!detail && (canManage || detail.reportadoPorId === user?.id);
@@ -732,7 +732,7 @@ export default function TicketsPage() {
                                             </div>
                                             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Todavía no hay evaluación</p>
                                             <p className="text-xs text-slate-400 font-medium mt-1 max-w-md mx-auto">
-                                                Claude puede clasificar el ticket, estimar el riesgo y proponer un plan ahora mismo.
+                                                Gemini puede clasificar el ticket, estimar el riesgo y proponer un plan ahora mismo.
                                                 La corrección del código, si hace falta, la hace un agente con acceso al repositorio.
                                             </p>
 
