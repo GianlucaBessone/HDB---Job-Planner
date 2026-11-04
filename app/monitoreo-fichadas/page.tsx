@@ -276,6 +276,7 @@ export default function FichadasAdminPage() {
             'OFFLINE_PENDING': 'El registro se tomó sin internet y se sincronizó luego',
             'UNASSIGNED_PROJECT': 'Proyecto no asignado en la planificación del día',
             'VERY_SHORT_SHIFT': 'Jornada demasiado corta (menos de 10 minutos)',
+            'CIERRE_ADMINISTRATIVO': 'Jornada cerrada administrativamente: el egreso se tomó del registro de horas manual',
             'EXCESSIVE_SHIFT': 'Jornada excesiva (más de 12 horas)',
             'OVERLAP_DETECTED': 'Superposición de jornadas detectada',
             'RETROACTIVE_CHARGE': 'Carga retroactiva (más de 48 horas después del evento)',
