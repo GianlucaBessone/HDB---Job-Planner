@@ -1,14 +1,17 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check, Plus, Trash2, UserPlus, Wallet, HandCoins, X } from 'lucide-react';
+import { Calculator, Check, MapPinned, Plus, RotateCcw, Trash2, UserPlus, Wallet, HandCoins, X } from 'lucide-react';
 import { Button, Dialog, Field, Input, MoneyInput, Select, Textarea } from '@/components/ui';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { showToast } from '@/components/Toast';
 import {
-    BASES_COSTO, CATEGORIAS_GASTO, diasViaje, nochesViaje, subtotalCosto, type BaseCosto, type CategoriaGasto, type ModalidadFondos,
+    BASES_COSTO, CATEGORIAS_GASTO, diasViaje, formatFechaCorta, kmTotales, MEDIOS_TRANSPORTE, nochesViaje, precalcularCostos,
+    subtotalCosto, type BaseCosto, type CategoriaGasto, type ModalidadFondos,
 } from '@/lib/viajes';
 import { apiJson, money, OpcionesGrandes } from './shared';
+import type { TarifaVigente } from './TarifasDialog';
+import { calcularDistancia } from './distancia';
 
 interface Operador { id: string; nombreCompleto: string; activo?: boolean; role?: string }
 interface Proyecto { id: string; nombre: string; codigoProyecto?: string | null; activo?: boolean }
@@ -30,16 +33,20 @@ export interface ViajeEditable {
     estado: string;
     participantes: { id: string; nombre: string; operatorId: string | null }[];
     costos: { categoria: string; base: string; monto: number; descripcion: string | null }[];
+    medioTransporte?: string | null;
+    kmIda?: number | null;
+    idaYVuelta?: boolean;
 }
 
 let keySeq = 0;
 const nuevaKey = () => `c${++keySeq}`;
 
-const COSTOS_SUGERIDOS: Omit<CostoForm, 'key'>[] = [
-    { categoria: 'combustible', base: 'total', monto: '', descripcion: '' },
-    { categoria: 'alojamiento', base: 'por_persona_noche', monto: '', descripcion: '' },
-    { categoria: 'comidas', base: 'por_persona_dia', monto: '', descripcion: '' },
-];
+const OPCIONES_VIATICO = {
+    desayuno: true,
+    comidasPorDia: 2,
+    lugarComidas: 'viaje' as 'viaje' | 'residencia',
+    hoteleria: true,
+};
 
 function inicial(viaje?: ViajeEditable | null) {
     if (viaje) {
@@ -56,6 +63,10 @@ function inicial(viaje?: ViajeEditable | null) {
             projectId: viaje.projectId || '',
             participantes: viaje.participantes.map(p => ({ id: p.id, operatorId: p.operatorId, nombre: p.nombre })) as ParticipanteForm[],
             costos: viaje.costos.map(c => ({ key: nuevaKey(), categoria: c.categoria as CategoriaGasto, base: c.base as BaseCosto, monto: String(c.monto), descripcion: c.descripcion || '' })),
+            medioTransporte: viaje.medioTransporte || '',
+            kmIda: viaje.kmIda ? String(viaje.kmIda) : '',
+            idaYVuelta: viaje.idaYVuelta ?? true,
+            ...OPCIONES_VIATICO,
         };
     }
     return {
@@ -70,7 +81,11 @@ function inicial(viaje?: ViajeEditable | null) {
         responsableId: '',
         projectId: '',
         participantes: [] as ParticipanteForm[],
-        costos: COSTOS_SUGERIDOS.map(c => ({ ...c, key: nuevaKey() })),
+        costos: [] as CostoForm[],
+        medioTransporte: '',
+        kmIda: '',
+        idaYVuelta: true,
+        ...OPCIONES_VIATICO,
     };
 }
 
@@ -92,10 +107,18 @@ export default function ViajeFormDialog({
     const [externo, setExterno] = useState('');
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [tarifa, setTarifa] = useState<TarifaVigente | null>(null);
+    // Mientras no se tocan a mano, los costos se precalculan solos con los valores de referencia.
+    const [costosManual, setCostosManual] = useState(!!viaje);
+    const [calculandoKm, setCalculandoKm] = useState(false);
+    const [rutaEncontrada, setRutaEncontrada] = useState<string | null>(null);
 
     useEffect(() => {
         if (!open) return;
         setForm(inicial(viaje));
+        setCostosManual(!!viaje);
+        setRutaEncontrada(null);
+        apiJson<{ vigente: TarifaVigente }>('/api/viajes/tarifas').then(r => setTarifa(r.vigente)).catch(() => setTarifa(null));
         setError(null);
         setAgregarId('');
         setExterno('');
@@ -127,6 +150,41 @@ export default function ViajeFormDialog({
     const noches = fechasOk ? nochesViaje(form.fechaInicio, form.fechaFin) : 0;
     const personas = Math.max(1, participantes.length);
 
+    // Precálculo automático
+    useEffect(() => {
+        if (!open || costosManual || !tarifa) return;
+        const lineas = precalcularCostos(tarifa.valores, {
+            medioTransporte: form.medioTransporte || null,
+            kmIda: Number(form.kmIda) || 0,
+            idaYVuelta: form.idaYVuelta,
+            desayuno: form.desayuno,
+            comidasPorDia: form.comidasPorDia,
+            lugarComidas: form.lugarComidas,
+            hoteleria: form.hoteleria,
+        });
+        setForm(f => ({
+            ...f,
+            costos: lineas.map(l => ({ key: nuevaKey(), categoria: l.categoria as CategoriaGasto, base: l.base as BaseCosto, monto: String(l.monto), descripcion: l.descripcion || '' })),
+        }));
+    }, [open, costosManual, tarifa, form.medioTransporte, form.kmIda, form.idaYVuelta, form.desayuno, form.comidasPorDia, form.lugarComidas, form.hoteleria]);
+
+    const kmTotal = kmTotales(Number(form.kmIda) || 0, form.idaYVuelta);
+
+    const calcularKm = async () => {
+        if (form.origen.trim().length < 2 || form.destino.trim().length < 2) return setError('Completá origen y destino para calcular los km.');
+        setError(null);
+        setCalculandoKm(true);
+        try {
+            const r = await calcularDistancia(form.origen.trim(), form.destino.trim());
+            set('kmIda', String(r.kmIda));
+            setRutaEncontrada(`${r.origen.nombre} → ${r.destino.nombre}: ${r.kmIda.toLocaleString('es-AR')} km por ruta`);
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setCalculandoKm(false);
+        }
+    };
+
     const subtotales = form.costos.map(c => subtotalCosto({ categoria: c.categoria, base: c.base, monto: Number(c.monto) || 0 }, dias || 1, noches, personas));
     const estimado = subtotales.reduce((s, n) => s + n, 0);
 
@@ -149,6 +207,7 @@ export default function ViajeFormDialog({
     };
 
     const setCosto = (key: string, patch: Partial<CostoForm>) => {
+        setCostosManual(true);
         set('costos', form.costos.map(c => (c.key === key ? { ...c, ...patch } : c)));
     };
 
@@ -172,6 +231,10 @@ export default function ViajeFormDialog({
                 responsableId: form.responsableId,
                 projectId: form.projectId || null,
                 participantes,
+                medioTransporte: form.medioTransporte || null,
+                kmIda: Number(form.kmIda) || null,
+                idaYVuelta: form.idaYVuelta,
+                tarifaId: tarifa?.id || null,
                 costos: form.costos
                     .filter(c => Number(c.monto) > 0)
                     .map(c => ({ categoria: c.categoria, base: c.base, monto: Number(c.monto), descripcion: c.descripcion || null })),
@@ -201,7 +264,7 @@ export default function ViajeFormDialog({
             dismissible={!guardando}
             size="xl"
             title={viaje ? 'Editar viaje' : 'Nuevo viaje'}
-            description={viaje ? undefined : 'Definí el recorrido, las personas, los fondos y el presupuesto estimado.'}
+            description={viaje ? undefined : 'Definí el recorrido y las personas: los costos se precalculan con los valores de referencia.'}
             footer={
                 <>
                     <Button variant="secondary" onClick={onClose} disabled={guardando}>Cancelar</Button>
@@ -302,7 +365,128 @@ export default function ViajeFormDialog({
                     </div>
                 </section>
 
-                {/* 3. Fondos */}
+                {/* 3. Recorrido */}
+                <section className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="eyebrow">Recorrido y viáticos</h3>
+                        {tarifa && (
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                                Valores de referencia {tarifa.guardada ? `vigentes desde el ${formatFechaCorta(tarifa.vigenciaDesde)}` : 'iniciales (sin guardar)'}
+                            </span>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-[minmax(220px,1.3fr)_minmax(140px,0.8fr)_auto] gap-3 items-start">
+                        <Select label="Medio de transporte" value={form.medioTransporte} onChange={e => set('medioTransporte', e.target.value)}>
+                            <option value="">Sin definir</option>
+                            {MEDIOS_TRANSPORTE.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        </Select>
+                        <Input
+                            label="Km de ida"
+                            type="number"
+                            inputMode="decimal"
+                            min={0}
+                            step="0.1"
+                            value={form.kmIda}
+                            onChange={e => set('kmIda', e.target.value)}
+                            placeholder="0"
+                            hint={kmTotal > 0 ? `${kmTotal.toLocaleString('es-AR')} km en total` : undefined}
+                        />
+                        <div className="sm:pt-[26px]">
+                            <Button variant="secondary" icon={<MapPinned />} onClick={calcularKm} isLoading={calculandoKm} disabled={!form.origen.trim() || !form.destino.trim()} className="w-full sm:w-auto">
+                                Calcular km
+                            </Button>
+                        </div>
+                    </div>
+                    {rutaEncontrada && <p className="text-xs text-slate-600 dark:text-slate-300 -mt-2">{rutaEncontrada}. Verificá que los lugares sean los correctos.</p>}
+                    <div className="flex flex-wrap gap-x-5 gap-y-2">
+                        <label className="inline-flex items-center gap-2 text-[13px] text-slate-700 dark:text-slate-200 min-h-10">
+                            <input type="checkbox" className="w-4 h-4 accent-primary" checked={form.idaYVuelta} onChange={e => set('idaYVuelta', e.target.checked)} />
+                            Ida y vuelta
+                        </label>
+                        <label className="inline-flex items-center gap-2 text-[13px] text-slate-700 dark:text-slate-200 min-h-10">
+                            <input type="checkbox" className="w-4 h-4 accent-primary" checked={form.desayuno} onChange={e => set('desayuno', e.target.checked)} />
+                            Desayuno
+                        </label>
+                        <label className="inline-flex items-center gap-2 text-[13px] text-slate-700 dark:text-slate-200 min-h-10">
+                            <input type="checkbox" className="w-4 h-4 accent-primary" checked={form.hoteleria} onChange={e => set('hoteleria', e.target.checked)} />
+                            Hotelería {noches === 0 && fechasOk && <span className="text-xs text-slate-500 dark:text-slate-400">(sin noches)</span>}
+                        </label>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <Select label="Comidas por día" value={String(form.comidasPorDia)} onChange={e => set('comidasPorDia', Number(e.target.value))}>
+                            <option value="2">Almuerzo y cena</option>
+                            <option value="1">Una comida</option>
+                            <option value="0">Ninguna</option>
+                        </Select>
+                        <Select label="Valor de comidas" value={form.lugarComidas} onChange={e => set('lugarComidas', e.target.value as 'viaje' | 'residencia')} disabled={form.comidasPorDia === 0}>
+                            <option value="viaje">En viaje</option>
+                            <option value="residencia">En lugar de residencia</option>
+                        </Select>
+                    </div>
+                </section>
+
+                {/* 4. Costos */}
+                <section className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <h3 className="eyebrow">Costos estimados</h3>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {dias || '—'} día{dias === 1 ? '' : 's'} · {noches} noche{noches === 1 ? '' : 's'} · {personas} persona{personas === 1 ? '' : 's'}
+                        </span>
+                    </div>
+                    {tarifa && (
+                        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface-sunken border border-border px-3 py-2">
+                            <p className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                <Calculator className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                {costosManual
+                                    ? 'Costos ajustados a mano. Podés volver a calcularlos con los valores de referencia.'
+                                    : 'Precalculados con los valores de referencia. Se actualizan al cambiar el recorrido o los viáticos.'}
+                            </p>
+                            {costosManual && (
+                                <Button variant="ghost" size="sm" icon={<RotateCcw />} onClick={() => setCostosManual(false)}>
+                                    {viaje ? 'Recalcular con valores vigentes' : 'Volver a precalcular'}
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                    {form.costos.length === 0 && (
+                        <p className="text-[13px] text-slate-500 dark:text-slate-400">Sin costos estimados. Elegí el medio de transporte y los km, o agregá costos a mano.</p>
+                    )}
+                    <ul className="space-y-2">
+                        {form.costos.map((c, i) => (
+                            <li key={c.key} className="grid grid-cols-2 sm:grid-cols-[minmax(150px,1fr)_minmax(180px,1.2fr)_minmax(130px,1fr)_auto] gap-2 items-start rounded-lg border border-border p-2 sm:p-0 sm:border-0">
+                                <Select aria-label="Categoría" value={c.categoria} onChange={e => setCosto(c.key, { categoria: e.target.value as CategoriaGasto })}>
+                                    {CATEGORIAS_GASTO.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </Select>
+                                <Select aria-label="Base de cálculo" value={c.base} onChange={e => setCosto(c.key, { base: e.target.value as BaseCosto })}>
+                                    {BASES_COSTO.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                </Select>
+                                <MoneyInput aria-label="Monto unitario" value={c.monto} onValueChange={v => setCosto(c.key, { monto: v })} className="input" />
+                                <div className="flex items-center justify-end gap-1 sm:min-w-[150px]">
+                                    <span className="text-[13px] tabular-nums text-slate-600 dark:text-slate-300 text-right flex-1">{money(subtotales[i])}</span>
+                                    <Button variant="ghost" size="icon" onClick={() => { setCostosManual(true); set('costos', form.costos.filter(x => x.key !== c.key)); }} aria-label="Quitar costo">
+                                        <Trash2 />
+                                    </Button>
+                                </div>
+                                {c.descripcion && <p className="col-span-2 sm:col-span-4 -mt-1 text-xs text-slate-500 dark:text-slate-400">{c.descripcion}</p>}
+                            </li>
+                        ))}
+                    </ul>
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <Button
+                            variant="tonal"
+                            size="sm"
+                            icon={<Plus />}
+                            onClick={() => { setCostosManual(true); set('costos', [...form.costos, { key: nuevaKey(), categoria: 'otros', base: 'total', monto: '', descripcion: '' }]); }}
+                        >
+                            Agregar costo
+                        </Button>
+                        <p className="text-[13px] text-slate-600 dark:text-slate-300">
+                            Total estimado <span className="ml-1 text-heading tabular-nums text-slate-900 dark:text-slate-50">{money(estimado)}</span>
+                        </p>
+                    </div>
+                </section>
+
+                {/* 5. Fondos */}
                 <section className="space-y-4">
                     <h3 className="eyebrow">Entrega de dinero</h3>
                     <OpcionesGrandes
@@ -324,51 +508,6 @@ export default function ViajeFormDialog({
                             </div>
                         </Field>
                     )}
-                </section>
-
-                {/* 4. Costos */}
-                <section className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                        <h3 className="eyebrow">Costos estimados</h3>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                            {dias || '—'} días · {noches} noches · {personas} persona{personas === 1 ? '' : 's'}
-                        </span>
-                    </div>
-                    {form.costos.length === 0 && (
-                        <p className="text-[13px] text-slate-500 dark:text-slate-400">Sin costos estimados. El consumo no se podrá comparar contra un presupuesto.</p>
-                    )}
-                    <ul className="space-y-2">
-                        {form.costos.map((c, i) => (
-                            <li key={c.key} className="grid grid-cols-2 sm:grid-cols-[minmax(150px,1fr)_minmax(180px,1.2fr)_minmax(130px,1fr)_auto] gap-2 items-start rounded-lg border border-border p-2 sm:p-0 sm:border-0">
-                                <Select aria-label="Categoría" value={c.categoria} onChange={e => setCosto(c.key, { categoria: e.target.value as CategoriaGasto })}>
-                                    {CATEGORIAS_GASTO.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                                </Select>
-                                <Select aria-label="Base de cálculo" value={c.base} onChange={e => setCosto(c.key, { base: e.target.value as BaseCosto })}>
-                                    {BASES_COSTO.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                                </Select>
-                                <MoneyInput aria-label="Monto unitario" value={c.monto} onValueChange={v => setCosto(c.key, { monto: v })} className="input" />
-                                <div className="flex items-center justify-end gap-1 sm:min-w-[150px]">
-                                    <span className="text-[13px] tabular-nums text-slate-600 dark:text-slate-300 text-right flex-1">{money(subtotales[i])}</span>
-                                    <Button variant="ghost" size="icon" onClick={() => set('costos', form.costos.filter(x => x.key !== c.key))} aria-label="Quitar costo">
-                                        <Trash2 />
-                                    </Button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                        <Button
-                            variant="tonal"
-                            size="sm"
-                            icon={<Plus />}
-                            onClick={() => set('costos', [...form.costos, { key: nuevaKey(), categoria: 'otros', base: 'total', monto: '', descripcion: '' }])}
-                        >
-                            Agregar costo
-                        </Button>
-                        <p className="text-[13px] text-slate-600 dark:text-slate-300">
-                            Total estimado <span className="ml-1 text-heading tabular-nums text-slate-900 dark:text-slate-50">{money(estimado)}</span>
-                        </p>
-                    </div>
                 </section>
 
                 {error && <p role="alert" className="field-error rounded-lg bg-danger-50 dark:bg-danger-950 px-3 py-2">{error}</p>}

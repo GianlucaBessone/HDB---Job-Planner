@@ -4,7 +4,7 @@ import { logAudit } from '@/lib/audit';
 import { formatFechaCorta, fromISODate, toISODate, viajeEditablePorResponsable } from '@/lib/viajes';
 import { extensionSchema } from '@/lib/viajesSchemas';
 import {
-    cargarViaje, errorValidacion, esResponsable, getActor, noEncontrado, notificar, prohibido, puedeVer, registrarHistorial, serializarViaje,
+    cargarViaje, errorValidacion, esResponsable, getActor, noEncontrado, notificarViaje, prohibido, puedeVer, registrarHistorial, serializarViaje,
 } from '@/lib/viajesServer';
 
 export const dynamic = 'force-dynamic';
@@ -46,15 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
         await logAudit({ userId: actor.userId || undefined, userName: actor.nombre, action: 'UPDATE', entity: 'Viaje', entityId: id, oldValue: { fechaFin: finActual }, newValue: { fechaFin: fechaFinNueva, motivo } });
 
-        await notificar({
-            aGestores: true,
-            excluirId: actor.userId,
-            titulo: 'Estadía extendida',
-            mensaje: `${viaje.codigo} (${viaje.destino}) se extiende hasta el ${formatFechaCorta(fechaFinNueva)}: ${motivo}`,
-            viajeId: id,
-            url: `/viajes/${id}`,
-            type: 'VIAJE_EXTENDIDO',
-        });
+        await notificarViaje(viaje, actor, 'extendido', `Hasta el ${formatFechaCorta(fechaFinNueva)}: ${motivo}`);
 
         const actualizado = await cargarViaje(id);
         return NextResponse.json(serializarViaje(actualizado!, actor), { status: 201 });

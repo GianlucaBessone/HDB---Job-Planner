@@ -13,7 +13,7 @@ import {
 } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import {
-    baseLabel, categoriaLabel, esGestorViajes, formatFechaCorta, formatRangoFechas, MODALIDAD_LABEL, viajeConfigurable,
+    baseLabel, categoriaLabel, esGestorViajes, formatFechaCorta, formatFechaHora, formatRangoFechas, kmTotales, MODALIDAD_LABEL, medioLabel, viajeConfigurable,
     type ModalidadFondos,
 } from '@/lib/viajes';
 import ViajeFormDialog from '@/components/viajes/ViajeFormDialog';
@@ -176,6 +176,12 @@ export default function ViajeAdminDetallePage() {
                 <span>Responsable: <b className="font-medium text-slate-900 dark:text-slate-100">{viaje.responsable?.nombreCompleto}</b></span>
                 <span>{MODALIDAD_LABEL[viaje.modalidadFondos as ModalidadFondos]}</span>
                 <span>{r.dias} días · {r.personas} persona{r.personas === 1 ? '' : 's'}</span>
+                {(viaje.medioTransporte || viaje.kmIda) && (
+                    <span>
+                        {viaje.medioTransporte ? medioLabel(viaje.medioTransporte) : 'Recorrido'}
+                        {viaje.kmIda ? ` · ${kmTotales(viaje.kmIda, viaje.idaYVuelta).toLocaleString('es-AR')} km${viaje.idaYVuelta ? ' ida y vuelta' : ''}` : ''}
+                    </span>
+                )}
                 {viaje.project && <span>Proyecto: {viaje.project.codigoProyecto ? `${viaje.project.codigoProyecto} · ` : ''}{viaje.project.nombre}</span>}
                 {viaje.fechaFin !== viaje.fechaFinOriginal && (
                     <Badge tone="warning">Extendido desde el {formatFechaCorta(viaje.fechaFinOriginal)}</Badge>
@@ -230,7 +236,7 @@ export default function ViajeAdminDetallePage() {
                             )}
                         </Panel>
 
-                        <Panel title="Presupuesto configurado" description={`${r.dias} días · ${r.noches} noches · ${r.personas} personas`} padded={false}>
+                        <Panel title="Presupuesto configurado" description={`${r.dias} día${r.dias === 1 ? '' : 's'} · ${r.noches} noche${r.noches === 1 ? '' : 's'} · ${r.personas} persona${r.personas === 1 ? '' : 's'}`} padded={false}>
                             {viaje.costos.length === 0 ? (
                                 <EmptyState compact title="Sin costos estimados" description="Editá el viaje para cargar el presupuesto." />
                             ) : (
@@ -294,7 +300,7 @@ export default function ViajeAdminDetallePage() {
                     </div>
 
                     {cerrado && (
-                        <Panel title="Cierre de la rendición" description={`Cerrado por ${viaje.cerradoPorNombre || '—'} el ${new Date(viaje.fechaCierre).toLocaleDateString('es-AR')}`}>
+                        <Panel title="Cierre de la rendición" description={`Cerrado por ${viaje.cerradoPorNombre || '—'} el ${formatFechaHora(viaje.fechaCierre)}`}>
                             <ResultadoLiquidacion totales={totales} />
                             {viaje.observacionCierre && <p className="mt-3 text-[13px] text-slate-600 dark:text-slate-300 whitespace-pre-line">{viaje.observacionCierre}</p>}
                         </Panel>

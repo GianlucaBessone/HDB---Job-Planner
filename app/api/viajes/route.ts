@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { calcularResumen, fromISODate, generarCodigoViaje, redondear, toISODate, VIAJE_ESTADOS } from '@/lib/viajes';
 import { viajeConfigSchema } from '@/lib/viajesSchemas';
-import { errorValidacion, getActor, notificar, prohibido, registrarHistorial } from '@/lib/viajesServer';
+import { errorValidacion, getActor, notificarViaje, prohibido, registrarHistorial } from '@/lib/viajesServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -145,6 +145,10 @@ export async function POST(req: NextRequest) {
                     responsableId: responsable.id,
                     creadoPorId: actor.userId,
                     projectId: d.projectId,
+                    medioTransporte: d.medioTransporte,
+                    kmIda: d.kmIda,
+                    idaYVuelta: d.idaYVuelta,
+                    tarifaId: d.tarifaId,
                     participantes: {
                         create: participantes.map((p, i) => ({ operatorId: p.operatorId || null, nombre: p.nombre, orden: i })),
                     },
@@ -159,15 +163,7 @@ export async function POST(req: NextRequest) {
 
         await logAudit({ userId: actor.userId, userName: actor.nombre, action: 'CREATE', entity: 'Viaje', entityId: viaje.id, newValue: { codigo: viaje.codigo, motivo: viaje.motivo } });
 
-        await notificar({
-            operatorIds: [responsable.id],
-            excluirId: actor.userId,
-            titulo: 'Nuevo viaje asignado',
-            mensaje: `Sos responsable del viaje ${viaje.codigo}: ${viaje.origen} → ${viaje.destino}.`,
-            viajeId: viaje.id,
-            url: `/mis-viajes/${viaje.id}`,
-            type: 'VIAJE_ASIGNADO',
-        });
+        await notificarViaje(viaje, actor, 'creado');
 
         return NextResponse.json(viaje, { status: 201 });
     } catch (error) {

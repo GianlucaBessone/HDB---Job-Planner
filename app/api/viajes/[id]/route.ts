@@ -5,7 +5,7 @@ import { formatARS } from '@/lib/formatCurrency';
 import { formatFechaCorta, fromISODate, MODALIDAD_LABEL, redondear, toISODate, viajeConfigurable } from '@/lib/viajes';
 import { viajeConfigSchema } from '@/lib/viajesSchemas';
 import {
-    cargarViaje, errorValidacion, getActor, noEncontrado, notificar, prohibido, puedeVer, registrarHistorial, serializarViaje,
+    cargarViaje, errorValidacion, getActor, noEncontrado, notificarViaje, prohibido, puedeVer, registrarHistorial, serializarViaje,
 } from '@/lib/viajesServer';
 
 export const dynamic = 'force-dynamic';
@@ -97,6 +97,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
                     montoAnticipo: anticipoNuevo,
                     responsableId: responsable.id,
                     projectId: d.projectId,
+                    medioTransporte: d.medioTransporte,
+                    kmIda: d.kmIda,
+                    idaYVuelta: d.idaYVuelta,
+                    tarifaId: d.tarifaId,
                 },
             });
 
@@ -126,15 +130,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         await logAudit({ userId: actor.userId || undefined, userName: actor.nombre, action: 'UPDATE', entity: 'Viaje', entityId: id, newValue: d, oldValue: { estado: actual.estado } });
 
         if (actual.responsableId !== responsable.id) {
-            await notificar({
-                operatorIds: [responsable.id],
-                excluirId: actor.userId,
-                titulo: 'Nuevo viaje asignado',
-                mensaje: `Sos responsable del viaje ${actual.codigo}: ${d.origen} → ${d.destino}.`,
-                viajeId: id,
-                url: `/mis-viajes/${id}`,
-                type: 'VIAJE_ASIGNADO',
-            });
+            await notificarViaje({ ...actual, origen: d.origen, destino: d.destino, responsableId: responsable.id }, actor, 'reasignado');
         }
 
         const viaje = await cargarViaje(id);
