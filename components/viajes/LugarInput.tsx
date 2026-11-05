@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Loader2, MapPin } from 'lucide-react';
 import { Field } from '@/components/ui';
 import { cn } from '@/lib/cn';
-import { buscarLugares, etiquetaLugar, type Lugar } from './distancia';
+import { buscarLugares, etiquetaLugar, resolverLugar, type Lugar } from './distancia';
 
 /** Campo de lugar con sugerencias de OpenStreetMap mientras se escribe. */
 export default function LugarInput({
@@ -71,11 +71,22 @@ export default function LugarInput({
 
     const mostrarLista = abierto && !lugar && value.trim().length >= 3 && (sugerencias.length > 0 || sinResultados || errorRed);
 
-    const elegir = (l: Lugar) => {
-        consulta.current = etiquetaLugar(l);
-        onChange(etiquetaLugar(l), l);
+    const elegir = async (sugerencia: Lugar) => {
+        const etiqueta = etiquetaLugar(sugerencia);
+        consulta.current = etiqueta;
         setAbierto(false);
         setSugerencias([]);
+        onChange(etiqueta, null);
+        // Las sugerencias de Google llegan sin coordenadas: se piden al elegir.
+        setBuscando(true);
+        try {
+            onChange(etiqueta, await resolverLugar(sugerencia));
+        } catch {
+            setErrorRed(true);
+            setAbierto(true);
+        } finally {
+            setBuscando(false);
+        }
     };
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
