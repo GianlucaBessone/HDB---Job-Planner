@@ -207,10 +207,18 @@ un viaje existente los costos no cambian salvo con "Recalcular con valores vigen
 guarda medio, km, ida y vuelta y la versión de valores usada (`medioTransporte`, `kmIda`,
 `idaYVuelta`, `tarifaId`).
 
-**Calcular km** ubica origen y destino con OpenStreetMap (Nominatim) y mide la ruta en auto (OSRM),
-desde el navegador y sin clave de API. Son servicios públicos y gratuitos con límite de uso, y se
-consultan solo al apretar el botón. Si no responden, los km se cargan a mano. Para usar Google Maps
-hace falta una API key con facturación.
+**Origen y destino en el mapa.** Los campos de origen y destino sugieren lugares mientras se
+escribe (desde la tercera letra, con 300 ms de pausa), con localidades primero y limitadas a
+Argentina. También se puede tocar el mapa para marcar el punto (el control "Origen / Destino" indica
+cuál) o arrastrar los marcadores A y B. Con los dos puntos ubicados, se dibuja la ruta y los km de ida
+se calculan solos. Si se escribe un lugar sin elegirlo de la lista, "Calcular km" toma la primera
+coincidencia.
+
+Servicios usados, todos de OpenStreetMap, gratuitos y sin clave de API (con límite de uso razonable):
+Photon (komoot) para sugerencias y búsqueda inversa, OSRM para la ruta en auto y los mosaicos de
+openstreetmap.org para el mapa. Si no responden, los km se cargan a mano. Para usar Google Maps hace
+falta una API key con facturación. Las coordenadas no se guardan: el viaje guarda el nombre del lugar
+y los km, así que al editar un viaje el mapa arranca vacío.
 
 ## 9. Notificaciones
 

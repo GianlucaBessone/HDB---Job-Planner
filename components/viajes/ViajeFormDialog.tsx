@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Calculator, Check, MapPinned, Plus, RotateCcw, Trash2, UserPlus, Wallet, HandCoins, X } from 'lucide-react';
-import { Button, Dialog, Field, Input, MoneyInput, Select, Textarea } from '@/components/ui';
+import { Button, Dialog, Field, Input, MoneyInput, SegmentedControl, Select, Textarea } from '@/components/ui';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { showToast } from '@/components/Toast';
 import {
@@ -11,7 +11,9 @@ import {
 } from '@/lib/viajes';
 import { apiJson, money, OpcionesGrandes } from './shared';
 import type { TarifaVigente } from './TarifasDialog';
-import { calcularDistancia } from './distancia';
+import { calcularRuta, etiquetaLugar, lugarEn, ubicarTexto, type Lugar } from './distancia';
+import LugarInput from './LugarInput';
+import RutaMapa from './RutaMapa';
 
 interface Operador { id: string; nombreCompleto: string; activo?: boolean; role?: string }
 interface Proyecto { id: string; nombre: string; codigoProyecto?: string | null; activo?: boolean }
@@ -112,12 +114,21 @@ export default function ViajeFormDialog({
     const [costosManual, setCostosManual] = useState(!!viaje);
     const [calculandoKm, setCalculandoKm] = useState(false);
     const [rutaEncontrada, setRutaEncontrada] = useState<string | null>(null);
+    // Origen y destino ubicados en el mapa (no se guardan: el viaje guarda el nombre y los km).
+    const [origenLugar, setOrigenLugar] = useState<Lugar | null>(null);
+    const [destinoLugar, setDestinoLugar] = useState<Lugar | null>(null);
+    const [trazado, setTrazado] = useState<[number, number][]>([]);
+    const [marcando, setMarcando] = useState<'A' | 'B'>('A');
 
     useEffect(() => {
         if (!open) return;
         setForm(inicial(viaje));
         setCostosManual(!!viaje);
         setRutaEncontrada(null);
+        setOrigenLugar(null);
+        setDestinoLugar(null);
+        setTrazado([]);
+        setMarcando('A');
         apiJson<{ vigente: TarifaVigente }>('/api/viajes/tarifas').then(r => setTarifa(r.vigente)).catch(() => setTarifa(null));
         setError(null);
         setAgregarId('');
@@ -170,14 +181,56 @@ export default function ViajeFormDialog({
 
     const kmTotal = kmTotales(Number(form.kmIda) || 0, form.idaYVuelta);
 
+    const trazarRuta = async (a: Lugar, b: Lugar) => {
+        setCalculandoKm(true);
+        try {
+            const ruta = await calcularRuta(a, b);
+            setTrazado(ruta.trazado);
+            set('kmIda', String(ruta.km));
+            setRutaEncontrada(`${etiquetaLugar(a)} → ${etiquetaLugar(b)}: ${ruta.km.toLocaleString('es-AR')} km por ruta`);
+        } catch (e: any) {
+            setTrazado([]);
+            setError(e.message);
+        } finally {
+            setCalculandoKm(false);
+        }
+    };
+
+    // Con origen y destino ubicados, los km se calculan solos.
+    useEffect(() => {
+        if (!open || !origenLugar || !destinoLugar) { setTrazado([]); return; }
+        trazarRuta(origenLugar, destinoLugar);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, origenLugar?.lat, origenLugar?.lon, destinoLugar?.lat, destinoLugar?.lon]);
+
+    const elegirLugar = (marca: 'A' | 'B', texto: string, lugar: Lugar | null) => {
+        if (marca === 'A') { set('origen', texto); setOrigenLugar(lugar); if (lugar && !destinoLugar) setMarcando('B'); }
+        else { set('destino', texto); setDestinoLugar(lugar); if (lugar && !origenLugar) setMarcando('A'); }
+        if (!lugar) setRutaEncontrada(null);
+    };
+
+    const tocarMapa = async (marca: 'A' | 'B', lat: number, lon: number) => {
+        const provisorio: Lugar = { nombre: 'Buscando…', detalle: '', lat, lon };
+        if (marca === 'A') setOrigenLugar(provisorio); else setDestinoLugar(provisorio);
+        const l = await lugarEn(lat, lon);
+        elegirLugar(marca, etiquetaLugar(l), l);
+    };
+
+    // Para origen o destino escritos sin elegir de la lista.
     const calcularKm = async () => {
         if (form.origen.trim().length < 2 || form.destino.trim().length < 2) return setError('Completá origen y destino para calcular los km.');
         setError(null);
         setCalculandoKm(true);
         try {
-            const r = await calcularDistancia(form.origen.trim(), form.destino.trim());
-            set('kmIda', String(r.kmIda));
-            setRutaEncontrada(`${r.origen.nombre} → ${r.destino.nombre}: ${r.kmIda.toLocaleString('es-AR')} km por ruta`);
+            if (origenLugar && destinoLugar) {
+                await trazarRuta(origenLugar, destinoLugar);
+            } else {
+                // Al ubicarlos, el efecto de arriba calcula la ruta.
+                const a = origenLugar || await ubicarTexto(form.origen);
+                const b = destinoLugar || await ubicarTexto(form.destino);
+                setOrigenLugar(a);
+                setDestinoLugar(b);
+            }
         } catch (e: any) {
             setError(e.message);
         } finally {
@@ -278,8 +331,25 @@ export default function ViajeFormDialog({
                     <h3 className="eyebrow">Datos del viaje</h3>
                     <Input label="Motivo" required value={form.motivo} onChange={e => set('motivo', e.target.value)} placeholder="Ej.: Montaje tablero planta Rafaela" maxLength={200} data-autofocus />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Input label="Origen" required value={form.origen} onChange={e => set('origen', e.target.value)} placeholder="Ciudad de partida" maxLength={160} />
-                        <Input label="Destino" required value={form.destino} onChange={e => set('destino', e.target.value)} placeholder="Ciudad de destino" maxLength={160} />
+                        <LugarInput label="Origen" marca="A" required value={form.origen} lugar={origenLugar} onChange={(t, l) => elegirLugar('A', t, l)} placeholder="Buscá la ciudad de partida" />
+                        <LugarInput label="Destino" marca="B" required value={form.destino} lugar={destinoLugar} onChange={(t, l) => elegirLugar('B', t, l)} placeholder="Buscá la ciudad de destino" />
+                    </div>
+                    <div>
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Tocá el mapa para marcar o arrastrá los puntos.</span>
+                            <SegmentedControl
+                                label="Punto que marca el mapa"
+                                value={marcando}
+                                onChange={v => setMarcando(v as 'A' | 'B')}
+                                options={[{ value: 'A', label: 'Origen' }, { value: 'B', label: 'Destino' }]}
+                            />
+                        </div>
+                        <div className="relative isolate h-[240px] sm:h-[300px] rounded-xl overflow-hidden border border-border">
+                            <RutaMapa origen={origenLugar} destino={destinoLugar} trazado={trazado} marcando={marcando} onPick={tocarMapa} />
+                        </div>
+                        {rutaEncontrada && <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-300">{rutaEncontrada}</p>}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input label="Fecha de inicio" type="date" required value={form.fechaInicio} onChange={e => set('fechaInicio', e.target.value)} className="max-md:text-[16px]" />
                         <Input
                             label="Fecha de fin"
@@ -393,11 +463,10 @@ export default function ViajeFormDialog({
                         />
                         <div className="sm:pt-[26px]">
                             <Button variant="secondary" icon={<MapPinned />} onClick={calcularKm} isLoading={calculandoKm} disabled={!form.origen.trim() || !form.destino.trim()} className="w-full sm:w-auto">
-                                Calcular km
+                                {origenLugar && destinoLugar ? 'Recalcular km' : 'Calcular km'}
                             </Button>
                         </div>
                     </div>
-                    {rutaEncontrada && <p className="text-xs text-slate-600 dark:text-slate-300 -mt-2">{rutaEncontrada}. Verificá que los lugares sean los correctos.</p>}
                     <div className="flex flex-wrap gap-x-5 gap-y-2">
                         <label className="inline-flex items-center gap-2 text-[13px] text-slate-700 dark:text-slate-200 min-h-10">
                             <input type="checkbox" className="w-4 h-4 accent-primary" checked={form.idaYVuelta} onChange={e => set('idaYVuelta', e.target.checked)} />
