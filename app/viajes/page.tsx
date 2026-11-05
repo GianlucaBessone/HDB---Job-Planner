@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, Plane, Plus, RefreshCw } from 'lucide-react';
+import { ChevronRight, Plane, Plus, RefreshCw, Settings } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import { showToast } from '@/components/Toast';
-import { EmptyState, ErrorState, LoadingState, Stat } from '@/components/ui';
+import { EmptyState, ErrorState, LoadingState, Stat, Tooltip } from '@/components/ui';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { esGestorViajes, formatRangoFechas, MODALIDAD_CORTA, type ModalidadFondos } from '@/lib/viajes';
 import ViajeFormDialog from '@/components/viajes/ViajeFormDialog';
+import TarifasDialog from '@/components/viajes/TarifasDialog';
 import { apiJson, BarraConsumo, EstadoViajeBadge, money, Ruta } from '@/components/viajes/shared';
 
 type Tab = 'activos' | 'por_rendir' | 'cerrados' | 'cancelados';
@@ -30,6 +31,7 @@ export default function ViajesAdminPage() {
     const [q, setQ] = useState('');
     const [tab, setTab] = useState<Tab>('activos');
     const [nuevoOpen, setNuevoOpen] = useState(false);
+    const [tarifasOpen, setTarifasOpen] = useState(false);
 
     useEffect(() => {
         try { setRole((JSON.parse(localStorage.getItem('currentUser') || '{}').role || 'operador').toLowerCase()); } catch { setRole('operador'); }
@@ -108,6 +110,13 @@ export default function ViajesAdminPage() {
                 searchValue={q}
                 onSearchChange={setQ}
                 searchPlaceholder="Buscar por código, destino o responsable…"
+                toolbar={
+                    <Tooltip content="Valores de referencia">
+                        <button type="button" className="btn btn-secondary btn-icon" onClick={() => setTarifasOpen(true)} aria-label="Valores de referencia de viáticos">
+                            <Settings />
+                        </button>
+                    </Tooltip>
+                }
                 actions={[
                     { id: 'refresh', label: 'Actualizar', icon: <RefreshCw />, onClick: cargar, variant: 'outline', hideLabelOnMobile: true },
                     { id: 'nuevo', label: 'Nuevo viaje', icon: <Plus />, onClick: () => setNuevoOpen(true), variant: 'primary' },
@@ -225,6 +234,8 @@ export default function ViajesAdminPage() {
                     </ul>
                 </>
             )}
+
+            <TarifasDialog open={tarifasOpen} onClose={() => setTarifasOpen(false)} />
 
             <ViajeFormDialog
                 open={nuevoOpen}

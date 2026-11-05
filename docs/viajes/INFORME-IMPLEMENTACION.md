@@ -183,7 +183,51 @@ DELETE FROM "Activity" WHERE "entityType" = 'viaje';
 
 (El `CASCADE` vacía participantes, costos, gastos, afectados, extensiones e historial.)
 
-## 8. Fuera de alcance (posibles mejoras)
+## 8. Valores de referencia y precálculo
+
+En **Viajes y Viáticos**, el ícono de engranaje (entre el buscador y "Actualizar") abre los valores
+de referencia: desayuno, almuerzo/cena en lugar de residencia y en viaje, hotelería, auto propio,
+combustible gas y nafta. Cada guardado crea una versión con su **vigencia desde** (tabla
+`ViajeTarifa`), y la vigente es la última con vigencia hasta hoy, así que se puede cargar con
+anticipación. Los viajes ya creados conservan sus montos. Mientras no se guarde nada se usan los de
+la planilla del 04/11/2026.
+
+Al crear un viaje se elige el **medio de transporte** y los **km de ida** (con "ida y vuelta"), y
+los costos estimados se precalculan solos:
+
+| Línea | Base | Cálculo |
+|---|---|---|
+| Transporte (auto propio, nafta o gas) | Monto total | km totales × valor por km |
+| Desayuno | Por persona y día | valor de desayuno |
+| Almuerzo y cena | Por persona y día | valor por comida (en viaje o en lugar de residencia) × comidas por día |
+| Hotelería | Por persona y noche | valor de hotelería |
+
+Si se toca una línea a mano, deja de recalcularse ("Volver a precalcular" la restituye). Al editar
+un viaje existente los costos no cambian salvo con "Recalcular con valores vigentes". El viaje
+guarda medio, km, ida y vuelta y la versión de valores usada (`medioTransporte`, `kmIda`,
+`idaYVuelta`, `tarifaId`).
+
+**Calcular km** ubica origen y destino con OpenStreetMap (Nominatim) y mide la ruta en auto (OSRM),
+desde el navegador y sin clave de API. Son servicios públicos y gratuitos con límite de uso, y se
+consultan solo al apretar el botón. Si no responden, los km se cargan a mano. Para usar Google Maps
+hace falta una API key con facturación.
+
+## 9. Notificaciones
+
+Cada evento se avisa (actividad interna + push) al **creador** y al **responsable** del viaje,
+salvo a quien hizo la acción. El responsable recibe el enlace a Mis Viajes y el creador a la gestión.
+
+| Evento | Responsable | Creador |
+|---|---|---|
+| Creado / reasignado | ✔ | — (lo hizo él) |
+| Iniciado, extendido, concluido | si lo hizo otro | ✔ |
+| Cerrado, devuelto, cancelado | ✔ | si lo hizo otro gestor |
+
+Si el creador y el responsable son la misma persona, no se autonotifica. Si el viaje no tiene creador
+(usuario dado de baja), conclusión y extensión van a supervisores y administradores. El envío a
+OneSignal se espera (con un tope de 6 s) para que Vercel no corte la función antes de mandarlo.
+
+## 10. Fuera de alcance (posibles mejoras)
 - Lectura automática del ticket con IA (ya existe para Gastos y Facturas; se puede reutilizar).
 - Carga sin conexión (cola offline).
 - Exportación contable / vínculo con `FacturaConsumo`.

@@ -354,3 +354,96 @@ export function toneConsumo(porcentaje: number): 'success' | 'warning' | 'danger
 export function generarCodigoViaje(year: number, numero: number): string {
     return `VJE-${year}-${String(numero).padStart(4, '0')}`;
 }
+
+// ── Valores de referencia (tarifas) y precálculo ───────────────────
+
+export const CONCEPTOS_TARIFA = [
+    { key: 'desayuno', label: 'Desayuno', unidad: 'por persona / día' },
+    { key: 'comidaResidencia', label: 'Almuerzo/cena en lugar de residencia', unidad: 'por persona / comida' },
+    { key: 'comidaViaje', label: 'Almuerzo/cena en viaje', unidad: 'por persona / comida' },
+    { key: 'hoteleria', label: 'Hotelería', unidad: 'por persona / noche' },
+    { key: 'autoPropioKm', label: 'Auto propio', unidad: 'por km' },
+    { key: 'gasKm', label: 'Combustible – Gas', unidad: 'por km' },
+    { key: 'naftaKm', label: 'Combustible – Nafta', unidad: 'por km' },
+] as const;
+
+export type ConceptoTarifa = (typeof CONCEPTOS_TARIFA)[number]['key'];
+export type ValoresTarifa = Record<ConceptoTarifa, number>;
+
+/** Valores iniciales (planilla de referencia vigente desde el 04/11/2026). Se usan hasta guardar los propios. */
+export const TARIFA_INICIAL: ValoresTarifa = {
+    desayuno: 5000,
+    comidaResidencia: 20000,
+    comidaViaje: 24000,
+    hoteleria: 25000,
+    autoPropioKm: 440,
+    gasKm: 110,
+    naftaKm: 380,
+};
+export const TARIFA_INICIAL_VIGENCIA = '2026-11-04';
+
+export const MEDIOS_TRANSPORTE: { value: string; label: string; tarifa: ConceptoTarifa | null }[] = [
+    { value: 'auto_propio', label: 'Auto propio', tarifa: 'autoPropioKm' },
+    { value: 'vehiculo_nafta', label: 'Vehículo de la empresa (nafta)', tarifa: 'naftaKm' },
+    { value: 'vehiculo_gas', label: 'Vehículo de la empresa (gas)', tarifa: 'gasKm' },
+    { value: 'otro', label: 'Otro (pasajes, sin cálculo por km)', tarifa: null },
+];
+
+export const MEDIO_VALUES = ['auto_propio', 'vehiculo_nafta', 'vehiculo_gas', 'otro'] as const;
+
+export function medioLabel(value: string | null | undefined): string {
+    return MEDIOS_TRANSPORTE.find(m => m.value === value)?.label || '—';
+}
+
+export interface OpcionesPrecalculo {
+    medioTransporte: string | null;
+    kmIda: number;
+    idaYVuelta: boolean;
+    desayuno: boolean;
+    comidasPorDia: number; // 0, 1 o 2 (almuerzo y cena)
+    lugarComidas: 'viaje' | 'residencia';
+    hoteleria: boolean;
+}
+
+export const fmtMonto = (n: number) => `$${(Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 })}`;
+
+export function kmTotales(kmIda: number | null | undefined, idaYVuelta: boolean): number {
+    const km = Math.max(0, Number(kmIda) || 0);
+    return redondear(idaYVuelta ? km * 2 : km);
+}
+
+/**
+ * Arma las líneas de costo estimado a partir de los valores de referencia.
+ * Las bases por día / noche hacen que el estimado acompañe una extensión de estadía.
+ */
+export function precalcularCostos(t: ValoresTarifa, o: OpcionesPrecalculo): CostoLinea[] {
+    const lineas: CostoLinea[] = [];
+    const medio = MEDIOS_TRANSPORTE.find(m => m.value === o.medioTransporte);
+    const km = kmTotales(o.kmIda, o.idaYVuelta);
+    if (medio?.tarifa && km > 0) {
+        const tarifa = t[medio.tarifa] || 0;
+        lineas.push({
+            categoria: medio.value === 'auto_propio' ? 'movilidad' : 'combustible',
+            base: 'total',
+            monto: redondear(km * tarifa),
+            descripcion: `${medio.label} · ${km.toLocaleString('es-AR')} km × ${fmtMonto(tarifa)}`,
+        });
+    }
+    if (o.desayuno && t.desayuno > 0) {
+        lineas.push({ categoria: 'comidas', base: 'por_persona_dia', monto: t.desayuno, descripcion: 'Desayuno' });
+    }
+    const n = Math.max(0, Math.min(2, Math.round(o.comidasPorDia)));
+    const tarifaComida = o.lugarComidas === 'residencia' ? t.comidaResidencia : t.comidaViaje;
+    if (n > 0 && tarifaComida > 0) {
+        lineas.push({
+            categoria: 'comidas',
+            base: 'por_persona_dia',
+            monto: redondear(tarifaComida * n),
+            descripcion: `${n === 2 ? 'Almuerzo y cena' : 'Almuerzo o cena'} ${o.lugarComidas === 'residencia' ? 'en lugar de residencia' : 'en viaje'} (${n} × ${fmtMonto(tarifaComida)})`,
+        });
+    }
+    if (o.hoteleria && t.hoteleria > 0) {
+        lineas.push({ categoria: 'alojamiento', base: 'por_persona_noche', monto: t.hoteleria, descripcion: 'Hotelería' });
+    }
+    return lineas;
+}

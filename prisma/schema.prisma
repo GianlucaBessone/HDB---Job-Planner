@@ -3711,6 +3711,12 @@ model Viaje {
   observacionCierre String?   @db.Text
   cierre            Json? // { estimado, gastado, aprobado, rechazado, anticipo, propios, resultado }
 
+  // Recorrido y precálculo con valores de referencia
+  medioTransporte   String? // auto_propio | vehiculo_nafta | vehiculo_gas | otro
+  kmIda             Float?
+  idaYVuelta        Boolean   @default(true)
+  tarifaId          String? // ViajeTarifa usada para el precálculo
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -3843,4 +3849,17 @@ model ViajeHistorial {
   createdAt     DateTime @default(now())
 
   @@index([viajeId])
+}
+
+// Valores de referencia de viáticos. Cada cambio crea una versión nueva con su vigencia:
+// los viajes ya estimados conservan sus montos y el historial queda para auditoría.
+model ViajeTarifa {
+  id              String   @id @default(cuid())
+  vigenciaDesde   DateTime @db.Date
+  valores         Json // { desayuno, comidaResidencia, comidaViaje, hoteleria, autoPropioKm, gasKm, naftaKm }
+  creadoPorId     String?
+  creadoPorNombre String
+  createdAt       DateTime @default(now())
+
+  @@index([vigenciaDesde])
 }

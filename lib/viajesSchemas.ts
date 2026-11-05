@@ -1,6 +1,6 @@
 // Esquemas Zod de la API de viajes.
 import { z } from 'zod';
-import { BASE_VALUES, CATEGORIA_VALUES, MODALIDADES_FONDOS, VIAJE_COMPROBANTES_MAX } from '@/lib/viajes';
+import { BASE_VALUES, CATEGORIA_VALUES, MEDIO_VALUES, MODALIDADES_FONDOS, VIAJE_COMPROBANTES_MAX } from '@/lib/viajes';
 
 export const fechaISO = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (AAAA-MM-DD).');
 const monto = z.coerce.number().finite('Monto inválido.').min(0, 'El monto no puede ser negativo.').max(1_000_000_000, 'Monto demasiado alto.');
@@ -32,6 +32,11 @@ export const viajeConfigSchema = z.object({
     projectId: z.string().max(60).optional().nullable().transform(v => v || null),
     participantes: z.array(participanteSchema).min(1, 'Agregá al menos un participante.').max(60),
     costos: z.array(costoSchema).max(60).default([]),
+    medioTransporte: z.enum(MEDIO_VALUES).optional().nullable().transform(v => v || null),
+    kmIda: z.coerce.number().finite().min(0, 'Los km no pueden ser negativos.').max(20000, 'Revisá los km.').optional().nullable()
+        .transform(v => (v ? Math.round(v * 10) / 10 : null)),
+    idaYVuelta: z.boolean().default(true),
+    tarifaId: z.string().max(60).optional().nullable().transform(v => v || null),
 }).refine(d => d.fechaFin >= d.fechaInicio, { message: 'La fecha de fin no puede ser anterior al inicio.', path: ['fechaFin'] });
 
 export const gastoSchema = z.object({
@@ -67,4 +72,19 @@ export const verificacionSchema = z.object({
         montoAprobado: monto.optional().nullable(),
         observacion: z.string().trim().max(1000).optional().nullable(),
     })).min(1).max(500),
+});
+
+const valorTarifa = z.coerce.number().finite('Valor inválido.').min(0, 'Los valores no pueden ser negativos.').max(100_000_000);
+
+export const tarifaSchema = z.object({
+    vigenciaDesde: fechaISO,
+    valores: z.object({
+        desayuno: valorTarifa,
+        comidaResidencia: valorTarifa,
+        comidaViaje: valorTarifa,
+        hoteleria: valorTarifa,
+        autoPropioKm: valorTarifa,
+        gasKm: valorTarifa,
+        naftaKm: valorTarifa,
+    }),
 });

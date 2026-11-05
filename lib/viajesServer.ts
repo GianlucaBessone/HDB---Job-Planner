@@ -150,13 +150,79 @@ export async function notificar(params: {
             },
         });
 
-        sendPushNotification({
-            userIds: ids,
-            title: params.titulo,
-            message: params.mensaje,
-            data: { type: params.type, viajeId: params.viajeId, url: params.url },
-        }).catch(e => console.error('[VIAJES_PUSH]', e));
+        // Se espera el envío (con tope): en Vercel la función puede cerrarse antes
+        // de que salga un pedido que quedó sin await.
+        await Promise.race([
+            sendPushNotification({
+                userIds: ids,
+                title: params.titulo,
+                message: params.mensaje,
+                data: { type: params.type, viajeId: params.viajeId, url: params.url },
+            }),
+            new Promise(resolve => setTimeout(resolve, 6000)),
+        ]).catch(e => console.error('[VIAJES_PUSH]', e));
     } catch (e) {
         console.error('[VIAJES_NOTIFICAR]', e);
     }
+}
+
+export type EventoViaje = 'creado' | 'iniciado' | 'concluido' | 'cerrado' | 'devuelto' | 'cancelado' | 'extendido' | 'reasignado';
+
+const EVENTO_TITULO: Record<EventoViaje, string> = {
+    creado: 'Nuevo viaje asignado',
+    reasignado: 'Nuevo viaje asignado',
+    iniciado: 'Viaje iniciado',
+    concluido: 'Viaje listo para rendir',
+    cerrado: 'Rendición cerrada',
+    devuelto: 'Viaje devuelto para corregir',
+    cancelado: 'Viaje cancelado',
+    extendido: 'Estadía extendida',
+};
+
+/**
+ * Notifica un evento al creador y al responsable del viaje, sin incluir a quien hizo la acción.
+ * Cada uno recibe el enlace a su vista: el responsable a Mis Viajes, el creador a la gestión.
+ * Si el viaje no tiene creador (usuario eliminado), lo que necesita administración va a los gestores.
+ */
+export async function notificarViaje(
+    viaje: { id: string; codigo: string; origen: string; destino: string; responsableId: string; creadoPorId: string | null },
+    actor: ViajeActor,
+    evento: EventoViaje,
+    detalle?: string,
+) {
+    const ruta = `${viaje.origen} → ${viaje.destino}`;
+    const mensajes: Record<EventoViaje, { responsable: string; creador: string }> = {
+        creado: { responsable: `Sos responsable del viaje ${viaje.codigo}: ${ruta}.`, creador: `${viaje.codigo} creado: ${ruta}.` },
+        reasignado: { responsable: `Sos responsable del viaje ${viaje.codigo}: ${ruta}.`, creador: `${viaje.codigo} cambió de responsable.` },
+        iniciado: { responsable: `${actor.nombre} inició ${viaje.codigo} (${ruta}).`, creador: `${actor.nombre} inició el viaje ${viaje.codigo} (${ruta}).` },
+        concluido: { responsable: `${viaje.codigo} quedó para rendir.`, creador: `${actor.nombre} concluyó ${viaje.codigo} (${viaje.destino}). Ya se puede rendir.` },
+        cerrado: { responsable: `${viaje.codigo}: ${detalle || 'rendición cerrada'}`, creador: `${actor.nombre} cerró la rendición de ${viaje.codigo}. ${detalle || ''}`.trim() },
+        devuelto: { responsable: `${viaje.codigo}: ${detalle || 'revisá los gastos'}`, creador: `${actor.nombre} devolvió ${viaje.codigo} al responsable.` },
+        cancelado: { responsable: `${viaje.codigo} fue cancelado. ${detalle || ''}`.trim(), creador: `${actor.nombre} canceló ${viaje.codigo}. ${detalle || ''}`.trim() },
+        extendido: { responsable: `${viaje.codigo} se extiende. ${detalle || ''}`.trim(), creador: `${actor.nombre} extendió ${viaje.codigo}. ${detalle || ''}`.trim() },
+    };
+    const m = mensajes[evento];
+    const type = `VIAJE_${evento.toUpperCase()}`;
+    const priority = evento === 'devuelto' ? 'HIGH' as const : 'NORMAL' as const;
+
+    const tareas: Promise<void>[] = [];
+    if (viaje.responsableId !== actor.userId) {
+        tareas.push(notificar({
+            operatorIds: [viaje.responsableId], titulo: EVENTO_TITULO[evento], mensaje: m.responsable,
+            viajeId: viaje.id, url: `/mis-viajes/${viaje.id}`, type, priority,
+        }));
+    }
+    const creador = viaje.creadoPorId;
+    if (creador && creador !== actor.userId && creador !== viaje.responsableId) {
+        tareas.push(notificar({
+            operatorIds: [creador], titulo: EVENTO_TITULO[evento], mensaje: m.creador,
+            viajeId: viaje.id, url: `/viajes/${viaje.id}`, type, priority,
+        }));
+    } else if (!creador && (evento === 'concluido' || evento === 'extendido')) {
+        tareas.push(notificar({
+            aGestores: true, excluirId: actor.userId, titulo: EVENTO_TITULO[evento], mensaje: m.creador,
+            viajeId: viaje.id, url: `/viajes/${viaje.id}`, type, priority,
+        }));
+    }
+    await Promise.all(tareas);
 }

@@ -12,7 +12,7 @@ import { showToast } from '@/components/Toast';
 import { Badge, Button, ConfirmDialogBase, Dialog, EmptyState, ErrorState, Input, LoadingState, Textarea } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import {
-    formatFechaCorta, formatRangoFechas, fromISODate, MODALIDAD_LABEL, toISODate, viajeEditablePorResponsable, type ModalidadFondos,
+    formatFechaCorta, formatRangoFechas, fromISODate, kmTotales, MODALIDAD_LABEL, medioLabel, toISODate, viajeEditablePorResponsable, type ModalidadFondos,
 } from '@/lib/viajes';
 import GastoFormDialog, { type GastoEditable } from '@/components/viajes/GastoFormDialog';
 import { GastosPorDia, HistorialViaje, type GastoVista } from '@/components/viajes/GastosLista';
@@ -168,6 +168,12 @@ export default function MiViajeDetallePage() {
                     <p className="text-[13px] text-slate-600 dark:text-slate-300 mt-1">
                         {formatRangoFechas(viaje.fechaInicio, viaje.fechaFin)} · {r.dias} día{r.dias === 1 ? '' : 's'} · {r.personas} persona{r.personas === 1 ? '' : 's'}
                     </p>
+                    {(viaje.medioTransporte || viaje.kmIda) && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {viaje.medioTransporte ? medioLabel(viaje.medioTransporte) : 'Recorrido'}
+                            {viaje.kmIda ? ` · ${kmTotales(viaje.kmIda, viaje.idaYVuelta).toLocaleString('es-AR')} km${viaje.idaYVuelta ? ' ida y vuelta' : ''}` : ''}
+                        </p>
+                    )}
                     {extendido && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Fin original: {formatFechaCorta(viaje.fechaFinOriginal)}</p>}
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                         {MODALIDAD_LABEL[viaje.modalidadFondos as ModalidadFondos]} · Responsable: {viaje.responsable?.nombreCompleto}

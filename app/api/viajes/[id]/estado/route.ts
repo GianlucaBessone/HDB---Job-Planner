@@ -4,7 +4,7 @@ import { logAudit } from '@/lib/audit';
 import { calcularResumen, formatFechaCorta } from '@/lib/viajes';
 import { estadoSchema } from '@/lib/viajesSchemas';
 import {
-    cargarViaje, errorValidacion, esResponsable, getActor, noEncontrado, notificar, prohibido, puedeVer, registrarHistorial, serializarViaje,
+    cargarViaje, errorValidacion, esResponsable, getActor, noEncontrado, notificarViaje, prohibido, puedeVer, registrarHistorial, serializarViaje,
 } from '@/lib/viajesServer';
 
 export const dynamic = 'force-dynamic';
@@ -122,34 +122,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             oldValue: { estado: viaje.estado }, newValue: { estado: data.estado, nota },
         });
 
-        if (accion === 'concluir') {
-            await notificar({
-                aGestores: true,
-                excluirId: actor.userId,
-                titulo: 'Viaje listo para rendir',
-                mensaje: `${actor.nombre} concluyó el viaje ${viaje.codigo} (${viaje.destino}).`,
-                viajeId: id,
-                url: `/viajes/${id}`,
-                type: 'VIAJE_CONCLUIDO',
-            });
-        } else if (['devolver', 'cerrar', 'cancelar'].includes(accion) || (accion === 'iniciar' && !responsable)) {
-            const titulos: Record<string, string> = {
-                devolver: 'Viaje devuelto para corregir',
-                cerrar: 'Rendición cerrada',
-                cancelar: 'Viaje cancelado',
-                iniciar: 'Viaje iniciado',
-            };
-            await notificar({
-                operatorIds: [viaje.responsableId],
-                excluirId: actor.userId,
-                titulo: titulos[accion],
-                mensaje: `${viaje.codigo}: ${detalle || viaje.destino}`,
-                viajeId: id,
-                url: `/mis-viajes/${id}`,
-                type: `VIAJE_${accion.toUpperCase()}`,
-                priority: accion === 'devolver' ? 'HIGH' : 'NORMAL',
-            });
-        }
+        const evento = ({ iniciar: 'iniciado', concluir: 'concluido', devolver: 'devuelto', cerrar: 'cerrado', cancelar: 'cancelado' } as const)[accion];
+        await notificarViaje(viaje, actor, evento, detalle);
 
         const actualizado = await cargarViaje(id);
         return NextResponse.json(serializarViaje(actualizado!, actor));

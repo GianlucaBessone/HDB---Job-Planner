@@ -3,6 +3,7 @@ import { formatARS } from '@/lib/formatCurrency';
 import {
     ALCANCE_LABEL, baseLabel, categoriaLabel, formatFechaCorta, formatFechaHora, formatRangoFechas, MEDIO_PAGO_LABEL, MODALIDAD_LABEL,
     VERIFICACION_LABEL, VIAJE_ESTADO_LABEL, type ModalidadFondos, type VerificacionEstado, type ViajeEstado,
+    kmTotales, medioLabel,
 } from '@/lib/viajes';
 
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
@@ -83,6 +84,7 @@ export function imprimirInforme(v: any) {
     <div><span>Modalidad</span>${esc(MODALIDAD_LABEL[v.modalidadFondos as ModalidadFondos])}</div>
     <div><span>Anticipo entregado</span>${m(r.anticipo)}</div>
     <div><span>Duración</span>${esc(r.dias)} días · ${esc(r.personas)} personas</div>
+    <div><span>Transporte</span>${esc(v.medioTransporte ? medioLabel(v.medioTransporte) : '—')}${v.kmIda ? ` · ${esc(kmTotales(v.kmIda, v.idaYVuelta).toLocaleString('es-AR'))} km${v.idaYVuelta ? ' ida y vuelta' : ''}` : ''}</div>
     <div><span>Proyecto</span>${esc(v.project ? `${v.project.codigoProyecto ? v.project.codigoProyecto + ' · ' : ''}${v.project.nombre}` : '—')}</div>
     <div><span>Participantes</span>${esc(v.participantes.map((p: any) => p.nombre).join(', '))}</div>
 </div>
