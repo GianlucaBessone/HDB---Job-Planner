@@ -151,6 +151,28 @@ export function formatFechaCorta(value: Date | string | null | undefined, conAni
     return `${d} ${MESES[m - 1]}${conAnio ? ` ${y}` : ''}`;
 }
 
+const TZ_AR = 'America/Argentina/Buenos_Aires';
+const FMT_FECHA_HORA = new Intl.DateTimeFormat('es-AR', {
+    timeZone: TZ_AR, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+});
+const FMT_FECHA = new Intl.DateTimeFormat('es-AR', { timeZone: TZ_AR, day: '2-digit', month: '2-digit', year: 'numeric' });
+
+/** Momento (timestamp) → '5 nov 2026 08:22', siempre en hora de Argentina (GMT-3) y 24 h. */
+export function formatFechaHora(value: Date | string | null | undefined): string {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '—';
+    const p = Object.fromEntries(FMT_FECHA_HORA.formatToParts(d).map(x => [x.type, x.value]));
+    return `${p.day} ${String(p.month).replace('.', '')} ${p.year} ${p.hour}:${p.minute}`;
+}
+
+/** Momento (timestamp) → '05/11/2026' en hora de Argentina. */
+export function formatFechaAR(value: Date | string | null | undefined): string {
+    if (!value) return '—';
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? '—' : FMT_FECHA.format(d);
+}
+
 export function formatRangoFechas(inicio: Date | string, fin: Date | string): string {
     const a = toISODate(inicio);
     const b = toISODate(fin);

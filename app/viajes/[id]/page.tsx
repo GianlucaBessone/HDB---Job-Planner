@@ -13,7 +13,7 @@ import {
 } from '@/components/ui';
 import { cn } from '@/lib/cn';
 import {
-    baseLabel, categoriaLabel, esGestorViajes, formatFechaCorta, formatRangoFechas, MODALIDAD_LABEL, viajeConfigurable,
+    baseLabel, categoriaLabel, esGestorViajes, formatFechaCorta, formatFechaHora, formatRangoFechas, MODALIDAD_LABEL, viajeConfigurable,
     type ModalidadFondos,
 } from '@/lib/viajes';
 import ViajeFormDialog from '@/components/viajes/ViajeFormDialog';
@@ -294,7 +294,7 @@ export default function ViajeAdminDetallePage() {
                     </div>
 
                     {cerrado && (
-                        <Panel title="Cierre de la rendición" description={`Cerrado por ${viaje.cerradoPorNombre || '—'} el ${new Date(viaje.fechaCierre).toLocaleDateString('es-AR')}`}>
+                        <Panel title="Cierre de la rendición" description={`Cerrado por ${viaje.cerradoPorNombre || '—'} el ${formatFechaHora(viaje.fechaCierre)}`}>
                             <ResultadoLiquidacion totales={totales} />
                             {viaje.observacionCierre && <p className="mt-3 text-[13px] text-slate-600 dark:text-slate-300 whitespace-pre-line">{viaje.observacionCierre}</p>}
                         </Panel>

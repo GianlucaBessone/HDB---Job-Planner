@@ -1,7 +1,7 @@
 // Informe de rendición imprimible (ventana nueva + window.print, mismo patrón que el resto del sistema).
 import { formatARS } from '@/lib/formatCurrency';
 import {
-    ALCANCE_LABEL, baseLabel, categoriaLabel, formatFechaCorta, formatRangoFechas, MEDIO_PAGO_LABEL, MODALIDAD_LABEL,
+    ALCANCE_LABEL, baseLabel, categoriaLabel, formatFechaCorta, formatFechaHora, formatRangoFechas, MEDIO_PAGO_LABEL, MODALIDAD_LABEL,
     VERIFICACION_LABEL, VIAJE_ESTADO_LABEL, type ModalidadFondos, type VerificacionEstado, type ViajeEstado,
 } from '@/lib/viajes';
 
@@ -39,7 +39,7 @@ export function imprimirInforme(v: any) {
     const extensiones = v.extensiones.length ? `
         <h2>Extensiones de estadía</h2>
         <table><thead><tr><th>Fecha</th><th>De</th><th>A</th><th>Motivo</th><th>Registró</th></tr></thead><tbody>
-        ${v.extensiones.map((e: any) => `<tr><td>${esc(new Date(e.createdAt).toLocaleDateString('es-AR'))}</td><td>${esc(formatFechaCorta(e.fechaFinAnterior))}</td><td>${esc(formatFechaCorta(e.fechaFinNueva))}</td><td>${esc(e.motivo)}</td><td>${esc(e.usuarioNombre)}</td></tr>`).join('')}
+        ${v.extensiones.map((e: any) => `<tr><td>${esc(formatFechaHora(e.createdAt))}</td><td>${esc(formatFechaCorta(e.fechaFinAnterior))}</td><td>${esc(formatFechaCorta(e.fechaFinNueva))}</td><td>${esc(e.motivo)}</td><td>${esc(e.usuarioNombre)}</td></tr>`).join('')}
         </tbody></table>` : '';
 
     const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Rendición ${esc(v.codigo)}</title>
@@ -75,7 +75,7 @@ export function imprimirInforme(v: any) {
     <div style="text-align:right">
         <div style="font-family:monospace;font-size:13px">${esc(v.codigo)}</div>
         <div>${esc(VIAJE_ESTADO_LABEL[v.estado as ViajeEstado])}</div>
-        ${v.fechaCierre ? `<div class="muted">Cerrado ${esc(new Date(v.fechaCierre).toLocaleDateString('es-AR'))}</div>` : ''}
+        ${v.fechaCierre ? `<div class="muted">Cerrado ${esc(formatFechaHora(v.fechaCierre))}</div>` : ''}
     </div>
 </header>
 <div class="grid">

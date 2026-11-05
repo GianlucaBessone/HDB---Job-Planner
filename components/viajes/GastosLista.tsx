@@ -4,7 +4,7 @@ import React from 'react';
 import { History } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { cn } from '@/lib/cn';
-import { categoriaLabel, formatFechaCorta } from '@/lib/viajes';
+import { categoriaLabel, formatFechaCorta, formatFechaHora } from '@/lib/viajes';
 import { ICONO_CATEGORIA } from './GastoFormDialog';
 import { ListaComprobantes, type Comprobante } from './Comprobantes';
 import { money, VerificacionBadge } from './shared';
@@ -152,7 +152,7 @@ export function HistorialViaje({ historial }: { historial: { id: string; accion:
                     <p className="text-[13px] font-medium text-slate-900 dark:text-slate-100">{ACCION_LABEL[h.accion] || h.accion}</p>
                     {h.detalle && <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 break-words">{h.detalle}</p>}
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        {h.usuarioNombre} · {new Date(h.createdAt).toLocaleString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        {h.usuarioNombre} · {formatFechaHora(h.createdAt)}
                     </p>
                 </li>
             ))}
