@@ -101,7 +101,7 @@ export default function PliegosPage() {
                     <EmptyState
                         icon={<FileSearch />}
                         title={q ? 'Sin resultados' : 'Todavía no hay pliegos'}
-                        description={q ? 'Probá con otro código, título o cliente.' : puedeGestionar ? 'Subí el PDF de un pliego para que la IA lo analice.' : 'Cuando administración suba un pliego lo vas a ver acá.'}
+                        description={q ? 'Probá con otro código, título o cliente.' : puedeGestionar ? 'Subí el PDF de un pliego para que la IA lo analice.' : 'Cuando un supervisor o admin suba un pliego lo vas a ver acá.'}
                         action={q
                             ? <button className="btn btn-secondary" onClick={() => setQ('')}>Limpiar búsqueda</button>
                             : puedeGestionar ? <button className="btn btn-primary btn-lg" onClick={() => setNuevoOpen(true)}><Plus /> Nuevo pliego</button> : undefined}

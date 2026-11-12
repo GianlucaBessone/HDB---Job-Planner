@@ -1,6 +1,6 @@
 # Análisis de Pliegos
 
-Módulo de Operaciones (`/pliegos`). Un admin sube el PDF de un pliego de cliente; la IA lo analiza y devuelve tareas en orden de ejecución, materiales (los del pliego evaluados y sugeridos), herramientas, personal, Higiene y Seguridad y alertas (errores, omisiones, ambigüedades y riesgos). Operadores, supervisores, admin y QA lo consultan desde el celular y marcan cada tarea dentro o fuera del pliego.
+Módulo de Operaciones (`/pliegos`). Un admin o supervisor sube el PDF de un pliego de cliente; la IA lo analiza y devuelve tareas en orden de ejecución, materiales (los del pliego evaluados y sugeridos), herramientas, personal, Higiene y Seguridad y alertas (errores, omisiones, ambigüedades y riesgos). Operadores, supervisores, admin y QA lo consultan desde el celular y marcan cada tarea dentro o fuera del pliego.
 
 ## Archivos
 
@@ -18,7 +18,7 @@ Módulo de Operaciones (`/pliegos`). Un admin sube el PDF de un pliego de client
 ## Permisos
 
 - Ver y marcar tareas: `operador`, `supervisor`, `admin`, `qa` (`PLIEGO_ROLES_VER`).
-- Subir, analizar, re-analizar y borrar: `admin` (`PLIEGO_ROLES_GESTION`).
+- Subir, analizar, re-analizar y borrar: `admin` y `supervisor` (`PLIEGO_ROLES_GESTION`).
 - `vendedor` no accede. Las rutas responden 403; el menú se controla desde `lib/viewAccess.ts`.
 
 ## Flujo

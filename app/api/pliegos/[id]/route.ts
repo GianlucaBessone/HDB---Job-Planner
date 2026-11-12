@@ -24,7 +24,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
-        if (!actor.puedeGestionar) return prohibido('Solo administración puede borrar pliegos.');
+        if (!actor.puedeGestionar) return prohibido('Solo admin y supervisores pueden borrar pliegos.');
         await borrarPliego(id, actor);
         return NextResponse.json({ ok: true });
     } catch (error) {
