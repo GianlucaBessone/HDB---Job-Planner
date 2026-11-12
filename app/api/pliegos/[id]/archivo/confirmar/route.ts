@@ -11,7 +11,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
-        if (!actor.puedeGestionar) return prohibido('Solo administración puede subir pliegos.');
+        if (!actor.puedeGestionar) return prohibido('Solo admin y supervisores pueden subir pliegos.');
         return NextResponse.json(await confirmarSubida(id));
     } catch (error) {
         return respuestaError(error, 'PLIEGO_ARCHIVO_CONFIRMAR', 'Error al verificar el PDF.');

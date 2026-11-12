@@ -5,7 +5,7 @@ import type { BadgeTone } from '@/components/ui/Badge';
 
 // ── Permisos ────────────────────────────────────────────────────────
 /** Suben pliegos y piden el análisis (o un re-análisis). */
-export const PLIEGO_ROLES_GESTION = ['admin'];
+export const PLIEGO_ROLES_GESTION = ['admin', 'supervisor'];
 /** Ven los análisis y marcan tareas dentro / fuera del pliego. */
 export const PLIEGO_ROLES_VER = ['operador', 'supervisor', 'admin', 'qa'];
 

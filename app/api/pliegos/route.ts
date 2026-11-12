@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const actor = await getActor(req);
-        if (!actor.puedeGestionar) return prohibido('Solo administración puede subir pliegos.');
+        if (!actor.puedeGestionar) return prohibido('Solo admin y supervisores pueden subir pliegos.');
         const parsed = pliegoAltaSchema.safeParse(await req.json().catch(() => null));
         if (!parsed.success) return errorValidacion(parsed.error);
         const pliego = await crearPliego(parsed.data, actor);

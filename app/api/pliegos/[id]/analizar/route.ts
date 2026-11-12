@@ -12,7 +12,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
-        if (!actor.puedeGestionar) return prohibido('Solo administración puede analizar pliegos.');
+        if (!actor.puedeGestionar) return prohibido('Solo admin y supervisores pueden analizar pliegos.');
         return NextResponse.json(await analizarPliego(id, actor), { status: 201 });
     } catch (error) {
         return respuestaError(error, 'PLIEGO_ANALIZAR', 'Error al analizar el pliego.');

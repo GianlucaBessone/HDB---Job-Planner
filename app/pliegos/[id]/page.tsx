@@ -208,7 +208,7 @@ export default function PliegoDetallePage() {
                     <EmptyState
                         icon={<Sparkles />}
                         title="Este pliego todavía no tiene análisis"
-                        description={pliego.puedeGestionar ? 'Pedile a la IA que lo analice.' : 'Administración todavía no lo analizó.'}
+                        description={pliego.puedeGestionar ? 'Pedile a la IA que lo analice.' : 'Todavía no lo analizaron.'}
                         action={pliego.puedeGestionar && pliego.archivo?.completo
                             ? <Button size="lg" icon={<Sparkles />} onClick={analizar}>Analizar</Button>
                             : <Link href="/pliegos" className="btn btn-secondary">Volver a pliegos</Link>}
