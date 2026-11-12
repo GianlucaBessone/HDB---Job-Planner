@@ -1,8 +1,16 @@
-// Búsqueda de lugares y distancia por ruta con OpenStreetMap, sin clave de API.
-// - Photon (komoot): búsqueda mientras se escribe y búsqueda inversa al tocar el mapa.
-// - OSRM: recorrido en auto entre origen y destino (km y trazado).
+// Búsqueda de lugares y distancia por ruta.
+// - Con Google Maps configurado (NEXT_PUBLIC_GOOGLE_MAPS_API_KEY): Places (New) sugiere
+//   mientras se escribe y Geocoding nombra el punto tocado en el mapa.
+// - Sin Google, o si rechaza la clave: Photon (OpenStreetMap), sin clave de API.
+// - La ruta y los km salen siempre de OSRM (OpenStreetMap), gratis y sin clave.
 
-export interface Lugar { nombre: string; detalle: string; lat: number; lon: number }
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { cargarGoogleMaps, googleDisponible } from './googleMaps';
+
+/** Lugar elegido. Una sugerencia de Google llega sin coordenadas (lat/lon NaN) hasta resolverla. */
+export interface Lugar { nombre: string; detalle: string; lat: number; lon: number; placeId?: string }
+
+export const tieneCoordenadas = (l: Lugar | null | undefined): boolean => !!l && Number.isFinite(l.lat) && Number.isFinite(l.lon);
 export interface Ruta { km: number; trazado: [number, number][] }
 
 const PHOTON = 'https://photon.komoot.io';
@@ -37,10 +45,84 @@ export function etiquetaLugar(l: Lugar): string {
     return provincia && provincia !== l.nombre ? `${l.nombre}, ${provincia}` : l.nombre;
 }
 
+// ── Google ──────────────────────────────────────────────────────────
+
+let sesionGoogle: any = null; // agrupa las consultas de una búsqueda (se factura por sesión)
+
+async function buscarGoogle(q: string, signal?: AbortSignal): Promise<Lugar[]> {
+    const g = await cargarGoogleMaps();
+    if (signal?.aborted) throw new DOMException('Cancelada', 'AbortError');
+    const { AutocompleteSuggestion, AutocompleteSessionToken } = g.places;
+    sesionGoogle ||= new AutocompleteSessionToken();
+    const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input: q,
+        includedRegionCodes: ['ar'],
+        language: 'es',
+        region: 'ar',
+        sessionToken: sesionGoogle,
+        locationBias: { center: { lat: SESGO.lat, lng: SESGO.lon }, radius: 50000 },
+    });
+    if (signal?.aborted) throw new DOMException('Cancelada', 'AbortError');
+    return (suggestions || [])
+        .map((s: any) => s.placePrediction)
+        .filter(Boolean)
+        .slice(0, 6)
+        .map((p: any) => ({
+            nombre: p.mainText?.text || p.text?.text || '',
+            detalle: (p.secondaryText?.text || '').replace(/, Argentina$/, ''),
+            lat: NaN,
+            lon: NaN,
+            placeId: p.placeId,
+        }))
+        .filter((l: Lugar) => l.nombre);
+}
+
+async function resolverGoogle(l: Lugar): Promise<Lugar> {
+    const g = await cargarGoogleMaps();
+    const place = new g.places.Place({ id: l.placeId, requestedLanguage: 'es' });
+    await place.fetchFields({ fields: ['location', 'displayName', 'formattedAddress'] });
+    sesionGoogle = null; // la sesión termina al elegir un lugar
+    const loc = place.location;
+    return { ...l, lat: loc.lat(), lon: loc.lng() };
+}
+
+function componente(res: any, tipo: string): string | undefined {
+    return res?.address_components?.find((c: any) => c.types?.includes(tipo))?.long_name;
+}
+
+async function lugarEnGoogle(lat: number, lon: number): Promise<Lugar | null> {
+    const g = await cargarGoogleMaps();
+    const geocoder = new g.Geocoder();
+    const { results } = await geocoder.geocode({ location: { lat, lng: lon }, language: 'es' });
+    const r = results?.[0];
+    if (!r) return null;
+    const localidad = componente(r, 'locality') || componente(r, 'administrative_area_level_2') || componente(r, 'sublocality');
+    const provincia = componente(r, 'administrative_area_level_1');
+    return { nombre: localidad || r.formatted_address, detalle: [componente(r, 'administrative_area_level_2'), provincia].filter(Boolean).join(', '), lat, lon };
+}
+
+// ── Público ─────────────────────────────────────────────────────────
+
+/** Coordenadas de una sugerencia (las de Google llegan sin coordenadas). */
+export async function resolverLugar(l: Lugar): Promise<Lugar> {
+    if (tieneCoordenadas(l)) return l;
+    if (l.placeId && googleDisponible()) return resolverGoogle(l);
+    throw new Error('No se pudo ubicar el lugar. Elegilo en el mapa.');
+}
+
 /** Sugerencias mientras se escribe (mínimo 3 letras). Cancelable con AbortSignal. */
 export async function buscarLugares(texto: string, signal?: AbortSignal): Promise<Lugar[]> {
     const q = texto.trim();
     if (q.length < 3) return [];
+    if (googleDisponible()) {
+        try {
+            return await buscarGoogle(q, signal);
+        } catch (e: any) {
+            if (e?.name === 'AbortError') throw e;
+            if (googleDisponible()) throw e; // error puntual de Google: se informa
+            // Google rechazó la clave: se sigue con OpenStreetMap
+        }
+    }
     const qs = new URLSearchParams({ q, limit: '8', bbox: BBOX_AR, lat: String(SESGO.lat), lon: String(SESGO.lon) });
     const res = await fetch(`${PHOTON}/api/?${qs}`, { signal });
     if (!res.ok) throw new Error('El buscador de lugares no respondió.');
@@ -61,6 +143,9 @@ export async function buscarLugares(texto: string, signal?: AbortSignal): Promis
 /** Nombre del lugar donde se tocó el mapa. */
 export async function lugarEn(lat: number, lon: number): Promise<Lugar> {
     const fallback: Lugar = { nombre: `${lat.toFixed(4)}, ${lon.toFixed(4)}`, detalle: '', lat, lon };
+    if (googleDisponible()) {
+        try { return (await lugarEnGoogle(lat, lon)) || fallback; } catch { /* sigue con OpenStreetMap */ }
+    }
     try {
         const res = await conTope(fetch(`${PHOTON}/reverse?lat=${lat}&lon=${lon}`), 8000, 'timeout');
         if (!res.ok) return fallback;
@@ -91,5 +176,5 @@ export async function calcularRuta(a: { lat: number; lon: number }, b: { lat: nu
 export async function ubicarTexto(texto: string): Promise<Lugar> {
     const [l] = await conTope(buscarLugares(texto), 10000, 'El buscador de lugares no respondió. Cargá los km a mano.');
     if (!l) throw new Error(`No encontramos "${texto}". Elegilo de la lista o en el mapa.`);
-    return l;
+    return resolverLugar(l);
 }

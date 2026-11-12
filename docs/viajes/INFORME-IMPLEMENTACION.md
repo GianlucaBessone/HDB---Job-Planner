@@ -214,11 +214,29 @@ cuál) o arrastrar los marcadores A y B. Con los dos puntos ubicados, se dibuja 
 se calculan solos. Si se escribe un lugar sin elegirlo de la lista, "Calcular km" toma la primera
 coincidencia.
 
-Servicios usados, todos de OpenStreetMap, gratuitos y sin clave de API (con límite de uso razonable):
-Photon (komoot) para sugerencias y búsqueda inversa, OSRM para la ruta en auto y los mosaicos de
-openstreetmap.org para el mapa. Si no responden, los km se cargan a mano. Para usar Google Maps hace
-falta una API key con facturación. Las coordenadas no se guardan: el viaje guarda el nombre del lugar
-y los km, así que al editar un viaje el mapa arranca vacío.
+**Proveedor de mapas.**
+
+| | Con Google Maps | Sin clave (o si Google la rechaza) |
+|---|---|---|
+| Sugerencias | Places API (New), limitado a Argentina, en español | Photon (OpenStreetMap) |
+| Tocar el mapa | Geocoding API | Photon (búsqueda inversa) |
+| Mapa | Maps JavaScript API | Leaflet + mosaicos de OpenStreetMap |
+| Ruta y km | OSRM (OpenStreetMap) | OSRM (OpenStreetMap) |
+
+Google se activa con la variable `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` en Vercel (Production y
+Preview). **No va en el repositorio.** Es una clave de navegador, visible en la página por
+diseño, así que en Google Cloud Console hay que:
+
+1. Crear la clave en *APIs y servicios → Credenciales → Crear credenciales → Clave de API*.
+   Empieza con `AIza…`; las claves `AQ.…` de Vertex AI no sirven para Maps.
+2. Habilitar **Maps JavaScript API**, **Places API (New)** y **Geocoding API**, con la
+   facturación activa en el proyecto.
+3. Restringirla por **referente HTTP** a los dominios de la app (producción y vistas previas de
+   Vercel) y por **API** a esas tres.
+
+Si la clave falta, es inválida o no tiene permisos, el sistema lo detecta (`gm_authFailure`), deja
+un aviso `[VIAJES_MAPS]` en la consola y sigue con OpenStreetMap. Las coordenadas no se guardan: el
+viaje guarda el nombre del lugar y los km, así que al editar un viaje el mapa arranca vacío.
 
 ## 9. Notificaciones
 
