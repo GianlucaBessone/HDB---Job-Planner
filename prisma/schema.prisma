@@ -62,6 +62,7 @@ model Project {
   responsablesCliente     ClientResponsableProyecto[]
   sectoresCliente         ClientSector[]
   viajes                  Viaje[]
+  pliegos                 Pliego[]
 
   @@index([qrToken])
 }
@@ -254,6 +255,9 @@ model HdbClient {
   cuentaCorrienteConfig     CuentaCorrienteConfig?
   cuentaCorrienteMovs       CuentaCorrienteMovimiento[]
   cotizaciones              Cotizacion[]
+
+  // Operaciones
+  pliegos                   Pliego[]
 
   @@index([listaPrecioId])
 }
@@ -3862,4 +3866,105 @@ model ViajeTarifa {
   createdAt       DateTime @default(now())
 
   @@index([vigenciaDesde])
+}
+
+// ─── Análisis de Pliegos (Operaciones) ──────────────────────────────────────
+// Un admin sube el PDF de un pliego de cliente y la IA lo analiza. Cada análisis
+// es una versión; solo la última admite marcar tareas. Las marcas viven en la
+// tarea (estado actual) y en PliegoTareaMarca (historial).
+
+model Pliego {
+  id              String           @id @default(cuid())
+  codigo          String           @unique // PLG-2026-0001
+  titulo          String
+  descripcion     String?          @db.Text
+  projectId       String?
+  project         Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  clientId        String?
+  client          HdbClient?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  estado          String           @default("borrador") // borrador | analizando | analizado | error
+  ultimoError     String?          @db.Text
+  creadoPorId     String
+  creadoPorNombre String
+  archivo         PliegoArchivo?
+  analisis        PliegoAnalisis[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([createdAt])
+}
+
+// El PDF se guarda en el almacenamiento S3 del SGI (lib/objectStorage.ts) bajo
+// `storageKey`; el navegador lo sube directo con una URL prefirmada y
+// `completo` pasa a true cuando el servidor verifica el archivo.
+model PliegoArchivo {
+  id         String   @id @default(cuid())
+  pliegoId   String   @unique
+  pliego     Pliego   @relation(fields: [pliegoId], references: [id], onDelete: Cascade)
+  nombre     String
+  mime       String   @default("application/pdf")
+  size       Int
+  storageKey String   @unique
+  completo   Boolean  @default(false)
+  sha256     String?
+  createdAt  DateTime @default(now())
+}
+
+model PliegoAnalisis {
+  id              String        @id @default(cuid())
+  pliegoId        String
+  pliego          Pliego        @relation(fields: [pliegoId], references: [id], onDelete: Cascade)
+  version         Int
+  modelo          String
+  resumen         String        @db.Text
+  razonamiento    String        @db.Text
+  // Materiales, herramientas, personal, H&S y alertas (contrato en lib/pliegos/schema.ts).
+  contenido       Json
+  inputTokens     Int           @default(0)
+  outputTokens    Int           @default(0)
+  costoUsd        Float         @default(0)
+  latenciaMs      Int           @default(0)
+  creadoPorId     String
+  creadoPorNombre String
+  tareas          PliegoTarea[]
+  createdAt       DateTime      @default(now())
+
+  @@unique([pliegoId, version])
+}
+
+model PliegoTarea {
+  id           String             @id @default(cuid())
+  analisisId   String
+  analisis     PliegoAnalisis     @relation(fields: [analisisId], references: [id], onDelete: Cascade)
+  orden        Int
+  titulo       String
+  descripcion  String             @db.Text
+  origen       String             @default("IA") // PLIEGO | IA
+  referencia   String? // página / ítem del pliego
+  // Marca vigente (null = sin marcar)
+  alcance      String? // dentro | fuera
+  modificacion String?            @db.Text
+  motivo       String?            @db.Text
+  marcadoPor   String?
+  marcadoEn    DateTime?
+  marcas       PliegoTareaMarca[]
+
+  @@index([analisisId, orden])
+}
+
+model PliegoTareaMarca {
+  id           String      @id @default(cuid())
+  tareaId      String
+  tarea        PliegoTarea @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  alcance      String // dentro | fuera
+  modificacion String?     @db.Text
+  motivo       String?     @db.Text
+  operatorId   String?
+  nombre       String
+  rol          String
+  createdAt    DateTime    @default(now())
+
+  @@index([tareaId])
 }

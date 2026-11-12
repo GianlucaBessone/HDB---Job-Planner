@@ -546,6 +546,52 @@ Devuelve SOLO este objeto JSON, sin bloques de código ni texto adicional:
 {
   "mensaje": "Respuesta final amigable para el usuario."
 }`
+    },
+
+    // 13. ANÁLISIS DE PLIEGOS (Operaciones) — el PDF va adjunto (performOCR)
+    PLIEGO_ANALISIS: {
+        key: "PLIEGO_ANALISIS",
+        name: "Análisis de Pliegos de Cliente",
+        description: "Analiza el PDF de un pliego de especificaciones de un cliente y devuelve tareas, materiales, herramientas, personal, Higiene y Seguridad y alertas.",
+        version: 1,
+        systemInstruction: "Sos un jefe de obra y cotizador senior de HDB Servicios Eléctricos, una empresa contratista de instalaciones eléctricas, electromecánicas y termomecánicas en la industria argentina. Leés pliegos de especificaciones técnicas que emiten los clientes y los traducís en un plan de trabajo ejecutable para las cuadrillas, detectando lo que falta, lo que está mal y lo que es riesgoso. Sos preciso con las referencias: nunca atribuís al pliego algo que el pliego no dice. Escribís en español rioplatense, claro y directo, en texto plano sin markdown.",
+        template: `Analizá el pliego adjunto (PDF) para que HDB Servicios Eléctricos lo ejecute.
+
+REGLA DE ORIGEN (obligatoria en cada ítem que tenga el campo "origen"):
+- "PLIEGO": el ítem figura explícitamente en el documento. En "referencia" indicá dónde: página y numeral o ítem, por ejemplo "Pág. 6, punto 5.2" o "Pág. 4, ítem 3". Usá la numeración de página impresa en el documento si existe.
+- "IA": lo inferís o lo recomendás vos aunque el pliego no lo diga. En ese caso "referencia" va null.
+- Ante la duda, usá "IA". No inventes referencias.
+
+QUÉ DEVOLVER:
+1. resumen: qué pide el cliente, dónde, alcance, plazos y condiciones relevantes (máximo 10 líneas).
+2. razonamiento: cómo interpretaste el pliego y por qué ordenaste las tareas así; supuestos que hiciste.
+3. tareas: TODAS las tareas necesarias, en el orden real de ejecución en obra (documentación y permisos previos, relevamiento, provisión y acopio, montaje, conexionado, ensayos, puesta en marcha, limpieza, entrega y documentación final). Título corto y accionable; descripción con el detalle técnico que necesita la cuadrilla.
+4. materiales.delPliego: cada material que el pliego pide o lista, evaluado: "adecuado", "revisar" (falta especificación, cantidad o unidad, o es ambiguo) o "error" (incompatible, mal dimensionado o contradictorio). Explicá en "observacion" por qué.
+5. materiales.sugeridos: materiales que van a hacer falta y el pliego no menciona (origen "IA").
+6. herramientas: equipos, herramientas, instrumentos de medición e izaje necesarios.
+7. personal: roles, cantidad estimada y competencias o habilitaciones requeridas.
+8. higieneSeguridad: EPP, riesgos, procedimientos, permisos de trabajo, documentación y capacitación exigidos o necesarios. categoria: epp, riesgo, procedimiento, permiso, documentacion, capacitacion u otro.
+9. alertas: errores, omisiones, ambigüedades y riesgos (técnicos, de seguridad, comerciales o de plazo) que conviene aclarar con el cliente antes de cotizar o ejecutar. tipo: error, omision, ambiguedad o riesgo; severidad: alta, media o baja; incluí una recomendación concreta.
+
+REGLAS:
+- Texto plano, sin markdown, sin viñetas con asteriscos.
+- Cantidades como texto tal como aparecen ("12", "aprox. 40", "s/ plano"); si no hay, null.
+- No dejes listas vacías si el pliego da información para completarlas.
+
+Devolvé SOLO un objeto JSON válido con esta estructura:
+{
+  "resumen": "string",
+  "razonamiento": "string",
+  "tareas": [{ "titulo": "string", "descripcion": "string", "origen": "PLIEGO|IA", "referencia": "string|null" }],
+  "materiales": {
+    "delPliego": [{ "descripcion": "string", "cantidad": "string|null", "unidad": "string|null", "evaluacion": "adecuado|revisar|error", "observacion": "string|null", "origen": "PLIEGO|IA", "referencia": "string|null" }],
+    "sugeridos": [{ "descripcion": "string", "cantidad": "string|null", "unidad": "string|null", "evaluacion": "adecuado", "observacion": "string|null", "origen": "IA", "referencia": null }]
+  },
+  "herramientas": [{ "descripcion": "string", "cantidad": "string|null", "observacion": "string|null", "origen": "PLIEGO|IA", "referencia": "string|null" }],
+  "personal": [{ "rol": "string", "cantidad": "string|null", "competencias": "string|null", "origen": "PLIEGO|IA", "referencia": "string|null" }],
+  "higieneSeguridad": [{ "categoria": "epp|riesgo|procedimiento|permiso|documentacion|capacitacion|otro", "descripcion": "string", "origen": "PLIEGO|IA", "referencia": "string|null" }],
+  "alertas": [{ "tipo": "error|omision|ambiguedad|riesgo", "severidad": "alta|media|baja", "titulo": "string", "descripcion": "string", "recomendacion": "string|null", "referencia": "string|null" }]
+}`
     }
 };
 

@@ -56,6 +56,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/informes-tecnicos', label: 'Informes Técnicos',  description: 'Relevamiento y diagnósticos',     roles: ['operador', 'supervisor', 'admin', 'qa'],    access: 'ambos', section: 'operaciones', iconName: 'FileText',      color: 'bg-indigo-600' },
     { key: '/mis-epp',       label: 'Mis EPP',                description: 'Protección personal y firmas',    roles: ['operador', 'supervisor', 'admin', 'qa'],    access: 'ambos', section: 'operaciones', iconName: 'ShieldCheck',   color: 'bg-emerald-600' },
     { key: '/mis-viajes',    label: 'Mis Viajes',             description: 'Gastos y viáticos de tus viajes',  roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'], access: 'ambos', section: 'operaciones', iconName: 'Luggage', color: 'bg-sky-600' },
+    { key: '/pliegos',       label: 'Análisis de Pliegos',    description: 'Pliegos de clientes analizados con IA', roles: ['operador', 'supervisor', 'admin', 'qa'], access: 'ambos', section: 'operaciones', iconName: 'FileSearch', color: 'bg-violet-600' },
 
     // ─ Gestión y Seguimiento ─
     { key: '/dashboard',          label: 'Panel de Análisis',        description: 'Métricas globales',           roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'LayoutDashboard', color: 'bg-cyan-600' },

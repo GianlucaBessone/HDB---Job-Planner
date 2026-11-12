@@ -59,6 +59,7 @@ const ROUTE_TABLE: Record<string, RouteConfig> = {
     // OCR
     'OCR_ANALYSIS':         { provider: 'gemini', model: 'gemini-2.5-flash' },
     'INVOICE_OCR':          { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'PLIEGO_ANALISIS':      { provider: 'gemini', model: 'gemini-2.5-flash' }, // override: PLIEGO_AI_MODEL
 
     // RAG_SEARCH
     'TECH_ASSISTANT':       { provider: 'gemini', model: 'gemini-2.5-flash' },
