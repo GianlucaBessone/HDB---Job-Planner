@@ -112,8 +112,8 @@ export default function PliegosPage() {
                     {pliegos.map(p => {
                         const a = p.ultimoAnalisis;
                         return (
-                            <li key={p.id}>
-                                <Link href={`/pliegos/${p.id}`} className="surface block p-4 h-full hover:shadow-md transition-shadow">
+                            <li key={p.id} className="min-w-0">
+                                <Link href={`/pliegos/${p.id}`} className="surface block p-4 h-full min-w-0 hover:shadow-md transition-shadow">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
                                             <span className="font-mono text-xs text-muted-foreground">{p.codigo}{a ? ` · v${a.version}` : ''}</span>

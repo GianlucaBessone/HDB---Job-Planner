@@ -11,6 +11,7 @@ import PliegoVista, { type AnalisisVista } from '@/components/pliegos/PliegoVist
 import type { TareaPliego } from '@/components/pliegos/TareaItem';
 import { apiJson, EstadoPliegoBadge, formatFechaHora } from '@/components/pliegos/shared';
 import { formatTamanio } from '@/lib/pliegos';
+import { useHistoryStore } from '@/lib/store/useHistoryStore';
 
 interface PliegoDetalle {
     id: string;
@@ -55,6 +56,14 @@ export default function PliegoDetallePage() {
     }, [id, version]);
 
     useEffect(() => { cargar(); }, [cargar]);
+
+    // Título de la barra superior: el código en vez del id.
+    const setTitle = useHistoryStore(s => s.setTitle);
+    useEffect(() => {
+        if (!pliego?.codigo) return;
+        const t = setTimeout(() => setTitle(`/pliegos/${id}`, pliego.codigo), 0);
+        return () => clearTimeout(t);
+    }, [setTitle, id, pliego?.codigo]);
 
     const analizar = async () => {
         setConfirmar(null);

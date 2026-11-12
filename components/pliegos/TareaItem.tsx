@@ -146,7 +146,7 @@ export default function TareaItem({
                     <Button
                         size="lg"
                         variant={dentro ? 'primary' : 'secondary'}
-                        className={cn('w-full', dentro && 'bg-success-600 hover:bg-success-700 border-success-600')}
+                        className={cn('w-full min-h-[48px]', dentro && 'bg-success-600 hover:bg-success-700 border-success-600')}
                         icon={<CheckCircle2 />}
                         aria-pressed={dentro}
                         disabled={guardando}
@@ -158,7 +158,7 @@ export default function TareaItem({
                     <Button
                         size="lg"
                         variant={fuera ? 'primary' : 'secondary'}
-                        className={cn('w-full', fuera && 'bg-warning-600 hover:bg-warning-700 border-warning-600')}
+                        className={cn('w-full min-h-[48px]', fuera && 'bg-warning-600 hover:bg-warning-700 border-warning-600')}
                         icon={<PencilRuler />}
                         aria-pressed={fuera}
                         disabled={guardando}
@@ -218,7 +218,7 @@ export default function TareaItem({
                             required
                             rows={3}
                             value={modificacion}
-                            onChange={e => setModificacion(e.target.value)}
+                            onChange={e => { setModificacion(e.target.value); setErrores(x => ({ ...x, modificacion: undefined })); }}
                             error={errores.modificacion}
                             placeholder="Ej.: se cambió el recorrido de la cañería por el lateral del depósito"
                             maxLength={2000}
@@ -230,7 +230,7 @@ export default function TareaItem({
                         required={dialogo === 'fuera'}
                         rows={3}
                         value={motivo}
-                        onChange={e => setMotivo(e.target.value)}
+                        onChange={e => { setMotivo(e.target.value); setErrores(x => ({ ...x, motivo: undefined })); }}
                         error={errores.motivo}
                         placeholder={dialogo === 'fuera' ? 'Ej.: el plano no coincide con la obra; lo pidió la inspección del cliente' : 'Ej.: se volvió a lo indicado en el pliego'}
                         maxLength={2000}
