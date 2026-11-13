@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
 
 import { calculateSuggestedPrice } from '@/lib/ventas/priceRules';
-import { normalizeSku, buildProductSearchWhere } from '@/lib/ventas/skuUtils';
+import { normalizeSku, buildProductSearchWhere, mensajeProductoDuplicado } from '@/lib/ventas/skuUtils';
 import { getNextInventarioNumero } from '@/lib/inventario/counter';
 
 const productoCreateSchema = z.object({
@@ -291,7 +291,7 @@ export async function POST(req: NextRequest) {
     });
     if (existingSku) {
       return NextResponse.json(
-        { error: `El SKU "${data.sku}" ya existe en el sistema` },
+        { error: mensajeProductoDuplicado('sku', data.sku, existingSku) },
         { status: 400 }
       );
     }
@@ -303,7 +303,7 @@ export async function POST(req: NextRequest) {
       });
       if (existingBarcode) {
         return NextResponse.json(
-          { error: `El código de barras "${data.codigoBarras}" ya está asignado a otro producto` },
+          { error: mensajeProductoDuplicado('codigoBarras', data.codigoBarras.trim(), existingBarcode) },
           { status: 400 }
         );
       }
