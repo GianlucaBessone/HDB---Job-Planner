@@ -96,7 +96,7 @@ export default function TareaItem({
     return (
         <li
             className={cn(
-                'surface p-4 border-l-4',
+                'surface p-4 border-l-4 flex flex-col',
                 fuera ? 'border-l-warning-500' : dentro ? 'border-l-success-500' : 'border-l-border',
             )}
         >
@@ -142,7 +142,7 @@ export default function TareaItem({
             )}
 
             {!soloLectura && (
-                <div className="grid grid-cols-2 gap-2 mt-4" role="group" aria-label={`Alcance de la tarea ${tarea.orden}`}>
+                <div className="grid grid-cols-2 gap-2 mt-auto pt-4" role="group" aria-label={`Alcance de la tarea ${tarea.orden}`}>
                     <Button
                         size="lg"
                         variant={dentro ? 'primary' : 'secondary'}

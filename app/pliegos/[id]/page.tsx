@@ -145,6 +145,25 @@ export default function PliegoDetallePage() {
                 <EstadoPliegoBadge estado={enCurso ? 'analizando' : pliego.estado} />
                 {pliego.archivo && <span>{pliego.archivo.nombre} · {formatTamanio(pliego.archivo.size)}</span>}
                 <span>Subido por {pliego.creadoPorNombre} · {formatFechaHora(pliego.createdAt)}</span>
+                {pliego.versiones.length > 1 && (
+                    <span className="inline-flex items-center gap-2">
+                        <label htmlFor="pliego-version" className="inline-flex items-center gap-1 text-foreground font-medium">
+                            <History className="w-4 h-4" aria-hidden="true" /> Versión
+                        </label>
+                        <Select
+                            id="pliego-version"
+                            className="w-auto min-w-[220px] h-8"
+                            value={String(a?.version ?? '')}
+                            onChange={e => { const v = Number(e.target.value); setVersion(v); cargar(v); }}
+                        >
+                            {pliego.versiones.map(v => (
+                                <option key={v.id} value={v.version}>
+                                    v{v.version}{v.version === pliego.ultimaVersion ? ' (vigente)' : ''} · {formatFechaHora(v.createdAt)}
+                                </option>
+                            ))}
+                        </Select>
+                    </span>
+                )}
                 {pliego.puedeGestionar && (
                     <Button variant="ghost" size="sm" icon={<Trash2 />} onClick={() => setConfirmar('borrar')} className="text-danger-700 dark:text-danger-300">
                         Borrar
@@ -165,26 +184,6 @@ export default function PliegoDetallePage() {
                 <div className="surface p-4 mb-4 border-danger-300 dark:border-danger-800" role="alert">
                     <p className="text-body font-medium text-danger-700 dark:text-danger-300">El último análisis falló</p>
                     <p className="text-body text-muted-foreground mt-1 whitespace-pre-line">{pliego.ultimoError}</p>
-                </div>
-            )}
-
-            {pliego.versiones.length > 1 && (
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                    <label htmlFor="pliego-version" className="text-[13px] font-medium text-foreground inline-flex items-center gap-1.5">
-                        <History className="w-4 h-4" aria-hidden="true" /> Versión
-                    </label>
-                    <Select
-                        id="pliego-version"
-                        className="w-auto min-w-[240px]"
-                        value={String(a?.version ?? '')}
-                        onChange={e => { const v = Number(e.target.value); setVersion(v); cargar(v); }}
-                    >
-                        {pliego.versiones.map(v => (
-                            <option key={v.id} value={v.version}>
-                                v{v.version}{v.version === pliego.ultimaVersion ? ' (vigente)' : ''} · {formatFechaHora(v.createdAt)}
-                            </option>
-                        ))}
-                    </Select>
                 </div>
             )}
 
