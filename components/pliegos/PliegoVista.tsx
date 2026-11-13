@@ -48,6 +48,8 @@ export default function PliegoVista({
     const fuera = analisis.tareas.filter(t => t.alcance === 'fuera').length;
     const tareas = analisis.tareas.filter(t => filtro === 'todas' || (filtro === 'fuera' ? t.alcance === 'fuera' : !t.alcance));
     const materiales = (c.materiales?.delPliego?.length || 0) + (c.materiales?.sugeridos?.length || 0);
+    const materialesRevisar = (c.materiales?.delPliego || []).filter(m => m.evaluacion !== 'adecuado').length;
+    const altas = alertas.filter(a => a.severidad === 'alta');
 
     return (
         <div>
@@ -68,24 +70,38 @@ export default function PliegoVista({
             />
 
             {tab === 'resumen' && (
-                <div className="space-y-4 max-w-prose">
-                    <section className="surface p-4">
+                <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start">
+                    <section className="surface p-4 lg:p-5 lg:col-span-2">
                         <h2 className="text-heading text-foreground mb-2">Resumen</h2>
                         <p className="text-body text-foreground whitespace-pre-line">{analisis.resumen}</p>
                     </section>
-                    <div className="grid grid-cols-2 gap-2">
-                        <button type="button" className="surface p-3 text-left" onClick={() => setTab('tareas')}>
-                            <span className="eyebrow block">Tareas</span>
-                            <span className="text-title tabular-nums">{analisis.tareas.length}</span>
-                            <span className="block text-xs text-muted-foreground">{sinMarcar} sin marcar · {fuera} fuera</span>
-                        </button>
-                        <button type="button" className="surface p-3 text-left" onClick={() => setTab('alertas')}>
-                            <span className="eyebrow block">Alertas</span>
-                            <span className="text-title tabular-nums">{alertas.length}</span>
-                            <span className="block text-xs text-muted-foreground">{alertas.filter(a => a.severidad === 'alta').length} de severidad alta</span>
-                        </button>
-                    </div>
-                    <section className="surface p-4">
+
+                    <aside className="space-y-4 lg:row-span-2" aria-label="Totales del análisis">
+                        <div className="grid grid-cols-2 gap-2">
+                            <Total label="Tareas" valor={analisis.tareas.length} detalle={`${sinMarcar} sin marcar · ${fuera} fuera`} onClick={() => setTab('tareas')} />
+                            <Total label="Alertas" valor={alertas.length} detalle={`${altas.length} de severidad alta`} tono={altas.length > 0 ? 'danger' : undefined} onClick={() => setTab('alertas')} />
+                            <Total label="Materiales" valor={materiales} detalle={`${materialesRevisar} a revisar`} onClick={() => setTab('materiales')} />
+                            <Total label="Herramientas" valor={c.herramientas?.length || 0} onClick={() => setTab('herramientas')} />
+                            <Total label="Personal" valor={c.personal?.length || 0} onClick={() => setTab('personal')} />
+                            <Total label="H&S" valor={c.higieneSeguridad?.length || 0} onClick={() => setTab('hys')} />
+                        </div>
+                        {altas.length > 0 && (
+                            <section className="surface p-4">
+                                <h2 className="text-heading text-foreground mb-2">Alertas de severidad alta</h2>
+                                <ul className="space-y-2.5">
+                                    {altas.map((a, i) => (
+                                        <li key={i} className="border-l-2 border-danger-500 pl-2.5">
+                                            <p className="text-body font-medium text-foreground break-words">{a.titulo}</p>
+                                            {a.referencia && <p className="text-xs text-muted-foreground">{a.referencia}</p>}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <button type="button" className="btn btn-ghost btn-sm mt-2 -ml-2" onClick={() => setTab('alertas')}>Ver todas las alertas</button>
+                            </section>
+                        )}
+                    </aside>
+
+                    <section className="surface p-4 lg:p-5 lg:col-span-2">
                         <h2 className="text-heading text-foreground mb-2">Razonamiento de la IA</h2>
                         <p className="text-body text-muted-foreground whitespace-pre-line">{analisis.razonamiento}</p>
                     </section>
@@ -108,7 +124,7 @@ export default function PliegoVista({
                     {tareas.length === 0 ? (
                         <EmptyState compact icon={<ClipboardList />} title="No hay tareas con este filtro" />
                     ) : (
-                        <ol className="space-y-3">
+                        <ol className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
                             {tareas.map(t => (
                                 <TareaItem key={t.id} tarea={t} soloLectura={analisis.soloLectura} onCambio={onTareaCambio} />
                             ))}
@@ -120,7 +136,7 @@ export default function PliegoVista({
             {tab === 'alertas' && (
                 alertas.length === 0
                     ? <EmptyState compact icon={<ShieldCheck />} title="La IA no encontró alertas" />
-                    : <ul className="space-y-2">{alertas.map((a, i) => <AlertaCard key={i} alerta={a} />)}</ul>
+                    : <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">{alertas.map((a, i) => <AlertaCard key={i} alerta={a} />)}</ul>
             )}
 
             {tab === 'materiales' && (
@@ -165,15 +181,25 @@ export default function PliegoVista({
     );
 }
 
+function Total({ label, valor, detalle, tono, onClick }: { label: string; valor: number; detalle?: string; tono?: 'danger'; onClick: () => void }) {
+    return (
+        <button type="button" className="surface p-3 text-left hover:shadow-md transition-shadow" onClick={onClick}>
+            <span className="eyebrow block">{label}</span>
+            <span className={cn('text-title tabular-nums', tono === 'danger' && 'text-danger-700 dark:text-danger-300')}>{valor}</span>
+            {detalle && <span className="block text-xs text-muted-foreground">{detalle}</span>}
+        </button>
+    );
+}
+
 function Lista({ children, vacio, icon }: { children: React.ReactNode[]; vacio: string; icon: React.ReactNode }) {
     if (children.length === 0) return <EmptyState compact icon={icon} title={vacio} />;
-    return <ul className="space-y-2">{children}</ul>;
+    return <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">{children}</ul>;
 }
 
 function ListaMateriales({ items, vacio, sinEvaluacion }: { items: MaterialPliego[]; vacio: string; sinEvaluacion?: boolean }) {
     if (items.length === 0) return <p className="text-body text-muted-foreground">{vacio}</p>;
     return (
-        <ul className="space-y-2">
+        <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {items.map((m, i) => (
                 <ItemCard
                     key={i}
@@ -202,7 +228,7 @@ function HigieneSeguridad({ items }: { items: ContenidoAnalisis['higieneSegurida
             {grupos.map(g => (
                 <div key={g.cat}>
                     <SeccionTitulo count={g.items.length}>{HYS_LABEL[g.cat as HysCategoria]}</SeccionTitulo>
-                    <ul className="space-y-2">
+                    <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                         {g.items.map((h, i) => (
                             <ItemCard key={i} titulo={h.descripcion} badges={<OrigenBadge origen={h.origen} referencia={h.referencia} />} />
                         ))}
