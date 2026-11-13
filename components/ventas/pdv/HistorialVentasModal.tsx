@@ -29,6 +29,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import GenerarRemitoModal from '@/components/ventas/pdv/GenerarRemitoModal';
 import ImprimirRemitoModal from '@/components/ventas/pdv/ImprimirRemitoModal';
 import PendientesEntregaModal from '@/components/ventas/pdv/PendientesEntregaModal';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 interface HistorialVentasModalProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ export default function HistorialVentasModal({
   currentUserRole,
   currentUserId,
 }: HistorialVentasModalProps) {
+  const { puede } = useAcceso();
   const [ventas, setVentas] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -855,8 +857,8 @@ export default function HistorialVentasModal({
                   />
                 </div>
 
-                {/* Si el rol actual no es supervisor ni admin, pedir PIN */}
-                {!['admin', 'supervisor'].includes((currentUserRole || '').toLowerCase()) && (
+                {/* Sin la función "Anular ventas" (por rol o permiso especial), pedir PIN */}
+                {!puede('ventas.anular_venta') && (
                   <div>
                     <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                       PIN de Supervisor Requerido

@@ -24,7 +24,7 @@ const ajusteMultiSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = verificarPermisoInventario(req, 'ajustar_stock');
+    const auth = await verificarPermisoInventario(req, 'ajustar_stock');
     if (auth.error) return auth.error;
 
     const body = await req.json();

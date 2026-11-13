@@ -16,7 +16,7 @@ const almacenSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = verificarPermisoInventario(req, 'consultar_stock');
+    const auth = await verificarPermisoInventario(req, 'consultar_stock');
     if (auth.error) return auth.error;
 
     const almacenes = await prisma.almacen.findMany({
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = verificarPermisoInventario(req, 'almacenes_admin');
+    const auth = await verificarPermisoInventario(req, 'almacenes_admin');
     if (auth.error) return auth.error;
 
     const body = await req.json();

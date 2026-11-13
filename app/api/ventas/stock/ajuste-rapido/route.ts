@@ -15,7 +15,7 @@ const stockAjusteSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     // 1. Verificación de permisos SGI
-    const auth = verificarPermisoInventario(req, 'ajustar_stock');
+    const auth = await verificarPermisoInventario(req, 'ajustar_stock');
     if (auth.error) return auth.error;
 
     const body = await req.json();

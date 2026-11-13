@@ -34,6 +34,7 @@ import * as XLSX from "xlsx";
 import { createPortal } from "react-dom";
 import { showToast } from "@/components/Toast";
 import { ViewConfig, isViewAllowed } from "@/lib/viewAccess";
+import { useAccessStore } from "@/lib/store/useAccessStore";
 import { useViewState } from "@/lib/hooks/useViewState";
 import { useCommandStore } from "@/lib/store/useCommandStore";
 import { formatARS } from "@/lib/formatCurrency";
@@ -2073,11 +2074,12 @@ export default function ProvisionMaterialesPage() {
       .catch(() => {});
   }, []);
 
+  const permisosEspeciales = useAccessStore((s) => s.permisos);
   const userRole = user?.role?.toLowerCase()?.trim() || "";
   const isAuthorized =
     !userRole ||
     !viewConfig ||
-    isViewAllowed("/provision-materiales", userRole, "sidebar", viewConfig);
+    isViewAllowed("/provision-materiales", userRole, "sidebar", viewConfig, permisosEspeciales);
 
   const loadData = useCallback(async (showLoader = false) => {
     if (showLoader) setLoading(true);

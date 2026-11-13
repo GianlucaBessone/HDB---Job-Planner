@@ -10,6 +10,7 @@ import { getFavorites, getSidebarFavorites, setSidebarFavorites } from '@/lib/vi
 import { renderIcon } from '@/lib/iconRegistry';
 import { showToast } from '@/components/Toast';
 import { cn } from '@/lib/cn';
+import { useAccessStore } from '@/lib/store/useAccessStore';
 import { BrandWordmark } from './BrandMark';
 
 interface AppSidebarProps {
@@ -72,7 +73,8 @@ export function AppSidebar({ docked, open, onClose, onUndock, user, views, onLog
 
     const [showFavorites, setShowFavorites] = useState(() => getSidebarFavorites(userId));
     const [favorites, setFavoritesState] = useState<string[]>(() => getFavorites(userId));
-    const grouped = groupViewsBySection(views, role, 'sidebar');
+    const permisos = useAccessStore(s => s.permisos);
+    const grouped = groupViewsBySection(views, role, 'sidebar', permisos);
 
     // La sección que contiene la ruta actual arranca abierta.
     const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
@@ -111,7 +113,7 @@ export function AppSidebar({ docked, open, onClose, onUndock, user, views, onLog
 
     const favoriteViews = favorites
         .map(key => views.find(v => v.key === key))
-        .filter((v): v is ViewConfig => !!v && isViewAllowed(v.key, role, 'home', views));
+        .filter((v): v is ViewConfig => !!v && isViewAllowed(v.key, role, 'home', views, permisos));
 
     const navLink = (item: ViewConfig, keyPrefix = '') => (
         <Link

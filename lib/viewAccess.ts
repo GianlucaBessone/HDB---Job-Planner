@@ -8,6 +8,8 @@
  * no roles are hardcoded anywhere else.
  */
 
+import { PermisoEspecial, claveVista, efectoEspecial, puedeFuncion, getFuncion } from './permisos';
+
 // ── Types ──────────────────────────────────────────────────────────
 
 export interface ViewConfig {
@@ -142,26 +144,70 @@ export function getViewConfig(savedConfigs: ViewConfig[]): ViewConfig[] {
     return merged;
 }
 
+/** Vistas dadas de baja: no se habilitan por rol ni por permiso especial. */
+export const VISTAS_DESACTIVADAS = ['/inventario'];
+
+/**
+ * Acceso a una vista sin mirar dónde se muestra: permiso especial del usuario
+ * si lo hay; si no, los roles configurados para la vista.
+ */
+function viewGranted(cfg: ViewConfig, role: string, permisos?: PermisoEspecial[] | null): boolean {
+    if (VISTAS_DESACTIVADAS.includes(cfg.key)) return false;
+    const especial = efectoEspecial(claveVista(cfg.key), permisos);
+    if (especial) return especial === 'permitir';
+    return cfg.roles.includes(role);
+}
+
 /**
  * Check if a view is allowed for a given role and location.
  * If no config is loaded yet (null), returns true to fallback to defaults.
+ * `permisos` son los permisos especiales del usuario (lib/permisos.ts): ganan sobre el rol.
  */
 export function isViewAllowed(
     key: string,
     role: string,
     location: 'sidebar' | 'home',
-    configs: ViewConfig[] | null
+    configs: ViewConfig[] | null,
+    permisos?: PermisoEspecial[] | null
 ): boolean {
     const effectiveConfigs = (!configs || configs.length === 0) ? DEFAULT_VIEWS : configs;
 
     const cfg = effectiveConfigs.find(v => v.key === key);
     if (!cfg) return true; // Not configured = allow
 
-    if (!cfg.roles.includes(role)) return false;
+    if (!viewGranted(cfg, role, permisos)) return false;
     if (location === 'sidebar' && cfg.access === 'home') return false;
     if (location === 'home' && cfg.access === 'sidebar') return false;
 
     return true;
+}
+
+/**
+ * Si el usuario puede abrir una vista, se muestre en el menú, en inicio o en ambos.
+ * Para que una página valide su propio acceso.
+ */
+export function canOpenView(
+    key: string,
+    role: string,
+    configs: ViewConfig[] | null,
+    permisos?: PermisoEspecial[] | null
+): boolean {
+    const effectiveConfigs = (!configs || configs.length === 0) ? DEFAULT_VIEWS : configs;
+    const cfg = effectiveConfigs.find(v => v.key === key);
+    if (!cfg) return true;
+    return viewGranted(cfg, role, permisos);
+}
+
+/** Vista del menú a la que pertenece una ruta (la de clave más larga que la contiene). */
+export function findViewForPath(pathname: string | null, configs: ViewConfig[]): ViewConfig | undefined {
+    if (!pathname) return undefined;
+    let match: ViewConfig | undefined;
+    for (const v of configs) {
+        if (pathname === v.key || pathname.startsWith(v.key + '/')) {
+            if (!match || v.key.length > match.key.length) match = v;
+        }
+    }
+    return match;
 }
 
 /**
@@ -177,12 +223,13 @@ export function getSection(sectionKey: string): SectionConfig | undefined {
 export function groupViewsBySection(
     views: ViewConfig[],
     role: string,
-    location: 'sidebar' | 'home'
+    location: 'sidebar' | 'home',
+    permisos?: PermisoEspecial[] | null
 ): { section: SectionConfig; views: ViewConfig[] }[] {
     const groups: Map<string, ViewConfig[]> = new Map();
 
     for (const v of views) {
-        if (!isViewAllowed(v.key, role, location, views)) continue;
+        if (!isViewAllowed(v.key, role, location, views, permisos)) continue;
         if (!groups.has(v.section)) groups.set(v.section, []);
         groups.get(v.section)!.push(v);
     }
@@ -196,8 +243,11 @@ export function groupViewsBySection(
 // Accesos que no son una vista del menú sino una función de otra vista.
 
 /** Control horario (botón en Registro de Tiempos → /timesheets/control-horario). */
-export const CONTROL_HORARIO_ROLES = ['admin', 'supervisor'];
+export const CONTROL_HORARIO_ROLES: readonly string[] = getFuncion('timesheets.control_horario')?.roles ?? [];
 
-export function canUseControlHorario(role: string | null | undefined): boolean {
-    return CONTROL_HORARIO_ROLES.includes((role || '').toLowerCase());
+export function canUseControlHorario(
+    role: string | null | undefined,
+    permisos?: PermisoEspecial[] | null
+): boolean {
+    return puedeFuncion('timesheets.control_horario', role, permisos);
 }

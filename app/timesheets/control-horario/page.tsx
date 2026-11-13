@@ -12,6 +12,7 @@ import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { cn } from '@/lib/cn';
 import { useHistoryStore } from '@/lib/store/useHistoryStore';
+import { useAccessStore } from '@/lib/store/useAccessStore';
 import InformeControlHorario from '@/components/control-horario/InformeControlHorario';
 import {
     calcularTotales,
@@ -80,7 +81,8 @@ export default function ControlHorarioPage() {
         setUserLoaded(true);
     }, []);
 
-    const allowed = canUseControlHorario(currentUser?.role);
+    const permisosEspeciales = useAccessStore(s => s.permisos);
+    const allowed = canUseControlHorario(currentUser?.role, permisosEspeciales);
 
     // Título de las migas de pan (el historial guarda el último segmento de la URL)
     const setTitle = useHistoryStore(s => s.setTitle);

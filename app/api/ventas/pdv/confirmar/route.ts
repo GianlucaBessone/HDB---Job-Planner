@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withIdempotency } from '@/lib/idempotency';
 import { confirmarVentaPDV } from '@/lib/ventas/pdvService';
+import { puede } from '@/lib/permisosServer';
 
 const itemSchema = z.object({
   productoId: z.string().optional().nullable(),
@@ -66,10 +67,10 @@ export async function POST(req: NextRequest) {
       // Validar si algún item tuvo precio modificado manualmente y si el rol lo autoriza
       const hayPreciosModificados = parsed.items.some((i) => i.precioModificado);
       if (hayPreciosModificados && userRoleHeader) {
-        const rol = userRoleHeader.toLowerCase();
-        // Si no es admin ni supervisor, se requiere que la venta venga autorizada o provenga de una cotización formal
+        // Sin la función "Modificar precios" (por rol o permiso especial), la venta tiene que
+        // venir autorizada o provenir de una cotización formal
         if (
-          !['admin', 'administrador', 'supervisor'].includes(rol) &&
+          !(await puede(req, 'ventas.modificar_precios')) &&
           !body.autorizadoPorSupervisor &&
           !parsed.cotizacionId
         ) {

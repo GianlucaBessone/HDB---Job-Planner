@@ -21,7 +21,7 @@ export async function PUT(
 ) {
   const params = await paramsPromise;
   try {
-    const auth = verificarPermisoInventario(req, 'almacenes_admin');
+    const auth = await verificarPermisoInventario(req, 'almacenes_admin');
     if (auth.error) return auth.error;
 
     const body = await req.json();
@@ -95,7 +95,7 @@ export async function DELETE(
 ) {
   const params = await paramsPromise;
   try {
-    const auth = verificarPermisoInventario(req, 'almacenes_admin');
+    const auth = await verificarPermisoInventario(req, 'almacenes_admin');
     if (auth.error) return auth.error;
 
     const almacen = await prisma.almacen.findUnique({

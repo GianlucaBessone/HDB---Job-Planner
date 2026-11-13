@@ -24,7 +24,7 @@ const transferenciaSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = verificarPermisoInventario(req, 'transferir_stock');
+    const auth = await verificarPermisoInventario(req, 'transferir_stock');
     if (auth.error) return auth.error;
 
     const body = await req.json();

@@ -8,7 +8,7 @@ export async function POST(
 ) {
   const params = await paramsPromise;
   try {
-    const auth = verificarPermisoInventario(req, 'conteos_contar');
+    const auth = await verificarPermisoInventario(req, 'conteos_contar');
     if (auth.error) return auth.error;
 
     const result = await StockService.finalizarCapturaConteo(

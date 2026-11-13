@@ -15,7 +15,7 @@ const conteoCreateSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = verificarPermisoInventario(req, 'consultar_stock');
+    const auth = await verificarPermisoInventario(req, 'consultar_stock');
     if (auth.error) return auth.error;
 
     const { searchParams } = new URL(req.url);
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = verificarPermisoInventario(req, 'conteos_crear');
+    const auth = await verificarPermisoInventario(req, 'conteos_crear');
     if (auth.error) return auth.error;
 
     const body = await req.json();

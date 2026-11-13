@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { puede } from '@/lib/permisosServer';
 import {
-    canUseControlHorario,
     horasEntre,
     round2,
     toMinutes,
@@ -62,7 +62,7 @@ function maxHora(a: string | null, b: string | null): string | null {
 }
 
 export async function GET(req: Request) {
-    if (!canUseControlHorario(req.headers.get('x-user-role'))) return forbidden();
+    if (!(await puede(req, 'timesheets.control_horario'))) return forbidden();
 
     const { searchParams } = new URL(req.url);
     const parsed = querySchema.safeParse({
@@ -199,8 +199,7 @@ export async function GET(req: Request) {
 
 /** Guarda (crea o reemplaza) el ajuste de un operador para un día. */
 export async function PUT(req: Request) {
-    const role = req.headers.get('x-user-role');
-    if (!canUseControlHorario(role)) return forbidden();
+    if (!(await puede(req, 'timesheets.control_horario'))) return forbidden();
     const userId = req.headers.get('x-user-id');
 
     const parsed = ajusteSchema.safeParse(await req.json().catch(() => null));
@@ -252,7 +251,7 @@ export async function PUT(req: Request) {
 
 /** Quita el ajuste de un operador para un día. */
 export async function DELETE(req: Request) {
-    if (!canUseControlHorario(req.headers.get('x-user-role'))) return forbidden();
+    if (!(await puede(req, 'timesheets.control_horario'))) return forbidden();
     const userId = req.headers.get('x-user-id');
 
     const { searchParams } = new URL(req.url);

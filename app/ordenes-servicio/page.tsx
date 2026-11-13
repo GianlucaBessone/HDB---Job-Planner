@@ -13,6 +13,7 @@ import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
+import { useAccessStore } from '@/lib/store/useAccessStore';
 import CodeBadge from '@/components/CodeBadge';
 import dynamic from 'next/dynamic';
 import { useViewState } from '@/lib/hooks/useViewState';
@@ -646,8 +647,9 @@ function OrdenesServicioContent() {
         }
     };
 
+    const permisosEspeciales = useAccessStore(s => s.permisos);
     const role = currentUser?.role?.trim().toLowerCase() || '';
-    const isSupervisorOrAdmin = !role || !viewConfig || isViewAllowed('/ordenes-servicio', role, 'sidebar', viewConfig);
+    const isSupervisorOrAdmin = !role || !viewConfig || isViewAllowed('/ordenes-servicio', role, 'sidebar', viewConfig, permisosEspeciales);
 
     if (!loading && !isSupervisorOrAdmin) {
         return (

@@ -66,7 +66,7 @@ Todas las respuestas son JSON. Los errores vienen como {"error": "..."} con su c
 - No hagas push a main, merge, deploy ni cambios en producción. Una persona revisa y publica.
 - No marques el ticket como resuelto: no hay forma de hacerlo desde esta API. Pasa a "resuelto" cuando una persona lo valida, y recién ahí se avisa al usuario.
 - Escalá en vez de resolver si el cambio:
-  - toca autenticación, sesiones, permisos o roles (lib/auth*, lib/portalAuth.ts, lib/viewAccess.ts, middleware.ts, app/api/auth/**);
+  - toca autenticación, sesiones, permisos o roles (lib/auth*, lib/portalAuth.ts, lib/viewAccess.ts, lib/permisos*.ts, middleware.ts, app/api/auth/**, app/api/accesos/**);
   - cambia el esquema de la base (prisma/schema.prisma), requiere migraciones o \`prisma db push\`;
   - agrega dependencias o cambia configuración (package.json, next.config.js, .env*);
   - borra datos, toca facturación o datos personales;

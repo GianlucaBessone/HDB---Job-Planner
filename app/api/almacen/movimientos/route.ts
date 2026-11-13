@@ -4,7 +4,7 @@ import { verificarPermisoInventario } from '@/lib/inventario/permisos';
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = verificarPermisoInventario(req, 'consultar_movimientos');
+    const auth = await verificarPermisoInventario(req, 'consultar_movimientos');
     if (auth.error) return auth.error;
 
     const { searchParams } = new URL(req.url);

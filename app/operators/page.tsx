@@ -17,7 +17,8 @@ import {
     LayoutGrid,
     List,
     SmartphoneNfc,
-    RefreshCcw
+    RefreshCcw,
+    KeyRound
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
@@ -26,6 +27,8 @@ import { showToast } from '@/components/Toast';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { useRef } from 'react';
+import AccesosDialog from '@/components/operators/AccesosDialog';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 // PREDEFINED_TAGS is now loaded dynamically from the backend config
 
@@ -50,6 +53,10 @@ export default function OperatorsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingOperator, setEditingOperator] = useState<any>(null);
+    // Control de accesos: usuario cuyos permisos especiales se están editando
+    const [accesosDe, setAccesosDe] = useState<any>(null);
+    const { puede } = useAcceso();
+    const puedeAdministrarAccesos = puede('usuarios.accesos');
     const [formData, setFormData] = useState<any>({ nombreCompleto: '', activo: true, enVacaciones: false, etiquetas: [], role: 'operador', dni: '', posicion: '', pin: '1234' });
     const [customTag, setCustomTag] = useState('');
 
@@ -508,6 +515,16 @@ export default function OperatorsPage() {
                                             >
                                                 <Edit3 className="w-4 h-4 md:w-5 md:h-5" />
                                             </button>
+                                            {puedeAdministrarAccesos && (
+                                                <button
+                                                    onClick={() => setAccesosDe(op)}
+                                                    title="Accesos y permisos especiales"
+                                                    aria-label={`Accesos de ${op.nombreCompleto}`}
+                                                    className="btn-icon-inline p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 hover:text-primary transition-all"
+                                                >
+                                                    <KeyRound className="w-4 h-4 md:w-5 md:h-5" />
+                                                </button>
+                                            )}
                                             {currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
                                                 <>
                                                     <button
@@ -542,6 +559,16 @@ export default function OperatorsPage() {
                                             >
                                                 <Edit3 className="w-5 h-5" />
                                             </button>
+                                            {puedeAdministrarAccesos && (
+                                                <button
+                                                    onClick={() => setAccesosDe(op)}
+                                                    title="Accesos y permisos especiales"
+                                                    aria-label={`Accesos de ${op.nombreCompleto}`}
+                                                    className="btn-icon-inline p-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 hover:text-primary transition-all"
+                                                >
+                                                    <KeyRound className="w-5 h-5" />
+                                                </button>
+                                            )}
                                             {currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
                                                 <>
                                                     <button
@@ -599,6 +626,12 @@ export default function OperatorsPage() {
                     <p className="font-bold text-slate-700 dark:text-slate-200 text-lg">Equipo de trabajo vacío</p>
                 </div>
             )}
+
+            <AccesosDialog
+                operator={accesosDe}
+                currentUserId={currentUser?.id}
+                onClose={() => setAccesosDe(null)}
+            />
 
             <ConfirmDialog
                 isOpen={isConfirmOpen}

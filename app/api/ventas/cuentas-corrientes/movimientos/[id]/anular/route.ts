@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { anularMovimientoCC } from '@/lib/ventas/cuentaCorrienteService';
+import { puede } from '@/lib/permisosServer';
 
 const anularSchema = z.object({
   motivo: z.string().min(3, 'El motivo debe tener al menos 3 caracteres'),
@@ -20,7 +21,6 @@ export async function POST(
 
     let userId = req.headers.get('x-user-id') || '';
     let userName = req.headers.get('x-user-name') || undefined;
-    let userRole = (req.headers.get('x-user-role') || '').toLowerCase();
 
     if (supervisorPin) {
       const { prisma } = await import('@/lib/prisma');
@@ -47,10 +47,9 @@ export async function POST(
       }
       userId = supervisor.id;
       userName = supervisor.nombreCompleto;
-      userRole = supervisor.role.toLowerCase();
-    } else if (!['admin', 'administrador', 'supervisor'].includes(userRole)) {
+    } else if (!(await puede(req, 'ventas.anular_comprobante_cc'))) {
       return NextResponse.json(
-        { error: 'Se requiere rol de Supervisor o Administrador (o PIN válido) para anular un comprobante' },
+        { error: 'No tenés permiso para anular comprobantes. Ingresá el PIN de un Supervisor o Administrador.' },
         { status: 403 }
       );
     }

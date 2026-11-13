@@ -5,7 +5,7 @@ import { EstadoStock } from '@/lib/inventario/types';
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = verificarPermisoInventario(req, 'consultar_stock');
+    const auth = await verificarPermisoInventario(req, 'consultar_stock');
     if (auth.error) return auth.error;
 
     const { searchParams } = new URL(req.url);

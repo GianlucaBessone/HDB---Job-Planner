@@ -31,6 +31,7 @@ import {
 import TechAssistantChat from "@/components/TechAssistantChat";
 import { EmptyState, LoadingState } from "@/components/ui/States";
 import { cn } from "@/lib/cn";
+import { useAccessStore } from "@/lib/store/useAccessStore";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -115,8 +116,9 @@ export default function HomePage() {
   const role = userRole?.trim().toLowerCase() || "operador";
   const effectiveViews =
     viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;
+  const permisos = useAccessStore((s) => s.permisos);
   const show = (key: string) =>
-    isViewAllowed(key, role, "home", effectiveViews);
+    isViewAllowed(key, role, "home", effectiveViews, permisos);
 
   const getView = (key: string) => effectiveViews.find((v) => v.key === key);
 
@@ -172,8 +174,8 @@ export default function HomePage() {
   };
 
   const grouped = useMemo(
-    () => groupViewsBySection(effectiveViews, role, "home"),
-    [effectiveViews, role],
+    () => groupViewsBySection(effectiveViews, role, "home", permisos),
+    [effectiveViews, role, permisos],
   );
 
   const filteredGroups = useMemo(() => {

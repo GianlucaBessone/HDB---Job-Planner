@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from "react";
-import { ViewConfig, DEFAULT_VIEWS, getViewConfig } from '@/lib/viewAccess';
+import { ViewConfig, DEFAULT_VIEWS, getViewConfig, findViewForPath } from '@/lib/viewAccess';
+import { useAccessStore, useAcceso } from '@/lib/store/useAccessStore';
+import { Lock } from 'lucide-react';
+import Link from 'next/link';
+import { EmptyState } from '@/components/ui';
 import { trackRecentView } from '@/lib/viewPreferences';
 import "./globals.css";
 import { usePathname, useRouter } from "next/navigation";
@@ -114,6 +118,27 @@ export default function RootLayout({
             .catch(() => {});
     }, []);
 
+    // Permisos especiales del usuario (lib/permisos.ts). Se releen al volver a la
+    // pestaña, así un cambio hecho por un administrador aplica sin cerrar sesión.
+    const cargarAccesos = useAccessStore(s => s.cargar);
+    const setAccessViews = useAccessStore(s => s.setViews);
+    const { vistaDenegada } = useAcceso();
+    const currentUserId = currentUser?.id;
+    const currentUserRole = currentUser?.role;
+
+    useEffect(() => {
+        const user = currentUserId ? { id: currentUserId, role: currentUserRole } : null;
+        cargarAccesos(user);
+        if (!user) return;
+        const onVisible = () => { if (document.visibilityState === 'visible') cargarAccesos(user); };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => document.removeEventListener('visibilitychange', onVisible);
+    }, [currentUserId, currentUserRole, cargarAccesos]);
+
+    useEffect(() => {
+        if (viewConfig && viewConfig.length > 0) setAccessViews(viewConfig);
+    }, [viewConfig, setAccessViews]);
+
     const setPinned = useCallback((value: boolean) => {
         setSidebarPinned(value);
         try { localStorage.setItem(SIDEBAR_PINNED_KEY, String(value)); } catch { /* noop */ }
@@ -141,6 +166,10 @@ export default function RootLayout({
     const role =currentUser?.role?.toLowerCase() || 'operador';
     const effectiveViews = viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;
     const sidebarDocked = sidebarPinned && !isPdvPage;
+
+    // Una vista denegada puntualmente al usuario no se abre aunque entre por un enlace directo.
+    const vistaActual = findViewForPath(pathname, effectiveViews);
+    const accesoDenegado = !!vistaActual && vistaDenegada(vistaActual.key);
 
     const handleLogout = () => {
         localStorage.removeItem('currentUser');
@@ -221,7 +250,14 @@ export default function RootLayout({
                                 ? "flex-1 w-full p-2 pb-28 md:pb-10 min-w-0"
                                 : "flex-1 w-full max-w-page mx-auto px-4 md:px-6 xl:px-8 pt-5 md:pt-6 pb-28 md:pb-10 min-w-0"}
                     >
-                        {children}
+                        {accesoDenegado ? (
+                            <EmptyState
+                                icon={<Lock />}
+                                title="No tenés acceso a esta vista"
+                                description={`Un administrador te quitó el acceso a "${vistaActual?.label}". Si lo necesitás, pedí que te lo habiliten desde Gestión de Usuarios.`}
+                                action={<Link href="/" className="btn btn-secondary">Volver al inicio</Link>}
+                            />
+                        ) : children}
                         <SpeedInsights />
                     </main>
                 </div>
