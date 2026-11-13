@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity, FileSpreadsheet, Briefcase, UserX, ToggleLeft, ToggleRight, ClipboardCheck } from 'lucide-react';
 import { canUseControlHorario } from '@/lib/viewAccess';
+import { useAccessStore } from '@/lib/store/useAccessStore';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
@@ -93,6 +94,7 @@ export default function TimesheetsPage() {
     const setFilterOperator = (val: string) => setFilters({ filterOperator: val });
     const setFilterProject = (val: string) => setFilters({ filterProject: val });
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const permisosEspeciales = useAccessStore(s => s.permisos);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -638,7 +640,7 @@ export default function TimesheetsPage() {
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Gestión de jornadas de los operadores e ingresos por proyecto</p>
                 </div>
                 <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                    {canUseControlHorario(currentUser?.role) && (
+                    {canUseControlHorario(currentUser?.role, permisosEspeciales) && (
                         <Link href="/timesheets/control-horario" className="btn btn-secondary w-full md:w-auto justify-center">
                             <ClipboardCheck />
                             Control horario

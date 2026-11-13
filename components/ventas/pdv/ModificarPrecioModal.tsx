@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Edit2, Tag, ShieldAlert, KeyRound, CheckCircle2, Loader2, Percent } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 interface ItemCarritoInfo {
   id: string;
@@ -45,8 +46,9 @@ export default function ModificarPrecioModal({
   const precioInputRef = useRef<HTMLInputElement>(null);
   const pinInputRef = useRef<HTMLInputElement>(null);
 
-  const rol = (currentUser?.role || '').toLowerCase();
-  const esSupervisorOAdmin = ['admin', 'administrador', 'supervisor'].includes(rol);
+  // Función "Modificar precios": por rol o por permiso especial del usuario
+  const { puede } = useAcceso();
+  const esSupervisorOAdmin = puede('ventas.modificar_precios');
 
   useEffect(() => {
     if (isOpen && item) {

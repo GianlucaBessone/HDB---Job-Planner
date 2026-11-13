@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
 import { getSessionFromRequest } from '@/lib/auth';
+import { puede } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
-// Mismos roles que ven "Gestión de Usuarios" en lib/viewAccess.ts
-const ROLES_GESTION_USUARIOS = ['admin', 'supervisor', 'qa'];
-
+// Función "usuarios.gestionar" (lib/permisos.ts): por rol o por permiso especial del usuario.
 function puedeGestionarUsuarios(req: Request) {
-    const role = (req.headers.get('x-user-role') || '').toLowerCase();
-    return ROLES_GESTION_USUARIOS.includes(role);
+    return puede(req, 'usuarios.gestionar');
 }
 
 export async function GET(req: Request) {
@@ -32,7 +30,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    if (!puedeGestionarUsuarios(req)) {
+    if (!(await puedeGestionarUsuarios(req))) {
         return NextResponse.json({ error: 'No tenés permisos para gestionar usuarios' }, { status: 403 });
     }
     const data = await req.json();
@@ -42,7 +40,7 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-    if (!puedeGestionarUsuarios(req)) {
+    if (!(await puedeGestionarUsuarios(req))) {
         return NextResponse.json({ error: 'No tenés permisos para gestionar usuarios' }, { status: 403 });
     }
     const url = new URL(req.url);
@@ -57,7 +55,7 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-    if (!puedeGestionarUsuarios(req)) {
+    if (!(await puedeGestionarUsuarios(req))) {
         return NextResponse.json({ error: 'No tenés permisos para gestionar usuarios' }, { status: 403 });
     }
     const url = new URL(req.url);

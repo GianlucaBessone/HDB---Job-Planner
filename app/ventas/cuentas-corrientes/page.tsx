@@ -8,6 +8,7 @@ import {
     Ban, Eye, Phone, Mail, TrendingUp, ArrowUp, ArrowDown, ArrowUpDown, X
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import { useAcceso } from '@/lib/store/useAccessStore';
 import { Button, Dialog, Field, Tabs } from '@/components/ui';
 import RegistrarCobranzaModal, { ComprobantePendienteItem } from '@/components/ventas/cuentas-corrientes/RegistrarCobranzaModal';
 import RegistrarAjusteCCModal from '@/components/ventas/cuentas-corrientes/RegistrarAjusteCCModal';
@@ -135,9 +136,9 @@ export default function CuentasCorrientesPage() {
         }
     }, []);
 
-    const esSupervisorOAdmin = ['admin', 'administrador', 'supervisor'].includes(
-        (currentUser?.role || '').toLowerCase()
-    );
+    // Función "Anular comprobantes de cuenta corriente": por rol o por permiso especial
+    const { puede } = useAcceso();
+    const esSupervisorOAdmin = puede('ventas.anular_comprobante_cc');
 
     const fmt = (n: number) =>
         (n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

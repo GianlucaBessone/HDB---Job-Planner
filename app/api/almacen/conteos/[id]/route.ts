@@ -20,7 +20,7 @@ export async function GET(
 ) {
   const params = await paramsPromise;
   try {
-    const auth = verificarPermisoInventario(req, 'consultar_stock');
+    const auth = await verificarPermisoInventario(req, 'consultar_stock');
     if (auth.error) return auth.error;
 
     const conteo = await prisma.conteoInventario.findUnique({
@@ -133,7 +133,7 @@ export async function PUT(
 ) {
   const params = await paramsPromise;
   try {
-    const auth = verificarPermisoInventario(req, 'conteos_contar');
+    const auth = await verificarPermisoInventario(req, 'conteos_contar');
     if (auth.error) return auth.error;
 
     const body = await req.json();

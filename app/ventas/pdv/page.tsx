@@ -48,6 +48,7 @@ import {
 } from '@/lib/ventas/pdvSearchEngine';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 import { showToast } from '@/components/Toast';
+import { useAcceso } from '@/lib/store/useAccessStore';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import CobroModal from '@/components/ventas/pdv/CobroModal';
 import SeleccionarClienteModal from '@/components/ventas/pdv/SeleccionarClienteModal';
@@ -101,6 +102,9 @@ export default function PdvPage() {
   // Operador / Vendedor logueado y control de acceso
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  // El acceso sale de la configuración de vistas y de los permisos especiales del usuario
+  const { cargado: accesoCargado, puedeVer } = useAcceso();
+  const puedeEntrar = puedeVer('/ventas/pdv');
 
   // Pantalla Completa / Vista Maximizada
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -165,12 +169,6 @@ export default function PdvPage() {
       if (stored) {
         const user = JSON.parse(stored);
         setCurrentUser(user);
-        const rol = (user.role || '').toLowerCase();
-        if (!['admin', 'administrador', 'supervisor', 'vendedor'].includes(rol)) {
-          showToast('Acceso denegado: sólo Vendedores, Supervisores o Administradores pueden ingresar al Punto de Venta.', 'error');
-          router.push('/');
-          return;
-        }
       } else {
         router.push('/');
         return;
@@ -188,6 +186,13 @@ export default function PdvPage() {
       setIsAuthChecking(false);
     }
   }, [router]);
+
+  // Sin acceso al PDV: se avisa y se vuelve al inicio
+  useEffect(() => {
+    if (isAuthChecking || !accesoCargado || !currentUser || puedeEntrar) return;
+    showToast('No tenés acceso al Punto de Venta.', 'error');
+    router.push('/');
+  }, [isAuthChecking, accesoCargado, currentUser, puedeEntrar, router]);
 
   // Manejo de cambio de pantalla completa / maximización in-app
   const toggleFullscreen = () => {
@@ -884,7 +889,7 @@ export default function PdvPage() {
       minimumFractionDigits: 2,
     }).format(val || 0);
 
-  if (isAuthChecking) {
+  if (isAuthChecking || (!puedeEntrar && !accesoCargado)) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-7 h-7 animate-spin text-indigo-600" />
@@ -893,8 +898,7 @@ export default function PdvPage() {
     );
   }
 
-  const rolUsuario = (currentUser?.role || '').toLowerCase();
-  if (!['admin', 'administrador', 'supervisor', 'vendedor'].includes(rolUsuario)) {
+  if (!puedeEntrar) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
         <div className="w-14 h-14 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-200 dark:border-red-800">
@@ -903,7 +907,7 @@ export default function PdvPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Acceso Restringido</h2>
           <p className="text-xs text-slate-500 max-w-md mt-1">
-            Esta vista está reservada exclusivamente para personal con rol Vendedor, Supervisor o Administrador.
+            No tenés acceso al Punto de Venta. Si lo necesitás, pedí que te lo habiliten desde Gestión de Usuarios.
           </p>
         </div>
         <button

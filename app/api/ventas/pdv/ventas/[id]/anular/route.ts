@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { anularVentaPDV } from '@/lib/ventas/pdvService';
+import { puede } from '@/lib/permisosServer';
 
 const anularSchema = z.object({
   motivo: z.string().min(3, 'El motivo debe tener al menos 3 caracteres'),
@@ -19,12 +20,10 @@ export async function POST(
     const { motivo, supervisorPin } = anularSchema.parse(body);
 
     const userId = req.headers.get('x-user-id') || '';
-    const userRole = req.headers.get('x-user-role') || '';
 
     // Si viene con supervisorPin (en caso de que el cajero/operador no sea supervisor pero un supervisor ingresa su PIN)
     let finalUserId = userId;
     let finalUserName = undefined;
-    let finalUserRole = userRole;
 
     if (supervisorPin) {
       const { prisma } = await import('@/lib/prisma');
@@ -52,16 +51,16 @@ export async function POST(
       }
       finalUserId = supervisor.id;
       finalUserName = supervisor.nombreCompleto;
-      finalUserRole = supervisor.role;
+    } else if (!(await puede(req, 'ventas.anular_venta'))) {
+      // Sin PIN: el usuario necesita la función "Anular ventas" (por rol o permiso especial)
+      return NextResponse.json(
+        { error: 'No tenés permiso para anular ventas. Ingresá el PIN de un Supervisor o Administrador.' },
+        { status: 403 }
+      );
     }
 
-    const ventaAnulada = await anularVentaPDV(
-      id,
-      motivo,
-      finalUserId,
-      finalUserName,
-      finalUserRole
-    );
+    // La autorización ya se resolvió arriba (PIN de supervisor o función del usuario)
+    const ventaAnulada = await anularVentaPDV(id, motivo, finalUserId, finalUserName);
 
     return NextResponse.json({
       success: true,

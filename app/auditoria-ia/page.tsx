@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 const AI_ACTION_LABELS: Record<string, string> = {
     'GEN_ISO_DOC': 'Generación Procedimiento ISO',
@@ -81,21 +82,24 @@ export default function AiAuditPage() {
     const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
     const latestActions = useRef({ fetchData: () => {} });
 
+    // El acceso sale de la configuración de vistas y de los permisos especiales del usuario
+    const { cargado: accesoCargado, puedeVer } = useAcceso();
+    const puedeEntrar = puedeVer('/auditoria-ia');
+
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            const role = parsed.role?.toLowerCase() || '';
-            if (role !== 'admin' && role !== 'qa' && role !== 'supervisor') {
-                showToast("Acceso denegado. Se requieren permisos de supervisor, administrador o QA.", "error");
-                router.replace('/');
-            } else {
-                setCurrentUser(parsed);
-            }
-        } else {
+        if (!stored) {
             router.replace('/');
+            return;
         }
-    }, [router]);
+        if (puedeEntrar) {
+            setCurrentUser(JSON.parse(stored));
+            return;
+        }
+        if (!accesoCargado) return; // todavía no llegaron los permisos del usuario
+        showToast('No tenés acceso a Auditoría de IA.', 'error');
+        router.replace('/');
+    }, [router, puedeEntrar, accesoCargado]);
 
     const fetchData = async () => {
         if (!currentUser) return;

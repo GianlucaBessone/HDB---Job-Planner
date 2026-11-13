@@ -167,7 +167,7 @@ Las publica `GET /api/agente/instrucciones`, que es lo primero que lee el agente
 
 **Escalar en vez de resolver** (`POST /escalar`) si el cambio:
 
-- toca autenticación, sesiones, permisos o roles (`lib/auth*`, `lib/portalAuth.ts`, `lib/viewAccess.ts`, `middleware.ts`, `app/api/auth/**`);
+- toca autenticación, sesiones, permisos o roles (`lib/auth*`, `lib/portalAuth.ts`, `lib/viewAccess.ts`, `lib/permisos*.ts`, `middleware.ts`, `app/api/auth/**`, `app/api/accesos/**`);
 - cambia el esquema (`prisma/schema.prisma`), requiere migraciones o `prisma db push`;
 - agrega dependencias o cambia configuración (`package.json`, `next.config.js`, `.env*`);
 - borra datos, toca facturación o datos personales;

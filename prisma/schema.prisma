@@ -161,6 +161,7 @@ model Operator {
   analisisCausaRaiz         AnalisisCausaRaiz[]
   verificacionesEficacia    VerificacionEficacia[]
   tareasInvolucradas        TareaInvolucrado[]
+  permisosEspeciales        OperatorPermiso[]
   tareasComentarios         TareaComentario[]
 
   // Nuevas relaciones (Auditoria DB)
@@ -3967,4 +3968,21 @@ model PliegoTareaMarca {
   createdAt    DateTime    @default(now())
 
   @@index([tareaId])
+}
+
+// Control de accesos: permiso especial de un usuario puntual.
+// El rol define los accesos por defecto; cada fila los amplía ("permitir")
+// o los recorta ("denegar") para ese usuario. Catálogo en lib/permisos.ts.
+model OperatorPermiso {
+  id                String   @id @default(cuid())
+  operatorId        String
+  operator          Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  clave             String // "vista:/ventas/pdv" | "funcion:ventas.anular_venta"
+  efecto            String // permitir | denegar
+  otorgadoPorId     String?
+  otorgadoPorNombre String?
+  createdAt         DateTime @default(now())
+
+  @@unique([operatorId, clave])
+  @@index([operatorId])
 }

@@ -13,7 +13,7 @@ export async function POST(
 ) {
   const params = await paramsPromise;
   try {
-    const auth = verificarPermisoInventario(req, 'conteos_confirmar');
+    const auth = await verificarPermisoInventario(req, 'conteos_confirmar');
     if (auth.error) return auth.error;
 
     let observacionesFinales: string | undefined;

@@ -11,6 +11,7 @@ import { formatDate } from '@/lib/formatDate';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
+import { useAccessStore } from '@/lib/store/useAccessStore';
 
 export default function InformesTecnicosContent() {
     const searchParams = useSearchParams();
@@ -48,8 +49,9 @@ export default function InformesTecnicosContent() {
         }
     };
 
+    const permisosEspeciales = useAccessStore(s => s.permisos);
     const role = currentUser?.role?.trim().toLowerCase() || '';
-    const isAllowed = !role || !viewConfig || isViewAllowed('/informes-tecnicos', role, 'sidebar', viewConfig);
+    const isAllowed = !role || !viewConfig || isViewAllowed('/informes-tecnicos', role, 'sidebar', viewConfig, permisosEspeciales);
 
     if (!loading && !isAllowed) {
         return (

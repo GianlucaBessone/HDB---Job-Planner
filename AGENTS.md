@@ -34,6 +34,7 @@ No ejecutes `prisma migrate`, `db push`, commits, push ni deploy sin autorizaci√
 - Antes de un PR que toque UI: `node scripts/design-system/migrate-classes.js --dry` debe informar 0 archivos.
 - Las rutas de API validan con Zod y devuelven `NextResponse.json`.
 - Los permisos de vistas se declaran en `lib/viewAccess.ts`; no hardcodees roles en el sidebar.
+- Control de accesos (`docs/CONTROL_ACCESOS.md`): el rol da los accesos por defecto y cada usuario puede tener permisos especiales. Las funciones se declaran en `lib/permisos.ts`. No compares roles a mano: en una API us√° `getAcceso(req)` / `puede(req, funcion)` de `lib/permisosServer.ts`; en una pantalla, `useAcceso()` de `lib/store/useAccessStore.ts`.
 - Las acciones globales del buscador se registran con `useCommandStore` (`lib/store/useCommandStore.ts`).
 - No introduzcas dependencias nuevas si se puede resolver con lo instalado.
 

@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, ArrowUp, ArrowDown, CornerDownLeft, Clock, LayoutGrid } from 'lucide-react';
-import { ViewConfig, DEFAULT_SECTIONS } from '@/lib/viewAccess';
+import { ViewConfig, DEFAULT_SECTIONS, canOpenView } from '@/lib/viewAccess';
+import { useAccessStore } from '@/lib/store/useAccessStore';
 import { renderIcon } from '@/lib/iconRegistry';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { useHistoryStore } from '@/lib/store/useHistoryStore';
@@ -14,6 +15,7 @@ interface CommandPaletteProps {
 }
 
 export function CommandPalette({ views, role }: CommandPaletteProps) {
+    const permisos = useAccessStore(s => s.permisos);
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
     const [selectedIdx, setSelectedIdx] = useState(0);
@@ -85,7 +87,7 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
 
         // 2. Vistas
         const filteredViews = views.filter(v => {
-            if (!v.roles.includes(role)) return false;
+            if (!canOpenView(v.key, role, views, permisos)) return false;
             if (!q) return true;
             return (
                 normalize(v.label).includes(q) ||
@@ -128,7 +130,7 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
         }
 
         return items;
-    }, [query, views, role, commandsMap, historyEntries, router]);
+    }, [query, views, role, permisos, commandsMap, historyEntries, router]);
 
     // Filter out headers for navigation indexing
     const navigableItems = flatItems.filter(item => item.type !== 'header');
