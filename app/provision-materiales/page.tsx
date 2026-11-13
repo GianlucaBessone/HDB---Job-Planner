@@ -1656,11 +1656,12 @@ function MaterialesTable({
   };
 
   return (
-    <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+    // Sin overflow-hidden: recortaba el desplegable de sugerencias de AddMaterialForm (TCK-2026-0006).
+    <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
       {/* Header */}
       <div
         onClick={() => setExpanded((p) => !p)}
-        className="w-full flex items-center justify-between p-4 md:p-5 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
+        className={`w-full flex items-center justify-between p-4 md:p-5 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors cursor-pointer ${expanded ? "rounded-t-2xl" : "rounded-2xl"}`}
       >
         <div className="flex items-center gap-3 text-left">
           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
