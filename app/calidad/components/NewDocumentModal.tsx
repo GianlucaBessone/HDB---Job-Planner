@@ -207,6 +207,13 @@ export default function NewDocumentModal({
 
     const mergedAbbreviations = [...DEFAULT_ABBREVIATIONS, ...customAbbrevs];
 
+    // Las abreviaturas se comparan sin espacios ni mayúsculas: "epp" y "EPP " son la misma.
+    const normalizeTerm = (term: string) => term.trim().toUpperCase();
+    const isTermAdded = (term: string) =>
+        digitalData.definiciones.some(d => normalizeTerm(d.term) === normalizeTerm(term));
+    const dedupeDefiniciones = (defs: { term: string; definition: string }[]) =>
+        defs.filter((d, i) => defs.findIndex(o => normalizeTerm(o.term) === normalizeTerm(d.term)) === i);
+
 
 
     // Abbreviations Helpers
@@ -218,6 +225,12 @@ export default function NewDocumentModal({
     const handleAddAbbreviation = () => {
         if (!newTerm.trim() || !newDef.trim()) return;
 
+        // No se permite repetir una abreviatura en el mismo documento
+        if (isTermAdded(newTerm)) {
+            showToast(`La abreviatura "${newTerm.trim()}" ya está en el glosario del documento.`, 'error');
+            return;
+        }
+
         // Add to digitalDatadefiniciones
         setDigitalData(prev => ({
             ...prev,
@@ -226,7 +239,7 @@ export default function NewDocumentModal({
 
         // If checkbox checked, save to localStorage
         if (saveToFrequents) {
-            const exists = customAbbrevs.some(a => a.term.toLowerCase() === newTerm.trim().toLowerCase());
+            const exists = mergedAbbreviations.some(a => normalizeTerm(a.term) === normalizeTerm(newTerm));
             if (!exists) {
                 const updated = [...customAbbrevs, { term: newTerm.trim(), definition: newDef.trim() }];
                 setCustomAbbrevs(updated);
@@ -993,7 +1006,7 @@ export default function NewDocumentModal({
                                     <div className="bg-background text-foreground border border-slate-100 dark:border-slate-800 p-3 rounded-2xl space-y-2">
                                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Sugeridas y Frecuentes:</span>
                                         <div className="flex flex-wrap gap-1.5 max-h-[80px] overflow-y-auto pr-2">
-                                            {mergedAbbreviations.map((item, idx) => (
+                                            {mergedAbbreviations.filter(item => !isTermAdded(item.term)).map((item, idx) => (
                                                 <button
                                                     key={idx}
                                                     type="button"
@@ -1274,7 +1287,7 @@ export default function NewDocumentModal({
                                                 desarrollo: aiResult.desarrollo,
                                                 // La IA las devuelve como texto: se pasan a la tabla.
                                                 responsabilidades: parseResponsabilidades(aiResult.responsabilidades),
-                                                definiciones: aiResult.definiciones || [],
+                                                definiciones: dedupeDefiniciones(aiResult.definiciones || []),
                                                 referencias: aiResult.referencias || []
                                             }));
                                             setIsDigital(true);

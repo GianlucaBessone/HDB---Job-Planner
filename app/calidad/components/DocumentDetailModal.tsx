@@ -2314,7 +2314,11 @@ export default function DocumentDetailModal({
                                   (a) =>
                                     !(
                                       editedDigitalData.definiciones || []
-                                    ).some((d: any) => d.term === a.term),
+                                    ).some(
+                                      (d: any) =>
+                                        String(d.term).trim().toUpperCase() ===
+                                        a.term.trim().toUpperCase(),
+                                    ),
                                 )
                                 .map((a) => (
                                   <button
@@ -2367,18 +2371,38 @@ export default function DocumentDetailModal({
                             </div>
                             <button
                               onClick={() => {
-                                if (!newTerm || !newDef) return;
+                                if (!newTerm.trim() || !newDef.trim()) return;
+                                // No se permite repetir una abreviatura en el mismo documento
+                                const termKey = newTerm.trim().toUpperCase();
+                                if (
+                                  (editedDigitalData.definiciones || []).some(
+                                    (d: any) =>
+                                      String(d.term).trim().toUpperCase() ===
+                                      termKey,
+                                  )
+                                ) {
+                                  showToast(
+                                    `La abreviatura "${newTerm.trim()}" ya está en el glosario del documento.`,
+                                    "error",
+                                  );
+                                  return;
+                                }
                                 setEditedDigitalData({
                                   ...editedDigitalData,
                                   definiciones: [
                                     ...(editedDigitalData.definiciones || []),
-                                    { term: newTerm, definition: newDef },
+                                    { term: newTerm.trim(), definition: newDef.trim() },
                                   ],
                                 });
-                                if (saveToFrequents) {
+                                if (
+                                  saveToFrequents &&
+                                  !allAbbreviations.some(
+                                    (a) => a.term.trim().toUpperCase() === termKey,
+                                  )
+                                ) {
                                   const updated = [
                                     ...customAbbrevs,
-                                    { term: newTerm, definition: newDef },
+                                    { term: newTerm.trim(), definition: newDef.trim() },
                                   ];
                                   setCustomAbbrevs(updated);
                                   localStorage.setItem(
