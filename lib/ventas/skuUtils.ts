@@ -18,6 +18,26 @@ export function normalizeSku(val: any): string {
 }
 
 /**
+ * Mensaje de error cuando un SKU o código de barras ya pertenece a otro producto.
+ * Los productos dados de baja (activo = false) no aparecen en el listado ni en la búsqueda,
+ * pero conservan su SKU y código de barras: el mensaje lo aclara para que no parezca un error.
+ */
+export function mensajeProductoDuplicado(
+  campo: 'sku' | 'codigoBarras',
+  valor: string,
+  producto: { sku: string; descripcion: string; activo: boolean }
+): string {
+  const etiqueta = campo === 'sku' ? `El SKU "${valor}"` : `El código de barras "${valor}"`;
+  const referencia = campo === 'sku'
+    ? `"${producto.descripcion}"`
+    : `"${producto.descripcion}" (SKU ${producto.sku})`;
+  if (!producto.activo) {
+    return `${etiqueta} pertenece a ${referencia}, que está dado de baja. Los productos dados de baja no aparecen en el listado pero conservan su código. Usá otro código.`;
+  }
+  return `${etiqueta} ya está en uso por ${referencia}.`;
+}
+
+/**
  * Genera variantes de una palabra para búsquedas insensibles a tildes,
  * género gramatical (o/a), plurales y términos técnicos en español.
  */

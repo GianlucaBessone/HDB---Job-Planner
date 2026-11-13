@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
 
 import { calculateSuggestedPrice } from '@/lib/ventas/priceRules';
-import { normalizeSku } from '@/lib/ventas/skuUtils';
+import { normalizeSku, mensajeProductoDuplicado } from '@/lib/ventas/skuUtils';
 
 const productoUpdateSchema = z.object({
   sku: z.string().min(1, 'El SKU es obligatorio'),
@@ -120,7 +120,7 @@ export async function PUT(
       });
       if (duplicateSku && duplicateSku.id !== id) {
         return NextResponse.json(
-          { error: `El SKU "${data.sku}" ya está en uso por otro producto` },
+          { error: mensajeProductoDuplicado('sku', data.sku, duplicateSku) },
           { status: 400 }
         );
       }
@@ -133,7 +133,7 @@ export async function PUT(
       });
       if (duplicateBarcode && duplicateBarcode.id !== id) {
         return NextResponse.json(
-          { error: `El código de barras "${data.codigoBarras}" ya está asignado a otro producto` },
+          { error: mensajeProductoDuplicado('codigoBarras', data.codigoBarras.trim(), duplicateBarcode) },
           { status: 400 }
         );
       }
