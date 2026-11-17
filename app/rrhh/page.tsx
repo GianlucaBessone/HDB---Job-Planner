@@ -2,273 +2,105 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import ModuleHeader from '@/components/ModuleHeader';
-import { 
-    Users, 
-    Briefcase, 
-    ShieldCheck, 
-    UserCheck, 
-    AlertTriangle, 
-    CheckCircle2, 
-    ChevronRight, 
-    Package, 
-    Activity,
-    Layers
-} from 'lucide-react';
+import { Panel, Stat } from '@/components/ui';
+import { Activity, ArrowRight, Briefcase, ChevronRight, Package, ShieldCheck, Table, UserPlus, Users } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RRHHHubPage() {
-    // Obtenemos estadísticas clave de ambos módulos
-    let openVacancies = 0;
-    let totalCandidates = 0;
-    let totalOperators = 0;
-    let eppGlobalesCount = 0;
-    let eppVencidosCount = 0;
-    let eppPendientesFirma = 0;
-
+async function cargarIndicadores() {
+    const hace30 = new Date(Date.now() - 30 * 86_400_000);
     try {
-        const [vacancies, candidates, operators, eppGlobales, pendingDeliveries] = await Promise.all([
+        const [vacantesAbiertas, urgentes, enProceso, nuevos30, totalPostulantes, operarios, eppGlobales, pendientesFirma, eppVencidos, solicitudes] = await Promise.all([
             prisma.recruitmentVacancy.count({ where: { status: 'ABIERTA' } }),
+            prisma.recruitmentVacancy.count({ where: { status: 'ABIERTA', priority: { in: ['URGENTE', 'ALTA'] } } }),
+            prisma.candidate.count({ where: { status: 'ACTIVO' } }),
+            prisma.candidate.count({ where: { createdAt: { gte: hace30 } } }),
             prisma.candidate.count(),
             prisma.operator.count({ where: { activo: true } }),
             prisma.eppItem.count({ where: { esGlobal: true, activo: true } }),
-            prisma.eppDelivery.count({ where: { estado: 'PENDIENTE_FIRMA' } })
+            prisma.eppDelivery.count({ where: { estado: 'PENDIENTE_FIRMA' } }),
+            prisma.eppDeliveryItem.count({ where: { estado: 'VIGENTE', fechaVencimiento: { lt: new Date() } } }),
+            prisma.eppRequest.count({ where: { estado: 'PENDIENTE' } }).catch(() => 0),
         ]);
-
-        openVacancies = vacancies;
-        totalCandidates = candidates;
-        totalOperators = operators;
-        eppGlobalesCount = eppGlobales;
-        eppPendientesFirma = pendingDeliveries;
-
-        // EPP vencidos
-        const now = new Date();
-        const expiredItems = await prisma.eppDeliveryItem.count({
-            where: {
-                estado: 'VIGENTE',
-                fechaVencimiento: { lt: now }
-            }
-        });
-        eppVencidosCount = expiredItems;
+        return { vacantesAbiertas, urgentes, enProceso, nuevos30, totalPostulantes, operarios, eppGlobales, pendientesFirma, eppVencidos, solicitudes, error: false };
     } catch (e) {
-        console.error("Error fetching RRHH stats", e);
+        console.error('[RRHH] Error al cargar indicadores', e);
+        return { vacantesAbiertas: 0, urgentes: 0, enProceso: 0, nuevos30: 0, totalPostulantes: 0, operarios: 0, eppGlobales: 0, pendientesFirma: 0, eppVencidos: 0, solicitudes: 0, error: true };
     }
+}
+
+function Acceso({ href, icon, titulo, descripcion }: { href: string; icon: React.ReactNode; titulo: string; descripcion: string }) {
+    return (
+        <li>
+            <Link href={href} className="flex items-center gap-3 px-4 py-3 hover:bg-surface-sunken transition-colors">
+                <span className="w-8 h-8 rounded-lg border border-border bg-surface-sunken text-muted-foreground flex items-center justify-center shrink-0 [&>svg]:w-4 [&>svg]:h-4" aria-hidden="true">
+                    {icon}
+                </span>
+                <span className="min-w-0 flex-1">
+                    <span className="block text-[13px] font-medium text-foreground">{titulo}</span>
+                    <span className="block text-xs text-muted-foreground">{descripcion}</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
+            </Link>
+        </li>
+    );
+}
+
+export default async function RRHHPage() {
+    const d = await cargarIndicadores();
+    const atencionEpp = d.eppVencidos + d.pendientesFirma;
 
     return (
-        <div className="w-full space-y-8">
+        <div className="w-full space-y-6">
             <ModuleHeader
-                title="Recursos Humanos & Capital Humano"
-                description="Portal integral de atracción de talentos y administración del equipo operativo"
-                icon={<Users className="w-6 h-6 text-indigo-500" />}
+                title="Recursos Humanos"
+                description="Reclutamiento de personal y gestión del equipo operativo"
+                icon={<Users />}
             />
 
-            {/* Banner superior de estado */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Equipo Operativo</p>
-                        <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mt-1">{totalOperators}</h3>
-                        <p className="text-xs text-slate-400 mt-1 font-medium">Operarios activos</p>
-                    </div>
-                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-xl">
-                        <UserCheck className="w-6 h-6" />
-                    </div>
-                </div>
+            {d.error && (
+                <p role="alert" className="text-body text-warning-700 dark:text-warning-300">No se pudieron cargar todos los indicadores. Los accesos funcionan igual.</p>
+            )}
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Búsquedas Activas</p>
-                        <h3 className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mt-1">{openVacancies}</h3>
-                        <p className="text-xs text-slate-400 mt-1 font-medium">{totalCandidates} postulantes en base</p>
-                    </div>
-                    <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 rounded-xl">
-                        <Briefcase className="w-6 h-6" />
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">EPP Globales</p>
-                        <h3 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mt-1">{eppGlobalesCount}</h3>
-                        <p className="text-xs text-slate-400 mt-1 font-medium">Items de asignación general</p>
-                    </div>
-                    <div className="p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-xl">
-                        <ShieldCheck className="w-6 h-6" />
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Atención EPP</p>
-                        <h3 className={`text-3xl font-bold mt-1 ${eppVencidosCount > 0 ? 'text-rose-600' : 'text-slate-700 dark:text-slate-200'}`}>
-                            {eppVencidosCount + eppPendientesFirma}
-                        </h3>
-                        <p className="text-xs text-slate-400 mt-1 font-medium">
-                            {eppVencidosCount} vencidos · {eppPendientesFirma} p/firmar
-                        </p>
-                    </div>
-                    <div className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-xl">
-                        <AlertTriangle className="w-6 h-6" />
-                    </div>
-                </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <Stat label="Búsquedas abiertas" value={d.vacantesAbiertas} hint={d.urgentes ? `${d.urgentes} prioritarias` : 'Sin búsquedas prioritarias'} tone={d.urgentes ? 'warning' : 'neutral'} />
+                <Stat label="Postulantes en proceso" value={d.enProceso} hint={`${d.nuevos30} nuevos en 30 días`} />
+                <Stat label="Personal activo" value={d.operarios} hint="Usuarios operativos activos" />
+                <Stat
+                    label="EPP a atender"
+                    value={atencionEpp}
+                    hint={`${d.eppVencidos} vencidos · ${d.pendientesFirma} sin firmar`}
+                    tone={d.eppVencidos > 0 ? 'danger' : atencionEpp > 0 ? 'warning' : 'success'}
+                />
             </div>
 
-            {/* Los Dos Pilares Principales de RRHH */}
-            <div>
-                <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <Layers className="w-5 h-5 text-indigo-500" />
-                    Módulos de Recursos Humanos
-                </h2>
+            <div className="grid gap-6 lg:grid-cols-2 items-start">
+                <Panel
+                    title="Reclutamiento"
+                    description="Vacantes, base de talentos y análisis de CV con IA"
+                    padded={false}
+                    actions={<Link href="/rrhh/reclutamiento" className="btn btn-secondary btn-sm">Abrir <ArrowRight className="w-4 h-4" aria-hidden="true" /></Link>}
+                >
+                    <ul className="divide-y divide-border">
+                        <Acceso href="/rrhh/reclutamiento" icon={<Activity />} titulo="Tablero" descripcion="Embudo de selección, actividad y contrataciones" />
+                        <Acceso href="/rrhh/reclutamiento/vacantes" icon={<Briefcase />} titulo="Vacantes" descripcion={`${d.vacantesAbiertas} abiertas · pipeline por etapas`} />
+                        <Acceso href="/rrhh/reclutamiento/postulantes" icon={<Users />} titulo="Base de talentos" descripcion={`${d.totalPostulantes} postulantes con veracidad y match`} />
+                        <Acceso href="/rrhh/reclutamiento/postulantes?nuevo=1" icon={<UserPlus />} titulo="Nuevo postulante" descripcion="Subí el CV en PDF y la IA completa la ficha" />
+                    </ul>
+                </Panel>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Pilar 1: Reclutamiento y Selección */}
-                    <Link
-                        href="/rrhh/reclutamiento"
-                        className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <Briefcase className="w-40 h-40 text-indigo-600" />
-                        </div>
-
-                        <div className="space-y-4 relative z-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider">
-                                <Briefcase className="w-3.5 h-3.5" />
-                                Módulo ATS
-                            </div>
-
-                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                Reclutamiento y Base de Talentos
-                            </h3>
-
-                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-md">
-                                Publicación y seguimiento de vacantes, base de postulantes calificados, pipeline interactivo de entrevistas y contratación de nuevos colaboradores.
-                            </p>
-
-                            <div className="grid grid-cols-2 gap-3 pt-4">
-                                <div className="p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-                                    <span className="text-xs text-slate-500 font-medium">Vacantes Abiertas</span>
-                                    <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{openVacancies}</p>
-                                </div>
-                                <div className="p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-                                    <span className="text-xs text-slate-500 font-medium">Postulantes</span>
-                                    <p className="text-lg font-bold text-slate-800 dark:text-slate-200">{totalCandidates}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 pt-4 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-indigo-600 dark:text-indigo-400 font-bold text-sm">
-                            <span>Ingresar a Reclutamiento</span>
-                            <ChevronRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
-                        </div>
-                    </Link>
-
-                    {/* Pilar 2: Gestión de Personal Operativo */}
-                    <Link
-                        href="/rrhh/personal"
-                        className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <ShieldCheck className="w-40 h-40 text-emerald-600" />
-                        </div>
-
-                        <div className="space-y-4 relative z-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider">
-                                <UserCheck className="w-3.5 h-3.5" />
-                                Equipo & Operaciones
-                            </div>
-
-                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                Gestión de Personal Operativo
-                            </h3>
-
-                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-md">
-                                Administración del equipo en campo, dotación de Elementos de Protección Personal (EPP), control de vencimientos, stock de pañol y firmas digitales con validez ISO.
-                            </p>
-
-                            <div className="grid grid-cols-2 gap-3 pt-4">
-                                <div className="p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-                                    <span className="text-xs text-slate-500 font-medium">Elementos EPP</span>
-                                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{eppGlobalesCount} Globales</p>
-                                </div>
-                                <div className="p-3 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
-                                    <span className="text-xs text-slate-500 font-medium">Operarios Activos</span>
-                                    <p className="text-lg font-bold text-slate-800 dark:text-slate-200">{totalOperators}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 pt-4 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold text-sm">
-                            <span>Ingresar a Gestión de Personal (EPP)</span>
-                            <ChevronRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
-                        </div>
-                    </Link>
-                </div>
-            </div>
-
-            {/* Accesos Rápidos de EPP */}
-            <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-3xl p-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
-                    <div>
-                        <h4 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                            <ShieldCheck className="w-5 h-5 text-emerald-500" />
-                            Acceso Directo a EPP (Higiene y Seguridad)
-                        </h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            Matriz de asignación global, control de stock y actas de entrega
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href="/rrhh/personal/epp"
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
-                        >
-                            <ShieldCheck className="w-4 h-4" />
-                            Abrir Matriz de EPP
-                        </Link>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                    <Link
-                        href="/rrhh/personal/epp?tab=matriz"
-                        className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-xl flex items-center gap-3 hover:border-emerald-500 transition-colors"
-                    >
-                        <div className="p-2 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 rounded-lg">
-                            <CheckCircle2 className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <span className="font-bold text-slate-700 dark:text-slate-200 block text-xs">Matriz de Operadores</span>
-                            <span className="text-[11px] text-slate-400">Ver quién tiene EPP vigente</span>
-                        </div>
-                    </Link>
-
-                    <Link
-                        href="/rrhh/personal/epp?tab=stock"
-                        className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-xl flex items-center gap-3 hover:border-emerald-500 transition-colors"
-                    >
-                        <div className="p-2 bg-amber-100 dark:bg-amber-950/50 text-amber-600 rounded-lg">
-                            <Package className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <span className="font-bold text-slate-700 dark:text-slate-200 block text-xs">Stock de Depósito</span>
-                            <span className="text-[11px] text-slate-400">Ingresos, compras y Kardex</span>
-                        </div>
-                    </Link>
-
-                    <Link
-                        href="/rrhh/personal/epp?tab=solicitudes"
-                        className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-xl flex items-center gap-3 hover:border-emerald-500 transition-colors"
-                    >
-                        <div className="p-2 bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 rounded-lg">
-                            <Activity className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <span className="font-bold text-slate-700 dark:text-slate-200 block text-xs">Solicitudes del Personal</span>
-                            <span className="text-[11px] text-slate-400">Pedidos de recambio o rotura</span>
-                        </div>
-                    </Link>
-                </div>
+                <Panel
+                    title="Personal y EPP"
+                    description="Dotación de elementos de protección personal, stock y actas firmadas"
+                    padded={false}
+                    actions={<Link href="/rrhh/personal/epp" className="btn btn-secondary btn-sm">Abrir <ArrowRight className="w-4 h-4" aria-hidden="true" /></Link>}
+                >
+                    <ul className="divide-y divide-border">
+                        <Acceso href="/rrhh/personal/epp?tab=matriz" icon={<Table />} titulo="Matriz de EPP" descripcion={`${d.operarios} operarios · ${d.eppGlobales} elementos de asignación general`} />
+                        <Acceso href="/rrhh/personal/epp?tab=stock" icon={<Package />} titulo="Stock de depósito" descripcion="Ingresos, compras y kardex" />
+                        <Acceso href="/rrhh/personal/epp?tab=solicitudes" icon={<ShieldCheck />} titulo="Solicitudes del personal" descripcion={d.solicitudes ? `${d.solicitudes} pendientes de resolver` : 'Pedidos de recambio o rotura'} />
+                    </ul>
+                </Panel>
             </div>
         </div>
     );

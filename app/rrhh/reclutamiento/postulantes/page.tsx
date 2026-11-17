@@ -1,134 +1,220 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { FileText, RefreshCw, UserPlus, Users } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
-import { Briefcase, Users, PieChart, Search, Filter, BrainCircuit, Plus } from 'lucide-react';
-import { getCandidates } from '@/app/rrhh/actions';
+import { Button, EmptyState, ErrorState, LoadingState, Pagination, SegmentedControl } from '@/components/ui';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { nombreCompleto } from '@/lib/rrhh/reclutamiento';
+import type { PostulanteFila } from '@/lib/rrhh/reclutamientoServer';
+import NuevoPostulanteDialog from '@/components/rrhh/reclutamiento/NuevoPostulanteDialog';
+import {
+    API, apiJson, Avatar, EstadoCandidatoBadge, formatFecha, MatchBadge, useNavReclutamiento, VeracidadBadge, type Permisos,
+} from '@/components/rrhh/reclutamiento/shared';
 
-export default function TalentPoolPage() {
+type Filtro = 'TODOS' | 'ACTIVO' | 'BASE_TALENTOS' | 'CONTRATADO' | 'RECHAZADO';
+type Orden = 'recientes' | 'match' | 'veracidad' | 'nombre';
+const POR_PAGINA = 25;
+
+function BaseTalentosView() {
     const router = useRouter();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [candidates, setCandidates] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const params = useSearchParams();
+    const [postulantes, setPostulantes] = useState<PostulanteFila[] | null>(null);
+    const [permisos, setPermisos] = useState<Permisos>({ gestionar: false, eliminar: false });
+    const [error, setError] = useState<string | null>(null);
+    const [q, setQ] = useState('');
+    const [filtro, setFiltro] = useState<Filtro>('TODOS');
+    const [orden, setOrden] = useState<Orden>('recientes');
+    const [pagina, setPagina] = useState(1);
+    const [nuevo, setNuevo] = useState(!!params.get('nuevo'));
 
-    const tabs = [
-        { id: 'dashboard', label: 'Dashboard', icon: <PieChart /> },
-        { id: 'vacantes', label: 'Vacantes', icon: <Briefcase /> },
-        { id: 'postulantes', label: 'Base de Talentos', icon: <Users /> }
-    ];
 
+    // Abierto desde un enlace (?nuevo=1): se limpia la URL para que cerrar o navegar no la reabra.
     useEffect(() => {
-        getCandidates().then(res => {
-            if (res.success && res.data) {
-                setCandidates(res.data);
-            }
-            setIsLoading(false);
-        });
+        if (params.get('nuevo')) router.replace('/rrhh/reclutamiento/postulantes');
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const cargar = useCallback(async () => {
+        setError(null);
+        try {
+            const r = await apiJson<{ postulantes: PostulanteFila[]; permisos: Permisos }>(`${API}/postulantes`);
+            setPostulantes(r.postulantes);
+            setPermisos(r.permisos);
+        } catch (e: any) {
+            setError(e.message);
+        }
     }, []);
+    useEffect(() => { cargar(); }, [cargar]);
+    useEffect(() => { setPagina(1); }, [q, filtro, orden]);
 
-    const handleTabChange = (tabId: string) => {
-        if (tabId === 'dashboard') router.push('/rrhh/reclutamiento');
-        if (tabId === 'vacantes') router.push('/rrhh/reclutamiento/vacantes');
-        if (tabId === 'postulantes') router.push('/rrhh/reclutamiento/postulantes');
-    };
+    const registerCommand = useCommandStore(s => s.registerCommand);
+    const unregisterCommand = useCommandStore(s => s.unregisterCommand);
+    const abrir = useRef(() => setNuevo(true));
+    useEffect(() => {
+        if (!permisos.gestionar) return;
+        registerCommand({ id: 'rrhh-nuevo-postulante', label: 'Nuevo postulante', description: 'Cargar un CV y analizarlo con IA', category: 'Contextual', action: () => abrir.current() });
+        return () => unregisterCommand('rrhh-nuevo-postulante');
+    }, [registerCommand, unregisterCommand, permisos.gestionar]);
 
-    const filteredCandidates = candidates.filter(c => 
-        c.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        c.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.tags && c.tags.some((t: any) => t.name.toLowerCase().includes(searchTerm.toLowerCase())))
-    );
+    const conteo = useMemo(() => {
+        const c: Record<string, number> = {};
+        (postulantes || []).forEach(p => { c[p.status] = (c[p.status] || 0) + 1; });
+        return c;
+    }, [postulantes]);
+
+    const visibles = useMemo(() => {
+        const t = q.trim().toLowerCase();
+        const lista = (postulantes || [])
+            .filter(p => filtro === 'TODOS' || p.status === filtro)
+            .filter(p => !t || [nombreCompleto(p), p.email, p.phone, p.city, p.titular, ...p.habilidades, ...p.tags].some(x => x?.toLowerCase().includes(t)));
+        const porNum = (k: 'mejorMatch' | 'veracidad') => (a: PostulanteFila, b: PostulanteFila) => (b[k] ?? -1) - (a[k] ?? -1);
+        if (orden === 'match') lista.sort(porNum('mejorMatch'));
+        else if (orden === 'veracidad') lista.sort(porNum('veracidad'));
+        else if (orden === 'nombre') lista.sort((a, b) => nombreCompleto(a).localeCompare(nombreCompleto(b), 'es'));
+        return lista;
+    }, [postulantes, filtro, orden, q]);
+
+    const pagina_ = visibles.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
+    const nav = useNavReclutamiento('postulantes', { postulantes: postulantes?.length });
+    const hayFiltros = !!q || filtro !== 'TODOS';
 
     return (
-        <div className="w-full">
+        <div className="w-full space-y-4">
             <ModuleHeader
-                title="Base de Talentos"
-                description="Búsqueda global de postulantes pasados y actuales"
+                title="Base de talentos"
+                description="Todos los postulantes, actuales y de búsquedas anteriores"
                 icon={<Users />}
-                tabs={tabs}
-                activeTabId="postulantes"
-                onTabChange={handleTabChange}
-                searchValue={searchTerm}
-                onSearchChange={setSearchTerm}
-                searchPlaceholder="Buscar por nombre, puesto, habilidades..."
+                {...nav}
+                searchValue={q}
+                onSearchChange={setQ}
+                searchPlaceholder="Nombre, perfil, habilidad, ciudad…"
                 actions={[
-                    {
-                        id: 'new-candidate',
-                        label: 'Nuevo Postulante',
-                        icon: <Plus />,
-                        variant: 'primary',
-                        onClick: () => router.push('/rrhh/reclutamiento/postulantes/nuevo')
-                    }
+                    { id: 'refresh', label: 'Actualizar', icon: <RefreshCw />, onClick: cargar, variant: 'ghost', hideLabelOnMobile: true },
+                    ...(permisos.gestionar ? [{ id: 'nuevo', label: 'Nuevo postulante', icon: <UserPlus />, onClick: () => setNuevo(true), variant: 'primary' as const }] : []),
                 ]}
             />
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                        <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 uppercase font-bold text-xs border-b border-slate-200 dark:border-slate-700">
-                            <tr>
-                                <th className="px-6 py-4">Candidato</th>
-                                <th className="px-6 py-4">Puesto / Rol</th>
-                                <th className="px-6 py-4">Etiquetas IA</th>
-                                <th className="px-6 py-4 text-center">Mejor Match</th>
-                                <th className="px-6 py-4">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                            {filteredCandidates.map((candidate) => (
-                                <tr 
-                                    key={candidate.id} 
-                                    onClick={() => router.push(`/rrhh/reclutamiento/postulantes/${candidate.id}`)}
-                                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
-                                >
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-slate-800 dark:text-slate-100">{candidate.firstName} {candidate.lastName}</div>
-                                        <div className="text-xs text-slate-500">{candidate.email || '--'}</div>
-                                    </td>
-                                    <td className="px-6 py-4">--</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-wrap gap-1">
-                                            {candidate.tags && candidate.tags.slice(0, 3).map((tag: any) => (
-                                                <span key={tag.id} className="text-[11px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
-                                                    {tag.name}
-                                                </span>
-                                            ))}
-                                            {candidate.tags && candidate.tags.length > 3 && (
-                                                <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
-                                                    +{candidate.tags.length - 3}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex justify-center">
-                                            <div className="flex items-center gap-1 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-2 py-1 rounded text-xs font-bold border border-indigo-100 dark:border-indigo-800">
-                                                <BrainCircuit className="w-3.5 h-3.5" />
-                                                {candidate.aiScore || 0}%
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
-                                            candidate.status === 'ACTIVO' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800' :
-                                            'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
-                                        }`}>
-                                            {candidate.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredCandidates.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                                        No se encontraron candidatos con esos criterios.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="max-w-full overflow-x-auto">
+                    <SegmentedControl<Filtro>
+                        label="Estado del postulante"
+                        value={filtro}
+                        onChange={setFiltro}
+                        options={[
+                            { value: 'TODOS', label: 'Todos' },
+                            { value: 'ACTIVO', label: `En proceso (${conteo.ACTIVO || 0})` },
+                            { value: 'BASE_TALENTOS', label: `Disponibles (${conteo.BASE_TALENTOS || 0})` },
+                            { value: 'CONTRATADO', label: `Contratados (${conteo.CONTRATADO || 0})` },
+                            { value: 'RECHAZADO', label: `No aptos (${conteo.RECHAZADO || 0})` },
+                        ]}
+                    />
                 </div>
+                <select className="input w-auto" aria-label="Ordenar por" value={orden} onChange={e => setOrden(e.target.value as Orden)}>
+                    <option value="recientes">Más recientes</option>
+                    <option value="match">Mejor match</option>
+                    <option value="veracidad">Mayor veracidad</option>
+                    <option value="nombre">Nombre</option>
+                </select>
             </div>
+
+            {error ? (
+                <ErrorState description={error} onRetry={cargar} />
+            ) : !postulantes ? (
+                <LoadingState label="Cargando la base de talentos…" />
+            ) : visibles.length === 0 ? (
+                <EmptyState
+                    icon={<Users />}
+                    title={postulantes.length === 0 ? 'La base de talentos está vacía' : 'Sin resultados'}
+                    description={postulantes.length === 0 ? 'Subí un CV en PDF: la IA completa los datos, las habilidades y el índice de veracidad.' : 'Probá con otra búsqueda o estado.'}
+                    action={postulantes.length === 0 && permisos.gestionar
+                        ? <Button icon={<UserPlus />} onClick={() => setNuevo(true)}>Cargar el primero</Button>
+                        : hayFiltros ? <Button variant="secondary" onClick={() => { setQ(''); setFiltro('TODOS'); }}>Limpiar filtros</Button> : undefined}
+                />
+            ) : (
+                <div className="surface overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="border-b border-border">
+                                    <th className="px-4 py-2">Postulante</th>
+                                    <th className="px-4 py-2">Perfil</th>
+                                    <th className="px-4 py-2 hidden lg:table-cell">Habilidades</th>
+                                    <th className="px-4 py-2">Veracidad</th>
+                                    <th className="px-4 py-2">Mejor match</th>
+                                    <th className="px-4 py-2">Estado</th>
+                                    <th className="px-4 py-2 hidden md:table-cell">Alta</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                                {pagina_.map(p => (
+                                    <tr
+                                        key={p.id}
+                                        onClick={() => router.push(`/rrhh/reclutamiento/postulantes/${p.id}`)}
+                                        className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                                    >
+                                        <td className="px-4 py-2">
+                                            <div className="flex items-center gap-2.5 min-w-[180px]">
+                                                <Avatar persona={p} size="sm" />
+                                                <div className="min-w-0">
+                                                    <a
+                                                        href={`/rrhh/reclutamiento/postulantes/${p.id}`}
+                                                        onClick={e => { e.preventDefault(); router.push(`/rrhh/reclutamiento/postulantes/${p.id}`); }}
+                                                        className="text-[13px] font-medium text-foreground hover:underline flex items-center gap-1"
+                                                    >
+                                                        {nombreCompleto(p)}
+                                                        {p.tieneCv && <FileText className="w-3.5 h-3.5 text-muted-foreground" aria-label="Tiene CV" />}
+                                                    </a>
+                                                    <p className="text-xs text-muted-foreground truncate max-w-[220px]">{p.email || p.phone || '—'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <p className="text-[13px] text-foreground truncate max-w-[220px]">{p.titular || '—'}</p>
+                                            {p.city && <p className="text-xs text-muted-foreground truncate max-w-[220px]">{p.city}</p>}
+                                        </td>
+                                        <td className="px-4 py-2 hidden lg:table-cell">
+                                            <div className="flex flex-wrap gap-1 max-w-[280px]">
+                                                {p.habilidades.slice(0, 3).map(h => <span key={h} className="badge badge-neutral">{h}</span>)}
+                                                {p.habilidades.length > 3 && <span className="badge badge-neutral">+{p.habilidades.length - 3}</span>}
+                                                {p.habilidades.length === 0 && <span className="text-xs text-muted-foreground">—</span>}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-2"><VeracidadBadge puntaje={p.veracidad} /></td>
+                                        <td className="px-4 py-2"><MatchBadge puntaje={p.mejorMatch} /></td>
+                                        <td className="px-4 py-2">
+                                            <div className="flex flex-col items-start gap-0.5">
+                                                <EstadoCandidatoBadge estado={p.status} />
+                                                {p.procesosActivos > 0 && <span className="text-xs text-muted-foreground">{p.procesosActivos} {p.procesosActivos === 1 ? 'proceso' : 'procesos'}</span>}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-2 hidden md:table-cell text-xs text-muted-foreground tabular-nums whitespace-nowrap">{formatFecha(p.createdAt)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {visibles.length > POR_PAGINA && (
+                        <div className="border-t border-border px-4 py-2">
+                            <Pagination page={pagina} pageSize={POR_PAGINA} total={visibles.length} onPageChange={setPagina} />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            <NuevoPostulanteDialog
+                open={nuevo}
+                onClose={() => { setNuevo(false); }}
+                onGuardado={id => router.push(`/rrhh/reclutamiento/postulantes/${id}`)}
+            />
         </div>
+    );
+}
+
+export default function BaseTalentosPage() {
+    return (
+        <Suspense fallback={<LoadingState label="Cargando la base de talentos…" />}>
+            <BaseTalentosView />
+        </Suspense>
     );
 }

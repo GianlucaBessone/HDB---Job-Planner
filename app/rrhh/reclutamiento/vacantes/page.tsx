@@ -1,212 +1,251 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Briefcase, Building2, CalendarDays, ChevronRight, Pause, Pencil, Play, Plus, RefreshCw, Trash2, UserPlus, Users, XCircle } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
-import { Briefcase, Users, PieChart, Search, Plus, Building2, Calendar, ChevronRight, Trash2, UserPlus } from 'lucide-react';
-import { safeApiRequest } from '@/lib/offline';
-import { formatDate } from '@/lib/formatDate';
-import { getVacancies, deleteVacancy } from '@/app/rrhh/actions';
-import AddCandidateModal from '@/components/rrhh/AddCandidateModal';
-import ConfirmModal from '@/components/ConfirmModal';
+import { showToast } from '@/components/Toast';
+import { Button, ConfirmDialogBase, EmptyState, ErrorState, LoadingState, SegmentedControl } from '@/components/ui';
+import { diasDesde, ETAPAS } from '@/lib/rrhh/reclutamiento';
+import NuevoPostulanteDialog from '@/components/rrhh/reclutamiento/NuevoPostulanteDialog';
+import VacanteDialog, { type VacanteEditable } from '@/components/rrhh/reclutamiento/VacanteDialog';
+import { API, apiJson, EstadoVacanteBadge, formatFecha, PrioridadBadge, useNavReclutamiento, type Permisos } from '@/components/rrhh/reclutamiento/shared';
 
-export default function VacanciesPage() {
+interface Vacante extends VacanteEditable {
+    startDate: string;
+    endDate: string | null;
+    embudo: Record<string, number>;
+    total: number;
+    activos: number;
+    finalistas: number;
+    contratados: number;
+}
+
+type Filtro = 'ABIERTA' | 'PAUSADA' | 'CERRADA' | 'TODAS';
+const PESO_PRIORIDAD: Record<string, number> = { URGENTE: 0, ALTA: 1, MEDIA: 2, BAJA: 3 };
+
+function VacantesView() {
     const router = useRouter();
-    const [vacancies, setVacancies] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const params = useSearchParams();
+    const [vacantes, setVacantes] = useState<Vacante[] | null>(null);
+    const [permisos, setPermisos] = useState<Permisos>({ gestionar: false, eliminar: false });
+    const [error, setError] = useState<string | null>(null);
+    const [q, setQ] = useState('');
+    const [filtro, setFiltro] = useState<Filtro>('ABIERTA');
+    const [editar, setEditar] = useState<Vacante | null | 'nueva'>(params.get('nueva') ? 'nueva' : null);
+    const [cargarEn, setCargarEn] = useState<Vacante | null>(null);
+    const [eliminar, setEliminar] = useState<Vacante | null>(null);
+    const [eliminando, setEliminando] = useState(false);
 
-    // Modals state
-    const [selectedVacancyForAdd, setSelectedVacancyForAdd] = useState<any>(null);
-    const [selectedVacancyForDelete, setSelectedVacancyForDelete] = useState<any>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
 
-    const tabs = [
-        { id: 'dashboard', label: 'Dashboard', icon: <PieChart /> },
-        { id: 'vacantes', label: 'Vacantes', icon: <Briefcase /> },
-        { id: 'postulantes', label: 'Base de Talentos', icon: <Users /> }
-    ];
-
-    const handleTabChange = (tabId: string) => {
-        if (tabId === 'dashboard') router.push('/rrhh/reclutamiento');
-        if (tabId === 'vacantes') router.push('/rrhh/reclutamiento/vacantes');
-        if (tabId === 'postulantes') router.push('/rrhh/reclutamiento/postulantes');
-    };
-
+    // Abierto desde un enlace (?nueva=1): se limpia la URL para que cerrar o navegar no la reabra.
     useEffect(() => {
-        loadVacancies();
+        if (params.get('nueva')) router.replace('/rrhh/reclutamiento/vacantes');
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const cargar = useCallback(async () => {
+        setError(null);
+        try {
+            const r = await apiJson<{ vacantes: Vacante[]; permisos: Permisos }>(`${API}/vacantes`);
+            setVacantes(r.vacantes);
+            setPermisos(r.permisos);
+        } catch (e: any) {
+            setError(e.message);
+        }
     }, []);
+    useEffect(() => { cargar(); }, [cargar]);
 
-    const loadVacancies = async () => {
-        setIsLoading(true);
+    const conteo = useMemo(() => {
+        const c: Record<Filtro, number> = { ABIERTA: 0, PAUSADA: 0, CERRADA: 0, TODAS: 0 };
+        (vacantes || []).forEach(v => { c[v.status as Filtro] = (c[v.status as Filtro] || 0) + 1; c.TODAS++; });
+        return c;
+    }, [vacantes]);
+
+    const visibles = useMemo(() => {
+        const t = q.trim().toLowerCase();
+        return (vacantes || [])
+            .filter(v => filtro === 'TODAS' || v.status === filtro)
+            .filter(v => !t || [v.title, v.branch, v.requirements].some(x => x?.toLowerCase().includes(t)))
+            .sort((a, b) => (PESO_PRIORIDAD[a.priority] ?? 9) - (PESO_PRIORIDAD[b.priority] ?? 9) || +new Date(b.startDate) - +new Date(a.startDate));
+    }, [vacantes, filtro, q]);
+
+    const cambiarEstado = async (v: Vacante, status: string) => {
         try {
-            const res = await getVacancies();
-            if (res.success && res.data) {
-                setVacancies(res.data);
-            }
-        } catch (error) {
-            console.error('Error loading vacancies:', error);
-        } finally {
-            setIsLoading(false);
+            await apiJson(`${API}/vacantes/${v.id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+            showToast(status === 'ABIERTA' ? 'Vacante reabierta' : status === 'PAUSADA' ? 'Vacante pausada' : 'Vacante cerrada');
+            cargar();
+        } catch (e: any) {
+            showToast(e.message, 'error');
         }
     };
 
-    const handleDeleteVacancy = async () => {
-        if (!selectedVacancyForDelete) return;
-        setIsDeleting(true);
+    const confirmarEliminar = async () => {
+        if (!eliminar) return;
+        setEliminando(true);
         try {
-            const res = await deleteVacancy(selectedVacancyForDelete.id);
-            if (res.success) {
-                setVacancies(prev => prev.filter(v => v.id !== selectedVacancyForDelete.id));
-                setSelectedVacancyForDelete(null);
-            } else {
-                alert('Error al eliminar vacante: ' + res.error);
-            }
-        } catch (error: any) {
-            alert('Error: ' + error.message);
+            await apiJson(`${API}/vacantes/${eliminar.id}`, { method: 'DELETE' });
+            showToast('Vacante eliminada');
+            setEliminar(null);
+            cargar();
+        } catch (e: any) {
+            showToast(e.message, 'error');
         } finally {
-            setIsDeleting(false);
+            setEliminando(false);
         }
     };
 
-    const filteredVacancies = vacancies.filter(v => 
-        v.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        (v.branch && v.branch.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const nav = useNavReclutamiento('vacantes', { vacantes: conteo.ABIERTA || undefined });
 
     return (
-        <div className="w-full">
+        <div className="w-full space-y-4">
             <ModuleHeader
                 title="Vacantes"
-                description="Listado de búsquedas laborales activas e históricas"
+                description="Búsquedas laborales y su avance"
                 icon={<Briefcase />}
-                tabs={tabs}
-                activeTabId="vacantes"
-                onTabChange={handleTabChange}
-                searchValue={searchTerm}
-                onSearchChange={setSearchTerm}
+                {...nav}
+                searchValue={q}
+                onSearchChange={setQ}
+                searchPlaceholder="Buscar por puesto, ubicación o requisito…"
                 actions={[
-                    {
-                        id: 'new-vacancy',
-                        label: 'Nueva Vacante',
-                        icon: <Plus />,
-                        variant: 'primary',
-                        onClick: () => router.push('/rrhh/reclutamiento/vacantes/nueva')
-                    }
+                    { id: 'refresh', label: 'Actualizar', icon: <RefreshCw />, onClick: cargar, variant: 'ghost', hideLabelOnMobile: true },
+                    ...(permisos.gestionar ? [{ id: 'nueva', label: 'Nueva vacante', icon: <Plus />, onClick: () => setEditar('nueva'), variant: 'primary' as const }] : []),
                 ]}
             />
 
-            {isLoading ? (
-                <div className="flex justify-center items-center min-h-[200px]">
-                    <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredVacancies.map((vacancy) => (
-                        <div 
-                            key={vacancy.id} 
-                            onClick={() => router.push(`/rrhh/reclutamiento/vacantes/${vacancy.id}/pipeline`)}
-                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all cursor-pointer group flex flex-col justify-between"
-                        >
-                            <div>
-                                <div className="flex justify-between items-start gap-2 mb-4">
-                                    <div className="min-w-0 flex-1">
-                                        <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
-                                            {vacancy.title}
-                                        </h3>
-                                        <div className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                            <Building2 className="w-4 h-4 shrink-0" />
-                                            <span className="truncate">{vacancy.branch || 'Sin sucursal'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                                            vacancy.status === 'ABIERTA' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800' :
-                                            'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
-                                        }`}>
-                                            {vacancy.status}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedVacancyForDelete(vacancy);
-                                            }}
-                                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-md transition-colors"
-                                            title="Eliminar vacante"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-300 mb-4">
-                                    <div className="flex items-center gap-1.5">
-                                        <Users className="w-4 h-4 text-slate-400" />
-                                        <span>{vacancy._count?.candidates || 0} postulantes</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <Calendar className="w-4 h-4 text-slate-400" />
-                                        <span>{formatDate(vacancy.startDate)}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedVacancyForAdd(vacancy);
-                                    }}
-                                    className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 rounded-lg transition-colors"
-                                >
-                                    <UserPlus className="w-3.5 h-3.5" />
-                                    <span>Cargar Postulante</span>
-                                </button>
-
-                                <div className="flex items-center gap-1 text-sm font-medium text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                    <span>Ver Pipeline</span>
-                                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-
-                    {filteredVacancies.length === 0 && (
-                        <div className="col-span-full py-12 text-center text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                            <Briefcase className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                            <p className="font-medium text-slate-600 dark:text-slate-300">No se encontraron vacantes</p>
-                            <p className="text-sm mt-1">Crea una nueva vacante para comenzar</p>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Modal para Cargar Postulante desde la tarjeta */}
-            {selectedVacancyForAdd && (
-                <AddCandidateModal
-                    isOpen={!!selectedVacancyForAdd}
-                    onClose={() => setSelectedVacancyForAdd(null)}
-                    vacancyId={selectedVacancyForAdd.id}
-                    vacancyTitle={selectedVacancyForAdd.title}
-                    onCandidateAdded={() => {
-                        loadVacancies();
-                    }}
+            <div className="max-w-full overflow-x-auto">
+                <SegmentedControl<Filtro>
+                    label="Estado de la vacante"
+                    value={filtro}
+                    onChange={setFiltro}
+                    options={[
+                        { value: 'ABIERTA', label: `Abiertas (${conteo.ABIERTA})` },
+                        { value: 'PAUSADA', label: `Pausadas (${conteo.PAUSADA})` },
+                        { value: 'CERRADA', label: `Cerradas (${conteo.CERRADA})` },
+                        { value: 'TODAS', label: 'Todas' },
+                    ]}
                 />
+            </div>
+
+            {error ? (
+                <ErrorState description={error} onRetry={cargar} />
+            ) : !vacantes ? (
+                <LoadingState label="Cargando vacantes…" />
+            ) : visibles.length === 0 ? (
+                <EmptyState
+                    icon={<Briefcase />}
+                    title={vacantes.length === 0 ? 'Todavía no hay vacantes' : 'No hay vacantes con estos filtros'}
+                    description={vacantes.length === 0 ? 'Creá una búsqueda para empezar a cargar postulantes.' : 'Cambiá el estado o la búsqueda.'}
+                    action={vacantes.length === 0 && permisos.gestionar
+                        ? <Button icon={<Plus />} onClick={() => setEditar('nueva')}>Crear la primera</Button>
+                        : (q || filtro !== 'TODAS') ? <Button variant="secondary" onClick={() => { setQ(''); setFiltro('TODAS'); }}>Limpiar filtros</Button> : undefined}
+                />
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {visibles.map(v => {
+                        const dias = diasDesde(v.startDate);
+                        const cubiertos = v.contratados;
+                        return (
+                            <article key={v.id} className="surface flex flex-col">
+                                <Link href={`/rrhh/reclutamiento/vacantes/${v.id}/pipeline`} className="block p-4 flex-1 rounded-t-2xl hover:bg-surface-sunken/60 transition-colors">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <h2 className="text-heading text-foreground truncate">{v.title}</h2>
+                                            <p className="text-caption text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                                                <Building2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                                <span className="truncate">{v.branch || 'Sin ubicación'}</span>
+                                            </p>
+                                        </div>
+                                        <EstadoVacanteBadge estado={v.status} />
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-1.5 mt-3">
+                                        <PrioridadBadge prioridad={v.priority} />
+                                        <span className="badge badge-neutral tabular-nums">{cubiertos}/{v.positionsCount} cubiertos</span>
+                                    </div>
+
+                                    {/* Mini embudo: etapas abiertas */}
+                                    <div className="mt-4">
+                                        <div className="flex h-1.5 rounded-full overflow-hidden bg-muted" aria-hidden="true">
+                                            {v.total > 0 && ETAPAS.filter(e => v.embudo[e.id]).map(e => (
+                                                <div
+                                                    key={e.id}
+                                                    className={e.id === 'CONTRATADO' ? 'bg-success-500' : e.id === 'RECHAZADO' ? 'bg-slate-300 dark:bg-slate-600' : e.id === 'FINALISTAS' ? 'bg-brand-700' : 'bg-primary'}
+                                                    style={{ width: `${(v.embudo[e.id] / v.total) * 100}%` }}
+                                                />
+                                            ))}
+                                        </div>
+                                        <dl className="grid grid-cols-3 gap-2 mt-3 text-center">
+                                            <div><dt className="text-xs text-muted-foreground">En proceso</dt><dd className="text-heading tabular-nums text-foreground">{v.activos}</dd></div>
+                                            <div><dt className="text-xs text-muted-foreground">Finalistas</dt><dd className="text-heading tabular-nums text-foreground">{v.finalistas}</dd></div>
+                                            <div><dt className="text-xs text-muted-foreground">Total</dt><dd className="text-heading tabular-nums text-foreground">{v.total}</dd></div>
+                                        </dl>
+                                    </div>
+
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-3">
+                                        <CalendarDays className="w-3.5 h-3.5" aria-hidden="true" />
+                                        Desde {formatFecha(v.startDate)}{v.status !== 'CERRADA' ? ` · ${dias} ${dias === 1 ? 'día' : 'días'}` : v.endDate ? ` · cerrada el ${formatFecha(v.endDate)}` : ''}
+                                    </p>
+                                </Link>
+
+                                <footer className="flex items-center gap-1 px-2 py-2 border-t border-border">
+                                    {permisos.gestionar && v.status !== 'CERRADA' && (
+                                        <Button size="sm" variant="tonal" icon={<UserPlus />} onClick={() => setCargarEn(v)}>Cargar postulante</Button>
+                                    )}
+                                    <div className="ml-auto flex items-center gap-0.5">
+                                        {permisos.gestionar && (
+                                            <>
+                                                <Button size="icon-sm" variant="ghost" aria-label={`Editar ${v.title}`} title="Editar" onClick={() => setEditar(v)}><Pencil /></Button>
+                                                {v.status === 'ABIERTA' && <Button size="icon-sm" variant="ghost" aria-label={`Pausar ${v.title}`} title="Pausar" onClick={() => cambiarEstado(v, 'PAUSADA')}><Pause /></Button>}
+                                                {v.status !== 'ABIERTA' && <Button size="icon-sm" variant="ghost" aria-label={`Reabrir ${v.title}`} title="Reabrir" onClick={() => cambiarEstado(v, 'ABIERTA')}><Play /></Button>}
+                                                {v.status !== 'CERRADA' && <Button size="icon-sm" variant="ghost" aria-label={`Cerrar ${v.title}`} title="Cerrar búsqueda" onClick={() => cambiarEstado(v, 'CERRADA')}><XCircle /></Button>}
+                                            </>
+                                        )}
+                                        {permisos.eliminar && (
+                                            <Button size="icon-sm" variant="danger-ghost" aria-label={`Eliminar ${v.title}`} title="Eliminar" onClick={() => setEliminar(v)}><Trash2 /></Button>
+                                        )}
+                                        <Link href={`/rrhh/reclutamiento/vacantes/${v.id}/pipeline`} className="btn btn-ghost btn-sm" aria-label={`Ver pipeline de ${v.title}`}>
+                                            <Users className="w-4 h-4" aria-hidden="true" /> Pipeline <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                                        </Link>
+                                    </div>
+                                </footer>
+                            </article>
+                        );
+                    })}
+                </div>
             )}
 
-            {/* Modal de confirmación para eliminar vacante */}
-            <ConfirmModal
-                isOpen={!!selectedVacancyForDelete}
-                onClose={() => setSelectedVacancyForDelete(null)}
-                onConfirm={handleDeleteVacancy}
-                title="¿Eliminar Vacante?"
-                message={`¿Estás seguro de que deseas eliminar la vacante "${selectedVacancyForDelete?.title || ''}"? Esta acción desvinculará sus postulantes en proceso. Los datos generales de los postulantes se mantendrán en la Base de Talentos.`}
-                confirmText={isDeleting ? "Eliminando..." : "Eliminar"}
-                cancelText="Cancelar"
-                isDestructive={true}
+            <VacanteDialog
+                open={editar !== null}
+                vacante={editar === 'nueva' ? null : editar}
+                onClose={() => { setEditar(null); }}
+                onGuardada={() => cargar()}
+            />
+            <NuevoPostulanteDialog
+                open={!!cargarEn}
+                vacante={cargarEn ? { id: cargarEn.id, title: cargarEn.title } : null}
+                onClose={() => setCargarEn(null)}
+                onGuardado={() => cargar()}
+            />
+            <ConfirmDialogBase
+                open={!!eliminar}
+                onCancel={() => setEliminar(null)}
+                onConfirm={confirmarEliminar}
+                tone="danger"
+                loading={eliminando}
+                title={`¿Eliminar la vacante "${eliminar?.title ?? ''}"?`}
+                message="Se borra su pipeline con el historial de etapas, entrevistas y evaluaciones. Los postulantes siguen en la base de talentos."
+                detail={eliminar && eliminar.total > 0 ? `${eliminar.total} ${eliminar.total === 1 ? 'postulante pierde' : 'postulantes pierden'} este proceso. Si la búsqueda terminó, conviene cerrarla en lugar de eliminarla.` : undefined}
+                confirmLabel="Eliminar vacante"
             />
         </div>
+    );
+}
+
+export default function VacantesPage() {
+    return (
+        <Suspense fallback={<LoadingState label="Cargando vacantes…" />}>
+            <VacantesView />
+        </Suspense>
     );
 }

@@ -50,8 +50,9 @@ Pasan por el control de accesos:
 - Bloqueo de una vista denegada puntualmente, también si se entra por enlace directo.
 - Acceso a Punto de Venta y Auditoría de IA.
 - Funciones: gestionar usuarios, administrar accesos, control horario, anular ventas,
-  modificar precios, anular comprobantes de cuenta corriente y las diez acciones de
-  Almacén y stock.
+  modificar precios, anular comprobantes de cuenta corriente, las diez acciones de
+  Almacén y stock y Reclutamiento de RRHH (ver, gestionar y eliminar; ver
+  `docs/rrhh/RECLUTAMIENTO.md`).
 
 Todavía dependen solo del rol, y hay que migrarlos por etapas:
 
