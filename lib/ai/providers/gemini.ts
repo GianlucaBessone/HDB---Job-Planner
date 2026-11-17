@@ -7,6 +7,7 @@
 
 import { GoogleGenAI } from '@google/genai';
 import { BaseProvider, AICapability, AIProviderRequest, AIProviderResponse } from './base';
+import { conFechaActual } from '../fechaActual';
 
 const apiKey = process.env.GEMINI_API_KEY || 'DUMMY_API_KEY_FOR_BUILD';
 const gatewayUrl = process.env.VERCEL_AI_GATEWAY_URL;
@@ -60,7 +61,8 @@ export class GeminiProvider extends BaseProvider {
 
         // Build config
         const config: any = {
-            systemInstruction: request.systemInstruction,
+            // La fecha actual va siempre: sin ella el modelo toma fechas recientes como futuras.
+            systemInstruction: conFechaActual(request.systemInstruction),
             responseMimeType: request.responseMimeType || 'application/json',
             temperature: request.temperature ?? 0.2,
             maxOutputTokens: request.maxOutputTokens,
