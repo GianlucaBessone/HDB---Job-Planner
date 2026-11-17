@@ -18,7 +18,7 @@ import {
     Square
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
-import { safeApiRequest } from '@/lib/offline';
+import { firmarDocumento } from '@/lib/signatureCliente';
 import { getMyEppData, signEppDelivery } from '@/lib/rrhh/eppCliente';
 import EppRequestModal from '@/components/epp/EppRequestModal';
 import SignatureDetailModal from '@/components/SignatureDetailModal';
@@ -120,21 +120,19 @@ export default function MisEppPage() {
         try {
             // 1. Invocar el endpoint estándar de firma digital con checksum.
             //    El firmante (id, nombre y DNI) lo resuelve el servidor desde la sesión.
-            const signRes = await safeApiRequest('/api/signatures/sign', {
-                method: 'POST',
-                body: JSON.stringify({
-                    documentId: delivery.id,
-                    documentVersion: '1.0',
-                    deviceId: deviceId
-                })
+            //    Sin cola offline: si no hay red, no se confirma la entrega.
+            const firma = await firmarDocumento({
+                documentId: delivery.id,
+                documentVersion: '1.0',
+                deviceId: deviceId
             });
 
-            if (!signRes.ok) {
-                const errData = await signRes.json();
-                throw new Error(errData.error || 'Error al generar firma criptográfica');
+            if (!firma.ok) {
+                showToast(firma.error, 'error');
+                return;
             }
 
-            const signatureAudit = await signRes.json();
+            const signatureAudit = firma.firma;
 
             // 2. Confirmar entrega y actualizar items
             const result = await signEppDelivery({
