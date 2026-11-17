@@ -16,7 +16,7 @@ import {
     Fingerprint,
     Printer
 } from 'lucide-react';
-import { getOperatorEppProfile } from '@/app/rrhh/personal/epp/actions';
+import { getOperatorEppProfile } from '@/lib/rrhh/eppCliente';
 import SignatureDetailModal from '@/components/SignatureDetailModal';
 import EppResolution299Modal from '@/components/rrhh/EppResolution299Modal';
 

@@ -17,7 +17,7 @@ import {
     Sparkles
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
-import { createEppDelivery, getEppCatalog } from '@/app/rrhh/personal/epp/actions';
+import { createEppDelivery, getEppCatalog } from '@/lib/rrhh/eppCliente';
 import EppScannerModal from './EppScannerModal';
 
 interface EppDeliveryModalProps {
@@ -75,7 +75,7 @@ export default function EppDeliveryModal({
             setHasDrawnSignature(false);
             setSignatureMode('remota');
 
-            // Cargar usuario actual desde localStorage si existe
+            // Solo para mostrar: el servidor registra la entrega a nombre del usuario de la sesión
             try {
                 const storedUser = localStorage.getItem('currentUser');
                 if (storedUser) {
@@ -263,7 +263,6 @@ export default function EppDeliveryModal({
             const res = await createEppDelivery({
                 operatorId: selectedOperatorId,
                 items: itemsToDeliver,
-                entregadoPor,
                 observaciones,
                 firmaPresencialBase64
             });
@@ -567,8 +566,9 @@ export default function EppDeliveryModal({
                                 <input
                                     type="text"
                                     value={entregadoPor}
-                                    onChange={(e) => setEntregadoPor(e.target.value)}
-                                    placeholder="Nombre del supervisor"
+                                    readOnly
+                                    title="El acta queda registrada a nombre de tu usuario"
+                                    placeholder="Tu usuario"
                                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100"
                                 />
                             </div>

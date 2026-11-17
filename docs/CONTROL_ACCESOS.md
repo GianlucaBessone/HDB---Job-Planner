@@ -50,8 +50,15 @@ Pasan por el control de accesos:
 - Bloqueo de una vista denegada puntualmente, también si se entra por enlace directo.
 - Acceso a Punto de Venta y Auditoría de IA.
 - Funciones: gestionar usuarios, administrar accesos, control horario, anular ventas,
-  modificar precios, anular comprobantes de cuenta corriente y las diez acciones de
-  Almacén y stock.
+  modificar precios, anular comprobantes de cuenta corriente, las diez acciones de
+  Almacén y stock y las tres de EPP de Recursos Humanos (`rrhh.epp_ver`,
+  `rrhh.epp_gestionar`, `rrhh.epp_entregar`).
+- EPP (`app/api/rrhh/epp/**`, lógica en `lib/rrhh/eppServer.ts`): ya no usa server
+  actions. Cada API exige sesión de un usuario activo (`lib/rrhh/eppSesion.ts`) y la
+  función que corresponde; actas, kardex, solicitudes y auditoría quedan a nombre del
+  usuario de la sesión. "Mis EPP" (`/api/rrhh/epp/mis-epp/**`) solo pide sesión y
+  trabaja siempre sobre el operador de la sesión. La matriz pública por enlace
+  (`/api/public/epp-matriz/[token]`) no pide sesión: solo valida el token.
 
 Todavía dependen solo del rol, y hay que migrarlos por etapas:
 

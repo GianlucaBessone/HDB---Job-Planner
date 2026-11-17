@@ -1,25 +1,23 @@
-'use server';
-
+/**
+ * Lógica del portal "Mis EPP". Solo se usa desde app/api/rrhh/epp/mis-epp/**:
+ * el operador siempre es el de la sesión, nunca uno que mande el cliente.
+ * No es un módulo de server actions: no le agregues esa directiva, o sus
+ * funciones quedarían invocables sin pasar por las APIs.
+ */
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
+import { logAudit } from '@/lib/audit';
+import type { UsuarioEpp } from '@/lib/rrhh/eppSesion';
 
-function safeRevalidate(path: string) {
+export async function getMyEppData(operador: UsuarioEpp) {
     try {
-        revalidatePath(path);
-    } catch (_) {}
-}
-
-// ==========================================
-// ACCIONES PARA EL PORTAL DEL OPERADOR: MIS EPP
-// ==========================================
-
-export async function getMyEppData(operatorId: string) {
-    try {
-        if (!operatorId) {
-            return { success: false, error: 'Identificador de operador requerido' };
-        }
-
+        const operatorId = operador.id;
         const now = Date.now();
+
+        const operator = await prisma.operator.findUnique({
+            where: { id: operatorId },
+            select: { id: true, nombreCompleto: true, dni: true }
+        });
+        if (!operator) return { success: false, error: 'Operador no encontrado' };
 
         // 1. Entregas pendientes de firma para este operador
         const pendingDeliveries = await prisma.eppDelivery.findMany({
@@ -110,6 +108,7 @@ export async function getMyEppData(operatorId: string) {
         return {
             success: true,
             data: {
+                operator,
                 pendingDeliveries,
                 assignedItems,
                 signedDeliveries,
@@ -123,18 +122,18 @@ export async function getMyEppData(operatorId: string) {
     }
 }
 
-export async function signEppDelivery(data: {
+export async function signEppDelivery(operador: UsuarioEpp, data: {
     deliveryId: string;
-    operatorId: string;
     itemIdsConfirmed: string[];
     signatureId: string;
     signatureHash: string;
     firmaManuscritaUrl?: string;
 }) {
     try {
-        const { deliveryId, operatorId, itemIdsConfirmed, signatureId, signatureHash, firmaManuscritaUrl } = data;
+        const { deliveryId, itemIdsConfirmed, signatureId, signatureHash, firmaManuscritaUrl } = data;
+        const operatorId = operador.id;
 
-        if (!deliveryId || !operatorId) {
+        if (!deliveryId) {
             return { success: false, error: 'Parámetros incompletos' };
         }
         if (!itemIdsConfirmed || itemIdsConfirmed.length === 0) {
@@ -210,7 +209,7 @@ export async function signEppDelivery(data: {
                             stockPosterior: item.eppItem.stockActual + item.cantidad,
                             deliveryId: delivery.id,
                             motivo: `Devolución al pañol: no recibido por operario en Acta ${delivery.codigoActa}`,
-                            registradoPor: 'Sistema / Operador'
+                            registradoPor: operador.nombre
                         }
                     });
                 }
@@ -219,8 +218,16 @@ export async function signEppDelivery(data: {
             return updatedDelivery;
         });
 
-        safeRevalidate('/mis-epp');
-        safeRevalidate('/rrhh/personal/epp');
+        await logAudit({
+            action: 'UPDATE',
+            entity: 'EPP_DELIVERY_SIGNATURE',
+            entityId: result.id,
+            userId: operador.id,
+            userName: operador.nombre,
+            newValue: { estado: result.estado, signatureId, itemIdsConfirmed },
+            metadata: { codigoActa: result.codigoActa }
+        });
+
         return { success: true, data: result };
     } catch (error: any) {
         console.error('Error al firmar entrega de EPP:', error);
@@ -228,21 +235,28 @@ export async function signEppDelivery(data: {
     }
 }
 
-export async function createOperatorEppRequest(data: {
-    operatorId: string;
+export async function createOperatorEppRequest(operador: UsuarioEpp, data: {
     eppItemId: string;
     talle?: string;
     motivo: string;
     comentario?: string;
 }) {
     try {
-        if (!data.operatorId || !data.eppItemId) {
-            return { success: false, error: 'Operador y elemento de EPP requeridos' };
+        if (!data.eppItemId) {
+            return { success: false, error: 'Elemento de EPP requerido' };
+        }
+
+        const item = await prisma.eppItem.findUnique({
+            where: { id: data.eppItemId },
+            select: { activo: true }
+        });
+        if (!item || !item.activo) {
+            return { success: false, error: 'El elemento de EPP no está disponible' };
         }
 
         const newRequest = await prisma.eppRequest.create({
             data: {
-                operatorId: data.operatorId,
+                operatorId: operador.id,
                 eppItemId: data.eppItemId,
                 talle: data.talle || null,
                 motivo: data.motivo || 'VENCIMIENTO',
@@ -251,8 +265,6 @@ export async function createOperatorEppRequest(data: {
             }
         });
 
-        safeRevalidate('/mis-epp');
-        safeRevalidate('/rrhh/personal/epp');
         return { success: true, data: newRequest };
     } catch (error: any) {
         return { success: false, error: error.message };
