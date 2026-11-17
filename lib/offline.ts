@@ -101,6 +101,24 @@ function createOfflineResponse(data: any, ok = true, status = 200): Response {
   });
 }
 
+// ============= Endpoints que nunca se encolan =============
+
+/**
+ * Mutaciones que no pueden quedar en la cola offline. La firma toma al firmante
+ * de la sesión vigente al momento del envío: reenviarla más tarde podría
+ * registrarla a nombre de otro usuario que haya iniciado sesión en el equipo.
+ */
+const ENDPOINTS_NO_ENCOLABLES = ['/api/signatures/sign'];
+
+function esEndpointNoEncolable(endpoint: string): boolean {
+  let path = endpoint;
+  try {
+    path = new URL(endpoint, 'http://local').pathname;
+  } catch { /* usar el endpoint tal cual */ }
+  path = path.replace(/\/+$/, '');
+  return ENDPOINTS_NO_ENCOLABLES.includes(path);
+}
+
 // ============= Safe API Request =============
 
 /**
@@ -181,6 +199,15 @@ async function handleOfflineRequest(
         return createOfflineResponse(cached.data);
       }
       return createOfflineResponse({ error: 'Sin conexión y sin datos en caché' }, false, 503);
+    }
+
+    if (esEndpointNoEncolable(endpoint)) {
+      console.warn(`[SafeAPI] ${method} ${endpoint} no se encola offline: requiere conexión.`);
+      return createOfflineResponse(
+        { error: 'Sin conexión. La firma no se guarda offline: volvé a firmar cuando haya conexión.' },
+        false,
+        503
+      );
     }
 
     // For mutation requests (POST, PUT, DELETE) → queue them
@@ -302,6 +329,15 @@ async function executeSyncLoop() {
   let syncedCount = 0;
 
   for (const action of pending) {
+    if (esEndpointNoEncolable(action.endpoint)) {
+      console.warn(
+        `[SyncEngine] Descartando ${action.method} ${action.endpoint} (ID: ${action.id}) sin reenviar: ` +
+        'la firma se registraría con la sesión actual, que puede ser de otro usuario.'
+      );
+      await db.delete('pendingActions', action.id);
+      continue;
+    }
+
     if (action.retryCount >= MAX_RETRIES) {
       console.error(`[SyncEngine] Action ${action.id} reached max retries. Mark status as failed.`);
       action.status = 'failed';
