@@ -51,6 +51,7 @@ const ROUTE_TABLE: Record<string, RouteConfig> = {
     'TICKET_RESOLUTION_RESPONSE': { provider: 'gemini', model: 'gemini-2.5-flash' },
     'CHECKLIST_GEN':        { provider: 'gemini', model: 'gemini-2.5-flash' },
     'CV_PARSE':             { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'CV_MATCH':             { provider: 'gemini', model: 'gemini-2.5-flash' },
 
     // VISION
     'IMAGE_ANALYSIS':       { provider: 'gemini', model: 'gemini-2.5-flash' },

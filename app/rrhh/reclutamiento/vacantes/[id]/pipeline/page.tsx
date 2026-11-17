@@ -1,281 +1,351 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { MoreVertical, Calendar, Mail, MessageCircle, Star, BrainCircuit, UserPlus, Trash2, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { DragDropContext, Draggable, Droppable, type DropResult } from '@hello-pangea/dnd';
+import { ArrowLeft, Briefcase, Columns3, List, Mail, MessageCircle, Pencil, Plus, Sparkles, Trash2, UserPlus } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
-import AddCandidateModal from '@/components/rrhh/AddCandidateModal';
-import ConfirmModal from '@/components/ConfirmModal';
+import { showToast } from '@/components/Toast';
+import { Button, ConfirmDialogBase, EmptyState, ErrorState, LoadingState, SegmentedControl } from '@/components/ui';
+import { diasDesde, ETAPAS, linkWhatsapp, nombreCompleto, type EtapaId } from '@/lib/rrhh/reclutamiento';
+import NuevoPostulanteDialog from '@/components/rrhh/reclutamiento/NuevoPostulanteDialog';
+import VacanteDialog, { type VacanteEditable } from '@/components/rrhh/reclutamiento/VacanteDialog';
+import { API, apiJson, Avatar, useMigasReclutamiento, useTituloRuta, EstadoVacanteBadge, MatchBadge, PrioridadBadge, RecomendacionBadge, VeracidadBadge, type Permisos } from '@/components/rrhh/reclutamiento/shared';
 
-const initialStages = [
-    { id: 'POSTULADO', title: 'Postulados' },
-    { id: 'PRESELECCION', title: 'Preselección' },
-    { id: 'CONTACTADO', title: 'Contactados' },
-    { id: 'ENTREVISTA_RRHH', title: 'Entrevista RRHH' },
-    { id: 'ENTREVISTA_TEC', title: 'Entrevista Técnica' },
-    { id: 'FINALISTAS', title: 'Finalistas' },
-    { id: 'CONTRATADO', title: 'Contratado' },
-];
+interface Tarjeta {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string | null;
+    phone: string | null;
+    city: string | null;
+    etapa: string;
+    enEtapaDesde: string | null;
+    titular: string | null;
+    veracidad: number | null;
+    match: number | null;
+    recomendacion: string | null;
+    tags: string[];
+}
 
-import { getPipelineCandidates, updateCandidateStage, getVacancy, deleteVacancy } from '@/app/rrhh/actions';
+interface Vacante extends VacanteEditable { startDate: string }
 
-export default function PipelinePage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
-  const params = React.use(paramsPromise);
+type Vista = 'tablero' | 'lista';
+
+function PipelineView({ id }: { id: string }) {
     const router = useRouter();
-    const [columns, setColumns] = useState<{ [key: string]: any[] }>({});
-    const [isClient, setIsClient] = useState(false);
-    const [vacancy, setVacancy] = useState<any>(null);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [addModalInitialStage, setAddModalInitialStage] = useState('POSTULADO');
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const params = useSearchParams();
+    const [vacante, setVacante] = useState<Vacante | null>(null);
+    const [tarjetas, setTarjetas] = useState<Tarjeta[] | null>(null);
+    const [permisos, setPermisos] = useState<Permisos>({ gestionar: false, eliminar: false });
+    const [error, setError] = useState<string | null>(null);
+    const [vista, setVista] = useState<Vista>('tablero');
+    const [cargar, setCargar] = useState<{ etapa: EtapaId } | null>(params.get('cargar') ? { etapa: 'POSTULADO' } : null);
+    const [editar, setEditar] = useState(false);
+    const [eliminar, setEliminar] = useState(false);
+    const [eliminando, setEliminando] = useState(false);
+    const [evaluando, setEvaluando] = useState<string | null>(null);
+
+    useMigasReclutamiento();
+    useTituloRuta(`/rrhh/reclutamiento/vacantes/${id}`, vacante?.title);
+    useTituloRuta(`/rrhh/reclutamiento/vacantes/${id}/pipeline`, 'Pipeline');
+
+
+    // Abierto desde un enlace (?cargar=1): se limpia la URL para que cerrar o navegar no la reabra.
+    useEffect(() => {
+        if (params.get('cargar')) router.replace(`/rrhh/reclutamiento/vacantes/${id}/pipeline`);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const recargar = useCallback(async () => {
+        setError(null);
+        try {
+            const r = await apiJson<{ vacante: Vacante; postulantes: Tarjeta[]; permisos: Permisos }>(`${API}/vacantes/${id}/pipeline`);
+            setVacante(r.vacante);
+            setTarjetas(r.postulantes);
+            setPermisos(r.permisos);
+        } catch (e: any) {
+            setError(e.message);
+        }
+    }, [id]);
+    useEffect(() => { recargar(); }, [recargar]);
 
     useEffect(() => {
-        setIsClient(true);
-        loadVacancy();
-        loadCandidates();
-    }, [params.id]);
-
-    const loadVacancy = async () => {
-        try {
-            const res = await getVacancy(params.id);
-            if (res.success && res.data) {
-                setVacancy(res.data);
-            }
-        } catch (error) {
-            console.error("Error loading vacancy:", error);
-        }
+        try { const v = localStorage.getItem('sgi:rrhh-pipeline-vista'); if (v === 'lista' || v === 'tablero') setVista(v); } catch { /* sin almacenamiento */ }
+    }, []);
+    const cambiarVista = (v: Vista) => {
+        setVista(v);
+        try { localStorage.setItem('sgi:rrhh-pipeline-vista', v); } catch { /* sin almacenamiento */ }
     };
 
-    const loadCandidates = async () => {
-        const res = await getPipelineCandidates(params.id);
-        if (res.success && res.data) {
-            const initialCols: { [key: string]: any[] } = {};
-            initialStages.forEach(s => initialCols[s.id] = []);
-            
-            res.data.forEach((c: any) => {
-                const stage = c.stageHistory?.[0]?.stage || 'POSTULADO';
-                if (!initialCols[stage]) initialCols[stage] = [];
-                initialCols[stage].push({
-                    id: c.id,
-                    name: `${c.firstName} ${c.lastName}`,
-                    score: c.aiScore || 0,
-                    role: c.email || '--', // Using email as role placeholder for now
-                    tags: c.tags?.map((t: any) => t.name) || [],
-                    stageId: stage
-                });
-            });
-            setColumns(initialCols);
-        }
-    };
+    const columnas = useMemo(() => {
+        const c: Record<string, Tarjeta[]> = Object.fromEntries(ETAPAS.map(e => [e.id, []]));
+        (tarjetas || []).forEach(t => { (c[t.etapa] ||= []).push(t); });
+        return c;
+    }, [tarjetas]);
 
-    const handleDeleteVacancy = async () => {
-        setIsDeleting(true);
+    const mover = async (t: Tarjeta, etapa: string) => {
+        if (t.etapa === etapa) return;
+        const anterior = tarjetas;
+        setTarjetas(ts => (ts || []).map(x => (x.id === t.id ? { ...x, etapa, enEtapaDesde: new Date().toISOString() } : x)));
         try {
-            const res = await deleteVacancy(params.id);
-            if (res.success) {
-                router.push('/rrhh/reclutamiento/vacantes');
-            } else {
-                alert('Error al eliminar vacante: ' + res.error);
-            }
+            await apiJson(`${API}/vacantes/${id}/postulantes/${t.id}`, { method: 'PATCH', body: JSON.stringify({ stage: etapa }) });
+            const e = ETAPAS.find(x => x.id === etapa);
+            showToast(`${nombreCompleto(t)} pasó a ${e?.singular.toLowerCase() ?? etapa}`);
         } catch (err: any) {
-            alert('Error al eliminar: ' + err.message);
+            setTarjetas(anterior);
+            showToast(err.message, 'error');
+        }
+    };
+
+    const onDragEnd = (r: DropResult) => {
+        if (!r.destination || r.destination.droppableId === r.source.droppableId) return;
+        const t = tarjetas?.find(x => x.id === r.draggableId);
+        if (t) mover(t, r.destination.droppableId);
+    };
+
+    const evaluar = async (t: Tarjeta) => {
+        setEvaluando(t.id);
+        try {
+            const r = await apiJson<{ match: { puntaje: number } }>(`${API}/postulantes/${t.id}/compatibilidad`, { method: 'POST', body: JSON.stringify({ vacancyId: id }) });
+            showToast(`Compatibilidad de ${nombreCompleto(t)}: ${r.match.puntaje}%`);
+            recargar();
+        } catch (e: any) {
+            showToast(e.message, 'error');
         } finally {
-            setIsDeleting(false);
+            setEvaluando(null);
         }
     };
 
-    const onDragEnd = (result: DropResult) => {
-        const { source, destination } = result;
-
-        if (!destination) return;
-        if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-
-        const sourceCol = columns[source.droppableId];
-        const destCol = columns[destination.droppableId];
-        const sourceClone = Array.from(sourceCol);
-        const destClone = Array.from(destCol);
-        const [removed] = sourceClone.splice(source.index, 1);
-
-        if (source.droppableId === destination.droppableId) {
-            sourceClone.splice(destination.index, 0, removed);
-            setColumns({
-                ...columns,
-                [source.droppableId]: sourceClone
-            });
-        } else {
-            removed.stageId = destination.droppableId; // Update local state stage
-            destClone.splice(destination.index, 0, removed);
-            setColumns({
-                ...columns,
-                [source.droppableId]: sourceClone,
-                [destination.droppableId]: destClone
-            });
-            
-            // Update in DB
-            updateCandidateStage(removed.id, params.id, destination.droppableId).catch(err => {
-                console.error("Error updating stage:", err);
-            });
+    const confirmarEliminar = async () => {
+        setEliminando(true);
+        try {
+            await apiJson(`${API}/vacantes/${id}`, { method: 'DELETE' });
+            showToast('Vacante eliminada');
+            router.push('/rrhh/reclutamiento/vacantes');
+        } catch (e: any) {
+            showToast(e.message, 'error');
+            setEliminando(false);
         }
     };
 
-    if (!isClient) return null; // Avoid SSR hydration mismatch
+    const total = tarjetas?.length ?? 0;
+    const activos = (tarjetas || []).filter(t => t.etapa !== 'CONTRATADO' && t.etapa !== 'RECHAZADO').length;
 
-    const totalCandidatesCount = Object.values(columns).reduce((acc, col) => acc + (col?.length || 0), 0);
+    const contacto = (t: Tarjeta) => {
+        const wa = linkWhatsapp(t.phone, `Hola ${t.firstName}, te contactamos de HDB por la búsqueda de ${vacante?.title ?? 'personal'}.`);
+        return (
+            <div className="flex items-center gap-0.5">
+                {wa && (
+                    <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-icon btn-sm" aria-label={`WhatsApp a ${nombreCompleto(t)}`} title="WhatsApp" onClick={e => e.stopPropagation()}>
+                        <MessageCircle className="w-4 h-4" />
+                    </a>
+                )}
+                {t.email && (
+                    <a href={`mailto:${t.email}?subject=${encodeURIComponent(`Búsqueda laboral HDB · ${vacante?.title ?? ''}`)}`} className="btn btn-ghost btn-icon btn-sm" aria-label={`Email a ${nombreCompleto(t)}`} title="Email" onClick={e => e.stopPropagation()}>
+                        <Mail className="w-4 h-4" />
+                    </a>
+                )}
+            </div>
+        );
+    };
+
+    const puntajes = (t: Tarjeta) => (
+        <div className="flex flex-wrap items-center gap-1">
+            {t.match != null ? (
+                <MatchBadge puntaje={t.match} />
+            ) : permisos.gestionar ? (
+                <Button size="sm" variant="ghost" className="!h-6 !px-1.5 text-xs" icon={<Sparkles />} isLoading={evaluando === t.id} onClick={() => evaluar(t)}>
+                    Evaluar match
+                </Button>
+            ) : null}
+            {t.veracidad != null && <span title="Índice de veracidad del CV"><VeracidadBadge puntaje={t.veracidad} /></span>}
+        </div>
+    );
+
+    if (error) return <ErrorState description={error} onRetry={recargar} />;
 
     return (
-        <div className="w-full flex flex-col h-[calc(100dvh-var(--topbar-h)-4rem)]">
+        <div className="w-full flex flex-col gap-4 lg:h-[calc(100dvh-var(--topbar-h)-4rem)]">
             <ModuleHeader
-                title={vacancy ? `Pipeline: ${vacancy.title}` : "Pipeline de Reclutamiento"}
-                description={
-                    vacancy
-                        ? `${vacancy.branch ? `${vacancy.branch} • ` : ''}${totalCandidatesCount} postulante(s) en proceso`
-                        : "Arrastra los candidatos entre las diferentes etapas"
+                title={vacante ? vacante.title : 'Pipeline'}
+                description={vacante ? [vacante.branch, `${activos} en proceso`, `${total} en total`, `${vacante.positionsCount} ${vacante.positionsCount === 1 ? 'puesto' : 'puestos'}`].filter(Boolean).join(' · ') : 'Cargando…'}
+                icon={<Briefcase />}
+                toolbar={
+                    <div className="flex items-center gap-2">
+                        {vacante && <EstadoVacanteBadge estado={vacante.status} />}
+                        {vacante && <PrioridadBadge prioridad={vacante.priority} />}
+                        <SegmentedControl<Vista>
+                            label="Vista"
+                            value={vista}
+                            onChange={cambiarVista}
+                            options={[{ value: 'tablero', label: 'Tablero', icon: <Columns3 /> }, { value: 'lista', label: 'Lista', icon: <List /> }]}
+                        />
+                    </div>
                 }
                 actions={[
-                    {
-                        id: 'add-candidate',
-                        label: 'Cargar Postulante',
-                        icon: <UserPlus className="w-4 h-4" />,
-                        onClick: () => {
-                            setAddModalInitialStage('POSTULADO');
-                            setIsAddModalOpen(true);
-                        },
-                        variant: 'primary'
-                    },
-                    {
-                        id: 'delete-vacancy',
-                        label: 'Eliminar Vacante',
-                        icon: <Trash2 className="w-4 h-4" />,
-                        onClick: () => setIsDeleteModalOpen(true),
-                        variant: 'danger'
-                    },
-                    {
-                        id: 'back',
-                        label: 'Volver',
-                        onClick: () => router.push('/rrhh/reclutamiento/vacantes'),
-                        variant: 'outline'
-                    }
+                    { id: 'volver', label: 'Vacantes', icon: <ArrowLeft />, onClick: () => router.push('/rrhh/reclutamiento/vacantes'), variant: 'ghost', hideLabelOnMobile: true },
+                    ...(permisos.eliminar ? [{ id: 'eliminar', label: 'Eliminar', icon: <Trash2 />, onClick: () => setEliminar(true), variant: 'danger' as const, hideLabelOnMobile: true }] : []),
+                    ...(permisos.gestionar ? [
+                        { id: 'editar', label: 'Editar', icon: <Pencil />, onClick: () => setEditar(true), variant: 'outline' as const, hideLabelOnMobile: true },
+                        { id: 'cargar', label: 'Cargar postulante', icon: <UserPlus />, onClick: () => setCargar({ etapa: 'POSTULADO' }), variant: 'primary' as const },
+                    ] : []),
                 ]}
             />
 
-            <div className="flex-1 overflow-auto pb-4">
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <div className="flex gap-4 min-h-full items-start">
-                        {initialStages.map(stage => (
-                            <div key={stage.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 min-w-[300px] w-[300px] flex flex-col border border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0">
-                                <div className="flex items-center justify-between mb-3 px-1">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="font-bold text-sm text-slate-700 dark:text-slate-200 uppercase tracking-wider">{stage.title}</h3>
-                                        <span className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full">
-                                            {columns[stage.id]?.length || 0}
-                                        </span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setAddModalInitialStage(stage.id);
-                                            setIsAddModalOpen(true);
-                                        }}
-                                        className="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                                        title={`Cargar postulante en ${stage.title}`}
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                    </button>
-                                </div>
-
-                                <Droppable droppableId={stage.id}>
-                                    {(provided, snapshot) => (
-                                        <div
-                                            {...provided.droppableProps}
-                                            ref={provided.innerRef}
-                                            className={`min-h-[150px] space-y-3 p-1 rounded-lg transition-colors ${
-                                                snapshot.isDraggingOver ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''
-                                            }`}
-                                        >
-                                            {columns[stage.id]?.map((candidate, index) => (
-                                                <Draggable key={candidate.id} draggableId={candidate.id} index={index}>
-                                                    {(provided, snapshot) => (
-                                                        <div
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps}
-                                                            className={`bg-white dark:bg-slate-900 border ${
-                                                                snapshot.isDragging ? 'border-indigo-400 shadow-lg scale-[1.02]' : 'border-slate-200 dark:border-slate-700 shadow-sm'
-                                                            } rounded-xl p-4 transition-all group`}
-                                                        >
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <h4 className="font-bold text-slate-800 dark:text-slate-100">{candidate.name}</h4>
-                                                                <div className="flex items-center gap-1 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 px-1.5 py-0.5 rounded text-xs font-bold border border-indigo-100 dark:border-indigo-800">
-                                                                    <BrainCircuit className="w-3 h-3" />
-                                                                    {candidate.score}%
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{candidate.role}</p>
-                                                            
-                                                            <div className="flex flex-wrap gap-1 mb-3">
-                                                                {candidate.tags.map((tag: string) => (
-                                                                    <span key={tag} className="text-[11px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
-                                                                        {tag}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-
-                                                            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between gap-2">
-                                                                <button 
-                                                                    onClick={() => router.push(`/rrhh/reclutamiento/postulantes/${candidate.id}`)}
-                                                                    className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition-colors flex-1 text-center"
-                                                                >
-                                                                    Ver Perfil
-                                                                </button>
-                                                                <div className="flex gap-1">
-                                                                    <button className="p-1 text-slate-400 hover:text-emerald-500 transition-colors" title="WhatsApp">
-                                                                        <MessageCircle className="w-4 h-4" />
-                                                                    </button>
-                                                                    <button className="p-1 text-slate-400 hover:text-indigo-500 transition-colors" title="Email">
-                                                                        <Mail className="w-4 h-4" />
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </Draggable>
-                                            ))}
-                                            {provided.placeholder}
-                                        </div>
-                                    )}
-                                </Droppable>
-                            </div>
-                        ))}
+            {!tarjetas || !vacante ? (
+                <LoadingState label="Cargando pipeline…" />
+            ) : total === 0 ? (
+                <EmptyState
+                    icon={<UserPlus />}
+                    title="Esta vacante todavía no tiene postulantes"
+                    description="Subí CVs en PDF y la IA calcula la compatibilidad con los requisitos, o sumá postulantes de la base de talentos."
+                    action={permisos.gestionar ? <Button icon={<UserPlus />} onClick={() => setCargar({ etapa: 'POSTULADO' })}>Cargar postulante</Button> : undefined}
+                />
+            ) : vista === 'lista' ? (
+                <div className="surface overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="border-b border-border">
+                                    <th className="px-4 py-2">Postulante</th>
+                                    <th className="px-4 py-2">Puntajes</th>
+                                    <th className="px-4 py-2">Etapa</th>
+                                    <th className="px-4 py-2 hidden md:table-cell">En la etapa</th>
+                                    <th className="px-4 py-2 text-right">Contacto</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                                {tarjetas.map(t => (
+                                    <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                        <td className="px-4 py-2">
+                                            <div className="flex items-center gap-2.5 min-w-[200px]">
+                                                <Avatar persona={t} size="sm" />
+                                                <div className="min-w-0">
+                                                    <Link href={`/rrhh/reclutamiento/postulantes/${t.id}`} className="text-[13px] font-medium text-foreground hover:underline">{nombreCompleto(t)}</Link>
+                                                    <p className="text-xs text-muted-foreground truncate max-w-[240px]">{t.titular || t.city || '—'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-2">{puntajes(t)}</td>
+                                        <td className="px-4 py-2">
+                                            <select
+                                                className="input w-auto !h-8"
+                                                aria-label={`Etapa de ${nombreCompleto(t)}`}
+                                                value={t.etapa}
+                                                disabled={!permisos.gestionar}
+                                                onChange={e => mover(t, e.target.value)}
+                                            >
+                                                {ETAPAS.map(e => <option key={e.id} value={e.id}>{e.singular}</option>)}
+                                            </select>
+                                        </td>
+                                        <td className="px-4 py-2 hidden md:table-cell text-xs text-muted-foreground tabular-nums">
+                                            {t.enEtapaDesde ? `${diasDesde(t.enEtapaDesde)} d` : '—'}
+                                        </td>
+                                        <td className="px-4 py-2"><div className="flex justify-end">{contacto(t)}</div></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                </DragDropContext>
-            </div>
+                </div>
+            ) : (
+                <div className="flex-1 min-h-0 overflow-x-auto pb-2 -mx-1 px-1">
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <div className="flex gap-3 h-full items-stretch">
+                            {ETAPAS.map(etapa => {
+                                const items = columnas[etapa.id] || [];
+                                return (
+                                    <section key={etapa.id} aria-label={etapa.label} className="w-[272px] shrink-0 flex flex-col rounded-2xl border border-border bg-surface-sunken">
+                                        <header className="flex items-center justify-between gap-2 px-3 pt-3 pb-2">
+                                            <h2 className="eyebrow flex items-center gap-2">
+                                                {etapa.label}
+                                                <span className="badge badge-neutral tabular-nums">{items.length}</span>
+                                            </h2>
+                                            {permisos.gestionar && etapa.id !== 'RECHAZADO' && etapa.id !== 'CONTRATADO' && (
+                                                <Button size="icon-sm" variant="ghost" aria-label={`Cargar postulante en ${etapa.label}`} title="Cargar postulante en esta etapa" onClick={() => setCargar({ etapa: etapa.id })}>
+                                                    <Plus />
+                                                </Button>
+                                            )}
+                                        </header>
+                                        <Droppable droppableId={etapa.id} isDropDisabled={!permisos.gestionar}>
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.droppableProps}
+                                                    className={`flex-1 min-h-[120px] overflow-y-auto px-2 pb-2 space-y-2 rounded-b-2xl transition-colors ${snapshot.isDraggingOver ? 'bg-brand-50 dark:bg-brand-950/60' : ''}`}
+                                                >
+                                                    {items.map((t, index) => (
+                                                        <Draggable key={t.id} draggableId={t.id} index={index} isDragDisabled={!permisos.gestionar}>
+                                                            {(p, s) => (
+                                                                <article
+                                                                    ref={p.innerRef}
+                                                                    {...p.draggableProps}
+                                                                    {...p.dragHandleProps}
+                                                                    aria-label={`${nombreCompleto(t)}, ${etapa.singular}`}
+                                                                    className={`surface p-3 ${s.isDragging ? 'shadow-xl border-primary' : ''}`}
+                                                                >
+                                                                    <div className="flex items-start gap-2">
+                                                                        <Avatar persona={t} size="sm" />
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <Link href={`/rrhh/reclutamiento/postulantes/${t.id}`} className="text-[13px] font-medium text-foreground hover:underline line-clamp-1">
+                                                                                {nombreCompleto(t)}
+                                                                            </Link>
+                                                                            <p className="text-xs text-muted-foreground line-clamp-1">{t.titular || t.city || 'Sin perfil cargado'}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-2">{puntajes(t)}</div>
+                                                                    {t.recomendacion && t.recomendacion !== 'evaluar' && <div className="mt-1.5"><RecomendacionBadge valor={t.recomendacion} /></div>}
+                                                                    <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-border">
+                                                                        <span className="text-xs text-muted-foreground tabular-nums" title="Días en esta etapa">
+                                                                            {t.enEtapaDesde ? `${diasDesde(t.enEtapaDesde)} d en la etapa` : ''}
+                                                                        </span>
+                                                                        {contacto(t)}
+                                                                    </div>
+                                                                </article>
+                                                            )}
+                                                        </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                </div>
+                                            )}
+                                        </Droppable>
+                                    </section>
+                                );
+                            })}
+                        </div>
+                    </DragDropContext>
+                </div>
+            )}
 
-            {/* Modal para Cargar Postulante */}
-            <AddCandidateModal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                vacancyId={params.id}
-                vacancyTitle={vacancy?.title}
-                initialStage={addModalInitialStage}
-                onCandidateAdded={() => {
-                    loadCandidates();
-                }}
+            <NuevoPostulanteDialog
+                open={!!cargar}
+                vacante={vacante ? { id: vacante.id, title: vacante.title } : null}
+                etapaInicial={cargar?.etapa}
+                onClose={() => { setCargar(null); }}
+                onGuardado={() => recargar()}
             />
-
-            {/* Modal de Confirmación para Eliminar Vacante */}
-            <ConfirmModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={handleDeleteVacancy}
-                title="¿Eliminar Vacante?"
-                message={`¿Estás seguro de que deseas eliminar la vacante "${vacancy?.title || 'esta vacante'}"? Se eliminarán todas las postulaciones asociadas a esta vacante en el pipeline. Los postulantes permanecerán en la Base de Talentos general.`}
-                confirmText={isDeleting ? "Eliminando..." : "Eliminar"}
-                cancelText="Cancelar"
-                isDestructive={true}
+            <VacanteDialog open={editar} vacante={vacante} onClose={() => setEditar(false)} onGuardada={() => recargar()} />
+            <ConfirmDialogBase
+                open={eliminar}
+                onCancel={() => setEliminar(false)}
+                onConfirm={confirmarEliminar}
+                tone="danger"
+                loading={eliminando}
+                title={`¿Eliminar la vacante "${vacante?.title ?? ''}"?`}
+                message="Se borra su pipeline con el historial de etapas. Los postulantes siguen en la base de talentos."
+                detail={total > 0 ? 'Si la búsqueda terminó, conviene cerrarla en lugar de eliminarla: así se conserva el historial.' : undefined}
+                confirmLabel="Eliminar vacante"
             />
         </div>
+    );
+}
+
+export default function PipelinePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
+    return (
+        <Suspense fallback={<LoadingState label="Cargando pipeline…" />}>
+            <PipelineView id={id} />
+        </Suspense>
     );
 }
