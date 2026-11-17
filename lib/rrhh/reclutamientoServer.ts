@@ -6,8 +6,8 @@ import type { ZodError } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getAcceso } from '@/lib/permisosServer';
 import { jwtKey } from '@/lib/jwtSecret';
-import { ErrorAnalisisCv } from '@/lib/rrhh/cvIA';
-import { analisisCvSchema, ETAPAS_ACTIVAS, type AnalisisCv, type EtapaId } from '@/lib/rrhh/reclutamiento';
+import { ErrorAnalisisCv, evaluarCompatibilidad, type VacanteParaIA } from '@/lib/rrhh/cvIA';
+import { analisisCvSchema, ETAPAS_ACTIVAS, perfilComoTexto, type AnalisisCv, type EtapaId, type MatchIA } from '@/lib/rrhh/reclutamiento';
 
 // ── Actor y respuestas ──────────────────────────────────────────────
 
@@ -254,4 +254,106 @@ export async function nombresOperadores(ids: (string | null)[]) {
     if (!unicos.length) return new Map<string, string>();
     const ops = await prisma.operator.findMany({ where: { id: { in: unicos } }, select: { id: true, nombreCompleto: true } });
     return new Map(ops.map(o => [o.id, o.nombreCompleto]));
+}
+
+// ── Compatibilidad con IA ───────────────────────────────────────────
+
+export class PerfilIncompleto extends Error {}
+
+/**
+ * Evalúa con IA la compatibilidad del perfil actual de un postulante con una
+ * vacante y la guarda (CandidateAIAnalysis con vacancyId). No lo suma a la vacante.
+ */
+export async function evaluarYGuardarCompatibilidad(
+    candidateId: string,
+    vacante: VacanteParaIA & { id: string },
+    actor: ActorRRHH,
+): Promise<MatchIA> {
+    const c = await prisma.candidate.findUnique({
+        where: { id: candidateId },
+        select: {
+            city: true,
+            skills: { select: { name: true, level: true }, orderBy: { id: 'asc' } },
+            experience: { orderBy: { id: 'asc' } },
+            education: { orderBy: { id: 'asc' } },
+            aiAnalyses: { select: { vacancyId: true, matchScore: true, rawAiResponse: true, createdAt: true } },
+        },
+    });
+    if (!c) throw new Prisma.PrismaClientKnownRequestError('El postulante no existe.', { code: 'P2025', clientVersion: Prisma.prismaVersion.client });
+
+    const cv = analisisCvVigente(c.aiAnalyses);
+    const r = cv ? raw(cv.rawAiResponse) : null;
+    if (!c.skills.length && !c.experience.length && !c.education.length && !r?.resumen) {
+        throw new PerfilIncompleto('El perfil no tiene experiencia, formación ni habilidades cargadas para comparar.');
+    }
+    const perfil = perfilComoTexto({
+        titular: r?.titular, resumen: r?.resumen, city: c.city, skills: c.skills, experience: c.experience, education: c.education,
+        idiomas: r?.idiomas, certificaciones: r?.certificaciones, aniosExperiencia: r?.aniosExperiencia,
+    });
+
+    const m = await evaluarCompatibilidad(perfil, vacante, { userId: actor.id, userName: actor.nombre, userRole: actor.rol, entityId: candidateId });
+
+    const crudo: RawAnalisis = {
+        origen: 'MATCH',
+        match: { puntaje: m.puntaje, explicacion: m.explicacion, cumple: m.cumple, noCumple: m.noCumple, recomendacion: m.recomendacion },
+    };
+    await prisma.$transaction([
+        prisma.candidateAIAnalysis.create({
+            data: {
+                candidateId, vacancyId: vacante.id, matchScore: m.puntaje, explanation: m.explicacion,
+                strengths: m.fortalezas, weaknesses: m.debilidades, risks: m.riesgos, rawAiResponse: crudo as object,
+            },
+        }),
+        prisma.candidate.update({
+            where: { id: candidateId },
+            data: { aiScore: Math.max(m.puntaje, mejorMatch(c.aiAnalyses.filter(a => a.vacancyId !== vacante.id)) ?? 0) },
+        }),
+    ]);
+    return m;
+}
+
+// ── Afinidad por palabras clave (sin IA) ────────────────────────────
+// Orden previo de la base de talentos para decidir a quién evaluar con IA.
+// Es una coincidencia de términos, no un juicio: no reemplaza al match.
+
+const STOPWORDS = new Set((
+    'para con sin por los las del una uno unos unas que como mas más sus entre sobre desde hasta este esta estos estas ' +
+    'experiencia excluyente excluyentes deseable deseables requisito requisitos conocimiento conocimientos manejo ' +
+    'buscamos busca puesto empresa trabajo tareas años año minimo mínimo nivel tener contar ser estar zona disponibilidad'
+).split(' '));
+
+const normalizar = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const raiz = (w: string) => (w.length > 6 ? w.slice(0, 6) : w);
+
+export function terminos(texto: string): string[] {
+    return normalizar(texto).split(/[^a-z0-9ñ+#]+/).filter(w => w.length >= 3 && !STOPWORDS.has(w)).map(raiz);
+}
+
+/** Términos ponderados de la vacante: palabras clave 3, puesto 2, requisitos y descripción 1. */
+export function terminosVacante(v: { title: string; requirements?: string | null; description?: string | null; keywords?: unknown }) {
+    const pesos = new Map<string, number>();
+    const sumar = (texto: string, peso: number) => {
+        for (const t of terminos(texto)) pesos.set(t, Math.max(pesos.get(t) ?? 0, peso));
+    };
+    sumar(v.description || '', 1);
+    sumar(v.requirements || '', 1);
+    sumar(v.title, 2);
+    if (Array.isArray(v.keywords)) v.keywords.forEach(k => sumar(String(k), 3));
+    return pesos;
+}
+
+/** 0–100: peso de los términos de la vacante presentes en el perfil, más las palabras clave encontradas. */
+export function afinidad(pesos: Map<string, number>, textoPerfil: string) {
+    const total = Array.from(pesos.values()).reduce((a, b) => a + b, 0);
+    if (!total) return { puntaje: 0, coincidencias: [] as string[] };
+    const perfil = new Set(terminos(textoPerfil));
+    let suma = 0;
+    const coincidencias: string[] = [];
+    pesos.forEach((peso, t) => {
+        if (perfil.has(t)) {
+            suma += peso;
+            if (peso >= 2) coincidencias.push(t);
+        }
+    });
+    return { puntaje: Math.round((suma / total) * 100), coincidencias };
 }
