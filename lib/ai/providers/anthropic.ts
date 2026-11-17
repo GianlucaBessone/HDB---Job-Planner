@@ -7,6 +7,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { BaseProvider, AICapability, AIProviderRequest, AIProviderResponse } from './base';
+import { conFechaActual } from '../fechaActual';
 
 // maxRetries: 0 — retries are handled by BaseProvider.withRetries
 const client = new Anthropic({
@@ -106,7 +107,8 @@ export class AnthropicProvider extends BaseProvider {
             { type: 'text', text: request.prompt },
         ];
 
-        let system = request.systemInstruction || '';
+        // La fecha actual va siempre: sin ella el modelo toma fechas recientes como futuras.
+        let system = conFechaActual(request.systemInstruction);
         if (wantsJson && !request.responseSchema) {
             system += '\n\nRespondé únicamente con un objeto JSON válido, sin bloques de código Markdown ni texto adicional.';
         }
