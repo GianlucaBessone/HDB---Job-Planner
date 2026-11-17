@@ -3,12 +3,11 @@
 import React, { useState } from 'react';
 import { X, Package, Send, Loader2 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
-import { createOperatorEppRequest } from '@/app/mis-epp/actions';
+import { createOperatorEppRequest } from '@/lib/rrhh/eppCliente';
 
 interface EppRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
-    operatorId: string;
     catalog: any[];
     preselectedEppId?: string;
     onRequestCreated: () => void;
@@ -17,7 +16,6 @@ interface EppRequestModalProps {
 export default function EppRequestModal({
     isOpen,
     onClose,
-    operatorId,
     catalog,
     preselectedEppId,
     onRequestCreated
@@ -40,7 +38,6 @@ export default function EppRequestModal({
         setSubmitting(true);
         try {
             const res = await createOperatorEppRequest({
-                operatorId,
                 eppItemId,
                 talle,
                 motivo,

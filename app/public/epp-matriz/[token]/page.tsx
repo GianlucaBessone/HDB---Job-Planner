@@ -28,7 +28,7 @@ import {
     ArrowRight,
     QrCode
 } from 'lucide-react';
-import { getPublicEppMatrixData } from '@/app/rrhh/personal/epp/actions';
+import { getPublicEppMatrixData } from '@/lib/rrhh/eppCliente';
 import EppResolution299Modal from '@/components/rrhh/EppResolution299Modal';
 import EppQrPosterModal from '@/components/rrhh/EppQrPosterModal';
 

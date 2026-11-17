@@ -64,6 +64,11 @@ export const FUNCIONES = [
     { id: 'inventario.almacenes_admin', label: 'Administrar almacenes', description: 'Crear y editar almacenes y ubicaciones', grupo: 'Almacén y stock', roles: ['admin', 'supervisor'] },
     { id: 'inventario.exportar_inventario', label: 'Exportar inventario', description: 'Descargar existencias y movimientos', grupo: 'Almacén y stock', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
     { id: 'inventario.permitir_stock_negativo', label: 'Permitir stock negativo', description: 'Confirmar operaciones que dejan el stock en negativo', grupo: 'Almacén y stock', roles: ['admin'] },
+
+    // ─ Recursos Humanos: EPP ─
+    { id: 'rrhh.epp_ver', label: 'Ver EPP del personal', description: 'Consultar matriz, catálogo, kardex, solicitudes y legajo de EPP', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.epp_gestionar', label: 'Gestionar EPP', description: 'Editar catálogo y stock, resolver solicitudes y administrar enlaces públicos de la matriz', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.epp_entregar', label: 'Entregar EPP', description: 'Registrar actas de entrega de EPP y descontar stock', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
 ] as const satisfies readonly FuncionConfig[];
 
 export type FuncionId = (typeof FUNCIONES)[number]['id'];
