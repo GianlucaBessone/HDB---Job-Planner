@@ -48,6 +48,11 @@ export const FUNCIONES = [
     { id: 'ventas.modificar_precios', label: 'Modificar precios', description: 'Cambiar el precio unitario en una venta sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.anular_comprobante_cc', label: 'Anular comprobantes de cuenta corriente', description: 'Anular recibos y movimientos sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
 
+    // ─ Recursos Humanos ─
+    { id: 'rrhh.reclutamiento_ver', label: 'Ver reclutamiento', description: 'Consultar vacantes, postulantes, CV y análisis de IA', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.reclutamiento_gestionar', label: 'Gestionar reclutamiento', description: 'Crear y editar vacantes y postulantes, mover etapas y analizar CV con IA', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.reclutamiento_eliminar', label: 'Eliminar en reclutamiento', description: 'Eliminar vacantes y postulantes con su CV', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor'] },
+
     // ─ Almacén y stock ─
     { id: 'inventario.consultar_stock', label: 'Consultar stock', description: 'Ver existencias por almacén', grupo: 'Almacén y stock', roles: ['admin', 'supervisor', 'qa', 'vendedor', 'operador'] },
     { id: 'inventario.consultar_movimientos', label: 'Consultar movimientos', description: 'Ver el historial de movimientos de stock', grupo: 'Almacén y stock', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
