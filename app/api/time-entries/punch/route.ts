@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getDistanceInMeters } from '@/lib/geo';
+import { filterOperatorProjects } from '@/lib/projectSelectHelper';
 import { format, differenceInMinutes, parseISO } from 'date-fns';
 import { sendPushNotification } from '@/lib/onesignal';
 import { logAudit } from '@/lib/audit';
@@ -98,7 +99,14 @@ export async function POST(req: Request) {
         if (qrToken) score += 1;
 
         // 2. Geofence & QR Logic
-        let outOfGeofence = false;
+        type Zona = { lat: number; lng: number; radius: number };
+        const toZona = (lat: number | null | undefined, lng: number | null | undefined, radius: number | null | undefined): Zona | null =>
+            lat != null && lng != null && radius != null ? { lat, lng, radius } : null;
+
+        const sys = await prisma.systemSetting.findUnique({ where: { id: 'default' } });
+        const zonaBase = toZona(sys?.companyGeofenceLat, sys?.companyGeofenceLng, sys?.companyGeofenceRadius);
+
+        let zonaDestino: Zona | null = zonaBase;
         if (projectId) {
             const project = await prisma.project.findUnique({ where: { id: projectId }});
             if (!project) return NextResponse.json({ error: 'Proyecto no encontrado' }, { status: 404 });
@@ -110,30 +118,34 @@ export async function POST(req: Request) {
                 isSuspicious = true;
             }
 
-            if (latitude !== undefined && longitude !== undefined) {
-                if (project.geofenceLat !== null && project.geofenceLng !== null && project.geofenceRadius !== null) {
-                    const distance = getDistanceInMeters(latitude, longitude, project.geofenceLat, project.geofenceLng);
-                    if (distance > project.geofenceRadius) {
-                        outOfGeofence = true;
-                    }
-                } else {
-                    const sys = await prisma.systemSetting.findUnique({ where: { id: 'default' }});
-                    if (sys?.companyGeofenceLat !== null && sys?.companyGeofenceLng !== null && sys?.companyGeofenceRadius !== null && sys?.companyGeofenceLat !== undefined) {
-                        const distance = getDistanceInMeters(latitude, longitude, sys.companyGeofenceLat, sys.companyGeofenceLng);
-                        if (distance > sys.companyGeofenceRadius) {
-                            outOfGeofence = true;
-                        }
-                    }
+            // Un proyecto sin geovalla propia se valida contra la de la base.
+            zonaDestino = toZona(project.geofenceLat, project.geofenceLng, project.geofenceRadius) ?? zonaBase;
+        }
+
+        // Zonas válidas para fichar:
+        // - Ingreso: solo la del destino.
+        // - Egreso: la del destino o la base. Si la jornada empezó en la base, también la de cualquier
+        //   proyecto vigente (el operador sale de la base y termina el día en una obra).
+        //   Proyecto A → proyecto B sigue marcando fuera de rango.
+        const zonasValidas: Zona[] = zonaDestino ? [zonaDestino] : [];
+        if (action === 'OUT') {
+            if (zonaBase) zonasValidas.push(zonaBase);
+            if (!projectId) {
+                // Mismos proyectos que el operador ve al fichar (filterOperatorProjects).
+                const proyectos = await prisma.project.findMany({
+                    where: { geofenceLat: { not: null }, geofenceLng: { not: null }, geofenceRadius: { not: null } },
+                    select: { estado: true, updatedAt: true, geofenceLat: true, geofenceLng: true, geofenceRadius: true }
+                });
+                for (const p of filterOperatorProjects(proyectos)) {
+                    const z = toZona(p.geofenceLat, p.geofenceLng, p.geofenceRadius);
+                    if (z) zonasValidas.push(z);
                 }
             }
-        } else {
-            const sys = await prisma.systemSetting.findUnique({ where: { id: 'default' }});
-            if (latitude !== undefined && longitude !== undefined && sys?.companyGeofenceLat !== null && sys?.companyGeofenceLng !== null && sys?.companyGeofenceRadius !== null && sys?.companyGeofenceLat !== undefined) {
-                const distance = getDistanceInMeters(latitude, longitude, sys.companyGeofenceLat, sys.companyGeofenceLng);
-                if (distance > sys.companyGeofenceRadius) {
-                    outOfGeofence = true;
-                }
-            }
+        }
+
+        let outOfGeofence = false;
+        if (typeof latitude === 'number' && typeof longitude === 'number' && zonasValidas.length > 0) {
+            outOfGeofence = !zonasValidas.some(z => getDistanceInMeters(latitude, longitude, z.lat, z.lng) <= z.radius);
         }
 
         if (outOfGeofence) {
@@ -142,7 +154,8 @@ export async function POST(req: Request) {
             score += 2;
         }
 
-        if (latitude === undefined || longitude === undefined) {
+        // El cliente manda null cuando no tiene GPS. Un QR válido ya acredita el lugar.
+        if ((typeof latitude !== 'number' || typeof longitude !== 'number') && !qrValidated) {
             validationFlags.push('NO_LOCATION');
             isSuspicious = true;
         }
