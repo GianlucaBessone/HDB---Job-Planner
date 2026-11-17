@@ -73,9 +73,7 @@ export default function SignatureButton({ documentId, documentVersion, onSignCom
                 body: JSON.stringify({
                     documentId,
                     documentVersion,
-                    userId: currentUser.id,
-                    userName: currentUser.nombreCompleto,
-                    dni: currentUser.dni,
+                    // El firmante (id, nombre y DNI) lo resuelve el servidor desde la sesión.
                     deviceId
                 })
             });
