@@ -111,19 +111,20 @@ export default function MisEppPage() {
             return;
         }
 
-        const userDni = currentUser.dni || '00000000';
+        if (!currentUser.dni) {
+            showToast('Tu usuario no tiene DNI cargado. Pedile a un administrador que lo cargue para poder firmar.', 'error');
+            return;
+        }
 
         setSigningDeliveryId(delivery.id);
         try {
-            // 1. Invocar el endpoint estándar de firma digital con checksum
+            // 1. Invocar el endpoint estándar de firma digital con checksum.
+            //    El firmante (id, nombre y DNI) lo resuelve el servidor desde la sesión.
             const signRes = await safeApiRequest('/api/signatures/sign', {
                 method: 'POST',
                 body: JSON.stringify({
                     documentId: delivery.id,
                     documentVersion: '1.0',
-                    userId: currentUser.id,
-                    userName: currentUser.nombreCompleto,
-                    dni: userDni,
                     deviceId: deviceId
                 })
             });
@@ -264,6 +265,13 @@ export default function MisEppPage() {
                                         </div>
                                     </div>
 
+                                    {!currentUser?.dni && (
+                                        <p role="status" className="flex items-start gap-2 rounded-xl border border-warning-300 dark:border-warning-800 bg-warning-50 dark:bg-warning-950/40 px-3 py-2 text-xs font-medium text-warning-700 dark:text-warning-300">
+                                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                            Tu usuario no tiene DNI cargado. Pedile a un administrador que lo cargue para poder firmar esta entrega.
+                                        </p>
+                                    )}
+
                                     {/* Declaración y Botón de Firma Estándar */}
                                     <div className="pt-3 border-t border-amber-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                                         <div className="flex items-start sm:items-center gap-2 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 max-w-lg">
@@ -275,7 +283,7 @@ export default function MisEppPage() {
 
                                         <button
                                             onClick={() => handleSignDelivery(del)}
-                                            disabled={isSigningThis || selectedItems.length === 0}
+                                            disabled={isSigningThis || selectedItems.length === 0 || !currentUser?.dni}
                                             className="w-full sm:w-auto px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 min-h-[46px]"
                                         >
                                             {isSigningThis ? (
