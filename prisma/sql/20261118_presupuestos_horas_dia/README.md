@@ -26,6 +26,12 @@ columna.
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 18/11/2026 (18:38 UTC).** Sin rama de respaldo nueva (Neon
+> estaba en el límite de ramas y de snapshots): la columna se agrega sin tocar datos, y producción se
+> puede volver a cualquier momento de las 6 horas previas con la restauración puntual de Neon. Las
+> huellas de las tablas existentes fueron idénticas antes y después, en la misma transacción.
+> **No volver a ejecutar `up.sql`**: falta solo desplegar el código (paso 4).
+
 **Importante: primero la base, después el código.** El código nuevo lee la columna. Si se despliega
 antes de aplicar la migración, la sección Presupuestos de servicios da error hasta que se aplique.
 El código actual ignora la columna, así que aplicarla antes no afecta nada.
