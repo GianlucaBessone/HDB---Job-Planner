@@ -46,7 +46,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
                 return;
             }
 
-            const feedbackRes = await safeApiRequest('/api/activities', {
+            const feedbackRes = notif.createdBy && await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'SYSTEM_MESSAGE',
@@ -54,14 +54,14 @@ export default function NotificationModals({ selectedNotification, user, onClose
                     category: 'System',
                     title: 'Solicitud Aprobada',
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido aprobada.`,
-                    entityType: 'general',
-                    entityId: 'system',
-                    recipients: [{ operatorId: notif.operatorId }]
+                    entityType: 'timeEntry',
+                    entityId: notif.entityId,
+                    operatorId: notif.createdBy
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            await safeApiRequest(`/api/activities/${notif.recipientId}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/activities/${notif.recipientId}?todos=1`, { method: 'DELETE' });
             onSuccess(notif.id);
             onClose();
             showToast('Modificación aprobada y aplicada.', 'success');
@@ -77,7 +77,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
             const notif = selectedNotification;
             const resData = notif.metadata;
 
-            const feedbackRes = await safeApiRequest('/api/activities', {
+            const feedbackRes = notif.createdBy && await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'SYSTEM_MESSAGE',
@@ -85,14 +85,14 @@ export default function NotificationModals({ selectedNotification, user, onClose
                     category: 'System',
                     title: 'Solicitud Rechazada',
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido rechazada por el supervisor.`,
-                    entityType: 'general',
-                    entityId: 'system',
-                    recipients: [{ operatorId: notif.operatorId }]
+                    entityType: 'timeEntry',
+                    entityId: notif.entityId,
+                    operatorId: notif.createdBy
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            await safeApiRequest(`/api/activities/${notif.recipientId}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/activities/${notif.recipientId}?todos=1`, { method: 'DELETE' });
             onSuccess(notif.id);
             onClose();
             showToast('Solicitud rechazada.', 'success');

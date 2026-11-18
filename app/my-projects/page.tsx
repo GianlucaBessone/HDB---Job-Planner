@@ -709,7 +709,7 @@ export default function MyProjectsPage() {
 
                 // Notify supervisors — urgency depends on category
                 const isBlocker = newLogCategoria === 'Bloqueante';
-                await safeApiRequest('/api/notifications', {
+                const notifRes = await safeApiRequest('/api/activities', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -719,9 +719,15 @@ export default function MyProjectsPage() {
                             : `Nuevo comentario en proyecto`,
                         message: `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\n[${newLogCategoria}] "${newLog}"`,
                         type: isBlocker ? 'BLOCKER_COMMENT' : 'NEW_COMMENT',
-                        relatedId: selectedProject.id
+                        priority: isBlocker ? 'HIGH' : 'NORMAL',
+                        category: 'Projects',
+                        entityType: 'project',
+                        entityId: selectedProject.id
                     })
                 });
+                if (isBlocker && !notifRes.ok) {
+                    showToast('El comentario se guardó, pero no se pudo avisar a los supervisores', 'error');
+                }
             } else {
                 showToast('Error al añadir comentario', 'error');
             }
@@ -736,16 +742,19 @@ export default function MyProjectsPage() {
         if (!selectedProject || !user) return;
         setIsFinalizing(true);
         try {
-            const res = await safeApiRequest('/api/notifications', {
+            // El solicitante lo toma la API de la sesión (createdBy)
+            const res = await safeApiRequest('/api/activities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    operatorId: user.id,
                     forSupervisors: true,
                     title: 'Solicitud de Finalización de Proyecto',
                     message: `El responsable ${user.nombreCompleto} solicita finalizar el proyecto "${selectedProject.nombre}".\nPor favor, revise el avance técnico para autorizar el cierre.`,
                     type: 'PROJECT_FINALIZE_REQUEST',
-                    relatedId: selectedProject.id
+                    priority: 'HIGH',
+                    category: 'Projects',
+                    entityType: 'project',
+                    entityId: selectedProject.id
                 })
             });
 
@@ -753,7 +762,8 @@ export default function MyProjectsPage() {
                 showToast('Solicitud enviada a los supervisores', 'success');
                 setSelectedProject(null);
             } else {
-                showToast('Error al enviar solicitud', 'error');
+                const data = await res.json().catch(() => null);
+                showToast(data?.error || 'Error al enviar solicitud', 'error');
             }
         } catch (error) {
             showToast('Error de conexión', 'error');
