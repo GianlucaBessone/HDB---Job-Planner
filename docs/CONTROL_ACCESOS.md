@@ -60,6 +60,11 @@ Pasan por el control de accesos:
   usuario de la sesión. "Mis EPP" (`/api/rrhh/epp/mis-epp/**`) solo pide sesión y
   trabaja siempre sobre el operador de la sesión. La matriz pública por enlace
   (`/api/public/epp-matriz/[token]`) no pide sesión: solo valida el token.
+- Presupuestos de servicio y asistente de proyectos (ver `docs/presupuestos-servicio/README.md`):
+  `presupuestos.ver` (admin, supervisor, qa), `presupuestos.gestionar`, `presupuestos.aprobar`,
+  `presupuestos.convertir` y `ventas.mano_obra_gestionar` (admin y supervisor), y
+  `proyectos.crear` (admin, supervisor, qa) para el asistente, el equipo asignado y las tareas.
+  El alta clásica de proyectos (`POST /api/projects`) no cambió: sigue con sus reglas de antes.
 
 Todavía dependen solo del rol, y hay que migrarlos por etapas:
 
