@@ -326,7 +326,7 @@ CREATE TRIGGER "PresupuestoServicioSnapshot_inmutable_truncate"
     FOR EACH STATEMENT EXECUTE FUNCTION "presupuesto_snapshot_inmutable"();
 
 -- ── Categorías iniciales de mano de obra ────────────────────────────
--- Valor hora en 0: se configura en Ventas y Comercial › Gestión Comercial › Mano de obra.
+-- Valor hora en 0: se configura en Ventas y Comercial › Presupuestos de servicios › Mano de obra.
 INSERT INTO "ManoObraCategoria" ("id", "nombre", "valorHora", "ivaPorcentaje", "orden", "activo", "updatedAt") VALUES
     ('mo_oficial_especializado', 'Oficial especializado', 0, 21, 1, true, CURRENT_TIMESTAMP),
     ('mo_oficial',               'Oficial',               0, 21, 2, true, CURRENT_TIMESTAMP),

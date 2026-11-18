@@ -1,6 +1,6 @@
 /**
  * Catálogo de categorías de mano de obra (Oficial, Medio oficial, Ayudante…).
- * El valor hora es neto (sin IVA). Se edita en Ventas y Comercial › Gestión Comercial › Mano de obra.
+ * El valor hora es neto (sin IVA). Se edita en Ventas y Comercial › Presupuestos de servicios › Mano de obra.
  */
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';

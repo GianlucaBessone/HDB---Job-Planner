@@ -15,6 +15,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const c = await actualizarCategoria(id, body.data, s.usuario);
         return NextResponse.json({ categoria: c, message: `Categoría ${c.nombre} actualizada` });
     } catch (e) {
-        return responderError(e, 'ventas/mano-obra/[id] PUT');
+        return responderError(e, 'presupuestos-servicio/mano-obra/[id] PUT');
     }
 }

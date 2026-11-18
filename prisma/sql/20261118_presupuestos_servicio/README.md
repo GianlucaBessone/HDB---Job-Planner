@@ -94,7 +94,7 @@ Merge del PR y deploy habitual en Vercel.
 
 ### 5. Configurar
 
-En **Ventas y Comercial › Gestión Comercial › Mano de obra**, cargar el valor hora de cada categoría.
+En **Ventas y Comercial › Presupuestos de servicios › Mano de obra**, cargar el valor hora de cada categoría.
 
 ## Reversión
 

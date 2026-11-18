@@ -4007,7 +4007,7 @@ model OperatorPermiso {
 // ════════════════════════════════════════════════════════════════════
 
 // Catálogo de categorías de mano de obra (Oficial, Medio oficial, Ayudante…).
-// Se edita desde Ventas y Comercial › Gestión Comercial › Mano de obra.
+// Se edita desde Ventas y Comercial › Presupuestos de servicios › Mano de obra.
 model ManoObraCategoria {
   id            String                        @id @default(cuid())
   nombre        String                        @unique
