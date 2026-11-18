@@ -37,6 +37,12 @@ Tablas nuevas: `ManoObraCategoria`, `PresupuestoServicioCounter`, `PresupuestoSe
 
 ## Despliegue en producción
 
+> **Estado: aplicada en producción el 18/11/2026.** Respaldo previo: rama de Neon
+> `respaldo-antes-presupuestos-2026-11-18`. Se aplicó `up.sql` en una sola transacción; las
+> huellas de 13 tablas existentes (las 12 de arriba más `AuditLog`) fueron idénticas antes y
+> después, y la estructura nueva es idéntica a la de la prueba local. **No volver a ejecutar
+> `up.sql`**: falta solo desplegar el código (paso 4) y configurar (paso 5).
+
 El orden importa: **primero la base, después el código.** El código anterior ignora las tablas
 nuevas, así que aplicar la migración antes del deploy no afecta a nadie.
 
