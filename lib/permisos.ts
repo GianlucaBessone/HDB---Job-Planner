@@ -49,6 +49,9 @@ export const FUNCIONES = [
     { id: 'ventas.anular_comprobante_cc', label: 'Anular comprobantes de cuenta corriente', description: 'Anular recibos y movimientos sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.mano_obra_gestionar', label: 'Gestionar mano de obra', description: 'Editar categorías de mano de obra y su valor hora', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
 
+    // ─ Proyectos ─
+    { id: 'proyectos.crear', label: 'Crear y planificar proyectos', description: 'Crear proyectos con el asistente, asignar el equipo y marcar tareas', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+
     // ─ Presupuestos de servicio ─
     { id: 'presupuestos.ver', label: 'Ver presupuestos de servicio', description: 'Consultar presupuestos, sus revisiones y el reporte presupuestado vs. real', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'presupuestos.gestionar', label: 'Crear y editar presupuestos', description: 'Crear presupuestos, editarlos, abrir revisiones y enviarlos', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor'] },

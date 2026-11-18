@@ -2,6 +2,7 @@ import { prisma } from './prisma';
 import { generateCodigoProyecto } from '@/lib/codeGenerator';
 import { logAudit } from '@/lib/audit';
 import { hashPin, isPinHashed } from '@/lib/pinAuth';
+import { crearChecklistsPorEtiqueta } from '@/lib/proyectos/checklistsPorEtiqueta';
 
 export { prisma };
 
@@ -120,69 +121,7 @@ export const dataLayer = {
 
         // Automated checklist based on tags — merge static templates + DB templates
         if (data.tags && data.tags.length > 0) {
-            // Import static templates
-            const { CHECKLIST_TEMPLATES } = require('@/lib/checklistTemplates');
-
-            // Get DB-defined templates
-            const tagTemplates = await prisma.projectTag.findMany({
-                where: { name: { in: data.tags } },
-                include: {
-                    checklists: { where: { active: true } },
-                    templates: {
-                        include: {
-                            checklistTemplate: true
-                        }
-                    }
-                }
-            });
-
-            for (const tagName of data.tags) {
-                // Merge: static + DB (deduplicate)
-                const staticItems: string[] = CHECKLIST_TEMPLATES[tagName] || [];
-                const dbTag = tagTemplates.find(t => t.name === tagName);
-                const dbItems: string[] = dbTag ? dbTag.checklists.map((c: any) => c.description) : [];
-                const allDescriptions = Array.from(new Set([...staticItems, ...dbItems]));
-
-                for (const desc of allDescriptions) {
-                    await prisma.checklistItem.create({
-                        data: {
-                            projectId: project.id,
-                            tag: tagName,
-                            description: desc,
-                            completed: false
-                        }
-                    });
-                }
-
-                // NEW: Create DocumentChecklist snapshots from ChecklistTemplates
-                if (dbTag?.templates) {
-                    let order = 0;
-                    for (const link of dbTag.templates) {
-                        const tmpl = link.checklistTemplate;
-                        if (tmpl.status !== 'active') continue;
-
-                        await prisma.documentChecklist.create({
-                            data: {
-                                projectId: project.id,
-                                templateId: tmpl.id,
-                                templateVersion: tmpl.version,
-                                templateName: tmpl.name,
-                                snapshotData: {
-                                    requiresEvidence: tmpl.requiresEvidence,
-                                    requiresPhotos: tmpl.requiresPhotos,
-                                    requiresSignature: tmpl.requiresSignature,
-                                    riskLevel: tmpl.riskLevel,
-                                    items: tmpl.checklistItems
-                                } as any,
-                                editable: false,
-                                mandatory: true,
-                                order: order++,
-                                status: 'pending'
-                            }
-                        });
-                    }
-                }
-            }
+            await crearChecklistsPorEtiqueta(prisma, project.id, data.tags);
         }
 
         await logAudit({
