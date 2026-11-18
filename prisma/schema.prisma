@@ -4064,6 +4064,7 @@ model PresupuestoServicioVersion {
   fechaInicioTentativa String? // YYYY-MM-DD
   fechaFinTentativa    String? // YYYY-MM-DD
   operariosSimultaneos Int                           @default(1)
+  horasDia             Float                         @default(8) // jornada de trabajo para estimar el plazo
   validezDias          Int                           @default(15)
   listaPrecioId        String?
   listaPrecio          ListaPrecio?                  @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)

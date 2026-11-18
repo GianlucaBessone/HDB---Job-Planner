@@ -6,7 +6,7 @@ import { FileText, ListChecks, Users, BarChart3 } from 'lucide-react';
 import { Badge, Button, Dialog } from '@/components/ui';
 import { showToast } from '@/components/Toast';
 import { useAcceso } from '@/lib/store/useAccessStore';
-import { api, fechaCorta, horasTxt } from '@/components/presupuestosServicio/cliente';
+import { api, fechaCorta, horasTxt, reemplazarAlEditar } from '@/components/presupuestosServicio/cliente';
 
 interface Props {
     projectId: string;
@@ -150,7 +150,7 @@ function EquipoDialog({ projectId, actual, operadores, fechaDesde, fechaHasta, h
                 <div className="grid grid-cols-3 gap-3">
                     <label className="block"><span className="field-label">Desde</span><input type="date" className="input" value={desde} onChange={(e) => setDesde(e.target.value)} /></label>
                     <label className="block"><span className="field-label">Hasta</span><input type="date" className="input" value={hasta} min={desde || undefined} onChange={(e) => setHasta(e.target.value)} /></label>
-                    <label className="block"><span className="field-label">Horas por día</span><input className="input" inputMode="decimal" value={horas} onChange={(e) => setHoras(e.target.value)} /></label>
+                    <label className="block"><span className="field-label">Horas por día</span><input className="input" inputMode="decimal" placeholder="8" value={horas} {...reemplazarAlEditar} onChange={(e) => setHoras(e.target.value)} /></label>
                 </div>
                 <input className="input" placeholder="Buscar operador…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Buscar operador" />
                 <ul className="max-h-64 overflow-auto divide-y divide-border rounded-lg border border-border">

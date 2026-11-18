@@ -20,6 +20,7 @@ import {
     esFecha,
 } from '../../lib/presupuestosServicio/calculos';
 import { calcularTotalesVenta } from '../../lib/ventas/pdvService';
+import { armarDocumento } from '../../lib/presupuestosServicio/documento';
 
 test('mano de obra: calcular costo = horas × valor hora', () => {
     const l = resolverLineaManoObra({ modo: 'costo', horas: 24, valorHora: 18000, importe: 1 });
@@ -155,6 +156,30 @@ test('días hábiles: 98 h con 3 operarios a 8 h son 5 días', () => {
     assert.equal(diasHabilesEstimados(98, 3, 8), 5);
     assert.equal(diasHabilesEstimados(24, 3, 8), 1);
     assert.equal(diasHabilesEstimados(0, 3, 8), 0);
+});
+
+test('días hábiles: la jornada cambia el plazo (98 h, 3 operarios)', () => {
+    assert.equal(diasHabilesEstimados(98, 3, 10), 4, 'jornada de 10 h');
+    assert.equal(diasHabilesEstimados(98, 3, 6), 6, 'jornada de 6 h');
+    assert.equal(diasHabilesEstimados(98, 3, 0), 5, 'sin jornada se toma 8 h');
+});
+
+test('fechas sugeridas: sin fechas tentativas usa la jornada del presupuesto', () => {
+    const s = sugerirFechas({ horas: 40, operarios: 1, horasDia: 10, hoy: '2026-11-18' });
+    assert.equal(s.diasHabiles, 4);
+    assert.equal(s.fechaFin, '2026-11-23');
+});
+
+test('documento: el plazo usa las horas por día; sin ellas (copias viejas) usa 8', () => {
+    const v: any = {
+        version: 1, alcance: null, condiciones: null, fechaInicioTentativa: null, fechaFinTentativa: null,
+        operariosSimultaneos: 2, validezDias: 15, listaPrecioNombre: null, ivaDiscriminado: true, descuentoPorcentaje: 0,
+        tareas: [{ descripcion: 'T', etiqueta: null, manoObra: [{ categoriaNombre: 'Oficial', modo: 'manual', horas: 48, valorHora: 1, importe: 48, ivaPorcentaje: 21 }] }],
+        materiales: [],
+    };
+    const o = normalizarOpcionesDocumento({ nivel: 1 });
+    assert.match(armarDocumento({ ...v, horasDia: 12 }, o).plazo || '', /^2 días hábiles/);
+    assert.match(armarDocumento(v, o).plazo || '', /^3 días hábiles/);
 });
 
 test('días hábiles: saltea fines de semana', () => {

@@ -13,7 +13,7 @@ import { crearPresupuesto, enviarPresupuesto, aceptarPresupuesto } from '../lib/
 import { precargaDesdePresupuesto, crearProyectoWizard, wizardSchema } from '../lib/proyectos/wizard';
 import { presupuestadoVsReal } from '../lib/presupuestosServicio/reporte';
 import { calcularDisponibilidad } from '../lib/proyectos/disponibilidad';
-import { hoyArgentina, sumarDias, siguienteDiaHabil } from '../lib/presupuestosServicio/calculos';
+import { hoyArgentina, sumarDias, siguienteDiaHabil, finSegunDiasHabiles } from '../lib/presupuestosServicio/calculos';
 
 const sx = Date.now().toString().slice(-6);
 const creados = { presupuestos: [] as string[], proyectos: [] as string[], clientes: [] as string[], listas: [] as string[], operadores: [] as string[], tags: [] as string[], planning: [] as string[] };
@@ -41,7 +41,7 @@ async function main() {
     const inicio = siguienteDiaHabil(sumarDias(hoyArgentina(), 10));
     const p = await crearPresupuesto({
         clienteId: cliente.id, clienteNombre: null, titulo: `TEST Obra ${sx}`, alcance: 'Alcance de prueba', condiciones: null,
-        fechaInicioTentativa: inicio, fechaFinTentativa: null, operariosSimultaneos: 2, validezDias: 15, listaPrecioId: null,
+        fechaInicioTentativa: inicio, fechaFinTentativa: null, operariosSimultaneos: 2, horasDia: 10, validezDias: 15, listaPrecioId: null,
         descuentoPorcentaje: 0, notaRevision: null,
         tareas: [
             { descripcion: 'Tendido', etiqueta: tag.name, manoObra: [{ categoriaId: null, categoriaNombre: 'Oficial', modo: 'costo', horas: 40, valorHora: 10000, importe: 0, ivaPorcentaje: 21 }] },
@@ -67,6 +67,9 @@ async function main() {
     assert.equal(pre.sugerido.listaPrecioId, lista.id);
     assert.deepEqual(pre.sugerido.tags, [tag.name]);
     assert.equal(pre.sugerido.fechaInicio, inicio);
+    assert.equal(pre.sugerido.horasDia, 10, 'jornada del presupuesto');
+    // 50,5 h ÷ (2 operarios × 10 h) = 2,5 → 3 días hábiles (con 8 h serían 4)
+    assert.equal(pre.sugerido.fechaFin, finSegunDiasHabiles(inicio, 3));
     assert.equal(pre.sugerido.tareas.length, 2);
     assert.equal(pre.sugerido.materiales[0].precioVenta, 1000);
     console.log('✓ 1-2. Precarga', pre.sugerido.fechaInicio, '→', pre.sugerido.fechaFin);
@@ -81,6 +84,7 @@ async function main() {
         observaciones: pre.sugerido.observaciones,
         fechaInicio: pre.sugerido.fechaInicio,
         fechaFin: pre.sugerido.fechaFin,
+        horasDia: pre.sugerido.horasDia,
         aprovisionamiento: true,
         listaPrecioId: lista.id,
         cargarMateriales: true,
@@ -108,6 +112,7 @@ async function main() {
     assert.deepEqual(tareas.map((t) => [t.descripcion, t.horasEstimadas, t.origen]), [['Tendido', 40, 'presupuesto'], ['Pruebas', 10.5, 'presupuesto'], ['Extra', 4, 'manual']]);
     assert.deepEqual(mats.map((m) => [m.codigo, m.cantidadSolicitada, m.precioVenta, m.estado]), [[`T${sx}A`, 120, 1000, 'material_cargado'], [`T${sx}B`, 10, 5000, 'material_cargado']]);
     assert.equal(asig.length, 2);
+    assert.ok(asig.every((a) => a.horasDia === 10), 'el equipo queda con la jornada del presupuesto');
     assert.ok(asig.every((a) => a.fechaDesde === input.fechaInicio && a.fechaHasta === input.fechaFin));
     assert.deepEqual(checklist.map((c) => c.description).sort(), ['Medir aislación', 'Verificar bandeja'], 'checklist por etiqueta');
     assert.equal(vinc?.proyectoId, proj.id);
@@ -132,7 +137,7 @@ async function main() {
     // 5b. Dos conversiones simultáneas del mismo presupuesto: gana una sola
     const p2 = await crearPresupuesto({
         clienteId: cliente.id, clienteNombre: null, titulo: `TEST Paralelo ${sx}`, alcance: null, condiciones: null,
-        fechaInicioTentativa: null, fechaFinTentativa: null, operariosSimultaneos: 1, validezDias: 15, listaPrecioId: null,
+        fechaInicioTentativa: null, fechaFinTentativa: null, operariosSimultaneos: 1, horasDia: 8, validezDias: 15, listaPrecioId: null,
         descuentoPorcentaje: 0, notaRevision: null,
         tareas: [{ descripcion: 'Única', etiqueta: null, manoObra: [{ categoriaId: null, categoriaNombre: 'Oficial', modo: 'costo', horas: 8, valorHora: 10000, importe: 0, ivaPorcentaje: 21 }] }],
         materiales: [],

@@ -1,7 +1,7 @@
 'use client';
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2, Search, PackagePlus, Loader2, Info } from 'lucide-react';
+import { Plus, Trash2, PackagePlus, Info } from 'lucide-react';
 import { Button, Panel, Badge, SegmentedControl } from '@/components/ui';
 import SearchableSelect from '@/components/SearchableSelect';
 import { showToast } from '@/components/Toast';
@@ -18,7 +18,8 @@ import {
     type ModoManoObra,
 } from '@/lib/presupuestosServicio/calculos';
 import { contenidoPresupuestoSchema } from '@/lib/presupuestosServicio/schemas';
-import { api, pesos, horasTxt } from './cliente';
+import { api, pesos, horasTxt, numCampo, reemplazarAlEditar } from './cliente';
+import BuscadorMateriales, { type ProductoBuscado } from './BuscadorMateriales';
 
 // ── Tipos del formulario (los números se editan como texto) ────────
 
@@ -53,6 +54,7 @@ export interface FormPresupuesto {
     fechaInicioTentativa: string;
     fechaFinTentativa: string;
     operariosSimultaneos: string;
+    horasDia: string;
     validezDias: string;
     listaPrecioId: string;
     descuentoPorcentaje: string;
@@ -88,7 +90,8 @@ const num = (s: string | number): number => {
     const v = parseFloat(String(s ?? '').replace(/\s/g, '').replace(',', '.'));
     return isFinite(v) ? v : 0;
 };
-const txt = (n: number | null | undefined): string => (n === null || n === undefined ? '' : String(Math.round(Number(n) * 100) / 100));
+/** Los 0 quedan vacíos: el campo muestra el 0 como placeholder y lo que se escribe lo reemplaza. */
+const txt = numCampo;
 
 function desdeApi(p: any): FormPresupuesto {
     const v = p?.versiones?.[0];
@@ -101,6 +104,7 @@ function desdeApi(p: any): FormPresupuesto {
         fechaInicioTentativa: v?.fechaInicioTentativa || '',
         fechaFinTentativa: v?.fechaFinTentativa || '',
         operariosSimultaneos: String(v?.operariosSimultaneos ?? 1),
+        horasDia: String(v?.horasDia ?? 8),
         validezDias: String(v?.validezDias ?? 15),
         listaPrecioId: v?.listaPrecioId || '',
         descuentoPorcentaje: txt(v?.descuentoPorcentaje ?? 0),
@@ -136,7 +140,7 @@ function desdeApi(p: any): FormPresupuesto {
 
 const FORM_VACIO: FormPresupuesto = {
     clienteId: '', clienteNombre: '', titulo: '', alcance: '', condiciones: '', fechaInicioTentativa: '', fechaFinTentativa: '',
-    operariosSimultaneos: '2', validezDias: '15', listaPrecioId: '', descuentoPorcentaje: '0', notaRevision: '', tareas: [], materiales: [],
+    operariosSimultaneos: '2', horasDia: '8', validezDias: '15', listaPrecioId: '', descuentoPorcentaje: '', notaRevision: '', tareas: [], materiales: [],
 };
 
 function aPayload(f: FormPresupuesto) {
@@ -149,6 +153,7 @@ function aPayload(f: FormPresupuesto) {
         fechaInicioTentativa: f.fechaInicioTentativa || null,
         fechaFinTentativa: f.fechaFinTentativa || null,
         operariosSimultaneos: Math.max(1, Math.round(num(f.operariosSimultaneos)) || 1),
+        horasDia: num(f.horasDia),
         validezDias: Math.max(1, Math.round(num(f.validezDias)) || 15),
         listaPrecioId: f.listaPrecioId || null,
         descuentoPorcentaje: num(f.descuentoPorcentaje),
@@ -347,31 +352,24 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
         setForm((f) => ({ ...f, tareas: f.tareas.map((t) => (t.key === tKey ? { ...t, manoObra: t.manoObra.filter((l) => l.key !== lKey) } : t)) }));
 
     // ── Materiales ──
-    const [busqueda, setBusqueda] = useState('');
-    const [resultados, setResultados] = useState<any[]>([]);
-    const [buscando, setBuscando] = useState(false);
-    useEffect(() => {
-        const q = busqueda.trim();
-        if (q.length < 2) { setResultados([]); return; }
-        const t = setTimeout(async () => {
-            setBuscando(true);
-            const r = await api<any>(`/api/ventas/pdv/buscar-productos?q=${encodeURIComponent(q)}&limit=8${lista ? `&listaPrecioId=${lista.id}` : ''}`).catch(() => null);
-            setResultados(r?.productos || []);
-            setBuscando(false);
-        }, 250);
-        return () => clearTimeout(t);
-    }, [busqueda, lista]);
-    const agregarProducto = (p: any) => {
-        setForm((f) => ({
-            ...f,
-            materiales: [...f.materiales, {
-                key: nuevaKey(), productoId: p.id, sku: p.sku, descripcion: p.descripcion, unidad: p.unidad || 'UN',
-                cantidad: '1', precioUnitario: txt(p.precioAplicado), precioModificado: false, ivaPorcentaje: p.ivaPorcentaje ?? 21,
-            }],
-        }));
-        setBusqueda('');
-        setResultados([]);
-    };
+    const cantidadesCargadas = useMemo(() => {
+        const m = new Map<string, number>();
+        for (const x of form.materiales) if (x.productoId) m.set(x.productoId, (m.get(x.productoId) || 0) + num(x.cantidad));
+        return m;
+    }, [form.materiales]);
+    /** Agrega el producto; si ya está en la lista, le suma 1 a la cantidad. */
+    const agregarProducto = (p: ProductoBuscado) =>
+        setForm((f) => {
+            const i = f.materiales.findIndex((m) => m.productoId === p.id);
+            if (i >= 0) return { ...f, materiales: f.materiales.map((m, j) => (j === i ? { ...m, cantidad: String(Math.round((num(m.cantidad) + 1) * 100) / 100) } : m)) };
+            return {
+                ...f,
+                materiales: [...f.materiales, {
+                    key: nuevaKey(), productoId: p.id, sku: p.sku, descripcion: p.descripcion, unidad: p.unidad || 'UN',
+                    cantidad: '1', precioUnitario: txt(p.precioAplicado), precioModificado: false, ivaPorcentaje: p.ivaPorcentaje ?? 21,
+                }],
+            };
+        });
     const agregarManual = () =>
         setForm((f) => ({ ...f, materiales: [...f.materiales, { key: nuevaKey(), productoId: null, sku: '', descripcion: '', unidad: 'UN', cantidad: '1', precioUnitario: '', precioModificado: true, ivaPorcentaje: 21 }] }));
     const editarMaterial = (key: string, patch: Partial<FormMaterial>) =>
@@ -379,7 +377,8 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
     const quitarMaterial = (key: string) => setForm((f) => ({ ...f, materiales: f.materiales.filter((m) => m.key !== key) }));
 
     // ── Plazo ──
-    const diasEstimados = diasHabilesEstimados(calculo.horasTotales, num(form.operariosSimultaneos));
+    const horasDia = num(form.horasDia) || 8;
+    const diasEstimados = diasHabilesEstimados(calculo.horasTotales, num(form.operariosSimultaneos), horasDia);
     const finSugerido = form.fechaInicioTentativa && diasEstimados > 0 ? finSegunDiasHabiles(form.fechaInicioTentativa, diasEstimados) : '';
     const diasElegidos = form.fechaInicioTentativa && form.fechaFinTentativa ? contarDiasHabiles(form.fechaInicioTentativa, form.fechaFinTentativa) : 0;
 
@@ -515,13 +514,13 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
                                                                     )}
                                                                 </td>
                                                                 <td>
-                                                                    <input className={cn('input h-8 text-right tabular-nums', calcH && 'bg-muted border-dashed')} inputMode="decimal" value={l.horas} onChange={(e) => editarLinea(t.key, l.key, 'horas', e.target.value)} aria-label={calcH ? 'Horas (calculadas)' : 'Horas'} title={calcH ? 'Calculado: importe ÷ valor hora' : undefined} />
+                                                                    <input className={cn('input h-8 text-right tabular-nums', calcH && 'bg-muted border-dashed')} inputMode="decimal" placeholder="0" value={l.horas} {...reemplazarAlEditar} onChange={(e) => editarLinea(t.key, l.key, 'horas', e.target.value)} aria-label={calcH ? 'Horas (calculadas)' : 'Horas'} title={calcH ? 'Calculado: importe ÷ valor hora' : undefined} />
                                                                 </td>
                                                                 <td>
-                                                                    <input className="input h-8 text-right tabular-nums" inputMode="decimal" value={l.valorHora} onChange={(e) => editarLinea(t.key, l.key, 'valorHora', e.target.value)} aria-label="Valor hora" />
+                                                                    <input className="input h-8 text-right tabular-nums" inputMode="decimal" placeholder="0" value={l.valorHora} {...reemplazarAlEditar} onChange={(e) => editarLinea(t.key, l.key, 'valorHora', e.target.value)} aria-label="Valor hora" />
                                                                 </td>
                                                                 <td>
-                                                                    <input className={cn('input h-8 text-right tabular-nums', calcI && 'bg-muted border-dashed')} inputMode="decimal" value={l.importe} onChange={(e) => editarLinea(t.key, l.key, 'importe', e.target.value)} aria-label={calcI ? 'Importe (calculado)' : 'Importe'} title={calcI ? 'Calculado: horas × valor hora' : undefined} />
+                                                                    <input className={cn('input h-8 text-right tabular-nums', calcI && 'bg-muted border-dashed')} inputMode="decimal" placeholder="0" value={l.importe} {...reemplazarAlEditar} onChange={(e) => editarLinea(t.key, l.key, 'importe', e.target.value)} aria-label={calcI ? 'Importe (calculado)' : 'Importe'} title={calcI ? 'Calculado: horas × valor hora' : undefined} />
                                                                 </td>
                                                                 {!ro && (
                                                                     <td><Button variant="ghost" size="icon-sm" icon={<Trash2 />} aria-label="Quitar categoría" onClick={() => quitarLinea(t.key, l.key)} /></td>
@@ -550,28 +549,7 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
                     actions={!ro ? <Button variant="secondary" size="sm" icon={<PackagePlus />} onClick={agregarManual}>Ítem manual</Button> : undefined}
                     bodyClassName="p-0"
                 >
-                    {!ro && (
-                        <div className="p-4 pb-2 relative">
-                            <label className="relative block">
-                                <span className="sr-only">Buscar producto</span>
-                                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-                                <input className="input pl-9" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Agregar desde Gestión Comercial: SKU o nombre…" />
-                                {buscando && <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-slate-400" aria-hidden="true" />}
-                            </label>
-                            {resultados.length > 0 && (
-                                <ul className="absolute z-20 left-4 right-4 mt-1 rounded-lg border border-border bg-popover shadow-lg max-h-72 overflow-auto" role="listbox" aria-label="Productos encontrados">
-                                    {resultados.map((p) => (
-                                        <li key={p.id}>
-                                            <button type="button" className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex justify-between gap-3" onClick={() => agregarProducto(p)}>
-                                                <span><span className="font-mono text-xs text-slate-500 mr-2">{p.sku}</span>{p.descripcion}</span>
-                                                <span className="tabular-nums text-sm whitespace-nowrap">{pesos(p.precioAplicado)}</span>
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                    )}
+                    {!ro && <BuscadorMateriales listaPrecioId={lista?.id} cantidades={cantidadesCargadas} onAgregar={agregarProducto} />}
                     {form.materiales.length === 0 ? (
                         <p className="px-4 pb-4 text-sm text-slate-500 dark:text-slate-400">Sin materiales.</p>
                     ) : (
@@ -604,11 +582,11 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
                                                 {m.productoId ? m.unidad : <input className="input h-8" value={m.unidad} onChange={(e) => editarMaterial(m.key, { unidad: e.target.value })} aria-label="Unidad" maxLength={20} />}
                                             </td>
                                             <td>
-                                                <input className="input h-8 text-right tabular-nums" inputMode="decimal" value={m.cantidad} onChange={(e) => editarMaterial(m.key, { cantidad: e.target.value })} aria-label="Cantidad" aria-invalid={Boolean(err(`materiales.${mi}.cantidad`))} />
+                                                <input className="input h-8 text-right tabular-nums" inputMode="decimal" placeholder="0" value={m.cantidad} {...reemplazarAlEditar} onChange={(e) => editarMaterial(m.key, { cantidad: e.target.value })} aria-label="Cantidad" aria-invalid={Boolean(err(`materiales.${mi}.cantidad`))} />
                                                 {err(`materiales.${mi}.cantidad`) && <p className="field-error" role="alert">{err(`materiales.${mi}.cantidad`)}</p>}
                                             </td>
                                             <td>
-                                                <input className="input h-8 text-right tabular-nums" inputMode="decimal" value={m.precioUnitario} onChange={(e) => editarMaterial(m.key, { precioUnitario: e.target.value, precioModificado: Boolean(m.productoId) || m.precioModificado })} aria-label="Precio unitario" />
+                                                <input className="input h-8 text-right tabular-nums" inputMode="decimal" placeholder="0" value={m.precioUnitario} {...reemplazarAlEditar} onChange={(e) => editarMaterial(m.key, { precioUnitario: e.target.value, precioModificado: Boolean(m.productoId) || m.precioModificado })} aria-label="Precio unitario" />
                                             </td>
                                             <td className="text-right tabular-nums whitespace-nowrap">{pesos(calculo.materiales[mi]?.subtotal)}</td>
                                             {!ro && <td><Button variant="ghost" size="icon-sm" icon={<Trash2 />} aria-label="Quitar material" onClick={() => quitarMaterial(m.key)} /></td>}
@@ -624,13 +602,18 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
                 <Panel title="Plazo, validez y condiciones">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <label className="block">
-                            <span className="field-label">Inicio tentativo</span>
-                            <input type="date" className="input" value={form.fechaInicioTentativa} onChange={(e) => set('fechaInicioTentativa', e.target.value)} />
+                            <span className="field-label">Operarios en simultáneo</span>
+                            <input className="input tabular-nums" inputMode="numeric" placeholder="1" value={form.operariosSimultaneos} {...reemplazarAlEditar} onChange={(e) => set('operariosSimultaneos', e.target.value.replace(/\D/g, ''))} aria-invalid={Boolean(err('operariosSimultaneos'))} />
+                            {err('operariosSimultaneos') && <p className="field-error" role="alert">{err('operariosSimultaneos')}</p>}
                         </label>
                         <label className="block">
-                            <span className="field-label">Operarios en simultáneo</span>
-                            <input className="input tabular-nums" inputMode="numeric" value={form.operariosSimultaneos} onChange={(e) => set('operariosSimultaneos', e.target.value.replace(/\D/g, ''))} aria-invalid={Boolean(err('operariosSimultaneos'))} />
-                            {err('operariosSimultaneos') && <p className="field-error" role="alert">{err('operariosSimultaneos')}</p>}
+                            <span className="field-label">Horas por día</span>
+                            <input className="input tabular-nums" inputMode="decimal" placeholder="8" value={form.horasDia} {...reemplazarAlEditar} onChange={(e) => set('horasDia', e.target.value)} aria-invalid={Boolean(err('horasDia'))} />
+                            {err('horasDia') ? <p className="field-error" role="alert">{err('horasDia')}</p> : <p className="field-hint">Jornada de trabajo de esta obra.</p>}
+                        </label>
+                        <label className="block">
+                            <span className="field-label">Inicio tentativo</span>
+                            <input type="date" className="input" value={form.fechaInicioTentativa} onChange={(e) => set('fechaInicioTentativa', e.target.value)} />
                         </label>
                         <label className="block">
                             <span className="field-label">Fin tentativo</span>
@@ -639,7 +622,7 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
                                 <p className="field-error" role="alert">{err('fechaFinTentativa')}</p>
                             ) : finSugerido && !ro ? (
                                 <p className="field-hint">
-                                    Sugerido: {diasEstimados} días hábiles.{' '}
+                                    Sugerido: {diasEstimados} {diasEstimados === 1 ? 'día hábil' : 'días hábiles'} de {horasTxt(horasDia)}.{' '}
                                     {finSugerido !== form.fechaFinTentativa && (
                                         <button type="button" className="text-primary hover:underline" onClick={() => set('fechaFinTentativa', finSugerido)}>Usar {finSugerido.split('-').reverse().join('/')}</button>
                                     )}
@@ -648,10 +631,10 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
                         </label>
                         <label className="block">
                             <span className="field-label">Validez de la oferta (días)</span>
-                            <input className="input tabular-nums" inputMode="numeric" value={form.validezDias} onChange={(e) => set('validezDias', e.target.value.replace(/\D/g, ''))} aria-invalid={Boolean(err('validezDias'))} />
+                            <input className="input tabular-nums" inputMode="numeric" placeholder="15" value={form.validezDias} {...reemplazarAlEditar} onChange={(e) => set('validezDias', e.target.value.replace(/\D/g, ''))} aria-invalid={Boolean(err('validezDias'))} />
                             {err('validezDias') ? <p className="field-error" role="alert">{err('validezDias')}</p> : <p className="field-hint">Cuenta desde el envío.</p>}
                         </label>
-                        <label className="block sm:col-span-2 lg:col-span-4">
+                        <label className="block sm:col-span-2 lg:col-span-3">
                             <span className="field-label">Condiciones</span>
                             <textarea className="input min-h-[64px] py-2" value={form.condiciones} onChange={(e) => set('condiciones', e.target.value)} placeholder="Forma de pago, exclusiones, etc." maxLength={3000} />
                         </label>
@@ -701,7 +684,7 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
                         <div className="flex justify-between gap-3 items-center">
                             <dt className="text-slate-500 dark:text-slate-400">Descuento</dt>
                             <dd className="flex items-center gap-1">
-                                <input className="input h-8 w-16 text-right" inputMode="decimal" value={form.descuentoPorcentaje} onChange={(e) => set('descuentoPorcentaje', e.target.value)} aria-label="Descuento en porcentaje" disabled={ro} /> %
+                                <input className="input h-8 w-16 text-right" inputMode="decimal" placeholder="0" value={form.descuentoPorcentaje} {...reemplazarAlEditar} onChange={(e) => set('descuentoPorcentaje', e.target.value)} aria-label="Descuento en porcentaje" disabled={ro} /> %
                             </dd>
                         </div>
                         {calculo.descuentoMonto > 0 && <div className="flex justify-between gap-3"><dt className="text-slate-500 dark:text-slate-400">Descuento</dt><dd>−{pesos(calculo.descuentoMonto)}</dd></div>}
@@ -709,7 +692,7 @@ const PresupuestoEditor = forwardRef<PresupuestoEditorHandle, Props>(function Pr
                         <div className="flex justify-between gap-3"><dt className="text-slate-500 dark:text-slate-400">{ivaDiscriminado ? 'IVA' : 'IVA contenido'}</dt><dd>{pesos(calculo.impuestos)}</dd></div>
                         <div className="flex justify-between gap-3 border-t border-border pt-2 text-base font-semibold"><dt>Total</dt><dd>{pesos(calculo.total)}</dd></div>
                     </dl>
-                    {diasEstimados > 0 && <p className="field-hint">Plazo estimado: {diasEstimados} días hábiles con {Math.max(1, num(form.operariosSimultaneos))} operarios.</p>}
+                    {diasEstimados > 0 && <p className="field-hint">Plazo estimado: {diasEstimados} {diasEstimados === 1 ? 'día hábil' : 'días hábiles'} con {Math.max(1, num(form.operariosSimultaneos))} {Math.max(1, num(form.operariosSimultaneos)) === 1 ? 'operario' : 'operarios'} de {horasTxt(horasDia)} por día.</p>}
                 </Panel>
             </aside>
         </div>

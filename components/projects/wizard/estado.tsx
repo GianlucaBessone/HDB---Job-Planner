@@ -5,6 +5,7 @@
  */
 import { FileText, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui';
+import { numCampo } from '@/components/presupuestosServicio/cliente';
 import { contarDiasHabiles, diasHabilesEstimados, esFecha, finSegunDiasHabiles, hoyArgentina, siguienteDiaHabil } from '@/lib/presupuestosServicio/calculos';
 
 export interface TareaWiz {
@@ -51,6 +52,7 @@ export interface Sugerido {
     fechaInicioTentativa: string | null;
     fechaFinTentativa: string | null;
     operariosSimultaneos: number;
+    horasDia: number;
     tareas: { descripcion: string; horasEstimadas: number; presupuestoTareaId: string | null }[];
     materiales: { codigo: string | null; nombre: string; cantidad: number; unidad: string }[];
 }
@@ -142,7 +144,7 @@ export function estadoDesdePrecarga(pre: any): WizardState {
             key: nuevaKey(),
             descripcion: t.descripcion,
             etiqueta: t.etiqueta || '',
-            horasEstimadas: String(t.horasEstimadas),
+            horasEstimadas: numCampo(t.horasEstimadas),
             presupuestoTareaId: t.presupuestoTareaId || null,
             horasPresupuesto: t.horasEstimadas,
         })),
@@ -152,7 +154,7 @@ export function estadoDesdePrecarga(pre: any): WizardState {
             codigo: m.codigo || '',
             nombre: m.nombre,
             unidad: m.unidad || 'unidad',
-            cantidad: String(m.cantidad),
+            cantidad: numCampo(m.cantidad),
             cantidadPresupuesto: m.cantidad,
             precioVenta: m.precioVenta ?? null,
         })),
@@ -160,6 +162,7 @@ export function estadoDesdePrecarga(pre: any): WizardState {
         fechaInicio: s.fechaInicio,
         fechaFin: s.fechaFin,
         finManual: false,
+        horasDia: String(s.horasDia || 8),
     };
 }
 
@@ -264,6 +267,8 @@ export function cambiosVsPresupuesto(s: WizardState): string[] {
         else if (num(m.cantidad) !== m.cantidadPresupuesto) c.push(`${m.nombre}: ${m.cantidadPresupuesto} → ${num(m.cantidad)} ${m.unidad}`);
     }
     if (!s.cargarMateriales && s.materiales.length) c.push('Materiales sin cargar en aprovisionamiento');
+    const horasDiaSug = sug.horasDia || 8;
+    if (num(s.horasDia) !== horasDiaSug) c.push(`Horas por día: ${horasDiaSug} h → ${num(s.horasDia)} h`);
     if (s.fechaInicio !== sug.fechaInicio || s.fechaFin !== sug.fechaFin) c.push(`Fechas: ${fmt(sug.fechaInicio)} – ${fmt(sug.fechaFin)} → ${fmt(s.fechaInicio)} – ${fmt(s.fechaFin)}`);
     return c;
 }

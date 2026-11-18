@@ -8,7 +8,7 @@ import { Badge, Button, EmptyState, ErrorState, LoadingState } from '@/component
 import { showToast } from '@/components/Toast';
 import { useAcceso } from '@/lib/store/useAccessStore';
 import { useHistoryStore } from '@/lib/store/useHistoryStore';
-import { api, pesos } from '@/components/presupuestosServicio/cliente';
+import { api, pesos, numCampo, reemplazarAlEditar } from '@/components/presupuestosServicio/cliente';
 
 interface Fila {
     id?: string;
@@ -40,7 +40,7 @@ export default function ManoObraPage() {
             const data = await api<any[]>('/api/presupuestos-servicio/mano-obra');
             setFilas(
                 data.map((c) => {
-                    const f: Fila = { id: c.id, key: c.id, nombre: c.nombre, valorHora: String(c.valorHora), ivaPorcentaje: String(c.ivaPorcentaje), orden: String(c.orden), activo: c.activo };
+                    const f: Fila = { id: c.id, key: c.id, nombre: c.nombre, valorHora: numCampo(c.valorHora), ivaPorcentaje: String(c.ivaPorcentaje), orden: String(c.orden), activo: c.activo };
                     return { ...f, original: firma(f) };
                 })
             );
@@ -53,7 +53,7 @@ export default function ManoObraPage() {
     const editar = (key: string, patch: Partial<Fila>) => setFilas((fs) => fs?.map((f) => (f.key === key ? { ...f, ...patch } : f)) || null);
 
     const guardar = async (f: Fila) => {
-        const valorHora = parseFloat(f.valorHora.replace(',', '.'));
+        const valorHora = f.valorHora.trim() === '' ? 0 : parseFloat(f.valorHora.replace(',', '.'));
         if (f.nombre.trim().length < 2) return showToast('Escribí el nombre de la categoría', 'error');
         if (!isFinite(valorHora) || valorHora < 0) return showToast('El valor hora tiene que ser un número mayor o igual a 0', 'error');
         setGuardando(f.key);
@@ -72,7 +72,7 @@ export default function ManoObraPage() {
     };
 
     const agregar = () =>
-        setFilas((fs) => [...(fs || []), { key: `nueva-${Date.now()}`, nombre: '', valorHora: '0', ivaPorcentaje: '21', orden: String((fs?.length || 0) + 1), activo: true }]);
+        setFilas((fs) => [...(fs || []), { key: `nueva-${Date.now()}`, nombre: '', valorHora: '', ivaPorcentaje: '21', orden: String((fs?.length || 0) + 1), activo: true }]);
 
     return (
         <div className="w-full space-y-5">
@@ -111,11 +111,11 @@ export default function ManoObraPage() {
                                         </td>
                                         <td className="text-right">
                                             {editable ? (
-                                                <input className="input h-8 text-right tabular-nums" inputMode="decimal" value={f.valorHora} onChange={(e) => editar(f.key, { valorHora: e.target.value })} aria-label="Valor hora neto" />
+                                                <input className="input h-8 text-right tabular-nums" inputMode="decimal" placeholder="0" value={f.valorHora} {...reemplazarAlEditar} onChange={(e) => editar(f.key, { valorHora: e.target.value })} aria-label="Valor hora neto" />
                                             ) : (
                                                 <span className="tabular-nums">{pesos(parseFloat(f.valorHora), 0)}</span>
                                             )}
-                                            {parseFloat(f.valorHora) === 0 && <span className="block text-xs text-warning-700 dark:text-warning-300 mt-0.5">Sin valor cargado</span>}
+                                            {!(parseFloat(f.valorHora.replace(',', '.')) > 0) && <span className="block text-xs text-warning-700 dark:text-warning-300 mt-0.5">Sin valor cargado</span>}
                                         </td>
                                         <td>
                                             {editable ? (
@@ -125,7 +125,7 @@ export default function ManoObraPage() {
                                             ) : `${f.ivaPorcentaje.replace('.', ',')} %`}
                                         </td>
                                         <td className="text-right">
-                                            {editable ? <input className="input h-8 text-right tabular-nums" inputMode="numeric" value={f.orden} onChange={(e) => editar(f.key, { orden: e.target.value.replace(/\D/g, '') })} aria-label="Orden" /> : f.orden}
+                                            {editable ? <input className="input h-8 text-right tabular-nums" inputMode="numeric" placeholder="0" value={f.orden} {...reemplazarAlEditar} onChange={(e) => editar(f.key, { orden: e.target.value.replace(/\D/g, '') })} aria-label="Orden" /> : f.orden}
                                         </td>
                                         <td>
                                             {editable ? (

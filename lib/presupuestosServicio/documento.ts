@@ -16,6 +16,8 @@ export interface VersionDocumento {
     fechaInicioTentativa: string | null;
     fechaFinTentativa: string | null;
     operariosSimultaneos: number;
+    /** Ausente en copias congeladas anteriores a este campo: se toma 8. */
+    horasDia?: number | null;
     validezDias: number;
     listaPrecioNombre: string | null;
     ivaDiscriminado: boolean;
@@ -139,7 +141,7 @@ export function armarDocumento(v: VersionDocumento, o: OpcionesDocumento): Docum
     if (o.plazo) {
         const dias = v.fechaInicioTentativa && v.fechaFinTentativa
             ? contarDiasHabiles(v.fechaInicioTentativa, v.fechaFinTentativa)
-            : diasHabilesEstimados(calc.horasTotales, v.operariosSimultaneos);
+            : diasHabilesEstimados(calc.horasTotales, v.operariosSimultaneos, v.horasDia || 8);
         if (dias > 0) {
             plazo = `${dias} ${dias === 1 ? 'día hábil' : 'días hábiles'} desde el inicio de los trabajos.`;
             if (v.fechaInicioTentativa) plazo += ` Inicio estimado: ${fmtFecha(v.fechaInicioTentativa)}.`;

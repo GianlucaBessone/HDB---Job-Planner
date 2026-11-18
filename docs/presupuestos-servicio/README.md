@@ -34,11 +34,21 @@ borrador ──enviar──▶ enviado ──aceptar──▶ aceptado ──con
 - **Documento**: vista en vivo con un deslizador de agrupamiento (Detallado → Por tarea →
   Subtotales → Total) y PDF.
 
+## Plazo
+
+Se estima con las horas de mano de obra ÷ (operarios en simultáneo × **horas por día**). Las horas por
+día son la jornada de cada obra (8 por defecto) y se cargan en el presupuesto, en *Plazo, validez y
+condiciones*. El documento, la copia congelada y el asistente de proyectos usan ese valor; las copias
+congeladas anteriores a este campo se toman con 8.
+
 ## Asistente de nuevo proyecto (`/projects/nuevo`)
 
 Seis pasos: origen, datos generales, tareas y horas, materiales, fechas y equipo (con
 disponibilidad), revisión. Marca qué dato viene del presupuesto, valida en línea y guarda borrador
 por usuario. El alta clásica sigue disponible en `/projects?alta=clasica`.
+
+Las horas por día del paso 5 vienen del presupuesto (o 8 en un proyecto manual), se pueden cambiar
+y quedan en el equipo asignado.
 
 La asignación de operadores solo se registra (`ProyectoAsignacion`); no crea bloques en
 Planificación. La disponibilidad cuenta Planificación, otras asignaciones, viajes y vacaciones.
