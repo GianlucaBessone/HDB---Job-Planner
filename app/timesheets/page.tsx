@@ -445,23 +445,26 @@ export default function TimesheetsPage() {
                 descripcionDevolucion: a?.isDevolucion ? a?.descripcionDevolucion : null
             };
 
-            const res = await safeApiRequest('/api/notifications', {
+            // El solicitante lo toma la API de la sesión (createdBy). Sin metadata = pedido de eliminación.
+            const res = await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
-                    operatorId: currentUser.id,
                     forSupervisors: true,
                     title: `Solicitud para ${actionText} registro`,
                     message: `El operador ${currentUser.nombreCompleto} solicita ${actionText} su registro de horas del ${formatDate(pendingAction.entry.fecha)} (${pendingAction.entry.causaRegistro ? `Causa: ${pendingAction.entry.causaRegistro}` : (pendingAction.entry.project?.nombre || 'Sin proyecto')}).\nMotivo: ${requestMessage}`,
                     type: 'TIME_MODIFICATION_REQUEST',
-                    relatedId: pendingAction.entry.id,
+                    priority: 'HIGH',
+                    category: 'System',
+                    entityType: 'timeEntry',
+                    entityId: pendingAction.entry.id,
                     metadata
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
             if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || 'Error al crear notificación interna');
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.error || 'Error al crear notificación interna');
             }
 
             showToast('Solicitud enviada a los supervisores exitosamente.', 'success');
