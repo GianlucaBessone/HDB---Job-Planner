@@ -35,6 +35,8 @@ export const wizardSchema = z
         fechaInicio: fecha,
         fechaFin: fecha,
         horasDia: z.coerce.number().min(1, 'Horas por día: mínimo 1').max(24, 'Horas por día: máximo 24').default(8),
+        /** Solo para proyectos sin tareas: horas estimadas totales cargadas a mano. */
+        horasEstimadas: z.coerce.number().min(0).max(1e6).optional().nullable(),
         generarOS: z.boolean().default(false),
         aprovisionamiento: z.boolean().default(false),
         cargarMateriales: z.boolean().default(true),
@@ -157,7 +159,9 @@ export async function crearProyectoWizard(input: WizardInput, usuario: UsuarioSe
         if (presupuesto.proyectoId) throw new ErrorNegocio('Este presupuesto ya se convirtió en proyecto', 409);
     }
 
-    const horasEstimadas = Math.round(input.tareas.reduce((a, t) => a + t.horasEstimadas, 0));
+    const horasEstimadas = input.tareas.length
+        ? Math.round(input.tareas.reduce((a, t) => a + t.horasEstimadas, 0))
+        : Math.round(Number(input.horasEstimadas) || 0);
     const estado = input.fechaInicio > hoyArgentina() ? 'planificado' : 'activo';
     const ids = Array.from(new Set(input.operadores));
 
