@@ -45,6 +45,35 @@ export function horasTxt(n: number | null | undefined): string {
     return `${v.toLocaleString('es-AR')} h`;
 }
 
+/**
+ * Texto de un número para un campo editable: el 0 queda vacío (el campo muestra "0" como
+ * placeholder), así lo que se escribe no se suma a un cero que ya estaba.
+ */
+export function numCampo(n: number | null | undefined): string {
+    if (n === null || n === undefined) return '';
+    const v = Math.round(Number(n) * 100) / 100;
+    return isFinite(v) && v !== 0 ? String(v) : '';
+}
+
+/**
+ * Props para campos numéricos: al entrar al campo (clic o Tab) el valor queda seleccionado y lo
+ * que se escribe lo reemplaza. Un segundo clic, con el campo ya activo, ubica el cursor como siempre.
+ * Uso: <input {...reemplazarAlEditar} … />
+ */
+export const reemplazarAlEditar = {
+    onMouseDown(e: React.MouseEvent<HTMLInputElement>) {
+        const el = e.currentTarget;
+        if (document.activeElement === el || el.disabled || el.readOnly) return;
+        // Sin esto, el clic ubica el cursor y deshace la selección.
+        e.preventDefault();
+        el.focus();
+        el.select();
+    },
+    onFocus(e: React.FocusEvent<HTMLInputElement>) {
+        e.currentTarget.select();
+    },
+};
+
 export function fechaCorta(f: string | null | undefined): string {
     if (!f) return '—';
     const s = f.slice(0, 10);
