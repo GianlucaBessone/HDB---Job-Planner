@@ -25,12 +25,15 @@ export function ProjectCard({
     onDetails,
     handleDeleteClick,
     onViewCost,
+    presupuesto,
 }: {
     project: Project;
     onEdit: (p: Project) => void;
     onDetails: (p: Project) => void;
     handleDeleteClick: (id: string) => void;
     onViewCost?: (p: Project) => void;
+    /** Presupuesto de servicio de origen, si el proyecto se creó desde uno. */
+    presupuesto?: { id: string; numero: string } | null;
 }) {
     const { horasConsumidas, horasEstimadas, estado } = project;
     const progress = (horasEstimadas || 0) > 0 ? Math.min(100, Math.round((horasConsumidas / horasEstimadas) * 100)) : 0;
@@ -50,6 +53,9 @@ export function ProjectCard({
                         )}
                         {project.nombre}
                     </h4>
+                    {presupuesto && (
+                        <span className="badge badge-neutral mt-1.5 font-mono" title="Creado desde un presupuesto de servicio">{presupuesto.numero}</span>
+                    )}
                 </div>
                 <div className="flex items-center gap-0.5 shrink-0">
                     <button
@@ -200,12 +206,14 @@ export default function ProjectCardView({
     onDetails,
     handleDeleteClick,
     onViewCost,
+    presupuestos,
 }: {
     projects: Project[];
     onEdit: (p: Project) => void;
     onDetails: (p: Project) => void;
     handleDeleteClick: (id: string) => void;
     onViewCost?: (p: Project) => void;
+    presupuestos?: Record<string, { id: string; numero: string }>;
 }) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -217,6 +225,7 @@ export default function ProjectCardView({
                     onDetails={onDetails} 
                     handleDeleteClick={handleDeleteClick} 
                     onViewCost={onViewCost}
+                    presupuesto={presupuestos?.[p.id]}
                 />
             ))}
         </div>

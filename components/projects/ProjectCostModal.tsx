@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { X, Clock, Package, Activity, DollarSign, Building2, Calculator, AlertTriangle } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
+import { Tabs } from '@/components/ui';
+import PresupuestoVsReal from '@/components/projects/PresupuestoVsReal';
 
 interface CostData {
     project: {
@@ -36,14 +38,27 @@ interface CostData {
 
 export default function ProjectCostModal({
     projectId,
-    onClose
+    onClose,
+    tabInicial = 'costo',
 }: {
     projectId: string;
     onClose: () => void;
+    /** Pestaña con la que abre si el proyecto viene de un presupuesto de servicio. */
+    tabInicial?: 'costo' | 'pvr';
 }) {
     const [data, setData] = useState<CostData | null>(null);
     const [loading, setLoading] = useState(true);
     const [conIva, setConIva] = useState(false);
+    // Presupuestado vs. real: solo para proyectos creados desde un presupuesto de servicio.
+    const [pvr, setPvr] = useState<any>(null);
+    const [tab, setTab] = useState<string>(tabInicial);
+
+    useEffect(() => {
+        fetch(`/api/projects/${projectId}/presupuesto-vs-real`, { cache: 'no-store' })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => setPvr(d?.tienePresupuesto ? d : null))
+            .catch(() => setPvr(null));
+    }, [projectId]);
 
     const fetchCost = async () => {
         setLoading(true);
@@ -130,7 +145,17 @@ export default function ProjectCostModal({
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50/50 dark:bg-slate-900/20">
-                    {loading ? (
+                    {pvr && (
+                        <Tabs
+                            label="Vistas de costos"
+                            value={tab}
+                            onChange={setTab}
+                            tabs={[{ id: 'costo', label: 'Costo real' }, { id: 'pvr', label: 'Presupuestado vs. real' }]}
+                        />
+                    )}
+                    {pvr && tab === 'pvr' ? (
+                        <PresupuestoVsReal data={pvr} />
+                    ) : loading ? (
                         <div className="flex flex-col items-center justify-center py-20 space-y-4">
                             <Activity className="w-12 h-12 text-primary animate-spin" />
                             <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-xs">Calculando costos...</p>
