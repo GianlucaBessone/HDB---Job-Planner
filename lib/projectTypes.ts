@@ -59,7 +59,6 @@ export interface FormData {
     noEnMetricas: boolean;
     observaciones: string;
     horasEstimadas: number | string;
-    horasConsumidas: number | string;
     cliente: string;
     clientId: string;
     responsable: string;
@@ -113,7 +112,6 @@ export const EMPTY_FORM: FormData = {
     noEnMetricas: false,
     observaciones: '',
     horasEstimadas: '',
-    horasConsumidas: '',
     cliente: '',
     clientId: '',
     responsable: '',

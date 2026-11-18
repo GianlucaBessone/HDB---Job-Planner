@@ -57,7 +57,9 @@ Planificación. La disponibilidad cuenta Planificación, otras asignaciones, via
 
 Pestaña en *Costo del proyecto* para proyectos con presupuesto. Compara contra la copia congelada:
 
-- **Horas**: `Project.horasConsumidas`, el mismo valor del dashboard (extras ×2).
+- **Horas**: `Project.horasConsumidas`, el mismo valor del dashboard. Sale solo del registro de
+  tiempos (por registro `ceil(horas)`, extras ×2, sin devoluciones); generar una OS no lo cambia y
+  no se edita a mano. Para alinear datos viejos: `scripts/recalcular-horas-consumidas.ts`.
 - **Materiales**: lo usado, o lo entregado si no hay usos (igual que *Costo real*).
 - **Monto neto**: valorizado con los precios del presupuesto.
 
