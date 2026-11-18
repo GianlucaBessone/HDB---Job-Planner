@@ -4,6 +4,7 @@
  * Presupuestado: la copia congelada (PresupuestoServicioSnapshot), nunca el presupuesto editable.
  * Real (solo lectura, mismos criterios que ya usa el sistema):
  *  - Horas consumidas: Project.horasConsumidas, el valor del dashboard y los KPI (extras ×2).
+ *    Lo mantiene solo el registro de tiempos (app/api/time-entries); las OS no lo tocan.
  *  - Horas por operador: registros de horas del proyecto (sin devoluciones).
  *  - Materiales: lo usado (o lo entregado si no hay usos), igual que /api/projects/[id]/cost.
  * Proyectos sin presupuesto: { tienePresupuesto: false } y nada más.

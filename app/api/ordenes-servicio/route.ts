@@ -70,7 +70,7 @@ export async function POST(req: Request) {
             }
         }
 
-        // 1) Create OS and update project hours via service
+        // 1) Create OS via service (no toca Project.horasConsumidas: la fuente es el registro de tiempos)
         const { createOrdenServicio } = await import('@/lib/services/osService');
         const os = await createOrdenServicio({ projectId, reporte, materiales, operadores, comentario, listaPrecioId });
 
