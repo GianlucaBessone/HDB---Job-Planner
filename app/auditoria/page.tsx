@@ -115,6 +115,10 @@ const ENTITY_LABELS: Record<string, string> = {
     OBJETIVO: 'Objetivo de Calidad',
     OPORTUNIDAD: 'Oportunidad',
     VERIFICACION_EFICACIA: 'Verificación de Eficacia',
+    PRESUPUESTO_SERVICIO: 'Presupuesto de servicio',
+    MANO_OBRA_CATEGORIA: 'Categoría de mano de obra',
+    PROYECTO_TAREA: 'Tarea de proyecto',
+    PROYECTO_ASIGNACION: 'Equipo del proyecto',
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -123,6 +127,7 @@ const ACTION_LABELS: Record<string, string> = {
     DELETE: 'Eliminación',
     APPROVE: 'Aprobación',
     REJECT: 'Rechazo',
+    CONVERT: 'Conversión',
 };
 
 const ACTION_ICONS: Record<string, any> = {
@@ -131,6 +136,7 @@ const ACTION_ICONS: Record<string, any> = {
     DELETE: Trash2,
     APPROVE: CheckCircle2,
     REJECT: XCircle,
+    CONVERT: ArrowRight,
 };
 
 // Fields to skip in human-readable display (internal/noise)

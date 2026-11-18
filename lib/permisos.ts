@@ -47,6 +47,13 @@ export const FUNCIONES = [
     { id: 'ventas.anular_venta', label: 'Anular ventas', description: 'Anular ventas del Punto de Venta sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.modificar_precios', label: 'Modificar precios', description: 'Cambiar el precio unitario en una venta sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.anular_comprobante_cc', label: 'Anular comprobantes de cuenta corriente', description: 'Anular recibos y movimientos sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+    { id: 'ventas.mano_obra_gestionar', label: 'Gestionar mano de obra', description: 'Editar categorías de mano de obra y su valor hora', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+
+    // ─ Presupuestos de servicio ─
+    { id: 'presupuestos.ver', label: 'Ver presupuestos de servicio', description: 'Consultar presupuestos, sus revisiones y el reporte presupuestado vs. real', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'presupuestos.gestionar', label: 'Crear y editar presupuestos', description: 'Crear presupuestos, editarlos, abrir revisiones y enviarlos', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor'] },
+    { id: 'presupuestos.aprobar', label: 'Registrar aceptación o rechazo', description: 'Registrar la aceptación o el rechazo del cliente', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor'] },
+    { id: 'presupuestos.convertir', label: 'Convertir en proyecto', description: 'Crear el proyecto desde un presupuesto aceptado', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor'] },
 
     // ─ Recursos Humanos ─
     { id: 'rrhh.reclutamiento_ver', label: 'Ver reclutamiento', description: 'Consultar vacantes, postulantes, CV y análisis de IA', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
