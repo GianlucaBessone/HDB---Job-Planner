@@ -88,11 +88,14 @@ export async function precargaDesdePresupuesto(presupuestoId: string) {
 
     const d = p.snapshot.datos as unknown as DatosSnapshot;
     const horas = r2(d.tareas.reduce((a, t) => a + t.horas, 0));
+    // Las copias congeladas anteriores a "horas por día" no lo tienen: se usa 8, como entonces.
+    const horasDia = d.horasDia || 8;
     const fechas = sugerirFechas({
         fechaInicioTentativa: d.fechaInicioTentativa,
         fechaFinTentativa: d.fechaFinTentativa,
         horas,
         operarios: d.operariosSimultaneos,
+        horasDia,
     });
     const etiquetas = Array.from(new Set(d.tareas.map((t) => t.etiqueta).filter((e): e is string => Boolean(e))));
 
@@ -122,6 +125,7 @@ export async function precargaDesdePresupuesto(presupuestoId: string) {
             fechaInicioTentativa: d.fechaInicioTentativa,
             fechaFinTentativa: d.fechaFinTentativa,
             operariosSimultaneos: d.operariosSimultaneos,
+            horasDia,
             tareas: d.tareas.map((t) => ({ descripcion: t.descripcion, etiqueta: t.etiqueta, horasEstimadas: t.horas, presupuestoTareaId: t.presupuestoTareaId })),
             materiales: d.materiales.map((m) => ({
                 productoId: m.productoId,

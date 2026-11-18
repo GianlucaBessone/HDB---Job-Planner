@@ -50,6 +50,7 @@ function contenido(clienteId: string, extra: Partial<ContenidoPresupuestoInput> 
         fechaInicioTentativa: sumarDias(hoyArgentina(), 14),
         fechaFinTentativa: sumarDias(hoyArgentina(), 20),
         operariosSimultaneos: 3,
+        horasDia: 8,
         validezDias: 15,
         listaPrecioId: null,
         descuentoPorcentaje: 0,

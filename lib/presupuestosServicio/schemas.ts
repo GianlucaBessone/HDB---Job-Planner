@@ -55,6 +55,7 @@ export const contenidoPresupuestoSchema = z
         fechaInicioTentativa: fechaOpcional,
         fechaFinTentativa: fechaOpcional,
         operariosSimultaneos: z.coerce.number().int('Operarios: número entero').min(1, 'Al menos 1 operario').max(100).default(1),
+        horasDia: numero(1, 24, 'Horas por día: entre 1 y 24').default(8),
         validezDias: z.coerce.number().int('Validez: número entero de días').min(1, 'La validez mínima es 1 día').max(365).default(15),
         listaPrecioId: z.string().trim().max(64).optional().nullable().transform((v) => v || null),
         descuentoPorcentaje: numero(0, 100, 'El descuento va de 0 a 100 %').default(0),
