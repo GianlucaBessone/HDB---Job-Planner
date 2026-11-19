@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const body = await req.json();
     const {
@@ -145,8 +149,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'CREATE',
       entity: 'OT_CICLO_MATERIAL',
       entityId: result.id,
@@ -172,6 +176,9 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
 export async function DELETE(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const { searchParams } = new URL(req.url);
     const itemId = searchParams.get('itemId');
@@ -211,8 +218,8 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'DELETE',
       entity: 'OT_CICLO_MATERIAL',
       entityId: itemId,

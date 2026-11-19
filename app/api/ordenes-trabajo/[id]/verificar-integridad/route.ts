@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyCycleIntegrity } from '@/lib/ot/canonicalHash';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const body = await req.json().catch(() => ({}));
     const { cicloId } = body;
@@ -54,8 +58,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
     const allValid = verificationResults.every((r) => r.valido);
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'APPROVE',
       entity: 'OT_VERIFICACION_INTEGRIDAD',
       entityId: id,

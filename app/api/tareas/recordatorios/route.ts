@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
+import { nivelSobreTarea } from '@/lib/tareas/acceso';
+import { firmarRecordatorio, urlWebhookRecordatorio } from '@/lib/tareas/recordatorioToken';
 
 const CRONJOB_API = 'https://api.cron-job.org/jobs';
 
@@ -57,6 +60,9 @@ function buildSchedule(tipo: string, fecha: Date) {
 // ── POST — Create reminder + register in cron-job.org ──────────────
 export async function POST(req: NextRequest) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { tareaId, tipo = 'unico', fechaDisparo, mensaje } = body;
 
@@ -65,9 +71,13 @@ export async function POST(req: NextRequest) {
         }
 
         // Verify tarea exists
-        const tarea = await prisma.tarea.findUnique({ where: { id: tareaId } });
+        const tarea = await prisma.tarea.findUnique({ where: { id: tareaId }, include: { involucrados: true } });
         if (!tarea) {
             return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
+        }
+        // Programar recordatorios es editar la tarea: creador, responsable o "tareas.ver_todas".
+        if (nivelSobreTarea(acceso, tarea) !== 'total') {
+            return NextResponse.json({ error: 'No tenés permiso para programar recordatorios en esta tarea' }, { status: 403 });
         }
 
         // Create DB record first
@@ -85,11 +95,14 @@ export async function POST(req: NextRequest) {
             ? `https://${req.headers.get('x-forwarded-host')}`
             : req.headers.get('origin') || 'https://hdb-sgi.vercel.app';
 
-        const webhookUrl = `${baseUrl}/api/tareas/reminder-webhook?recordatorioId=${recordatorio.id}`;
+        // Sin CRON_SECRET no hay cómo firmar la URL: el webhook rechazaría la llamada.
+        const token = firmarRecordatorio(recordatorio.id);
+        if (!token) console.error('[RECORDATORIOS_POST] CRON_SECRET no está configurado: el recordatorio no se programa en cron-job.org');
 
         // Create cron job on cron-job.org
         let cronJobId: number | null = null;
-        try {
+        if (token) try {
+            const webhookUrl = urlWebhookRecordatorio(baseUrl, recordatorio.id, token);
             const schedule = buildSchedule(tipo, new Date(fechaDisparo));
             const cronResponse = await fetch(CRONJOB_API, {
                 method: 'PUT',
@@ -136,6 +149,9 @@ export async function POST(req: NextRequest) {
 // ── DELETE — Remove reminder + delete from cron-job.org ────────────
 export async function DELETE(req: NextRequest) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const url = new URL(req.url);
         const id = url.searchParams.get('id');
 
@@ -143,9 +159,15 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
         }
 
-        const recordatorio = await prisma.tareaRecordatorio.findUnique({ where: { id } });
+        const recordatorio = await prisma.tareaRecordatorio.findUnique({
+            where: { id },
+            include: { tarea: { include: { involucrados: true } } },
+        });
         if (!recordatorio) {
             return NextResponse.json({ error: 'Recordatorio no encontrado' }, { status: 404 });
+        }
+        if (recordatorio.tarea && nivelSobreTarea(acceso, recordatorio.tarea) !== 'total') {
+            return NextResponse.json({ error: 'No tenés permiso para quitar recordatorios de esta tarea' }, { status: 403 });
         }
 
         // Delete from cron-job.org if we have a job ID

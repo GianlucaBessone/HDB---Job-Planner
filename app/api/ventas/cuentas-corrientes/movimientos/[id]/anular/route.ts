@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { anularMovimientoCC } from '@/lib/ventas/cuentaCorrienteService';
-import { puede } from '@/lib/permisosServer';
+import { getAcceso, puede } from '@/lib/permisosServer';
 
 const anularSchema = z.object({
   motivo: z.string().min(3, 'El motivo debe tener al menos 3 caracteres'),
@@ -19,8 +19,10 @@ export async function POST(
     const body = await req.json();
     const { motivo, supervisorPin } = anularSchema.parse(body);
 
-    let userId = req.headers.get('x-user-id') || '';
-    let userName = req.headers.get('x-user-name') || undefined;
+    // Sin PIN, anula el usuario de la sesión; con PIN, el supervisor que lo ingresó.
+    const sesion = await getAcceso(req);
+    let userId = sesion.userId;
+    let userName: string | undefined = sesion.nombre || undefined;
 
     if (supervisorPin) {
       const { prisma } = await import('@/lib/prisma');

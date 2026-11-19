@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { adjuntarSaldoPendienteRemitos, crearRemitoEntrega } from '@/lib/ventas/pdvService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const itemRemitoSchema = z.object({
   ventaItemId: z.string().min(1, 'El ID de ítem de venta es obligatorio'),
@@ -62,11 +63,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const parsed = crearRemitoSchema.parse(body);
 
-    const userIdHeader = req.headers.get('x-user-id');
-    const userNameHeader = req.headers.get('x-user-name');
+    // Quien emite el remito es el usuario de la sesión.
+    const userIdHeader = acceso.userId;
+    const userNameHeader = acceso.nombre;
 
     const remito = await crearRemitoEntrega(
       {

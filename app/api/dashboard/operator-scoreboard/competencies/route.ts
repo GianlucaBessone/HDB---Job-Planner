@@ -33,6 +33,32 @@ const SKILL_MIGRATION_MAP: Record<string, string> = {
     'Mantenimiento Preventivo': 'HyS'
 };
 
+/** Nombre vigente de una competencia (los nombres viejos se mapean al nuevo). */
+function nombreVigente(nombre: string): string {
+    return SKILL_MIGRATION_MAP[nombre] || nombre;
+}
+
+/**
+ * Renombra en la base las competencias con nombres viejos de un operador (si ya tiene la
+ * del nombre nuevo, borra la vieja). Corre en las escrituras, nunca en un GET.
+ */
+async function migrarNombresViejos(operatorId: string) {
+    const viejas = await prisma.technicianCompetency.findMany({
+        where: { operatorId, nombre: { in: Object.keys(SKILL_MIGRATION_MAP) } }
+    });
+    for (const comp of viejas) {
+        const nuevo = SKILL_MIGRATION_MAP[comp.nombre];
+        const exists = await prisma.technicianCompetency.findFirst({
+            where: { operatorId, nombre: nuevo }
+        });
+        if (!exists) {
+            await prisma.technicianCompetency.update({ where: { id: comp.id }, data: { nombre: nuevo } });
+        } else {
+            await prisma.technicianCompetency.delete({ where: { id: comp.id } });
+        }
+    }
+}
+
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -41,32 +67,15 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'El ID de operador es obligatorio.' }, { status: 400 });
         }
 
-        // Self-healing migration for old competency names in the database
-        for (const [oldName, newName] of Object.entries(SKILL_MIGRATION_MAP)) {
-            const oldComps = await prisma.technicianCompetency.findMany({
-                where: { nombre: oldName }
-            });
-            for (const comp of oldComps) {
-                const exists = await prisma.technicianCompetency.findFirst({
-                    where: { operatorId: comp.operatorId, nombre: newName }
-                });
-                if (!exists) {
-                    await prisma.technicianCompetency.update({
-                        where: { id: comp.id },
-                        data: { nombre: newName }
-                    });
-                } else {
-                    await prisma.technicianCompetency.delete({
-                        where: { id: comp.id }
-                    });
-                }
-            }
-        }
-
-        // Fetch competencies
-        const competencies = await prisma.technicianCompetency.findMany({
+        // Solo lectura: los nombres viejos se normalizan en memoria (la migración en la
+        // base la hacen POST/PUT). Si conviven el viejo y el nuevo, gana el nuevo.
+        const competenciasDb = await prisma.technicianCompetency.findMany({
             where: { operatorId }
         });
+        const nombresActuales = new Set(competenciasDb.filter(c => !SKILL_MIGRATION_MAP[c.nombre]).map(c => c.nombre));
+        const competencies = competenciasDb
+            .filter(c => !SKILL_MIGRATION_MAP[c.nombre] || !nombresActuales.has(nombreVigente(c.nombre)))
+            .map(c => ({ ...c, nombre: nombreVigente(c.nombre) }));
 
         // Fetch LMS completed courses to dynamically see if any map to competencies
         const completedTrainings = await prisma.technicianTraining.findMany({
@@ -166,6 +175,7 @@ export async function POST(request: Request) {
         if (!operatorId || !skillName) {
             return NextResponse.json({ error: 'Faltan parámetros obligatorios.' }, { status: 400 });
         }
+        await migrarNombresViejos(operatorId);
 
         const existing = await prisma.technicianCompetency.findFirst({
             where: { operatorId, nombre: skillName }
@@ -260,6 +270,9 @@ export async function PUT(request: Request) {
             entityId: competencyId,
             newValue: { approve }
         });
+
+        // Después de aprobar o rechazar, para no borrar la competencia que se estaba resolviendo.
+        await migrarNombresViejos(competency.operatorId);
 
         return NextResponse.json({ success: true });
     } catch (error: any) {

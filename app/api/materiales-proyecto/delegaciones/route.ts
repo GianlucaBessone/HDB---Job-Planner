@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
-        const { searchParams } = new URL(req.url);
-        const userId = searchParams.get('userId');
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
+        // Siempre las delegaciones del usuario de la sesión (se ignora ?userId).
+        const userId = acceso.userId;
 
         if (!userId) {
             return NextResponse.json({ error: 'userId es requerido' }, { status: 400 });

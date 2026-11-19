@@ -73,6 +73,7 @@ export const FUNCIONES = [
 
     // ─ Proyectos ─
     { id: 'proyectos.crear', label: 'Crear y planificar proyectos', description: 'Crear y editar proyectos, asignar el equipo y marcar tareas', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'provision.gestionar', label: 'Gestionar provisión de materiales', description: 'Cargar y editar materiales de proyecto, importar, avisar faltantes y corregir estados', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
     { id: 'proyectos.eliminar', label: 'Eliminar proyectos', description: 'Eliminar un proyecto con sus órdenes de servicio, horas y fichadas', grupo: 'Proyectos', roles: ['admin', 'supervisor'] },
 
     // ─ Presupuestos de servicio ─

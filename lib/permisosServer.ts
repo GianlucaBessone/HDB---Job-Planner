@@ -20,6 +20,7 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { getSessionFromRequest } from '@/lib/auth';
 import { EfectoPermiso, FuncionId, PermisoEspecial, puedeFuncion } from '@/lib/permisos';
 
 /**
@@ -77,7 +78,19 @@ const SIN_SESION: AccesoSesion = {
  * rol, estado y nombre se leen de la base en cada pedido.
  */
 export async function getAcceso(req: Request): Promise<AccesoSesion> {
-    const userId = req.headers.get('x-user-id') || '';
+    return accesoDeUsuario(req.headers.get('x-user-id') || '');
+}
+
+/**
+ * Igual que getAcceso, para rutas que el middleware deja pasar sin sesión (no completa
+ * x-user-id): lee y valida la cookie. Sin cookie válida devuelve un acceso vacío.
+ */
+export async function getAccesoDeCookie(req: Request): Promise<AccesoSesion> {
+    const sesion = await getSessionFromRequest(req);
+    return accesoDeUsuario(sesion?.id || '');
+}
+
+async function accesoDeUsuario(userId: string): Promise<AccesoSesion> {
     if (!userId) return SIN_SESION;
 
     const [operador, permisos] = await Promise.all([

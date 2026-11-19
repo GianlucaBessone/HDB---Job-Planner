@@ -2,13 +2,21 @@ import { NextResponse } from 'next/server';
 import { generateObject } from '@/lib/ai';
 import { IsoDocGenOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
-        const { proceso, sector, alcance, responsables, userId, userName, userRole, saveAsDraft } = body;
+        const { proceso, sector, alcance, responsables, saveAsDraft } = body;
+        // Usuario, nombre y rol salen de la sesión (se ignoran los del cuerpo).
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
         const descripcion = body.descripcion || body.detallesAdicionales || '';
 
         // 1. Validaciones de Entrada
@@ -17,8 +25,7 @@ export async function POST(req: Request) {
         }
 
         // 2. Control de Permisos
-        const allowedRoles = ['admin', 'qa', 'supervisor'];
-        if (userRole && !allowedRoles.includes(userRole)) {
+        if (!acceso.puede('documentos.gestionar')) {
             return NextResponse.json({ error: 'Permisos insuficientes. Rol no autorizado para generar documentación controlada.' }, { status: 403 });
         }
 
