@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { esGestorViajes } from '@/lib/viajes';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -8,9 +8,9 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const userId = req.headers.get('x-user-id');
-        const role = req.headers.get('x-user-role');
-        if (!userId) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const { userId } = acceso;
 
         const comp = await prisma.viajeComprobante.findUnique({
             where: { id },
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         // Lo ven gestores, quien lo subió y las personas del viaje. Si no, 404 para no revelar que existe.
         const puedeVer = comp && (
-            esGestorViajes(role) ||
+            acceso.puede('viajes.gestionar') ||
             comp.subidoPorId === userId ||
             comp.viaje?.responsableId === userId ||
             comp.viaje?.participantes.some(p => p.operatorId === userId)

@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { esTicketAbierto, TICKET_ESTADOS, TICKET_TIPOS, TICKET_URGENCIAS, getSlaEstado } from '@/lib/tickets';
 
 export const dynamic = 'force-dynamic';
 
-const GESTORES = ['admin', 'qa', 'supervisor'];
-
 export async function GET(req: NextRequest) {
     try {
-        const role = (req.headers.get('x-user-role') || 'operador').toLowerCase();
-        const userId = req.headers.get('x-user-id') || null;
-        const canManage = GESTORES.includes(role);
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
 
+        // Quien gestiona tickets ve las métricas de todos; el resto, solo las de los suyos.
         const where: any = {};
-        if (!canManage) where.reportadoPorId = userId || '__sin_usuario__';
+        if (!acceso.puede('tickets.gestionar')) where.reportadoPorId = acceso.userId;
 
         const tickets = await prisma.ticket.findMany({
             where,

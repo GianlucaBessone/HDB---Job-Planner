@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { enriquecerTool } from '@/lib/toolControl';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
@@ -60,6 +61,9 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['herramientas.gestionar'], 'No tenés permiso para gestionar herramientas y carros');
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
         const { nombre, descripcion } = data;
 
@@ -81,6 +85,9 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
 export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['herramientas.gestionar'], 'No tenés permiso para gestionar herramientas y carros');
+        if (acceso instanceof NextResponse) return acceso;
+
         const cart = await prisma.tool.findUnique({
             where: { id: params.id },
             include: {

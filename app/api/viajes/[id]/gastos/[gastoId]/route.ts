@@ -17,6 +17,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     try {
         const { id, gastoId } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         const viaje = await cargarViaje(id);
         if (!viaje || !puedeVer(viaje, actor)) return noEncontrado();
         const gasto = viaje.gastos.find(g => g.id === gastoId);
@@ -68,6 +69,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     try {
         const { id, gastoId } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         const viaje = await cargarViaje(id);
         if (!viaje || !puedeVer(viaje, actor)) return noEncontrado();
         const gasto = viaje.gastos.find(g => g.id === gastoId);

@@ -5,6 +5,7 @@ import {
   guardarCotizacion,
   cambiarEstadoCotizacion,
 } from '@/lib/ventas/cotizacionService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const itemSchema = z.object({
   productoId: z.string().optional().nullable(),
@@ -59,6 +60,9 @@ export async function GET(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.cotizaciones_ver', 'ventas.cotizaciones_gestionar'], 'No tenés permiso para ver cotizaciones');
+    if (acceso instanceof NextResponse) return acceso;
+
     const cotizacion = await obtenerCotizacionPorId(params.id);
     return NextResponse.json(cotizacion);
   } catch (error: any) {
@@ -75,10 +79,13 @@ export async function PUT(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.cotizaciones_gestionar'], 'No tenés permiso para crear o editar cotizaciones');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const parsed = guardarCotizacionSchema.parse(body);
-    const userIdHeader = req.headers.get('x-user-id') || undefined;
-    const userNameHeader = req.headers.get('x-user-name') || undefined;
+    const userIdHeader = acceso.userId;
+    const userNameHeader = acceso.nombre;
 
     const cotizacion = await guardarCotizacion(
       {
@@ -112,11 +119,14 @@ export async function PATCH(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.cotizaciones_gestionar'], 'No tenés permiso para crear o editar cotizaciones');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const parsed = patchEstadoSchema.parse(body);
 
-    const userId = req.headers.get('x-user-id') || undefined;
-    const userName = req.headers.get('x-user-name') || undefined;
+    const userId = acceso.userId;
+    const userName = acceso.nombre;
 
     const cotizacion = await cambiarEstadoCotizacion(params.id, parsed.estado, {
       motivo: parsed.motivo,

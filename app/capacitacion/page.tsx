@@ -352,8 +352,6 @@ export default function CapacitacionPage() {
           descripcion: editCertData.descripcion,
           horas: editCertData.horas ? Number(editCertData.horas) : null,
           fechaEmision: editCertData.fechaEmision || null,
-          userId: user.id,
-          userName: user.nombreCompleto,
         }),
       });
       if (res.ok) {
@@ -362,7 +360,8 @@ export default function CapacitacionPage() {
         setPreviewCert({ ...previewCert, ...editCertData });
         loadCertificates();
       } else {
-        showToast("Error al actualizar datos", "error");
+        const err = await res.json().catch(() => ({}));
+        showToast(err.error || "Error al actualizar datos", "error");
       }
     } catch (error) {
       showToast("Error de red", "error");
@@ -719,7 +718,7 @@ export default function CapacitacionPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <ModuleHeader
-        title="Centro de Formación Integral"
+        title="Mi formación"
         description="HDB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional"
         icon={<GraduationCap className="w-5 h-5" />}
         helpSlug="formacion-integral"

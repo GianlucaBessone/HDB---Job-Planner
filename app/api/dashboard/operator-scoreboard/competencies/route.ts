@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,6 +62,9 @@ async function migrarNombresViejos(operatorId: string) {
 
 export async function GET(request: Request) {
     try {
+        const acceso = await exigirAcceso(request, ['formacion.gestionar'], 'No tenés permiso para gestionar la formación del personal');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(request.url);
         const operatorId = searchParams.get('operatorId');
         if (!operatorId) {
@@ -170,7 +174,12 @@ export async function GET(request: Request) {
 // POST is for toggling/saving manual competencies
 export async function POST(request: Request) {
     try {
-        const { operatorId, skillName, active, userId, userName } = await request.json();
+        const acceso = await exigirAcceso(request, ['formacion.gestionar'], 'No tenés permiso para gestionar la formación del personal');
+        if (acceso instanceof NextResponse) return acceso;
+
+        const { operatorId, skillName, active } = await request.json();
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
         
         if (!operatorId || !skillName) {
             return NextResponse.json({ error: 'Faltan parámetros obligatorios.' }, { status: 400 });
@@ -231,7 +240,12 @@ export async function POST(request: Request) {
 // PUT is for approving pending competencies extracted from external certificates
 export async function PUT(request: Request) {
     try {
-        const { competencyId, approve, userId, userName } = await request.json();
+        const acceso = await exigirAcceso(request, ['formacion.gestionar'], 'No tenés permiso para gestionar la formación del personal');
+        if (acceso instanceof NextResponse) return acceso;
+
+        const { competencyId, approve } = await request.json();
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
 
         if (!competencyId) {
             return NextResponse.json({ error: 'El ID de la competencia es obligatorio.' }, { status: 400 });

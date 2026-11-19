@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
@@ -36,106 +36,61 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { QRCodeCanvas } from 'qrcode.react';
-import { ViewConfig, DEFAULT_VIEWS, getViewConfig, DEFAULT_SECTIONS } from '@/lib/viewAccess';
-import { useColorTheme } from '@/components/ColorThemeProvider';
-import { Check } from 'lucide-react';
+import { ViewConfig, getViewConfig, DEFAULT_SECTIONS, VISTAS_DESACTIVADAS } from '@/lib/viewAccess';
+import ModuleHeader from '@/components/ModuleHeader';
+
+type ConfigTab = 'tags' | 'checklists' | 'options' | 'os' | 'system' | 'vistas';
+
+const TABS: { id: ConfigTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'tags', label: 'Etiquetas', icon: <Tags className="w-4 h-4" /> },
+    { id: 'checklists', label: 'Checklists', icon: <ListChecks className="w-4 h-4" /> },
+    { id: 'options', label: 'Desplegables', icon: <Folders className="w-4 h-4" /> },
+    { id: 'system', label: 'Sistema', icon: <Bell className="w-4 h-4" /> },
+    { id: 'os', label: 'Órdenes de servicio', icon: <FileText className="w-4 h-4" /> },
+    { id: 'vistas', label: 'Roles por vista', icon: <Eye className="w-4 h-4" /> },
+];
 
 export default function ConfigPage() {
     const router = useRouter();
-    const [userRole, setUserRole] = useState<string | null>(null);
+    const { role, puedeVer, puede } = useAcceso();
     const [filters, setFilters] = useViewState('configuracion-filters', {
-        activeTab: 'tags' as 'tags' | 'checklists' | 'options' | 'os' | 'system' | 'vistas' | 'theme'
+        activeTab: 'tags' as ConfigTab
     });
-    const { activeTab } = filters;
-    const setActiveTab = (val: any) => setFilters({ activeTab: val });
 
-    const registerCommand = useCommandStore((state) => state.registerCommand);
-    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
-    const latestActions = useRef({ refresh: () => {} });
+    // Roles por vista es control de accesos: misma función que exige PUT /api/config/views.
+    const tabs = TABS.filter(t => t.id !== 'vistas' || puede('config.vistas'));
+    const activeTab: ConfigTab = tabs.some(t => t.id === filters.activeTab) ? filters.activeTab : 'tags';
+    const setActiveTab = (val: ConfigTab) => setFilters({ activeTab: val });
+
+    const permitido = !!role && puedeVer('/configuracion');
 
     useEffect(() => {
-        const stored = localStorage.getItem('currentUser');
-        if (stored) {
-            try {
-                const user = JSON.parse(stored);
-                const role = user.role?.toLowerCase();
-                if (role !== 'admin' && role !== 'supervisor' && role !== 'qa') {
-                    router.replace('/');
-                } else {
-                    setUserRole(role);
-                }
-            } catch (e) {
-                router.replace('/');
-            }
-        } else {
-            router.replace('/');
-        }
-    }, [router]);
+        if (role && !puedeVer('/configuracion')) router.replace('/');
+    }, [role, puedeVer, router]);
 
-    if (!userRole) return <ConfigSkeleton />;
+    if (!permitido) return <ConfigSkeleton />;
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <div className="space-y-1">
-                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                        <Settings className="text-slate-700 dark:text-slate-200 w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Configuración
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Administra catálogos y valores globales del sistema</p>
-                </div>
-            </div>
+            <ModuleHeader
+                title="Configuración"
+                description="Catálogos, fichaje de la base, alertas y roles por vista"
+                icon={<Settings />}
+            />
 
-            <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
-                <button
-                    onClick={() => setActiveTab('tags')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'tags' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                >
-                    <Tags className="w-4 h-4" />
-                    Etiquetas
-                </button>
-                <button
-                    onClick={() => setActiveTab('checklists')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'checklists' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                >
-                    <ListChecks className="w-4 h-4" />
-                    Checklists
-                </button>
-                <button
-                    onClick={() => setActiveTab('options')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'options' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                >
-                    <Folders className="w-4 h-4" />
-                    Desplegables
-                </button>
-                <button
-                    onClick={() => setActiveTab('system')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'system' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                >
-                    <Bell className="w-4 h-4" />
-                    Sistema
-                </button>
-                <button
-                    onClick={() => setActiveTab('os')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'os' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                >
-                    <FileText className="w-4 h-4" />
-                    Ordenes de Servicio
-                </button>
-                <button
-                    onClick={() => setActiveTab('vistas')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'vistas' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                >
-                    <Eye className="w-4 h-4" />
-                    Vistas
-                </button>
-                <button
-                    onClick={() => setActiveTab('theme')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'theme' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                >
-                    <Settings className="w-4 h-4" />
-                    Tema de Color
-                </button>
+            <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto" role="tablist">
+                {tabs.map(t => (
+                    <button
+                        key={t.id}
+                        role="tab"
+                        aria-selected={activeTab === t.id}
+                        onClick={() => setActiveTab(t.id)}
+                        className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === t.id ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                    >
+                        {t.icon}
+                        {t.label}
+                    </button>
+                ))}
             </div>
 
             <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-3xl p-6 md:p-8 shadow-sm">
@@ -145,7 +100,6 @@ export default function ConfigPage() {
                 {activeTab === 'system' && <SystemSection />}
                 {activeTab === 'os' && <OSSection />}
                 {activeTab === 'vistas' && <ViewsSection />}
-                {activeTab === 'theme' && <ThemeSection />}
             </div>
         </div>
     );
@@ -252,7 +206,7 @@ function TagsSection() {
     const [tags, setTags] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [form, setForm] = useState({ name: '', active: true, impactsMetrics: false });
+    const [form, setForm] = useState({ name: '', active: true });
 
     // Confirm dialog
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -284,7 +238,7 @@ function TagsSection() {
             return;
         }
         setEditingId(null);
-        setForm({ name: '', active: true, impactsMetrics: false });
+        setForm({ name: '', active: true });
         loadTags();
     };
 
@@ -337,10 +291,6 @@ function TagsSection() {
                                     <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                     Activo
                                 </label>
-                                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
-                                    <input type="checkbox" checked={form.impactsMetrics} onChange={e => setForm({ ...form, impactsMetrics: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
-                                    Impacta Métricas
-                                </label>
                             </div>
                         </div>
                         <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-3">
@@ -364,10 +314,6 @@ function TagsSection() {
                                         <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                         Activo
                                     </label>
-                                    <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
-                                        <input type="checkbox" checked={form.impactsMetrics} onChange={e => setForm({ ...form, impactsMetrics: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
-                                        Impacta Métricas
-                                    </label>
                                 </div>
                             </div>
                             <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-3">
@@ -380,14 +326,11 @@ function TagsSection() {
                             <div className="flex items-center gap-4">
                                 <span className="font-bold text-slate-800 dark:text-slate-100">{tag.name}</span>
                                 {!tag.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[11px] uppercase font-semibold tracking-wider rounded-md">Inactivo</span>}
-                                {tag.impactsMetrics && <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[11px] uppercase font-semibold tracking-wider rounded-md">Métricas</span>}
                             </div>
-                            {puedeGestionar && (
-                                <div className="flex items-center gap-2">
-                                    <button onClick={() => { setEditingId(tag.id); setForm({ name: tag.name, active: tag.active, impactsMetrics: tag.impactsMetrics }); }} aria-label={`Editar ${tag.name}`} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                    <button onClick={() => handleDelete(tag.id)} aria-label={`Eliminar ${tag.name}`} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                </div>
-                            )}
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => { setEditingId(tag.id); setForm({ name: tag.name, active: tag.active }); }} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                <button onClick={() => handleDelete(tag.id)} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            </div>
                         </div>
                     )
                 ))}
@@ -897,20 +840,9 @@ function SystemSection() {
                             />
                         </div>
 
-                        <div className="space-y-1.5">
-                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                Horario de Disparo (Nativo Vercel una vez por día)
-                            </label>
-                            <p className="text-[11px] text-amber-600 font-bold px-1 -mt-1">
-                                Nota: En Vercel Free el cron corre una vez al día (Configurado a las 18:00hs ART).
-                            </p>
-                            <input
-                                type="time"
-                                disabled
-                                value="18:00"
-                                className="w-full bg-muted border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed"
-                            />
-                        </div>
+                        <p className="text-xs text-muted-foreground px-1">
+                            El aviso sale todos los días a las 18:00 (hora de Argentina).
+                        </p>
                     </div>
                 )}
             </div>
@@ -1073,15 +1005,11 @@ function ViewsSection() {
         safeApiRequest('/api/config/views')
             .then(res => res.json())
             .then(data => {
-                if (Array.isArray(data) && data.length > 0) {
-                    setViews(getViewConfig(data));
-                } else {
-                    setViews(DEFAULT_VIEWS.map(v => ({ ...v })));
-                }
+                setViews(getViewConfig(Array.isArray(data) ? data : []));
                 setLoading(false);
             })
             .catch(() => {
-                setViews(DEFAULT_VIEWS.map(v => ({ ...v })));
+                setViews(getViewConfig([]));
                 setLoading(false);
             });
     }, []);
@@ -1096,46 +1024,25 @@ function ViewsSection() {
         }));
     };
 
-    const setAccessValue = (viewKey: string, access: 'sidebar' | 'home' | 'ambos') => {
-        setViews(prev => prev.map(v => {
-            if (v.key !== viewKey) return v;
-            return { ...v, access };
-        }));
-    };
-
-    const setSectionValue = (viewKey: string, section: string) => {
-        setViews(prev => prev.map(v => {
-            if (v.key !== viewKey) return v;
-            return { ...v, section };
-        }));
-    };
-
     const handleSave = async () => {
         setSaving(true);
         try {
-            const saveRes = await safeApiRequest('/api/config/views', {
+            // Solo se guardan los roles; el resto del diseño del menú sale del código (lib/viewAccess.ts).
+            const res = await safeApiRequest('/api/config/views', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(views)
             });
-            if (!saveRes.ok) {
-                const err = await saveRes.json().catch(() => ({}));
-                showToast(err.error || 'Error al guardar configuración de vistas.', 'error');
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                showToast(err.error || 'No se pudieron guardar los roles de las vistas.', 'error');
                 return;
             }
-            // Refetch the updated view configuration
-            const res = await safeApiRequest('/api/config/views');
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-                setViews(getViewConfig(data));
-            }
-            showToast('Configuración de vistas guardada correctamente.', 'success');
-            // Reload the page to apply updated view permissions across the app
-            if (typeof window !== 'undefined') {
-                window.location.reload();
-            }
+            showToast('Roles de las vistas guardados.', 'success');
+            // Recarga para aplicar los accesos en menú, inicio y buscador
+            if (typeof window !== 'undefined') window.location.reload();
         } catch (e) {
-            showToast('Error al guardar configuración de vistas.', 'error');
+            showToast('No se pudieron guardar los roles de las vistas.', 'error');
         } finally {
             setSaving(false);
         }
@@ -1144,59 +1051,49 @@ function ViewsSection() {
     if (loading) return <div>Cargando...</div>;
 
     const allRoles = [
-        { id: 'operador', label: 'Operador', color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
-        { id: 'supervisor', label: 'Supervisor', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
-        { id: 'admin', label: 'Admin', color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' },
-        { id: 'qa', label: 'QA', color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' },
-        { id: 'vendedor', label: 'Vendedor', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
+        { id: 'operador', label: 'Operador' },
+        { id: 'supervisor', label: 'Supervisor' },
+        { id: 'admin', label: 'Admin' },
+        { id: 'qa', label: 'Calidad' },
+        { id: 'vendedor', label: 'Vendedor' },
     ];
 
-    const accessOptions: { id: 'sidebar' | 'home' | 'ambos'; label: string }[] = [
-        { id: 'sidebar', label: 'Panel Lateral' },
-        { id: 'home', label: 'Home' },
-        { id: 'ambos', label: 'Ambos' },
-    ];
+    const grupos = DEFAULT_SECTIONS
+        .map(sec => ({ sec, items: views.filter(v => v.section === sec.key && !VISTAS_DESACTIVADAS.includes(v.key)) }))
+        .filter(g => g.items.length > 0);
 
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Acceso a Vistas</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                    Configura qué roles pueden acceder a cada vista y desde dónde es accesible.
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Roles por vista</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Elegí qué roles ven cada pantalla. Para dar o quitar un acceso a una persona puntual, usá la llave en Usuarios y accesos.
+                    El orden y los nombres del menú son fijos.
                 </p>
             </div>
 
-            <div className="space-y-3">
-                {views.map(view => (
-                    <div
-                        key={view.key}
-                        className="bg-background text-foreground p-4 md:p-5 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all space-y-4"
-                    >
-                        {/* View header */}
-                        <div className="flex items-center gap-3">
-                            <span className="font-bold text-slate-800 dark:text-slate-100 text-sm md:text-base">{view.label}</span>
-                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono bg-muted px-2 py-0.5 rounded-md">{view.key}</span>
-                        </div>
-
-                        {/* Controls */}
-                        <div className="flex flex-col md:flex-row md:items-center gap-4">
-                            {/* Roles */}
-                            <div className="flex-1">
-                                <label className="mb-2 block px-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                    Roles con Acceso
-                                </label>
-                                <div className="flex flex-wrap gap-2">
+            {grupos.map(({ sec, items }) => (
+                <section key={sec.key} aria-labelledby={`vistas-${sec.key}`} className="space-y-2">
+                    <h4 id={`vistas-${sec.key}`} className="eyebrow">{sec.label}</h4>
+                    <div className="divide-y divide-border rounded-xl border border-border bg-card">
+                        {items.map(view => (
+                            <div key={view.key} className="flex flex-col md:flex-row md:items-center gap-3 p-3">
+                                <div className="min-w-0 flex-1">
+                                    <span className="block text-[13px] font-medium text-foreground">{view.label}</span>
+                                    <span className="block text-xs text-muted-foreground">
+                                        {view.description}{view.access === 'oculta' ? ' · se abre desde el encabezado' : ''}
+                                    </span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5" role="group" aria-label={`Roles de ${view.label}`}>
                                     {allRoles.map(r => {
                                         const isActive = view.roles.includes(r.id);
                                         return (
                                             <button
                                                 key={r.id}
+                                                type="button"
+                                                aria-pressed={isActive}
                                                 onClick={() => toggleRole(view.key, r.id)}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                                                    isActive
-                                                        ? `${r.color} border-transparent shadow-sm`
-                                                        : 'bg-card text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-50 hover:opacity-75'
-                                                }`}
+                                                className={`btn btn-sm ${isActive ? 'btn-primary' : 'btn-secondary'}`}
                                             >
                                                 {r.label}
                                             </button>
@@ -1204,123 +1101,14 @@ function ViewsSection() {
                                     })}
                                 </div>
                             </div>
-
-                            {/* Access location */}
-                            <div className="shrink-0">
-                                <label className="mb-2 block px-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                    Ubicación
-                                </label>
-                                <div className="flex gap-1 p-1 bg-muted text-muted-foreground/50 rounded-xl">
-                                    {accessOptions.map(opt => (
-                                        <button
-                                            key={opt.id}
-                                            onClick={() => setAccessValue(view.key, opt.id)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                                view.access === opt.id
-                                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
-                                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                                            }`}
-                                        >
-                                            {opt.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Section assignment */}
-                            <div className="shrink-0 w-full md:w-48">
-                                <label className="mb-2 block px-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                    Grupo / Sección
-                                </label>
-                                <select
-                                    value={view.section}
-                                    onChange={(e) => setSectionValue(view.key, e.target.value)}
-                                    className="w-full bg-muted border-none outline-none focus:ring-2 focus:ring-primary/20 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200"
-                                >
-                                    {DEFAULT_SECTIONS.map(sec => (
-                                        <option key={sec.key} value={sec.key}>{sec.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
+                        ))}
                     </div>
-                ))}
-            </div>
+                </section>
+            ))}
 
-            <button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary-hover transition-all disabled:opacity-50"
-            >
-                {saving ? 'Guardando...' : 'Guardar Configuración de Vistas'}
+            <button onClick={handleSave} disabled={saving} className="btn btn-primary">
+                {saving ? 'Guardando...' : 'Guardar roles'}
             </button>
-        </div>
-    );
-}
-
-// ----- THEME SECTION -----
-function ThemeSection() {
-    const { theme, setTheme } = useColorTheme();
-
-    const themes = [
-        { id: 'actual', name: 'Actual (Azul Default)', colorCode: '#2563EB', darkColorCode: '#3B82F6' },
-        { id: 'indigo', name: 'Índigo', colorCode: '#5B4EF5', darkColorCode: '#7368F7' },
-        { id: 'naranja', name: 'Naranja', colorCode: '#F97316', darkColorCode: '#EA580C' },
-        { id: 'verde', name: 'Verde', colorCode: '#16A34A', darkColorCode: '#22C55E' },
-        { id: 'celeste', name: 'Celeste', colorCode: '#0EA5E9', darkColorCode: '#38BDF8' },
-        { id: 'rojo', name: 'Rojo', colorCode: '#EF4444', darkColorCode: '#F87171' },
-        { id: 'rosa', name: 'Rosa', colorCode: '#EC4899', darkColorCode: '#F472B6' },
-        { id: 'violeta', name: 'Violeta', colorCode: '#8B5CF6', darkColorCode: '#A855F7' },
-        { id: 'gris', name: 'Gris', colorCode: '#64748B', darkColorCode: '#94A3B8' },
-    ];
-
-    return (
-        <div className="space-y-6">
-            <div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Tema de Color Global</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
-                    Personaliza el color de acento de toda la aplicación. Este ajuste se guarda localmente en tu dispositivo.
-                </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-4">
-                {themes.map((t) => (
-                    <button
-                        key={t.id}
-                        onClick={() => setTheme(t.id as any)}
-                        className={`relative flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all overflow-hidden ${
-                            theme === t.id 
-                                ? 'border-primary bg-primary/5 shadow-md scale-105' 
-                                : 'border-slate-200 dark:border-slate-700 bg-card text-card-foreground hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-750'
-                        }`}
-                    >
-                        <div className="flex w-full h-12 rounded-xl overflow-hidden shadow-inner border border-slate-100 dark:border-slate-700">
-                            <div className="flex-1" style={{ backgroundColor: t.colorCode }}></div>
-                            <div className="flex-1" style={{ backgroundColor: t.darkColorCode }}></div>
-                        </div>
-                        
-                        <div className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                            {t.name}
-                        </div>
-
-                        {theme === t.id && (
-                            <div className="absolute top-2 right-2 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center shadow-sm">
-                                <Check className="w-3 h-3" strokeWidth={4} />
-                            </div>
-                        )}
-                    </button>
-                ))}
-            </div>
-            
-            <div className="bg-primary/10 border border-primary/20 text-primary p-4 rounded-xl mt-6 flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center shrink-0 shadow-lg">
-                    <Settings className="w-5 h-5" />
-                </div>
-                <div>
-                    <h4 className="font-bold text-sm">Vista Previa Dinámica</h4>
-                    <p className="text-xs opacity-80 font-medium">Así lucen los botones, iconos y badges con el tema seleccionado.</p>
-                </div>
-            </div>
         </div>
     );
 }

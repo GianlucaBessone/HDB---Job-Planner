@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const codigoGastoSchema = z.object({
   codigo: z.string().min(1),
   descripcion: z.string().min(1),
 });
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['gastos.ver', 'gastos.gestionar'], 'No tenés permiso para ver gastos');
+    if (acceso instanceof NextResponse) return acceso;
+
     const codigos = await prisma.codigoGasto.findMany({
       where: { activo: true },
       orderBy: { codigo: 'asc' },
@@ -22,6 +26,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['gastos.gestionar'], 'No tenés permiso para gestionar gastos');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const data = codigoGastoSchema.parse(body);
 

@@ -8,25 +8,20 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
-        const acceso = await exigirAcceso(req);
+        // Solo quien tiene "Generar documentos con IA". Usuario y rol salen de la sesión, no del cuerpo.
+        const acceso = await exigirAcceso(req, ['ia.generar_documentos']);
         if (acceso instanceof NextResponse) return acceso;
-
-        const body = await req.json();
-        const { proceso, sector, alcance, responsables, saveAsDraft } = body;
-        // Usuario, nombre y rol salen de la sesión (se ignoran los del cuerpo).
         const userId = acceso.userId;
         const userName = acceso.nombre;
         const userRole = acceso.role;
+
+        const body = await req.json();
+        const { proceso, sector, alcance, responsables, saveAsDraft } = body;
         const descripcion = body.descripcion || body.detallesAdicionales || '';
 
         // 1. Validaciones de Entrada
         if (!proceso || !sector || !alcance || !descripcion) {
             return NextResponse.json({ error: 'Faltan parámetros obligatorios: proceso, sector, alcance y descripción.' }, { status: 400 });
-        }
-
-        // 2. Control de Permisos
-        if (!acceso.puede('documentos.gestionar')) {
-            return NextResponse.json({ error: 'Permisos insuficientes. Rol no autorizado para generar documentación controlada.' }, { status: 403 });
         }
 
         // Fetch user roles / positions dynamically from the system config (Operator database table)

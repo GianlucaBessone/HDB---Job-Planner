@@ -4,14 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import OneSignal from 'react-onesignal';
-import { BellRing, ChevronDown, Home, LogOut, MoreHorizontal, PanelLeftClose, Star, X } from 'lucide-react';
+import { BellRing, ChevronDown, Home, LogOut, MoreHorizontal, Palette, PanelLeftClose, Star, X } from 'lucide-react';
 import { ViewConfig, isViewAllowed, groupViewsBySection } from '@/lib/viewAccess';
-import { getFavorites, getSidebarFavorites, setSidebarFavorites } from '@/lib/viewPreferences';
+import { getFavorites, getSidebarFavorites, prefsUserId, setSidebarFavorites } from '@/lib/viewPreferences';
 import { renderIcon } from '@/lib/iconRegistry';
 import { showToast } from '@/components/Toast';
 import { cn } from '@/lib/cn';
 import { useAccessStore } from '@/lib/store/useAccessStore';
 import { BrandWordmark } from './BrandMark';
+import { ColorThemeDialog } from './ColorThemeDialog';
 
 interface AppSidebarProps {
     /** Barra fija a la izquierda (escritorio) o panel deslizante (móvil / PDV). */
@@ -69,7 +70,7 @@ async function activatePushNotifications() {
 export function AppSidebar({ docked, open, onClose, onUndock, user, views, onLogout }: AppSidebarProps) {
     const pathname = usePathname();
     const role = user?.role?.toLowerCase() || 'operador';
-    const userId = user?.legajo || 'default';
+    const userId = prefsUserId(user);
 
     const [showFavorites, setShowFavorites] = useState(() => getSidebarFavorites(userId));
     const [favorites, setFavoritesState] = useState<string[]>(() => getFavorites(userId));
@@ -231,6 +232,7 @@ export function AppSidebar({ docked, open, onClose, onUndock, user, views, onLog
 
 function UserBlock({ user, role, onLogout }: { user: any; role: string; onLogout: () => void }) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [temaOpen, setTemaOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -260,6 +262,13 @@ function UserBlock({ user, role, onLogout }: { user: any; role: string; onLogout
                     >
                         <BellRing /> Activar notificaciones
                     </button>
+                    <button
+                        role="menuitem"
+                        onClick={() => { setMenuOpen(false); setTemaOpen(true); }}
+                        className="nav-item w-full"
+                    >
+                        <Palette /> Color de acento
+                    </button>
                     <div className="my-1 h-px bg-border" />
                     <button
                         role="menuitem"
@@ -287,6 +296,7 @@ function UserBlock({ user, role, onLogout }: { user: any; role: string; onLogout
                 </span>
                 <MoreHorizontal className="w-4 h-4 text-slate-400 shrink-0" aria-hidden="true" />
             </button>
+            <ColorThemeDialog open={temaOpen} onClose={() => setTemaOpen(false)} />
         </div>
     );
 }

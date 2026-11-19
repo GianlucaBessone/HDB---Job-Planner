@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withIdempotency } from '@/lib/idempotency';
 import { registrarCobranzaCC } from '@/lib/ventas/cuentaCorrienteService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const medioPagoSchema = z.object({
   metodo: z.enum([
@@ -35,18 +36,19 @@ const cobranzaSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const acceso = await exigirAcceso(req, ['ventas.cc_cobrar'], 'No tenés permiso para registrar cobranzas');
+  if (acceso instanceof NextResponse) return acceso;
+
   return withIdempotency(req, async () => {
     try {
       const body = await req.json();
       const parsed = cobranzaSchema.parse(body);
 
-      const userIdHeader = req.headers.get('x-user-id');
-      const userNameHeader = req.headers.get('x-user-name');
-
       const recibo = await registrarCobranzaCC({
         ...parsed,
-        operadorId: parsed.operadorId || userIdHeader || undefined,
-        operadorNombre: parsed.operadorNombre || userNameHeader || undefined,
+        // El operador es siempre el usuario de la sesión (se ignoran operadorId / operadorNombre del cuerpo).
+        operadorId: acceso.userId,
+        operadorNombre: acceso.nombre,
       });
 
       return NextResponse.json(

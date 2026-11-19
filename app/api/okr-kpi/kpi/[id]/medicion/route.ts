@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireSGIRole } from '@/lib/sgiAuth';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
 import { recalcularTrasNuevaMedicion } from '@/lib/okrKpiEngine';
 
@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['okr.ver', 'okr.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const { searchParams } = new URL(req.url);
@@ -30,8 +30,8 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
 
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['okr.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const body = await req.json();
@@ -48,9 +48,9 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
 
         // Get the user name for snapshot
         let usuarioNombre: string | null = null;
-        if (auth.user.id) {
+        if (auth.userId) {
             const op = await prisma.operator.findUnique({
-                where: { id: auth.user.id },
+                where: { id: auth.userId },
                 select: { nombreCompleto: true },
             });
             usuarioNombre = op?.nombreCompleto || null;
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
                 fechaMedicion: body.fechaMedicion ? new Date(body.fechaMedicion) : new Date(),
                 valorObtenido: parseFloat(body.valorObtenido),
                 comentario: body.comentario || null,
-                usuarioRegistroId: auth.user.id,
+                usuarioRegistroId: auth.userId,
                 usuarioRegistroNombre: usuarioNombre,
             },
         });
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
         await recalcularTrasNuevaMedicion(params.id);
 
         await logAudit({
-            userId: auth.user.id,
+            userId: auth.userId,
             action: 'CREATE',
             entity: 'KPI_MEDICION',
             entityId: medicion.id,

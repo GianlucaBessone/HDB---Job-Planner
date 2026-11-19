@@ -104,7 +104,7 @@ export default function ViajesAdminPage() {
     return (
         <div>
             <ModuleHeader
-                title="Viajes y Viáticos"
+                title="Viajes y viáticos"
                 description="Planificación de viajes, fondos entregados y rendición de gastos"
                 icon={<Plane />}
                 searchValue={q}

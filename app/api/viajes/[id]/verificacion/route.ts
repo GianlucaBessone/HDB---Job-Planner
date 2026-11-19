@@ -14,6 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     try {
         const { id } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.esGestor) return prohibido('Solo administración rinde los viajes.');
 
         const viaje = await cargarViaje(id);

@@ -97,7 +97,7 @@ export default function AiAuditPage() {
             return;
         }
         if (!accesoCargado) return; // todavía no llegaron los permisos del usuario
-        showToast('No tenés acceso a Auditoría de IA.', 'error');
+        showToast('No tenés acceso a Consumo de IA.', 'error');
         router.replace('/');
     }, [router, puedeEntrar, accesoCargado]);
 
@@ -187,7 +187,7 @@ export default function AiAuditPage() {
                 <div className="space-y-1">
                     <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
                         <Sparkles className="animate-pulse w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Monitoreo e Auditoría de IA
+                        Consumo de IA
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium italic">
                         Control de consumo de tokens, costos estimados de la IA y registro histórico de consultas.

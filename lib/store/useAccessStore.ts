@@ -57,7 +57,8 @@ export const useAccessStore = create<AccessState>((set, get) => ({
             if (res.ok) {
                 const data = await res.json();
                 if (get().userId === userId && Array.isArray(data?.permisos)) {
-                    set({ permisos: data.permisos });
+                    // El rol viene de la base (getAcceso), no del usuario guardado en el navegador.
+                    set({ permisos: data.permisos, ...(typeof data.role === 'string' ? { role: normalizarRol(data.role) } : {}) });
                     try { localStorage.setItem(cacheKey(userId), JSON.stringify(data.permisos)); } catch { /* noop */ }
                 }
             }

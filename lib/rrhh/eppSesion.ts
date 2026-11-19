@@ -1,14 +1,13 @@
 /**
  * Sesión y permisos para las APIs de EPP (app/api/rrhh/epp/**).
  *
- * El middleware valida la cookie sgi_session y deja x-user-id / x-user-role.
- * Acá se confirma que el usuario sigue activo, se resuelven sus funciones
- * (rol + permisos especiales) y se obtiene su nombre real para la auditoría.
+ * El middleware valida la cookie sgi_session y deja x-user-id. verificarAcceso
+ * (lib/permisosServer.ts) confirma en la base que el usuario sigue activo, resuelve
+ * sus funciones (rol + permisos especiales) y trae su nombre real para la auditoría.
  */
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
-import { getAcceso, type AccesoSesion } from '@/lib/permisosServer';
+import { verificarAcceso, type AccesoSesion } from '@/lib/permisosServer';
 import type { FuncionId } from '@/lib/permisos';
 
 /** Usuario de la sesión, tal como queda en actas, kardex y auditoría. */
@@ -34,20 +33,9 @@ function error(status: number, mensaje: string): NextResponse {
  * tener una de ellas.
  */
 export async function sesionEpp(req: Request, funciones: FuncionId[] = []): Promise<SesionEpp | NextResponse> {
-    const acceso = await getAcceso(req);
-    if (!acceso.userId) return error(401, 'Iniciá sesión para continuar');
-
-    const operador = await prisma.operator.findUnique({
-        where: { id: acceso.userId },
-        select: { id: true, nombreCompleto: true, activo: true },
-    });
-    if (!operador || !operador.activo) return error(401, 'Tu usuario no está activo');
-
-    if (funciones.length > 0 && !funciones.some(f => acceso.puede(f))) {
-        return error(403, 'No tenés permiso para esta acción');
-    }
-
-    return { acceso, usuario: { id: operador.id, nombre: operador.nombreCompleto } };
+    const r = await verificarAcceso(req, funciones);
+    if (!r.ok) return error(r.status, r.error);
+    return { acceso: r.acceso, usuario: { id: r.acceso.userId, nombre: r.acceso.nombre } };
 }
 
 /** Lee y valida el cuerpo JSON. */

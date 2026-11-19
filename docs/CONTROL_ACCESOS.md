@@ -14,7 +14,7 @@ Hay dos tipos de acceso:
 
 | Tipo | Qué controla | Accesos por defecto del rol | Clave |
 |---|---|---|---|
-| Vista | Una pantalla del menú | `lib/viewAccess.ts`, editable en Configuración | `vista:/ventas/pdv` |
+| Vista | Una pantalla del menú | `lib/viewAccess.ts`; los roles se ajustan en Configuración → Roles por vista (función `config.vistas`) | `vista:/ventas/pdv` |
 | Función | Una acción dentro de una vista | `FUNCIONES` en `lib/permisos.ts` | `funcion:ventas.anular_venta` |
 
 ## Dónde se administra
@@ -40,6 +40,8 @@ Nadie puede cambiar su propio permiso de administrar accesos.
 - Ninguna API decide permisos con el rol o el usuario que manda el navegador (cuerpo,
   query o headers propios como `requestUserRole`, `role`, `userRole`, `approvedById`).
   Quien actúa, y quien queda en Auditoría, es siempre el usuario de la sesión.
+- El middleware borra los `x-user-id` / `x-user-role` que manda el navegador, también en
+  las rutas públicas: solo los pone él, después de validar la cookie.
 - Rutas públicas por patrón (`PUBLIC_DYNAMIC_ROUTES` en `middleware.ts`): cada una declara
   los métodos que acepta sin sesión; cualquier otro método sobre la misma ruta exige sesión.
   Si una ruta pública necesita saber si hay sesión (p. ej. para mostrar más datos), usa
@@ -77,14 +79,24 @@ y el editor avisa que no puede guardar.
 
 ## Para desarrollar
 
-- **API**: `const acceso = await exigirAcceso(req, ['ventas.anular_venta']); if (acceso instanceof NextResponse) return acceso;`
-  responde 401 sin sesión válida y 403 sin la función (alcanza con una de las de la lista).
-  Para decidir sin cortar el pedido: `const acceso = await getAcceso(req); acceso.puede(...)`.
-  Atajo: `await puede(req, funcion)`. Usá `acceso.userId` / `acceso.nombre` para la auditoría.
+- **API**: `exigirAcceso` exige usuario activo y, si se pasan funciones, al menos una:
+
+  ```ts
+  const acceso = await exigirAcceso(req, ['calidad.ver', 'calidad.gestionar']);
+  if (acceso instanceof NextResponse) return acceso; // 401 o 403
+  // acceso.userId, acceso.nombre, acceso.role, acceso.puede('calidad.gestionar')
+  ```
+
+  Sin funciones (`exigirAcceso(req)`) solo pide sesión de un usuario activo. Un tercer
+  parámetro opcional cambia el mensaje del 403. Para decidir sin cortar el pedido:
+  `const acceso = await getAcceso(req); acceso.puede(...)` (con un usuario inactivo, `puede()`
+  siempre da `false`). `verificarAcceso` devuelve el motivo en vez de la respuesta, para
+  módulos con su propio formato de error (EPP, presupuestos). Usá `acceso.userId` /
+  `acceso.nombre` para la auditoría.
 - **Pantalla**: `const { puede, puedeVer } = useAcceso()` (`lib/store/useAccessStore.ts`).
 - **Función nueva**: agregala a `FUNCIONES` en `lib/permisos.ts` con sus roles por defecto.
   Aparece sola en el editor.
-- **Vista nueva**: se declara en `lib/viewAccess.ts`, como siempre.
+- **Vista nueva**: se declara en `lib/viewAccess.ts`, en la sección de su dominio. Sección, nombre, ícono y ubicación salen siempre del código; de lo guardado en Configuración solo se toman los roles (`getViewConfig`). Una vista con `access: 'oculta'` no aparece en el menú ni en el inicio, pero se puede abrir y sigue sujeta a permisos (así están Notificaciones, Tickets y Centro de ayuda, que se abren desde el encabezado).
 - No compares roles a mano (`role === 'admin'`): un permiso especial no lo vería.
 
 ## Alcance actual
@@ -99,6 +111,9 @@ Pasan por el control de accesos:
   Almacén y stock, Reclutamiento de RRHH (ver, gestionar y eliminar; ver
   `docs/rrhh/RECLUTAMIENTO.md`) y las tres de EPP de Recursos Humanos
   (`rrhh.epp_ver`, `rrhh.epp_gestionar`, `rrhh.epp_entregar`).
+- Calidad (SGI), OKR y KPI, datasets, diccionario de datos, tickets, sugerencias, viajes,
+  pliegos, informes técnicos, PDV y generación de documentos con IA: ver
+  "Funciones por API".
 - EPP (`app/api/rrhh/epp/**`, lógica en `lib/rrhh/eppServer.ts`): ya no usa server
   actions. Cada API exige sesión de un usuario activo (`lib/rrhh/eppSesion.ts`) y la
   función que corresponde; actas, kardex, solicitudes y auditoría quedan a nombre del
@@ -134,6 +149,17 @@ siembran con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
 | `timesheets.gestionar_horas` | admin, supervisor, qa | `/api/time-entries`: cargar horas de otro usuario, editar o borrar horas ajenas o de un día ya confirmado. Sin la función, cada uno carga, edita y confirma solo sus horas |
 | `fichadas.aprobar` | admin, supervisor, qa | `GET/PATCH /api/time-entries/approve` |
 | `tareas.ver_todas` | admin | `/api/tareas`: ver todas las tareas y editar o borrar cualquiera |
+| `gastos.ver` | admin, supervisor, qa | `GET` de `/api/administracion/gastos`, `/proveedores` y `/codigos-gasto` |
+| `gastos.gestionar` | admin, supervisor, qa | Escrituras de `/api/administracion/**` (facturas, importación, proveedores, códigos de gasto) y `POST /api/ia/ocr-factura` |
+| `herramientas.gestionar` | admin, supervisor | Altas, ediciones y bajas de `/api/herramientas/**` y `/api/carros/**`, armado de carros (`asignar`, `replicar`) y `GET /api/carros/movements/history` |
+| `planificacion.gestionar` | admin, supervisor, qa | `POST /api/planning`, `POST /api/planning/notify` (el `GET` sigue con solo sesión: lo usa Fichado) |
+| `formacion.gestionar` | admin, supervisor, qa | Ver la formación de otros en `/api/qms/capacitaciones`, `/certificados`, `/competencias` y `/compliance`; validar o borrar certificados ajenos; `POST /api/qms/competencias`; `/api/dashboard/operator-scoreboard/competencies` |
+| `ventas.cotizaciones_ver` | admin, supervisor, qa, vendedor | `GET /api/ventas/cotizaciones`, `/[id]` y `/[id]/pdf` |
+| `ventas.cotizaciones_gestionar` | admin, supervisor, vendedor | `POST/PUT/PATCH` de cotizaciones (crear, editar, aprobar, anular, convertir en venta) |
+| `ventas.cc_ver` | admin, supervisor, qa, vendedor | `GET` de `/api/ventas/cuentas-corrientes`, `/[clienteId]` y la vista previa de actualización de precios |
+| `ventas.cc_cobrar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/cobranzas` |
+| `ventas.cc_ajustar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/movimientos` (saldo inicial, cargo manual, nota de crédito) |
+| `ventas.cc_configurar` | admin, supervisor | `PUT /api/ventas/cuentas-corrientes/[clienteId]` (crédito) y `POST .../actualizacion-precios` |
 
 Reglas por usuario, sin función:
 
@@ -157,26 +183,74 @@ Reglas por usuario, sin función:
   los permisos de cerrar una devolución se evalúan con el usuario de la sesión.
 - **OT, proyectos e IA**: alta y cambio de estado de OT, "Mis proyectos", recientes,
   finalizar proyecto, remitos del PDV y las rutas de IA toman usuario, nombre y rol de la
-  sesión. Generar documentación con IA exige `documentos.gestionar`.
+  sesión. Generar documentación con IA exige `ia.generar_documentos`.
 - **Provisión**: `GET /api/provision-proyectos` es solo de lectura. La corrección de estados
   de materiales es `POST /api/provision-proyectos/reparar` (`provision.gestionar`: admin,
   supervisor, qa, vendedor); la pantalla de Provisión la llama al cargar.
 - **Competencias del panel**: el `GET` normaliza los nombres viejos en memoria; la migración
   en la base corre al asignar o aprobar competencias de ese operador.
+- **Herramientas**: retirar un carro y verificar una herramienta quedan a nombre del usuario de
+  la sesión. Devolver un carro lo hace quien lo retiró (o quien tiene `herramientas.gestionar`).
+  `GET /api/carros/movements/active` devuelve los movimientos propios.
+- **Formación**: cada uno ve su formación, rinde solo sus capacitaciones y carga sus
+  certificados. Puede editar o borrar un certificado propio mientras no esté aprobado, y no
+  puede cambiarle el estado (aprobar o rechazar).
+- **Ventas**: el operador de una cobranza, un ajuste o una actualización de deuda, y quien
+  cambia el estado de una cotización, es el usuario de la sesión. Una cotización sin
+  vendedor elegido queda a nombre de la sesión.
 
-Todavía dependen solo del rol, y hay que migrarlos por etapas:
+El rol que usan las pantallas (`useAcceso`) también sale de la base: `/api/accesos/yo` lo
+devuelve con los permisos especiales.
 
-- Las APIs que leen `x-user-role` directo (tickets, sugerencias, viajes, inventario,
-  pliegos, comentarios de OT, `requireSGIRole`) usan el rol guardado en el token: un cambio
-  de rol o una baja recién aplican ahí cuando la sesión vence o el usuario vuelve a entrar.
-  Migrarlas a `getAcceso` lo corrige. Lo mismo para las APIs que solo piden sesión.
+### Funciones por API: calidad, tickets, viajes y otros módulos
+
+Todas estas APIs exigen además un usuario activo (401 si no lo hay). "A ∨ B" significa
+que alcanza con una de las dos.
+
+| API | Métodos | Función |
+|---|---|---|
+| `/api/sgi/{nc,capa,riesgos,oportunidades,objetivos}` y sus `[id]` | GET | `calidad.ver` ∨ `calidad.gestionar` |
+| Las mismas, `nc/[id]/causa`, `verificacion-eficacia` | POST, PATCH, DELETE | `calidad.gestionar` |
+| `/api/sgi/capa/stats` | GET | `calidad.indicadores_capa` ∨ `calidad.ver` ∨ `calidad.gestionar` |
+| `/api/okr-kpi/{okr,kpi,graficos,planes-accion}` y sus `[id]`, `kpi/[id]/medicion`, `dashboard` | GET | `okr.ver` ∨ `okr.gestionar` |
+| Las mismas, `kpi/[id]/sincronizar` | POST, PUT | `okr.gestionar` |
+| `/api/datasets`, `[id]`, `[id]/historial`, `[id]/preview`, `[id]/ejecutar`, `test` | GET; POST de preview, ejecutar y test | `datasets.usar` ∨ `datasets.gestionar` |
+| `/api/datasets`, `[id]` | POST, PUT, DELETE | `datasets.gestionar` |
+| `/api/diccionario-datos`, `[tablaId]` | GET | `diccionario.ver` ∨ `diccionario.editar` |
+| `/api/diccionario-datos`, `[tablaId]` | POST, PUT | `diccionario.editar` |
+| `/api/tickets`, `metrics`, `[id]`, `[id]/analizar`, `adjuntos/[id]` | todos | `tickets.gestionar` ve y modifica todo; sin ella, solo los tickets propios (comentar, cerrar o reabrir un resuelto, un análisis con IA) |
+| `/api/tickets` | POST | usuario activo; reportar en nombre de otro pide `tickets.gestionar` |
+| `/api/tickets/[id]/agente-token` | POST, DELETE | `tickets.delegar_agente` |
+| `/api/tickets/upload` | POST | usuario activo |
+| `/api/sugerencias/[id]` | PATCH | `sugerencias.gestionar` (GET: usuario activo) |
+| `/api/sugerencias/analizar` | POST | `sugerencias.gestionar` |
+| `/api/viajes/**` | según la acción | `viajes.gestionar` para crear, editar, eliminar, rendir, ver todos y valores de referencia; responsable y participantes, sobre su viaje |
+| `/api/viajes/comprobantes/[id]` | GET | `viajes.gestionar`, quien lo subió, el responsable o un participante |
+| `/api/almacen/**`, `/api/ventas/stock/ajuste-rapido` | según la acción | `inventario.*` (`lib/inventario/permisos.ts`) |
+| `/api/pliegos`, `[id]`, `[id]/archivo` | GET | `pliegos.ver` ∨ `pliegos.gestionar` |
+| `/api/pliegos/tareas/[id]` | PATCH | `pliegos.ver` ∨ `pliegos.gestionar` |
+| `/api/pliegos`, `[id]`, `[id]/analizar`, `[id]/archivo`, `[id]/archivo/confirmar`, `opciones` | POST, DELETE, GET de opciones | `pliegos.gestionar` |
+| `/api/informes-tecnicos/[id]` | DELETE de un informe finalizado | `informes.eliminar_finalizados`, más DNI y firma (el resto: usuario activo) |
+| `/api/ordenes-trabajo/[id]/comentarios` | GET, POST | usuario activo; el autor sale de la sesión |
+| `/api/ventas/pdv/confirmar` | POST | `ventas.modificar_precios` si hay precios modificados (o autorización / cotización); `ventas.exceder_limite_credito` para superar el límite de cuenta corriente; el vendedor es el usuario de la sesión |
+| `/api/ai/generate-doc` | POST | `ia.generar_documentos` |
+
+Todavía dependen solo del rol, o de datos que manda el navegador, y hay que migrarlos:
+
 - `POST /api/activities` toma el emisor de la sesión, pero cualquier usuario con sesión puede
   enviar un aviso a cualquier otro (`operatorId`) o a todos los supervisores (`forSupervisors`).
-
-- Las APIs que usan `requireSGIRole` (`lib/sgiAuth.ts`): calidad (`/api/sgi`), OKR/KPI,
-  datasets y diccionario de datos. Otorgar esas vistas a un rol que no las tiene muestra
-  la pantalla, pero la API responde 403.
 - Chequeos de rol sueltos dentro de las pantallas (botones y acciones que se muestran
-  según `role`).
+  según `role`; por ejemplo, Viajes usa `esGestorViajes`).
+- El PIN de supervisor (`/api/auth/verificar-supervisor` y las anulaciones de ventas y
+  cuenta corriente) compara el rol de quien lo ingresa a mano.
+- El PDV manda siempre `autorizadoPorSupervisor: true`: el servidor no comprueba esa
+  autorización.
+- `x-user-name` lo manda el navegador y varias APIs lo usan como nombre en la auditoría.
+- Las APIs de IA `semantic-search`, `training`, `ocr` y `generate-checklist` toman usuario,
+  nombre y rol del cuerpo, solo para registrar el uso.
+- `/api/cron/reminders?manual=true` usa el rol del token.
+- En `/api/time-entries` cada usuario puede marcar como confirmado un día propio.
+- `/api/sgi/reunion/[id]`, `nc/[id]/chat`, `nc/[id]/reunion`, `nc/[id]/similares` y
+  `nc/[id]/ia-docs` solo piden sesión.
 - Una vista que el rol no tiene, sin denegación puntual, solo se oculta del menú: no se
   bloquea la URL directa (igual que antes de este módulo).
