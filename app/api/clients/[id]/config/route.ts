@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,6 +72,9 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
 export async function PUT(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const body = await req.json();
     const { porcentajeMateriales } = body;
@@ -95,8 +99,8 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: { params:
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'UPDATE',
       entity: 'CLIENT_CONFIG',
       entityId: id,

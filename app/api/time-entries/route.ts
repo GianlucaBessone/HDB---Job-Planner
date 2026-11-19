@@ -51,10 +51,10 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     return withIdempotency(req, async () => {
         try {
-            // Quién carga sale de la sesión: los datos de usuario del cuerpo se ignoran.
+            // Usuario y permisos salen de la sesión: se ignoran requestUserId / requestUserRole del cuerpo.
             const acceso = await exigirAcceso(req);
             if (acceso instanceof NextResponse) return acceso;
-            const requestUserId = acceso.userId;
+            const gestionaHoras = acceso.puede('timesheets.gestionar_horas');
 
             const data = await req.json();
 
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'No puede seleccionar Proyecto y Causa simultáneamente.' }, { status: 400 });
             }
 
-            if (operatorId !== requestUserId && !acceso.puede('timesheets.cargar_otros')) {
+            if (!gestionaHoras && operatorId !== acceso.userId) {
                 return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
             }
 
@@ -121,7 +121,7 @@ export async function POST(req: Request) {
 
             // Audit
             await logAudit({
-                userId: requestUserId,
+                userId: acceso.userId,
                 userName: acceso.nombre,
                 action: 'CREATE',
                 entity: 'TIME_ENTRY',
@@ -141,10 +141,9 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
     try {
-        // Quién edita sale de la sesión: los datos de usuario del cuerpo se ignoran.
         const acceso = await exigirAcceso(req);
         if (acceso instanceof NextResponse) return acceso;
-        const requestUserId = acceso.userId;
+        const gestionaHoras = acceso.puede('timesheets.gestionar_horas');
 
         const data = await req.json();
         const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion } = data;
@@ -158,15 +157,13 @@ export async function PUT(req: Request) {
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
 
-        if (existing.operatorId !== requestUserId && !acceso.puede('timesheets.cargar_otros')) {
+        if (!gestionaHoras && existing.operatorId !== acceso.userId) {
             return NextResponse.json({ error: 'No tienes permisos para modificar los registros de otros operadores.' }, { status: 403 });
         }
 
-        // Un día ya confirmado solo lo edita quien tiene "Editar días confirmados"
-        if (existing.estadoConfirmado) {
-            if (!acceso.puede('timesheets.editar_confirmados')) {
-                return NextResponse.json({ error: 'No tienes permisos para editar un día ya confirmado.' }, { status: 403 });
-            }
+        // Un día ya confirmado solo lo edita quien gestiona horas
+        if (existing.estadoConfirmado && !gestionaHoras) {
+            return NextResponse.json({ error: 'No tienes permisos para editar un día ya confirmado.' }, { status: 403 });
         }
 
         const oldProjectId = existing.projectId;
@@ -199,7 +196,7 @@ export async function PUT(req: Request) {
                 isDevolucion: newIsDevolucion,
                 descripcionDevolucion: newIsDevolucion ? ((descripcionDevolucion !== undefined ? descripcionDevolucion?.trim() : existing.descripcionDevolucion) || null) : null,
                 estadoConfirmado: estadoConfirmado !== undefined ? estadoConfirmado : existing.estadoConfirmado,
-                confirmadoPorSupervisor: estadoConfirmado ? requestUserId : null
+                confirmadoPorSupervisor: estadoConfirmado ? acceso.userId : null
             }
         });
 
@@ -241,7 +238,7 @@ export async function PUT(req: Request) {
 
         // Audit
         await logAudit({
-            userId: requestUserId,
+            userId: acceso.userId,
             userName: acceso.nombre,
             action: 'UPDATE',
             entity: 'TIME_ENTRY',
@@ -259,10 +256,9 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
-        // Quién borra sale de la sesión: los datos de usuario de la URL se ignoran.
         const acceso = await exigirAcceso(req);
         if (acceso instanceof NextResponse) return acceso;
-        const requestUserId = acceso.userId;
+        const gestionaHoras = acceso.puede('timesheets.gestionar_horas');
 
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
@@ -272,14 +268,12 @@ export async function DELETE(req: Request) {
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-        if (existing.operatorId !== requestUserId && !acceso.puede('timesheets.cargar_otros')) {
+        if (!gestionaHoras && existing.operatorId !== acceso.userId) {
             return NextResponse.json({ error: 'No tienes permisos para eliminar los registros de otros operadores.' }, { status: 403 });
         }
 
-        if (existing.estadoConfirmado) {
-            if (!acceso.puede('timesheets.editar_confirmados')) {
-                return NextResponse.json({ error: 'No tienes permisos para eliminar un día ya confirmado.' }, { status: 403 });
-            }
+        if (existing.estadoConfirmado && !gestionaHoras) {
+            return NextResponse.json({ error: 'No tienes permisos para eliminar un día ya confirmado.' }, { status: 403 });
         }
 
         await prisma.timeEntry.delete({ where: { id } });
@@ -295,7 +289,7 @@ export async function DELETE(req: Request) {
 
         // Audit
         await logAudit({
-            userId: requestUserId,
+            userId: acceso.userId,
             userName: acceso.nombre,
             action: 'DELETE',
             entity: 'TIME_ENTRY',

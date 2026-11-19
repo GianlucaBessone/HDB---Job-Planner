@@ -167,7 +167,7 @@ export default function TareasPage() {
     const loadTareas = useCallback(async () => {
         if (!currentUser?.id) return;
         try {
-            const url = '/api/tareas'; // el servidor filtra según la sesión
+            const url = '/api/tareas';
             const data = await safeApiRequest(url).then(r => r.json());
             setTareas(Array.isArray(data) ? data : []);
         } catch (e) {
@@ -404,8 +404,6 @@ export default function TareasPage() {
                         id: editingTarea.id,
                         ...form,
                         involucrados: formInvolucrados,
-                        actorId: currentUser?.id,
-                        actorName: currentUser?.nombreCompleto,
                     }),
                 }).then(r => r.json());
 
@@ -435,8 +433,6 @@ export default function TareasPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         ...form,
-                        creadorId: currentUser?.id || 'unknown',
-                        creadorNombre: currentUser?.nombreCompleto || 'Sistema',
                         involucrados: formInvolucrados,
                     }),
                 }).then(r => r.json());
@@ -474,13 +470,15 @@ export default function TareasPage() {
     const handleDelete = async (id: string) => {
         try {
             const params = new URLSearchParams({ id });
-            if (currentUser?.id) params.append('actorId', currentUser.id);
-            if (currentUser?.nombreCompleto) params.append('actorName', currentUser.nombreCompleto);
-            await safeApiRequest(`/api/tareas?${params.toString()}`, { method: 'DELETE' });
+            const res = await safeApiRequest(`/api/tareas?${params.toString()}`, { method: 'DELETE' });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || 'Error al eliminar');
+            }
             showToast('Tarea eliminada', 'success');
             await loadTareas();
-        } catch (e) {
-            showToast('Error al eliminar', 'error');
+        } catch (e: any) {
+            showToast(e?.message || 'Error al eliminar', 'error');
         }
         setConfirmDelete(null);
     };
@@ -498,8 +496,6 @@ export default function TareasPage() {
                 body: JSON.stringify({
                     id: tarea.id,
                     estado: newEstado,
-                    actorId: currentUser?.id,
-                    actorName: currentUser?.nombreCompleto,
                 }),
             });
             

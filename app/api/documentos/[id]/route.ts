@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar documentos';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,6 +74,12 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+        // Quien actúa es siempre el usuario de la sesión: se ignoran userId / userName del pedido.
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
         const data = await req.json();
         const {
             titulo, tipoDocumento, area, estado,
@@ -80,8 +89,7 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
             tags, operatorIds, observaciones, proximaRevision, validezMeses,
-            descripcion, creatorSignature, subAccessId,
-            userId, userName
+            descripcion, creatorSignature, subAccessId
         } = data;
 
         const oldDoc = await prisma.controlledDocument.findUnique({ where: { id: params.id } }) as any;
@@ -212,6 +220,9 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
 export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['documentos.eliminar'], 'No tenés permiso para eliminar documentos');
+        if (acceso instanceof NextResponse) return acceso;
+
         const doc = await prisma.controlledDocument.findUnique({
             where: { id: params.id },
             include: { versions: { select: { id: true } } }

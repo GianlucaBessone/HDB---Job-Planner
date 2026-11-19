@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar documentos';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,12 +14,17 @@ export const dynamic = 'force-dynamic';
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string; versionId: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+        // Quien actúa es siempre el usuario de la sesión: se ignoran userId / userName del pedido.
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
         const data = await req.json();
         const {
             estado, // borrador | en_revision | vigente | obsoleto
             aprobadorId, aprobadorNombre,
-            motivoCambio, notas, checklistTemplate,
-            userId, userName
+            motivoCambio, notas, checklistTemplate
         } = data;
 
         const version = await prisma.documentVersion.findUnique({

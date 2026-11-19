@@ -39,8 +39,8 @@ export async function GET(req: Request) {
 // POST: Crear o actualizar un prompt en la base de datos (con control de versiones)
 export async function POST(req: Request) {
     try {
-        // Solo quien tiene "Editar prompts de IA". Usuario y rol salen de la sesión, no del cuerpo.
-        const acceso = await exigirAcceso(req, ['ia.prompts_editar']);
+        // El permiso sale de la sesión: se ignoran userRole / userId / userName del cuerpo.
+        const acceso = await exigirAcceso(req, ['config.prompts_ia'], 'No tenés permiso para modificar las plantillas de prompts de IA.');
         if (acceso instanceof NextResponse) return acceso;
         const userId = acceso.userId;
         const userName = acceso.nombre;

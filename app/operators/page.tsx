@@ -32,6 +32,16 @@ import { useAcceso } from '@/lib/store/useAccessStore';
 
 // PREDEFINED_TAGS is now loaded dynamically from the backend config
 
+/** Mensaje de error que devuelve la API (p. ej. un 403 por rango o por permisos). */
+async function mensajeError(res: Response, porDefecto: string): Promise<string> {
+    try {
+        const data = await res.json();
+        return data?.error || porDefecto;
+    } catch {
+        return porDefecto;
+    }
+}
+
 export default function OperatorsPage() {
     const [operators, setOperators] = useState<any[]>([]);
     const [filters, setFilters] = useViewState('operators-filters', {
@@ -129,10 +139,14 @@ export default function OperatorsPage() {
         const method = editingOperator ? 'PATCH' : 'POST';
         const url = editingOperator ? `/api/operators?id=${editingOperator.id}` : '/api/operators';
 
-        await safeApiRequest(url, {
+        const res = await safeApiRequest(url, {
             method,
             body: JSON.stringify(formData)
         });
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo guardar el usuario'), 'error');
+            return;
+        }
 
         setIsModalOpen(false);
         setEditingOperator(null);
@@ -161,10 +175,14 @@ export default function OperatorsPage() {
     const toggleStatus = async (id: string, currentStatus: boolean) => {
         // Optimistic update
         setOperators(prev => prev.map(op => op.id === id ? { ...op, activo: !currentStatus } : op));
-        await safeApiRequest(`/api/operators?id=${id}`, {
+        const res = await safeApiRequest(`/api/operators?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ activo: !currentStatus })
         });
+        if (!res.ok) {
+            setOperators(prev => prev.map(op => op.id === id ? { ...op, activo: currentStatus } : op));
+            showToast(await mensajeError(res, 'No se pudo cambiar el estado'), 'error');
+        }
     };
 
     const handleDeleteClick = (id: string) => {
@@ -175,10 +193,14 @@ export default function OperatorsPage() {
     const confirmDelete = async () => {
         if (!operatorToDelete) return;
         const id = operatorToDelete;
-        setOperators(prev => prev.filter(op => op.id !== id));
-        await safeApiRequest(`/api/operators?id=${id}`, { method: 'DELETE' });
+        const res = await safeApiRequest(`/api/operators?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setOperatorToDelete(null);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo eliminar el usuario'), 'error');
+            return;
+        }
+        setOperators(prev => prev.filter(op => op.id !== id));
         showToast('Operador eliminado', 'success');
     };
 
@@ -187,9 +209,13 @@ export default function OperatorsPage() {
     };
 
     const confirmResetAllDevices = async () => {
-        await safeApiRequest('/api/operators/reset-devices', { method: 'POST' });
-        loadData(true);
+        const res = await safeApiRequest('/api/operators/reset-devices', { method: 'POST' });
         setIsResetAllConfirmOpen(false);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudieron resetear los dispositivos'), 'error');
+            return;
+        }
+        loadData(true);
         showToast('Se han reseteado los dispositivos de todos los operadores.', 'success');
     };
 
@@ -201,13 +227,17 @@ export default function OperatorsPage() {
     const confirmResetDevice = async () => {
         if (!operatorToReset) return;
         const id = operatorToReset;
-        await safeApiRequest(`/api/operators?id=${id}`, {
+        const res = await safeApiRequest(`/api/operators?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ primaryDeviceId: null })
         });
-        loadData(true);
         setIsResetDeviceConfirmOpen(false);
         setOperatorToReset(null);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo resetear el dispositivo'), 'error');
+            return;
+        }
+        loadData(true);
         showToast('El dispositivo del operador ha sido reseteado.', 'success');
     };
 

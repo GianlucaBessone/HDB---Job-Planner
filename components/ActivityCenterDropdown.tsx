@@ -127,15 +127,13 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                         id: notif.entityId,
                         horaIngreso: resData.horaIngreso,
                         horaEgreso: resData.horaEgreso,
-                        isExtra: resData.isExtra,
-                        requestUserId: user.id,
-                        requestUserRole: user.role
+                        isExtra: resData.isExtra
                     })
                 });
                 if (!res.ok) success = false;
             } else {
                 // Delete request
-                const res = await safeApiRequest(`/api/time-entries?id=${notif.entityId}&requestUserId=${user.id}&requestUserRole=${user.role}`, {
+                const res = await safeApiRequest(`/api/time-entries?id=${notif.entityId}`, {
                     method: 'DELETE'
                 });
                 if (!res.ok) success = false;

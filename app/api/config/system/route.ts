@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET() {
     try {
@@ -22,6 +23,9 @@ export async function GET() {
 
 export async function PUT(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para cambiar la configuración del sistema');
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
 
         // Audit: get old value
@@ -62,6 +66,8 @@ export async function PUT(req: Request) {
         });
 
         await logAudit({
+            userId: acceso.userId,
+            userName: acceso.nombre,
             action: 'UPDATE',
             entity: 'SETTING',
             entityId: 'default',

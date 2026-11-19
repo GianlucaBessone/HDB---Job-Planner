@@ -78,6 +78,16 @@ import ProjectsHeader from '@/components/projects/ProjectsHeader';
 import ProjectCostModal from '@/components/projects/ProjectCostModal';
 import ProyectoPresupuestoPanel from '@/components/projects/ProyectoPresupuestoPanel';
 
+/** Mensaje de error que devuelve la API (p. ej. un 403 por permisos). */
+async function mensajeError(res: Response, porDefecto: string): Promise<string> {
+    try {
+        const data = await res.json();
+        return data?.error || porDefecto;
+    } catch {
+        return porDefecto;
+    }
+}
+
 // ── Content Component ──────────────────────────────────────────────────────────
 function ProjectsContent() {
     const searchParams = useSearchParams();
@@ -315,7 +325,11 @@ function ProjectsContent() {
             horasEstimadas: Number(formData.horasEstimadas) || 0,
             qrToken: formData.qrToken || null, // Explicitly ensure it's passed
         };
-        await safeApiRequest(url, { method, body: JSON.stringify(submissionData), headers: { 'Content-Type': 'application/json' } });
+        const res = await safeApiRequest(url, { method, body: JSON.stringify(submissionData), headers: { 'Content-Type': 'application/json' } });
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo guardar el proyecto'), 'error');
+            return;
+        }
         setIsModalOpen(false);
         await loadData(true);
     };
@@ -328,10 +342,14 @@ function ProjectsContent() {
     const confirmDelete = async () => {
         if (!projectToDelete) return;
         const id = projectToDelete;
-        setProjects(prev => prev.filter(p => p.id !== id));
-        await safeApiRequest(`/api/projects?id=${id}`, { method: 'DELETE' });
+        const res = await safeApiRequest(`/api/projects?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setProjectToDelete(null);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo eliminar el proyecto'), 'error');
+            return;
+        }
+        setProjects(prev => prev.filter(p => p.id !== id));
     };
 
     // ── Filters ───────────────────────────────────────────────────────────────

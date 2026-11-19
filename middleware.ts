@@ -4,6 +4,7 @@ import { decrypt, encrypt } from './lib/auth';
 
 const PUBLIC_ROUTES = [
   '/api/auth/login',
+  '/api/auth/logout', // solo borra la cookie; si pasara por acá, la renovación la volvería a escribir
   '/api/cron',
   '/api/public',
   '/api/portal-clientes',

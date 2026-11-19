@@ -12,6 +12,16 @@ function withHashedPin<T extends { pin?: string }>(data: T): T {
     return data;
 }
 
+/** Usuario de la sesión que hace el cambio, para la auditoría. */
+export interface ActorAuditoria {
+    userId: string;
+    nombre: string;
+}
+
+function autor(actor?: ActorAuditoria) {
+    return actor ? { userId: actor.userId, userName: actor.nombre } : {};
+}
+
 function withoutPin<T extends { pin?: string } | null>(operator: T) {
     if (!operator) return operator;
     const { pin: _pin, ...rest } = operator as any;
@@ -102,7 +112,7 @@ export const dataLayer = {
         qrToken?: string;
         fichajeHabilitado?: boolean;
         proyectoFijo?: boolean;
-    }) {
+    }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
         // Project.horasConsumidas se calcula solo desde el registro de tiempos
         // (app/api/time-entries/route.ts): se ignora si viene en el body.
@@ -127,6 +137,7 @@ export const dataLayer = {
         }
 
         await logAudit({
+            ...autor(actor),
             action: 'CREATE',
             entity: 'PROJECT',
             entityId: project.id,
@@ -162,7 +173,7 @@ export const dataLayer = {
         qrToken?: string;
         fichajeHabilitado?: boolean;
         proyectoFijo?: boolean;
-    }) {
+    }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
         // Project.horasConsumidas no se edita a mano: lo mantiene el registro de tiempos.
         delete (sanitizedData as { horasConsumidas?: unknown }).horasConsumidas;
@@ -183,6 +194,7 @@ export const dataLayer = {
         const project = await prisma.project.update({ where: { id }, data: sanitizedData as any });
 
         await logAudit({
+            ...autor(actor),
             action: 'UPDATE',
             entity: 'PROJECT',
             entityId: project.id,
@@ -364,11 +376,12 @@ export const dataLayer = {
         return project;
     },
 
-    async deleteProject(id: string) {
+    async deleteProject(id: string, actor?: ActorAuditoria) {
         const oldProject = await prisma.project.findUnique({ where: { id } });
         const res = await prisma.project.delete({ where: { id } });
         
         await logAudit({
+            ...autor(actor),
             action: 'DELETE',
             entity: 'PROJECT',
             entityId: id,
@@ -384,12 +397,13 @@ export const dataLayer = {
             orderBy: { nombreCompleto: 'asc' }
         });
     },
-    async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; dni?: string; posicion?: string }) {
+    async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; dni?: string; posicion?: string }, actor?: ActorAuditoria) {
         const operator = await prisma.operator.create({
             data: { ...withHashedPin({ ...data, pin: data.pin || '1234' }), etiquetas: data.etiquetas as any }
         });
 
         await logAudit({
+            ...autor(actor),
             action: 'CREATE',
             entity: 'OPERATOR',
             entityId: operator.id,
@@ -406,7 +420,7 @@ export const dataLayer = {
 
         return operator;
     },
-    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; dni?: string; posicion?: string; primaryDeviceId?: string | null }) {
+    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; dni?: string; posicion?: string; primaryDeviceId?: string | null }, actor?: ActorAuditoria) {
         const updateData: any = withHashedPin({ ...data });
         if (data.etiquetas) updateData.etiquetas = data.etiquetas as any;
         
@@ -414,6 +428,7 @@ export const dataLayer = {
         const operator = await prisma.operator.update({ where: { id }, data: updateData });
 
         await logAudit({
+            ...autor(actor),
             action: 'UPDATE',
             entity: 'OPERATOR',
             entityId: operator.id,
@@ -432,11 +447,12 @@ export const dataLayer = {
 
         return operator;
     },
-    async deleteOperator(id: string) {
+    async deleteOperator(id: string, actor?: ActorAuditoria) {
         const oldOperator = await prisma.operator.findUnique({ where: { id } });
         const res = await prisma.operator.delete({ where: { id } });
 
         await logAudit({
+            ...autor(actor),
             action: 'DELETE',
             entity: 'OPERATOR',
             entityId: id,
@@ -445,12 +461,13 @@ export const dataLayer = {
 
         return res;
     },
-    async resetAllDevices() {
+    async resetAllDevices(actor?: ActorAuditoria) {
         const res = await prisma.operator.updateMany({
             data: { primaryDeviceId: null }
         });
         
         await logAudit({
+            ...autor(actor),
             action: 'UPDATE',
             entity: 'OPERATOR',
             entityId: 'ALL',

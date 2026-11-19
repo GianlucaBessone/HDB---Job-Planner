@@ -26,25 +26,41 @@ estados: *Según rol*, *Permitir* o *Denegar*. Los cambios quedan en Auditoría
 
 Nadie puede cambiar su propio permiso de administrar accesos.
 
+## Sesión
+
+- El middleware valida la cookie `sgi_session` y deja `x-user-id` (y `x-user-role`, el rol
+  guardado en el token).
+- `getAcceso` (`lib/permisosServer.ts`) **no usa el rol del token**: en cada pedido lee de la
+  base el rol, si el usuario sigue activo y su nombre. Un cambio de rol o una baja aplican en
+  el pedido siguiente, aunque la cookie siga vigente. Un usuario inactivo o borrado queda
+  sin sesión para todas las APIs que pasan por `getAcceso`.
+- Cerrar sesión llama a `POST /api/auth/logout`, que borra la cookie (es httpOnly: el
+  navegador no puede borrarla solo). La ruta es pública en el middleware para que la
+  renovación de sesión no vuelva a escribir la cookie.
+- Ninguna API decide permisos con el rol o el usuario que manda el navegador (cuerpo,
+  query o headers propios como `requestUserRole`, `role`, `userRole`, `approvedById`).
+  Quien actúa, y quien queda en Auditoría, es siempre el usuario de la sesión.
+- El middleware borra los `x-user-id` / `x-user-role` que manda el navegador, también en
+  las rutas públicas: solo los pone él, después de validar la cookie.
+
+## Roles y rango (Gestión de Usuarios)
+
+Rango: `admin` (3) > `supervisor` = `qa` (2) > `vendedor` = `operador` (1). Las reglas
+están en `lib/operators/reglasRol.ts` y las aplica `app/api/operators`:
+
+- Dar de alta un usuario con un rol distinto de `operador`, o cambiarle el rol a alguien,
+  pide la función `usuarios.asignar_rol`. El rol tiene que existir.
+- Nadie asigna un rol de rango mayor al propio.
+- Nadie cambia su propio rol.
+- Nadie edita (datos, PIN, estado, dispositivo) ni elimina a un usuario de rango mayor al propio.
+- La API solo acepta los campos del formulario de usuarios (Zod). Los permisos especiales
+  se administran solo desde el editor de accesos (`/api/accesos`).
+
 ## Datos
 
 Tabla `OperatorPermiso` (`prisma/schema.prisma`): una fila por usuario y acceso, con el
 efecto y quién lo otorgó. Mientras la tabla no exista en la base rigen solo los roles
 y el editor avisa que no puede guardar.
-
-## Sesión del lado del servidor
-
-El middleware valida la cookie y deja `x-user-id`. Todo lo demás se lee de la base en
-cada pedido (`lib/permisosServer.ts`): el rol, si el usuario está activo, su nombre y sus
-permisos especiales. Por eso:
-
-- Un cambio de rol rige en el próximo pedido, no cuando se renueva el token.
-- Un usuario dado de baja recibe 401 aunque su cookie siga vigente.
-- `x-user-role` (el rol guardado en el token) ya no decide permisos. El middleware lo
-  sigue dejando como dato, y borra los `x-user-id` / `x-user-role` que mande el navegador,
-  también en las rutas públicas.
-- El usuario, el nombre y el rol que manda el navegador (cuerpo, query o headers) no se
-  usan para decidir permisos ni para firmar lo que se registra.
 
 ## Para desarrollar
 
@@ -56,10 +72,12 @@ permisos especiales. Por eso:
   // acceso.userId, acceso.nombre, acceso.role, acceso.puede('calidad.gestionar')
   ```
 
-  Sin funciones (`exigirAcceso(req)`) solo pide sesión de un usuario activo.
-  `verificarAcceso` devuelve el motivo en vez de la respuesta, para módulos con su propio
-  formato de error (EPP, presupuestos). `getAcceso` / `puede` siguen disponibles; con un
-  usuario inactivo, `puede()` siempre da `false`.
+  Sin funciones (`exigirAcceso(req)`) solo pide sesión de un usuario activo. Un tercer
+  parámetro opcional cambia el mensaje del 403. Para decidir sin cortar el pedido:
+  `const acceso = await getAcceso(req); acceso.puede(...)` (con un usuario inactivo, `puede()`
+  siempre da `false`). `verificarAcceso` devuelve el motivo en vez de la respuesta, para
+  módulos con su propio formato de error (EPP, presupuestos). Usá `acceso.userId` /
+  `acceso.nombre` para la auditoría.
 - **Pantalla**: `const { puede, puedeVer } = useAcceso()` (`lib/store/useAccessStore.ts`).
 - **Función nueva**: agregala a `FUNCIONES` en `lib/permisos.ts` con sus roles por defecto.
   Aparece sola en el editor.
@@ -80,7 +98,7 @@ Pasan por el control de accesos:
   `docs/rrhh/RECLUTAMIENTO.md`) y las tres de EPP de Recursos Humanos
   (`rrhh.epp_ver`, `rrhh.epp_gestionar`, `rrhh.epp_entregar`).
 - Calidad (SGI), OKR y KPI, datasets, diccionario de datos, tickets, sugerencias, viajes,
-  pliegos, informes técnicos, PDV, tareas, registro de tiempos y prompts de IA: ver
+  pliegos, informes técnicos, PDV y generación de documentos con IA: ver
   "Funciones por API".
 - EPP (`app/api/rrhh/epp/**`, lógica en `lib/rrhh/eppServer.ts`): ya no usa server
   actions. Cada API exige sesión de un usuario activo (`lib/rrhh/eppSesion.ts`) y la
@@ -92,9 +110,46 @@ Pasan por el control de accesos:
   `presupuestos.ver` (admin, supervisor, qa), `presupuestos.gestionar`, `presupuestos.aprobar`,
   `presupuestos.convertir` y `ventas.mano_obra_gestionar` (admin y supervisor), y
   `proyectos.crear` (admin, supervisor, qa) para el asistente, el equipo asignado y las tareas.
-  El alta clásica de proyectos (`POST /api/projects`) no cambió: sigue con sus reglas de antes.
 
-## Funciones por API
+### Funciones por API
+
+Los GET de configuración, proyectos, clientes y documentos siguen pidiendo solo sesión:
+los usan pantallas de todos los roles (Fichado, Registro de tiempos, Capacitación…).
+`GET /api/config/tags` es solo lectura: no crea ni borra etiquetas. Las etiquetas base se
+siembran con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
+
+| Función | Roles por defecto | APIs |
+|---|---|---|
+| `config.administrar` | admin, supervisor, qa | `PUT /api/config/system`; `POST/PUT/DELETE` de `/api/config/tags`, `/api/config/options`, `/api/config/checklists`, `/api/checklist-templates` |
+| `config.vistas` | admin | `PUT /api/config/views` (queda en Auditoría como `VIEW_ACCESS`); opciones de la categoría `VIEW_ACCESS` en `/api/config/options` |
+| `config.prompts_ia` | admin | `POST /api/ai/prompts` |
+| `usuarios.gestionar` | admin, supervisor, qa | `POST/PATCH/DELETE /api/operators`, `POST /api/operators/reset-devices` |
+| `usuarios.asignar_rol` | admin, supervisor, qa | Alta con rol distinto de operador o cambio de rol en `/api/operators` (con las reglas de rango) |
+| `auditoria.ver` | admin, supervisor, qa | `GET /api/audit` |
+| `proyectos.crear` | admin, supervisor, qa | `POST/PATCH /api/projects` |
+| `proyectos.eliminar` | admin, supervisor | `DELETE /api/projects` (borra en cascada OS, horas y fichadas) |
+| `clientes.gestionar` | admin, supervisor, qa, vendedor | `POST/PATCH /api/clients`; escrituras de `/api/clients/[id]/` sectores, config, tarifas, responsables y regenerar clave del portal |
+| `clientes.eliminar` | admin, supervisor | `DELETE /api/clients` |
+| `documentos.gestionar` | admin, supervisor, qa | Escrituras de `/api/documentos/**`: alta, edición, archivos, quick-upload, versiones, reglas, cuestionario y subaccesos |
+| `documentos.eliminar` | admin, qa | `DELETE /api/documentos/[id]` |
+| `timesheets.gestionar_horas` | admin, supervisor, qa | `/api/time-entries`: cargar horas de otro usuario, editar o borrar horas ajenas o de un día ya confirmado. Sin la función, cada uno carga, edita y confirma solo sus horas |
+| `fichadas.aprobar` | admin, supervisor, qa | `GET/PATCH /api/time-entries/approve` |
+| `tareas.ver_todas` | admin | `/api/tareas`: ver todas las tareas y editar o borrar cualquiera |
+
+Reglas por usuario, sin función:
+
+- **Tareas**: sin `tareas.ver_todas`, el GET devuelve las tareas creadas por el usuario o en las
+  que está involucrado. Editar y borrar: el creador o un involucrado responsable; un
+  colaborador solo cambia el estado; un observador, nada. El creador de una tarea nueva es
+  el usuario de la sesión.
+- **Avisos** (`/api/activities`, `/api/activities/[id]`): cada uno lee, marca y archiva solo
+  sus propios avisos. `?todos=1` cierra el aviso para todos sus destinatarios, y solo puede
+  hacerlo uno de ellos.
+- **Documentos**: firmar (`/api/documentos/[id]/firmar`) solo puede el firmante asignado al
+  paso (creador, revisor o aprobador del documento). Confirmar lectura e imprimir una copia
+  controlada quedan a nombre del usuario de la sesión.
+
+### Funciones por API: calidad, tickets, viajes y otros módulos
 
 Todas estas APIs exigen además un usuario activo (401 si no lo hay). "A ∨ B" significa
 que alcanza con una de las dos.
@@ -125,13 +180,12 @@ que alcanza con una de las dos.
 | `/api/informes-tecnicos/[id]` | DELETE de un informe finalizado | `informes.eliminar_finalizados`, más DNI y firma (el resto: usuario activo) |
 | `/api/ordenes-trabajo/[id]/comentarios` | GET, POST | usuario activo; el autor sale de la sesión |
 | `/api/ventas/pdv/confirmar` | POST | `ventas.modificar_precios` si hay precios modificados (o autorización / cotización); `ventas.exceder_limite_credito` para superar el límite de cuenta corriente; el vendedor es el usuario de la sesión |
-| `/api/tareas` | GET | `tareas.ver_todas` ve todas; sin ella, las propias o en las que se participa |
-| `/api/time-entries` | POST, PUT, DELETE | `timesheets.cargar_otros` para registros de otros; `timesheets.editar_confirmados` para días confirmados |
-| `/api/ai/prompts` | POST | `ia.prompts_editar` |
 | `/api/ai/generate-doc` | POST | `ia.generar_documentos` |
 
 Todavía dependen solo del rol, o de datos que manda el navegador, y hay que migrarlos:
 
+- `POST /api/activities` toma el emisor de la sesión, pero cualquier usuario con sesión puede
+  enviar un aviso a cualquier otro (`operatorId`) o a todos los supervisores (`forSupervisors`).
 - Chequeos de rol sueltos dentro de las pantallas (botones y acciones que se muestran
   según `role`; por ejemplo, Viajes usa `esGestorViajes`).
 - El PIN de supervisor (`/api/auth/verificar-supervisor` y las anulaciones de ventas y
@@ -142,7 +196,7 @@ Todavía dependen solo del rol, o de datos que manda el navegador, y hay que mig
 - Las APIs de IA `semantic-search`, `training`, `ocr` y `generate-checklist` toman usuario,
   nombre y rol del cuerpo, solo para registrar el uso.
 - `/api/cron/reminders?manual=true` usa el rol del token.
-- `/api/time-entries` no controla quién marca un día como confirmado.
+- En `/api/time-entries` cada usuario puede marcar como confirmado un día propio.
 - `/api/sgi/reunion/[id]`, `nc/[id]/chat`, `nc/[id]/reunion`, `nc/[id]/similares` y
   `nc/[id]/ia-docs` solo piden sesión.
 - Una vista que el rol no tiene, sin denegación puntual, solo se oculta del menú: no se

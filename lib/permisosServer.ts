@@ -122,13 +122,17 @@ export interface ResultadoAcceso {
  * Exige un usuario activo y, si se pasan funciones, que tenga al menos una.
  * Devuelve el motivo del rechazo para que cada módulo arme su respuesta.
  */
-export async function verificarAcceso(req: Request, funciones: readonly FuncionId[] = []): Promise<ResultadoAcceso> {
+export async function verificarAcceso(
+    req: Request,
+    funciones: readonly FuncionId[] = [],
+    mensaje = MENSAJE_SIN_PERMISO
+): Promise<ResultadoAcceso> {
     const acceso = await getAcceso(req);
     if (!acceso.activo) {
         return { ok: false, acceso, status: 401, error: acceso.motivo === 'inactivo' ? MENSAJE_INACTIVO : MENSAJE_SIN_SESION };
     }
     if (funciones.length > 0 && !funciones.some((f) => acceso.puede(f))) {
-        return { ok: false, acceso, status: 403, error: MENSAJE_SIN_PERMISO };
+        return { ok: false, acceso, status: 403, error: mensaje };
     }
     return { ok: true, acceso, status: 200, error: '' };
 }
@@ -138,9 +142,15 @@ export async function verificarAcceso(req: Request, funciones: readonly FuncionI
  *
  *     const acceso = await exigirAcceso(req, ['calidad.ver', 'calidad.gestionar']);
  *     if (acceso instanceof NextResponse) return acceso;
+ *
+ * `mensaje` reemplaza el texto del 403.
  */
-export async function exigirAcceso(req: Request, funciones: readonly FuncionId[] = []): Promise<AccesoSesion | NextResponse> {
-    const r = await verificarAcceso(req, funciones);
+export async function exigirAcceso(
+    req: Request,
+    funciones: readonly FuncionId[] = [],
+    mensaje = MENSAJE_SIN_PERMISO
+): Promise<AccesoSesion | NextResponse> {
+    const r = await verificarAcceso(req, funciones, mensaje);
     if (r.ok) return r.acceso;
     return NextResponse.json({ error: r.error }, { status: r.status, headers: { 'Cache-Control': 'private, no-store' } });
 }
