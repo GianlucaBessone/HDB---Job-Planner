@@ -40,6 +40,9 @@ export const FUNCIONES = [
     { id: 'usuarios.gestionar', label: 'Gestionar usuarios', description: 'Crear, editar y eliminar usuarios', grupo: 'Usuarios', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'usuarios.accesos', label: 'Administrar accesos', description: 'Otorgar y quitar permisos especiales a otros usuarios', grupo: 'Usuarios', roles: ['admin'] },
 
+    // ─ Configuración ─
+    { id: 'config.etiquetas_gestionar', label: 'Gestionar etiquetas de proyecto', description: 'Crear, renombrar y eliminar etiquetas de proyecto (eliminar borra también su checklist y sus plantillas vinculadas)', grupo: 'Configuración', roles: ['admin', 'supervisor', 'qa'] },
+
     // ─ Registro de tiempos ─
     { id: 'timesheets.control_horario', label: 'Control horario', description: 'Cruce entre registro de tiempos y fichadas, con ajustes', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor'] },
 

@@ -65,6 +65,11 @@ Pasan por el control de accesos:
   `presupuestos.convertir` y `ventas.mano_obra_gestionar` (admin y supervisor), y
   `proyectos.crear` (admin, supervisor, qa) para el asistente, el equipo asignado y las tareas.
   El alta clásica de proyectos (`POST /api/projects`) no cambió: sigue con sus reglas de antes.
+- Etiquetas de proyecto (`/api/config/tags`, sección Etiquetas de Configuración):
+  `config.etiquetas_gestionar` (admin, supervisor, qa) para crear, renombrar y eliminar.
+  Eliminar una etiqueta borra también su checklist y sus plantillas vinculadas. El GET no
+  pide la función: es solo lectura y lo usan varias pantallas. Las etiquetas base se
+  siembran aparte con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
 
 Todavía dependen solo del rol, y hay que migrarlos por etapas:
 
