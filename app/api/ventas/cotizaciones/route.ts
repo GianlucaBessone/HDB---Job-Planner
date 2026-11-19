@@ -5,6 +5,7 @@ import {
   listarCotizaciones,
   guardarCotizacion,
 } from '@/lib/ventas/cotizacionService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const itemSchema = z.object({
   productoId: z.string().optional().nullable(),
@@ -48,6 +49,9 @@ const guardarCotizacionSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.cotizaciones_ver', 'ventas.cotizaciones_gestionar'], 'No tenés permiso para ver cotizaciones');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { searchParams } = new URL(req.url);
     const q = searchParams.get('q')?.trim() || '';
     const estado = searchParams.get('estado') || undefined;
@@ -80,13 +84,17 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const acceso = await exigirAcceso(req, ['ventas.cotizaciones_gestionar'], 'No tenés permiso para crear o editar cotizaciones');
+  if (acceso instanceof NextResponse) return acceso;
+
   return withIdempotency(req, async () => {
     try {
       const body = await req.json();
       const parsed = guardarCotizacionSchema.parse(body);
 
-      const userIdHeader = req.headers.get('x-user-id') || undefined;
-      const userNameHeader = req.headers.get('x-user-name') || undefined;
+      // Si no se elige vendedor, queda el usuario de la sesión.
+      const userIdHeader = acceso.userId;
+      const userNameHeader = acceso.nombre;
 
       const cotizacion = await guardarCotizacion(
         {

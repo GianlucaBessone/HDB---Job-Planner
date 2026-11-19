@@ -794,22 +794,28 @@ export default function CuentasCorrientesPage() {
 
                                     {/* Botonera Principal */}
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <Button onClick={() => setShowCobranzaModal(true)} icon={<DollarSign />}>
-                                            Registrar cobranza
-                                        </Button>
+                                        {puede('ventas.cc_cobrar') && (
+                                            <Button onClick={() => setShowCobranzaModal(true)} icon={<DollarSign />}>
+                                                Registrar cobranza
+                                            </Button>
+                                        )}
 
-                                        <Button variant="tonal" onClick={() => setShowAjusteModal(true)} icon={<FilePlus2 />}>
-                                            Nota déb. / créd.
-                                        </Button>
+                                        {puede('ventas.cc_ajustar') && (
+                                            <Button variant="tonal" onClick={() => setShowAjusteModal(true)} icon={<FilePlus2 />}>
+                                                Nota déb. / créd.
+                                            </Button>
+                                        )}
 
-                                        <Button
-                                            variant="secondary"
-                                            onClick={() => setShowActualizarPreciosModal(true)}
-                                            icon={<TrendingUp />}
-                                            title="Recalcular facturas impagas a precios vigentes y emitir notas de débito por la diferencia"
-                                        >
-                                            Actualizar precios
-                                        </Button>
+                                        {puede('ventas.cc_configurar') && (
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() => setShowActualizarPreciosModal(true)}
+                                                icon={<TrendingUp />}
+                                                title="Recalcular facturas impagas a precios vigentes y emitir notas de débito por la diferencia"
+                                            >
+                                                Actualizar precios
+                                            </Button>
+                                        )}
 
                                         <Button
                                             variant="secondary"
@@ -820,15 +826,17 @@ export default function CuentasCorrientesPage() {
                                             Estado de cuenta
                                         </Button>
 
-                                        <Button
-                                            variant="secondary"
-                                            size="icon"
-                                            onClick={() => setShowConfigModal(true)}
-                                            title="Configurar límite y plazo de crédito"
-                                            aria-label="Configurar límite y plazo de crédito"
-                                        >
-                                            <Settings2 />
-                                        </Button>
+                                        {puede('ventas.cc_configurar') && (
+                                            <Button
+                                                variant="secondary"
+                                                size="icon"
+                                                onClick={() => setShowConfigModal(true)}
+                                                title="Configurar límite y plazo de crédito"
+                                                aria-label="Configurar límite y plazo de crédito"
+                                            >
+                                                <Settings2 />
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -1069,12 +1077,14 @@ export default function CuentasCorrientesPage() {
                                                                                 <Eye className="w-4 h-4" />
                                                                             </button>
                                                                         )}
-                                                                        <button
-                                                                            onClick={() => setShowCobranzaModal(true)}
-                                                                            className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] transition-colors whitespace-nowrap"
-                                                                        >
-                                                                            Cobrar
-                                                                        </button>
+                                                                        {puede('ventas.cc_cobrar') && (
+                                                                            <button
+                                                                                onClick={() => setShowCobranzaModal(true)}
+                                                                                className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] transition-colors whitespace-nowrap"
+                                                                            >
+                                                                                Cobrar
+                                                                            </button>
+                                                                        )}
                                                                     </div>
                                                                 </td>
                                                             </tr>

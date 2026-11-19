@@ -5,6 +5,7 @@ import { CotizacionPdfDocument } from '@/components/ventas/cotizaciones/Cotizaci
 import { createElement } from 'react';
 import path from 'path';
 import fs from 'fs';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 // Helper: read a Node.js ReadableStream into a Buffer
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
@@ -19,6 +20,9 @@ async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
 export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['ventas.cotizaciones_ver', 'ventas.cotizaciones_gestionar'], 'No tenés permiso para ver cotizaciones');
+        if (acceso instanceof NextResponse) return acceso;
+
         let cotizacion: any;
         try {
             cotizacion = await obtenerCotizacionPorId(params.id);

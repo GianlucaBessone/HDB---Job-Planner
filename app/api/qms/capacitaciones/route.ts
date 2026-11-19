@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { formatDateInline } from '@/lib/formatDate';
+import { exigirAcceso } from '@/lib/permisosServer';
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
-        const operatorId = searchParams.get('operatorId');
+        // Sin "formacion.gestionar", solo la formación propia (se ignora ?operatorId).
+        const operatorId = acceso.puede('formacion.gestionar') ? searchParams.get('operatorId') : acceso.userId;
         
         const where: any = {};
         if (operatorId) {
@@ -55,6 +60,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
         const { id, respuestas, tiempoInvertido, signatureId } = data;
 
@@ -69,6 +77,9 @@ export async function POST(req: Request) {
 
         if (!training) {
             return NextResponse.json({ error: 'Capacitación no encontrada.' }, { status: 404 });
+        }
+        if (training.operatorId !== acceso.userId) {
+            return NextResponse.json({ error: 'Solo podés completar tus propias capacitaciones.' }, { status: 403 });
         }
 
         const finalRespuestas = respuestas || {};

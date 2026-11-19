@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateComplianceScore } from '../compliance-engine';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
-        const operatorId = searchParams.get('operatorId');
+        const gestiona = acceso.puede('formacion.gestionar');
+        // Sin "formacion.gestionar", solo el cumplimiento propio.
+        const operatorId = gestiona ? searchParams.get('operatorId') : acceso.userId;
 
         if (operatorId) {
             // Retornar el score de cumplimiento específico de un operador

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withIdempotency } from '@/lib/idempotency';
 import { registrarMovimientoManualCC } from '@/lib/ventas/cuentaCorrienteService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const movimientoManualSchema = z.object({
   clienteId: z.string().min(1, 'El cliente es obligatorio'),
@@ -17,18 +18,19 @@ const movimientoManualSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const acceso = await exigirAcceso(req, ['ventas.cc_ajustar'], 'No tenés permiso para registrar ajustes de cuenta corriente');
+  if (acceso instanceof NextResponse) return acceso;
+
   return withIdempotency(req, async () => {
     try {
       const body = await req.json();
       const parsed = movimientoManualSchema.parse(body);
 
-      const userIdHeader = req.headers.get('x-user-id');
-      const userNameHeader = req.headers.get('x-user-name');
-
       const movimiento = await registrarMovimientoManualCC({
         ...parsed,
-        operadorId: parsed.operadorId || userIdHeader || undefined,
-        operadorNombre: parsed.operadorNombre || userNameHeader || undefined,
+        // El operador es siempre el usuario de la sesión (se ignoran operadorId / operadorNombre del cuerpo).
+        operadorId: acceso.userId,
+        operadorNombre: acceso.nombre,
       });
 
       return NextResponse.json(

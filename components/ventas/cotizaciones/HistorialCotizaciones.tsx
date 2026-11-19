@@ -30,6 +30,8 @@ interface Props {
     onEditar: (cotizacion: any) => void;
     onDuplicar: (cotizacion: any) => void;
     onEnviarAPdv: (cotizacion: any) => void;
+    /** Solo consulta: sin editar, duplicar, aprobar, anular ni facturar (sin "ventas.cotizaciones_gestionar"). */
+    soloLectura?: boolean;
 }
 
 const fmtMoneda = (n: number) =>
@@ -40,7 +42,7 @@ const fmtFecha = (iso: string | Date | null) =>
 
 const esEditable = (cot: any) => cot.estado !== 'CONVERTIDA' && cot.estado !== 'ANULADA';
 
-export default function HistorialCotizaciones({ recargarToken = 0, onVer, onEditar, onDuplicar, onEnviarAPdv }: Props) {
+export default function HistorialCotizaciones({ recargarToken = 0, onVer, onEditar, onDuplicar, onEnviarAPdv, soloLectura = false }: Props) {
     const [cotizaciones, setCotizaciones] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
@@ -324,7 +326,7 @@ export default function HistorialCotizaciones({ recargarToken = 0, onVer, onEdit
                                                 <Button variant="ghost" size="icon-sm" onClick={() => onVer(cot)} aria-label="Ver documento" title="Ver documento">
                                                     <FileText />
                                                 </Button>
-                                                {esEditable(cot) && (
+                                                {!soloLectura && esEditable(cot) && (
                                                     <Button variant="ghost" size="icon-sm" onClick={() => onEditar(cot)} aria-label="Editar" title="Editar">
                                                         <Pencil />
                                                     </Button>
@@ -389,10 +391,10 @@ export default function HistorialCotizaciones({ recargarToken = 0, onVer, onEdit
                                 {item('Descargar PDF', <Download />, () => {
                                     window.location.href = `/api/ventas/cotizaciones/${cot.id}/pdf?download=true`;
                                 })}
-                                {item('Duplicar como nueva', <Copy />, () => onDuplicar(cot))}
-                                {esEditable(cot) && item('Facturar en PDV', <ShoppingCart />, () => onEnviarAPdv(cot))}
-                                {cot.estado === 'VIGENTE' && item('Marcar como aprobada', <CheckCircle2 />, () => handleAprobar(cot))}
-                                {esEditable(cot) && (
+                                {!soloLectura && item('Duplicar como nueva', <Copy />, () => onDuplicar(cot))}
+                                {!soloLectura && esEditable(cot) && item('Facturar en PDV', <ShoppingCart />, () => onEnviarAPdv(cot))}
+                                {!soloLectura && cot.estado === 'VIGENTE' && item('Marcar como aprobada', <CheckCircle2 />, () => handleAprobar(cot))}
+                                {!soloLectura && esEditable(cot) && (
                                     <>
                                         <div className="my-1 border-t border-border" />
                                         {item('Anular…', <Ban />, () => {

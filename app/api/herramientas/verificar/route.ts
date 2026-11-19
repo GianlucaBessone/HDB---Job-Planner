@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request) {
     try {
-        const { toolId, operadorId, operadorNombre, estado } = await req.json();
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
 
-        if (!toolId || !operadorId || !estado) {
+        // Quien verifica es siempre el usuario de la sesión (se ignoran operadorId / operadorNombre).
+        const operadorId = acceso.userId;
+        const operadorNombre = acceso.nombre;
+        const { toolId, estado } = await req.json();
+
+        if (!toolId || !estado) {
             return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 });
         }
 
