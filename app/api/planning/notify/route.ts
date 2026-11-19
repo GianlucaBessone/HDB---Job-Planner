@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request) {
+    const acceso = await exigirAcceso(req, ['planificacion.gestionar'], 'No tenés permiso para avisar la planificación');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { fecha, blocks } = await req.json();
 
     try {

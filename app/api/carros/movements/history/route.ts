@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['herramientas.gestionar'], 'No tenés permiso para ver el historial de movimientos');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
         const operatorId = searchParams.get('operatorId');
         const projectId = searchParams.get('projectId');

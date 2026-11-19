@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { enriquecerTool } from '@/lib/toolControl';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 /**
  * Carros API — now backed by Tool model where tipo = 'CARRO'
@@ -48,6 +49,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['herramientas.gestionar'], 'No tenés permiso para gestionar herramientas y carros');
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
         const { nombre, descripcion, items } = data;
 

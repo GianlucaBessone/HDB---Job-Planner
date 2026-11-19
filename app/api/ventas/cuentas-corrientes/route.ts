@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listarResumenCuentasCorrientes } from '@/lib/ventas/cuentaCorrienteService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.cc_ver'], 'No tenés permiso para ver cuentas corrientes');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { searchParams } = new URL(req.url);
     const q = searchParams.get('q')?.trim() || '';
     const estadoDeuda = (searchParams.get('estadoDeuda') || 'TODOS') as any;

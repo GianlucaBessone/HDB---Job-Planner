@@ -117,6 +117,17 @@ los usan pantallas de todos los roles (Fichado, Registro de tiempos, Capacitaci�
 | `timesheets.gestionar_horas` | admin, supervisor, qa | `/api/time-entries`: cargar horas de otro usuario, editar o borrar horas ajenas o de un día ya confirmado. Sin la función, cada uno carga, edita y confirma solo sus horas |
 | `fichadas.aprobar` | admin, supervisor, qa | `GET/PATCH /api/time-entries/approve` |
 | `tareas.ver_todas` | admin | `/api/tareas`: ver todas las tareas y editar o borrar cualquiera |
+| `gastos.ver` | admin, supervisor, qa | `GET` de `/api/administracion/gastos`, `/proveedores` y `/codigos-gasto` |
+| `gastos.gestionar` | admin, supervisor, qa | Escrituras de `/api/administracion/**` (facturas, importación, proveedores, códigos de gasto) y `POST /api/ia/ocr-factura` |
+| `herramientas.gestionar` | admin, supervisor | Altas, ediciones y bajas de `/api/herramientas/**` y `/api/carros/**`, armado de carros (`asignar`, `replicar`) y `GET /api/carros/movements/history` |
+| `planificacion.gestionar` | admin, supervisor, qa | `POST /api/planning`, `POST /api/planning/notify` (el `GET` sigue con solo sesión: lo usa Fichado) |
+| `formacion.gestionar` | admin, supervisor, qa | Ver la formación de otros en `/api/qms/capacitaciones`, `/certificados`, `/competencias` y `/compliance`; validar o borrar certificados ajenos; `POST /api/qms/competencias`; `/api/dashboard/operator-scoreboard/competencies` |
+| `ventas.cotizaciones_ver` | admin, supervisor, qa, vendedor | `GET /api/ventas/cotizaciones`, `/[id]` y `/[id]/pdf` |
+| `ventas.cotizaciones_gestionar` | admin, supervisor, vendedor | `POST/PUT/PATCH` de cotizaciones (crear, editar, aprobar, anular, convertir en venta) |
+| `ventas.cc_ver` | admin, supervisor, qa, vendedor | `GET` de `/api/ventas/cuentas-corrientes`, `/[clienteId]` y la vista previa de actualización de precios |
+| `ventas.cc_cobrar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/cobranzas` |
+| `ventas.cc_ajustar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/movimientos` (saldo inicial, cargo manual, nota de crédito) |
+| `ventas.cc_configurar` | admin, supervisor | `PUT /api/ventas/cuentas-corrientes/[clienteId]` (crédito) y `POST .../actualizacion-precios` |
 
 Reglas por usuario, sin función:
 
@@ -130,6 +141,18 @@ Reglas por usuario, sin función:
 - **Documentos**: firmar (`/api/documentos/[id]/firmar`) solo puede el firmante asignado al
   paso (creador, revisor o aprobador del documento). Confirmar lectura e imprimir una copia
   controlada quedan a nombre del usuario de la sesión.
+- **Herramientas**: retirar un carro y verificar una herramienta quedan a nombre del usuario de
+  la sesión. Devolver un carro lo hace quien lo retiró (o quien tiene `herramientas.gestionar`).
+  `GET /api/carros/movements/active` devuelve los movimientos propios.
+- **Formación**: cada uno ve su formación, rinde solo sus capacitaciones y carga sus
+  certificados. Puede editar o borrar un certificado propio mientras no esté aprobado, y no
+  puede cambiarle el estado (aprobar o rechazar).
+- **Ventas**: el operador de una cobranza, un ajuste o una actualización de deuda, y quien
+  cambia el estado de una cotización, es el usuario de la sesión. Una cotización sin
+  vendedor elegido queda a nombre de la sesión.
+
+El rol que usan las pantallas (`useAcceso`) también sale de la base: `/api/accesos/yo` lo
+devuelve con los permisos especiales.
 
 Todavía dependen solo del rol, y hay que migrarlos por etapas:
 

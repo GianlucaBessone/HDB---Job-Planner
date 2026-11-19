@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 /**
  * POST - Assign tool to cart
@@ -7,6 +8,9 @@ import { prisma } from '@/lib/prisma';
  */
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['herramientas.gestionar'], 'No tenés permiso para gestionar herramientas y carros');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { toolId, carroId } = await req.json();
 
         if (!toolId || !carroId) {
@@ -44,6 +48,9 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['herramientas.gestionar'], 'No tenés permiso para gestionar herramientas y carros');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
         const toolId = searchParams.get('toolId');
 

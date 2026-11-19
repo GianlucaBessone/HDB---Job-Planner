@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request) {
     try {
-        const { cartId, operatorId, projectId, tools } = await req.json();
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
 
-        if (!cartId || !operatorId || !projectId) {
+        // Quien retira el carro es el usuario de la sesión (se ignora operatorId del cuerpo).
+        const operatorId = acceso.userId;
+        const { cartId, projectId, tools } = await req.json();
+
+        if (!cartId || !projectId) {
             return NextResponse.json({ error: 'Datos incompletos.' }, { status: 400 });
         }
 

@@ -1097,7 +1097,7 @@ function RetirosTab({ user }: { user: any }) {
             const res = await safeApiRequest('/api/carros/movements/out', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cartId: selectedCart.id, operatorId: user.id, projectId: selectedProjectId, tools: checklist })
+                body: JSON.stringify({ cartId: selectedCart.id, projectId: selectedProjectId, tools: checklist })
             });
             if (!res.ok) { const d = await res.json(); showToast(d.error || 'Fallo la salida', 'error'); return; }
             showToast('Salida registrada con éxito', 'success');
@@ -1276,7 +1276,7 @@ function VerificacionTab({ user }: { user: any }) {
             const res = await safeApiRequest('/api/herramientas/verificar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ toolId: tool.id, operadorId: user.id, operadorNombre: user.nombreCompleto, estado })
+                body: JSON.stringify({ toolId: tool.id, estado })
             });
             if (!res.ok) { const e = await res.json(); showToast(e.error || 'Error', 'error'); return; }
             showToast(`Herramienta ${estado.toLowerCase()}`, 'success');

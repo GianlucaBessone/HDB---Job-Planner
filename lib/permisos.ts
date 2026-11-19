@@ -54,6 +54,19 @@ export const FUNCIONES = [
     { id: 'timesheets.gestionar_horas', label: 'Gestionar horas de otros', description: 'Cargar, editar y borrar horas de otros usuarios y de días ya confirmados', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'fichadas.aprobar', label: 'Aprobar fichadas', description: 'Ver, aprobar y rechazar fichadas pendientes de aprobación', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
 
+    // ─ Planificación ─
+    { id: 'planificacion.gestionar', label: 'Gestionar planificación', description: 'Armar la agenda diaria y avisar al equipo asignado', grupo: 'Planificación', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Herramientas ─
+    { id: 'herramientas.gestionar', label: 'Gestionar herramientas y carros', description: 'Crear, editar y eliminar herramientas y carros, armar carros y ver el historial de movimientos', grupo: 'Herramientas', roles: ['admin', 'supervisor'] },
+
+    // ─ Gastos ─
+    { id: 'gastos.ver', label: 'Ver gastos y facturas', description: 'Consultar facturas de gastos, proveedores y códigos de gasto', grupo: 'Gastos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'gastos.gestionar', label: 'Gestionar gastos y facturas', description: 'Cargar, escanear, importar y eliminar facturas; administrar proveedores y códigos de gasto', grupo: 'Gastos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Formación ─
+    { id: 'formacion.gestionar', label: 'Gestionar formación', description: 'Ver la formación de todo el personal, validar certificados y administrar competencias', grupo: 'Formación', roles: ['admin', 'supervisor', 'qa'] },
+
     // ─ Tareas ─
     { id: 'tareas.ver_todas', label: 'Ver y gestionar todas las tareas', description: 'Ver, editar y eliminar tareas aunque no sea creador ni involucrado', grupo: 'Tareas', roles: ['admin'] },
 
@@ -70,6 +83,12 @@ export const FUNCIONES = [
     { id: 'ventas.modificar_precios', label: 'Modificar precios', description: 'Cambiar el precio unitario en una venta sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.anular_comprobante_cc', label: 'Anular comprobantes de cuenta corriente', description: 'Anular recibos y movimientos sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.mano_obra_gestionar', label: 'Gestionar mano de obra', description: 'Editar categorías de mano de obra y su valor hora', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+    { id: 'ventas.cotizaciones_ver', label: 'Ver cotizaciones', description: 'Consultar cotizaciones y descargar su PDF', grupo: 'Ventas', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'ventas.cotizaciones_gestionar', label: 'Crear y editar cotizaciones', description: 'Crear cotizaciones, editarlas y cambiar su estado', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
+    { id: 'ventas.cc_ver', label: 'Ver cuentas corrientes', description: 'Consultar saldos, movimientos y estados de cuenta de los clientes', grupo: 'Ventas', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'ventas.cc_cobrar', label: 'Registrar cobranzas', description: 'Registrar cobranzas en la cuenta corriente de un cliente', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
+    { id: 'ventas.cc_ajustar', label: 'Ajustes de cuenta corriente', description: 'Registrar ajustes manuales (débitos y créditos) en la cuenta corriente', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
+    { id: 'ventas.cc_configurar', label: 'Configurar crédito y actualizar deuda', description: 'Cambiar el límite y las condiciones de crédito y actualizar la deuda a precios vigentes', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
 
     // ─ Proyectos ─
     { id: 'proyectos.crear', label: 'Crear y planificar proyectos', description: 'Crear y editar proyectos, asignar el equipo y marcar tareas', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },

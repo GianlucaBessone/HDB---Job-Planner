@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const excelRowSchema = z.object({
   fechaEmision: z.string().or(z.date()),
@@ -31,6 +32,9 @@ const batchPayloadSchema = z.array(excelRowSchema);
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['gastos.gestionar'], 'No tenés permiso para gestionar gastos');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const rows = batchPayloadSchema.parse(body);
 
