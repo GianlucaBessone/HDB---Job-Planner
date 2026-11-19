@@ -1,14 +1,13 @@
 /**
  * Sesión para las APIs de presupuestos de servicio y del wizard de proyectos.
- * Mismo criterio que lib/rrhh/eppSesion.ts: el middleware deja x-user-id / x-user-role,
- * acá se confirma que el usuario está activo, se resuelven sus funciones y se obtiene
- * su nombre real para la auditoría.
+ * Mismo criterio que lib/rrhh/eppSesion.ts: verificarAcceso (lib/permisosServer.ts)
+ * confirma en la base que el usuario está activo, resuelve sus funciones y trae su
+ * nombre real para la auditoría.
  */
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
-import { getAcceso, type AccesoSesion } from '@/lib/permisosServer';
+import { verificarAcceso, type AccesoSesion } from '@/lib/permisosServer';
 import type { FuncionId } from '@/lib/permisos';
 
 export interface UsuarioSesion {
@@ -31,19 +30,9 @@ export function errorJson(status: number, mensaje: string, extra?: Record<string
  *     if (s instanceof NextResponse) return s;
  */
 export async function sesion(req: Request, funciones: FuncionId[] = []): Promise<Sesion | NextResponse> {
-    const acceso = await getAcceso(req);
-    if (!acceso.userId) return errorJson(401, 'Iniciá sesión para continuar');
-
-    const operador = await prisma.operator.findUnique({
-        where: { id: acceso.userId },
-        select: { id: true, nombreCompleto: true, activo: true },
-    });
-    if (!operador || !operador.activo) return errorJson(401, 'Tu usuario no está activo');
-
-    if (funciones.length > 0 && !funciones.some((f) => acceso.puede(f))) {
-        return errorJson(403, 'No tenés permiso para esta acción');
-    }
-    return { acceso, usuario: { id: operador.id, nombre: operador.nombreCompleto } };
+    const r = await verificarAcceso(req, funciones);
+    if (!r.ok) return errorJson(r.status, r.error);
+    return { acceso: r.acceso, usuario: { id: r.acceso.userId, nombre: r.acceso.nombre } };
 }
 
 /** Lee y valida el cuerpo JSON con Zod. */

@@ -6,32 +6,38 @@ import type { ZodError } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import {
-    claveTarea, PLIEGO_ANALISIS_TIMEOUT_MS, puedeGestionarPliegos, puedeVerPliegos,
+    claveTarea, PLIEGO_ANALISIS_TIMEOUT_MS,
     type ContenidoAnalisis, type MarcaInput, type PliegoAlta,
 } from '@/lib/pliegos';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { analizarPliegoIA, ErrorAnalisisPliego } from '@/lib/pliegosIA';
 import { borrarObjeto, leerObjeto, storageConfigurado, urlPrefirmada } from '@/lib/objectStorage';
 
 // ── Actor y respuestas ──────────────────────────────────────────────
 
 export interface PliegoActor {
-    id: string | null;
+    id: string;
     nombre: string;
     rol: string;
     puedeGestionar: boolean;
     puedeVer: boolean;
 }
 
-/** Usuario de la sesión (middleware deja x-user-id / x-user-role; vale igual para login web y PIN). */
-export async function getActor(req: NextRequest): Promise<PliegoActor> {
-    const id = req.headers.get('x-user-id') || null;
-    const rol = (req.headers.get('x-user-role') || '').toLowerCase();
-    let nombre = 'Usuario';
-    if (id) {
-        const op = await prisma.operator.findUnique({ where: { id }, select: { nombreCompleto: true } });
-        if (op) nombre = op.nombreCompleto;
-    }
-    return { id, nombre, rol, puedeGestionar: !!id && puedeGestionarPliegos(rol), puedeVer: !!id && puedeVerPliegos(rol) };
+/**
+ * Usuario activo de la sesión, con rol y funciones leídos de la base (vale igual para
+ * login web y PIN). Sin sesión o con el usuario dado de baja devuelve la respuesta 401.
+ */
+export async function getActor(req: NextRequest): Promise<PliegoActor | NextResponse> {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+    const puedeGestionar = acceso.puede('pliegos.gestionar');
+    return {
+        id: acceso.userId,
+        nombre: acceso.nombre,
+        rol: acceso.role,
+        puedeGestionar,
+        puedeVer: puedeGestionar || acceso.puede('pliegos.ver'),
+    };
 }
 
 export function errorValidacion(error: ZodError) {

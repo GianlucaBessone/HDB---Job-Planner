@@ -40,6 +40,8 @@ Nadie puede cambiar su propio permiso de administrar accesos.
 - Ninguna API decide permisos con el rol o el usuario que manda el navegador (cuerpo,
   query o headers propios como `requestUserRole`, `role`, `userRole`, `approvedById`).
   Quien actúa, y quien queda en Auditoría, es siempre el usuario de la sesión.
+- El middleware borra los `x-user-id` / `x-user-role` que manda el navegador, también en
+  las rutas públicas: solo los pone él, después de validar la cookie.
 
 ## Roles y rango (Gestión de Usuarios)
 
@@ -62,15 +64,26 @@ y el editor avisa que no puede guardar.
 
 ## Para desarrollar
 
-- **API**: `const acceso = await exigirAcceso(req, ['ventas.anular_venta']); if (acceso instanceof NextResponse) return acceso;`
-  responde 401 sin sesión válida y 403 sin la función (alcanza con una de las de la lista).
-  Para decidir sin cortar el pedido: `const acceso = await getAcceso(req); acceso.puede(...)`.
-  Atajo: `await puede(req, funcion)`. Usá `acceso.userId` / `acceso.nombre` para la auditoría.
+- **API**: `exigirAcceso` exige usuario activo y, si se pasan funciones, al menos una:
+
+  ```ts
+  const acceso = await exigirAcceso(req, ['calidad.ver', 'calidad.gestionar']);
+  if (acceso instanceof NextResponse) return acceso; // 401 o 403
+  // acceso.userId, acceso.nombre, acceso.role, acceso.puede('calidad.gestionar')
+  ```
+
+  Sin funciones (`exigirAcceso(req)`) solo pide sesión de un usuario activo. Un tercer
+  parámetro opcional cambia el mensaje del 403. Para decidir sin cortar el pedido:
+  `const acceso = await getAcceso(req); acceso.puede(...)` (con un usuario inactivo, `puede()`
+  siempre da `false`). `verificarAcceso` devuelve el motivo en vez de la respuesta, para
+  módulos con su propio formato de error (EPP, presupuestos). Usá `acceso.userId` /
+  `acceso.nombre` para la auditoría.
 - **Pantalla**: `const { puede, puedeVer } = useAcceso()` (`lib/store/useAccessStore.ts`).
 - **Función nueva**: agregala a `FUNCIONES` en `lib/permisos.ts` con sus roles por defecto.
   Aparece sola en el editor.
 - **Vista nueva**: se declara en `lib/viewAccess.ts`, como siempre.
-- No compares roles a mano (`role === 'admin'`): un permiso especial no lo vería.
+- No compares roles a mano (`role === 'admin'`) ni leas `x-user-role`: un permiso
+  especial no lo vería y el rol del token puede estar desactualizado.
 
 ## Alcance actual
 
@@ -84,6 +97,9 @@ Pasan por el control de accesos:
   Almacén y stock, Reclutamiento de RRHH (ver, gestionar y eliminar; ver
   `docs/rrhh/RECLUTAMIENTO.md`) y las tres de EPP de Recursos Humanos
   (`rrhh.epp_ver`, `rrhh.epp_gestionar`, `rrhh.epp_entregar`).
+- Calidad (SGI), OKR y KPI, datasets, diccionario de datos, tickets, sugerencias, viajes,
+  pliegos, informes técnicos, PDV y generación de documentos con IA: ver
+  "Funciones por API".
 - EPP (`app/api/rrhh/epp/**`, lógica en `lib/rrhh/eppServer.ts`): ya no usa server
   actions. Cada API exige sesión de un usuario activo (`lib/rrhh/eppSesion.ts`) y la
   función que corresponde; actas, kardex, solicitudes y auditoría quedan a nombre del
@@ -133,19 +149,55 @@ Reglas por usuario, sin función:
   paso (creador, revisor o aprobador del documento). Confirmar lectura e imprimir una copia
   controlada quedan a nombre del usuario de la sesión.
 
-Todavía dependen solo del rol, y hay que migrarlos por etapas:
+### Funciones por API: calidad, tickets, viajes y otros módulos
 
-- Las APIs que leen `x-user-role` directo (tickets, sugerencias, viajes, inventario,
-  pliegos, comentarios de OT, `requireSGIRole`) usan el rol guardado en el token: un cambio
-  de rol o una baja recién aplican ahí cuando la sesión vence o el usuario vuelve a entrar.
-  Migrarlas a `getAcceso` lo corrige. Lo mismo para las APIs que solo piden sesión.
+Todas estas APIs exigen además un usuario activo (401 si no lo hay). "A ∨ B" significa
+que alcanza con una de las dos.
+
+| API | Métodos | Función |
+|---|---|---|
+| `/api/sgi/{nc,capa,riesgos,oportunidades,objetivos}` y sus `[id]` | GET | `calidad.ver` ∨ `calidad.gestionar` |
+| Las mismas, `nc/[id]/causa`, `verificacion-eficacia` | POST, PATCH, DELETE | `calidad.gestionar` |
+| `/api/sgi/capa/stats` | GET | `calidad.indicadores_capa` ∨ `calidad.ver` ∨ `calidad.gestionar` |
+| `/api/okr-kpi/{okr,kpi,graficos,planes-accion}` y sus `[id]`, `kpi/[id]/medicion`, `dashboard` | GET | `okr.ver` ∨ `okr.gestionar` |
+| Las mismas, `kpi/[id]/sincronizar` | POST, PUT | `okr.gestionar` |
+| `/api/datasets`, `[id]`, `[id]/historial`, `[id]/preview`, `[id]/ejecutar`, `test` | GET; POST de preview, ejecutar y test | `datasets.usar` ∨ `datasets.gestionar` |
+| `/api/datasets`, `[id]` | POST, PUT, DELETE | `datasets.gestionar` |
+| `/api/diccionario-datos`, `[tablaId]` | GET | `diccionario.ver` ∨ `diccionario.editar` |
+| `/api/diccionario-datos`, `[tablaId]` | POST, PUT | `diccionario.editar` |
+| `/api/tickets`, `metrics`, `[id]`, `[id]/analizar`, `adjuntos/[id]` | todos | `tickets.gestionar` ve y modifica todo; sin ella, solo los tickets propios (comentar, cerrar o reabrir un resuelto, un análisis con IA) |
+| `/api/tickets` | POST | usuario activo; reportar en nombre de otro pide `tickets.gestionar` |
+| `/api/tickets/[id]/agente-token` | POST, DELETE | `tickets.delegar_agente` |
+| `/api/tickets/upload` | POST | usuario activo |
+| `/api/sugerencias/[id]` | PATCH | `sugerencias.gestionar` (GET: usuario activo) |
+| `/api/sugerencias/analizar` | POST | `sugerencias.gestionar` |
+| `/api/viajes/**` | según la acción | `viajes.gestionar` para crear, editar, eliminar, rendir, ver todos y valores de referencia; responsable y participantes, sobre su viaje |
+| `/api/viajes/comprobantes/[id]` | GET | `viajes.gestionar`, quien lo subió, el responsable o un participante |
+| `/api/almacen/**`, `/api/ventas/stock/ajuste-rapido` | según la acción | `inventario.*` (`lib/inventario/permisos.ts`) |
+| `/api/pliegos`, `[id]`, `[id]/archivo` | GET | `pliegos.ver` ∨ `pliegos.gestionar` |
+| `/api/pliegos/tareas/[id]` | PATCH | `pliegos.ver` ∨ `pliegos.gestionar` |
+| `/api/pliegos`, `[id]`, `[id]/analizar`, `[id]/archivo`, `[id]/archivo/confirmar`, `opciones` | POST, DELETE, GET de opciones | `pliegos.gestionar` |
+| `/api/informes-tecnicos/[id]` | DELETE de un informe finalizado | `informes.eliminar_finalizados`, más DNI y firma (el resto: usuario activo) |
+| `/api/ordenes-trabajo/[id]/comentarios` | GET, POST | usuario activo; el autor sale de la sesión |
+| `/api/ventas/pdv/confirmar` | POST | `ventas.modificar_precios` si hay precios modificados (o autorización / cotización); `ventas.exceder_limite_credito` para superar el límite de cuenta corriente; el vendedor es el usuario de la sesión |
+| `/api/ai/generate-doc` | POST | `ia.generar_documentos` |
+
+Todavía dependen solo del rol, o de datos que manda el navegador, y hay que migrarlos:
+
 - `POST /api/activities` toma el emisor de la sesión, pero cualquier usuario con sesión puede
   enviar un aviso a cualquier otro (`operatorId`) o a todos los supervisores (`forSupervisors`).
-
-- Las APIs que usan `requireSGIRole` (`lib/sgiAuth.ts`): calidad (`/api/sgi`), OKR/KPI,
-  datasets y diccionario de datos. Otorgar esas vistas a un rol que no las tiene muestra
-  la pantalla, pero la API responde 403.
 - Chequeos de rol sueltos dentro de las pantallas (botones y acciones que se muestran
-  según `role`).
+  según `role`; por ejemplo, Viajes usa `esGestorViajes`).
+- El PIN de supervisor (`/api/auth/verificar-supervisor` y las anulaciones de ventas y
+  cuenta corriente) compara el rol de quien lo ingresa a mano.
+- El PDV manda siempre `autorizadoPorSupervisor: true`: el servidor no comprueba esa
+  autorización.
+- `x-user-name` lo manda el navegador y varias APIs lo usan como nombre en la auditoría.
+- Las APIs de IA `semantic-search`, `training`, `ocr` y `generate-checklist` toman usuario,
+  nombre y rol del cuerpo, solo para registrar el uso.
+- `/api/cron/reminders?manual=true` usa el rol del token.
+- En `/api/time-entries` cada usuario puede marcar como confirmado un día propio.
+- `/api/sgi/reunion/[id]`, `nc/[id]/chat`, `nc/[id]/reunion`, `nc/[id]/similares` y
+  `nc/[id]/ia-docs` solo piden sesión.
 - Una vista que el rol no tiene, sin denegación puntual, solo se oculta del menú: no se
   bloquea la URL directa (igual que antes de este módulo).

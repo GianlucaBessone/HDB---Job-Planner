@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withIdempotency } from '@/lib/idempotency';
 import { confirmarVentaPDV } from '@/lib/ventas/pdvService';
-import { puede } from '@/lib/permisosServer';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const itemSchema = z.object({
   productoId: z.string().optional().nullable(),
@@ -58,19 +58,20 @@ const confirmarVentaSchema = z.object({
 export async function POST(req: NextRequest) {
   return withIdempotency(req, async () => {
     try {
+      // Usuario, rol y funciones salen de la sesión (base de datos), no del navegador.
+      const acceso = await exigirAcceso(req);
+      if (acceso instanceof NextResponse) return acceso;
+
       const body = await req.json();
       const parsed = confirmarVentaSchema.parse(body);
 
-      const userIdHeader = req.headers.get('x-user-id');
-      const userRoleHeader = req.headers.get('x-user-role');
-
-      // Validar si algún item tuvo precio modificado manualmente y si el rol lo autoriza
+      // Validar si algún item tuvo precio modificado manualmente y si el usuario puede hacerlo
       const hayPreciosModificados = parsed.items.some((i) => i.precioModificado);
-      if (hayPreciosModificados && userRoleHeader) {
+      if (hayPreciosModificados) {
         // Sin la función "Modificar precios" (por rol o permiso especial), la venta tiene que
         // venir autorizada o provenir de una cotización formal
         if (
-          !(await puede(req, 'ventas.modificar_precios')) &&
+          !acceso.puede('ventas.modificar_precios') &&
           !body.autorizadoPorSupervisor &&
           !parsed.cotizacionId
         ) {
@@ -85,13 +86,15 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // El vendedor es siempre el usuario de la sesión.
       const venta = await confirmarVentaPDV(
         {
           ...parsed,
-          vendedorId: parsed.vendedorId || userIdHeader || undefined,
-          vendedorRol: userRoleHeader || undefined,
+          vendedorId: acceso.userId,
+          vendedorNombre: acceso.nombre,
+          puedeExcederLimiteCredito: acceso.puede('ventas.exceder_limite_credito'),
         },
-        userIdHeader || undefined
+        acceso.userId
       );
 
       return NextResponse.json(

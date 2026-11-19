@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { VIAJE_COMPROBANTE_MAX_BYTES, VIAJE_COMPROBANTES_MAX } from '@/lib/viajes';
 
@@ -18,8 +19,9 @@ const HUERFANOS_MS = 24 * 60 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
     try {
-        const userId = req.headers.get('x-user-id');
-        if (!userId) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const userId = acceso.userId;
 
         const formData = await req.formData();
         const files = formData.getAll('files').filter((f): f is File => f instanceof File && f.size > 0);

@@ -1,24 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { triageTicket } from '@/lib/tickets-ai';
 
 export const dynamic = 'force-dynamic';
 // El triaje llama a Gemini y puede tardar unos segundos.
 export const maxDuration = 60;
 
-const GESTORES = ['admin', 'qa', 'supervisor'];
 const COOLDOWN_MS = 30 * 1000;
-
-function getActor(req: NextRequest) {
-    const role = (req.headers.get('x-user-role') || 'operador').toLowerCase();
-    const userId = req.headers.get('x-user-id') || null;
-    return { role, userId, canManage: GESTORES.includes(role) };
-}
 
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
-        const { userId, canManage, role } = getActor(req);
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const { userId, role } = acceso;
+        const canManage = acceso.puede('tickets.gestionar');
 
         const ticket = await prisma.ticket.findUnique({
             where: { id: params.id },
@@ -61,16 +58,9 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
             }
         }
 
-        const actorNombre = userId
-            ? (await prisma.operator.findUnique({
-                  where: { id: userId },
-                  select: { nombreCompleto: true },
-              }))?.nombreCompleto || undefined
-            : undefined;
-
         const result = await triageTicket(ticket.id, {
             userId,
-            userName: actorNombre,
+            userName: acceso.nombre,
             userRole: role,
         });
 

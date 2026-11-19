@@ -215,8 +215,7 @@ async function main() {
       venta1.id,
       'Prueba de anulación automatizada de dev senior',
       operador?.id || 'admin',
-      operador?.nombreCompleto || 'Admin Tester',
-      'ADMIN' // Requiere rol supervisor o admin
+      operador?.nombreCompleto || 'Admin Tester'
     );
     assert.equal(venta1Anulada.estado, 'ANULADA');
     assert.equal(venta1Anulada.motivoAnulacion, 'Prueba de anulación automatizada de dev senior');

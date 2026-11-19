@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireSGIRole } from '@/lib/sgiAuth';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
 import { recalcularTrasNuevaMedicion } from '@/lib/okrKpiEngine';
 import { ejecutarDataset, extraerValorParaKpi } from '@/lib/datasetEngine';
@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['okr.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const kpi = await prisma.kpi.findUnique({
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
         // Ejecutar el dataset
         const resultado = await ejecutarDataset(kpi.datasetId, {
             preview: false,
-            usuarioId: auth.user.id,
+            usuarioId: auth.userId,
             tipo: 'Manual'
         });
 
@@ -49,9 +49,9 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
 
         // Get the user name for snapshot
         let usuarioNombre: string | null = null;
-        if (auth.user.id) {
+        if (auth.userId) {
             const op = await prisma.operator.findUnique({
-                where: { id: auth.user.id },
+                where: { id: auth.userId },
                 select: { nombreCompleto: true },
             });
             usuarioNombre = op?.nombreCompleto || null;
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
                 fechaMedicion: new Date(),
                 valorObtenido,
                 comentario: `Sincronización automática desde Dataset: ${kpi.dataset.codigoDataset}`,
-                usuarioRegistroId: auth.user.id,
+                usuarioRegistroId: auth.userId,
                 usuarioRegistroNombre: usuarioNombre,
             },
         });
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
         await recalcularTrasNuevaMedicion(params.id);
 
         await logAudit({
-            userId: auth.user.id,
+            userId: auth.userId,
             action: 'UPDATE',
             entity: 'KPI_MEDICION',
             entityId: medicion.id,

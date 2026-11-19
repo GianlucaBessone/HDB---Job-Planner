@@ -1,27 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { generarToken, promptParaAgente, TOKEN_TICKET_HORAS, urlBase } from '@/lib/ticketsAgente';
 
 export const dynamic = 'force-dynamic';
-
-const GESTORES = ['admin', 'qa', 'supervisor'];
-
-function getActor(req: NextRequest) {
-    const role = (req.headers.get('x-user-role') || '').toLowerCase();
-    const userId = req.headers.get('x-user-id') || null;
-    return { userId, canManage: GESTORES.includes(role) };
-}
 
 // Genera un token para que un agente externo trabaje solo este ticket.
 // Revoca los tokens anteriores del ticket y libera el bloqueo: el nuevo link reemplaza al viejo.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const { userId, canManage } = getActor(req);
-        if (!userId || !canManage) {
-            return NextResponse.json({ error: 'Solo el equipo de soporte puede delegar tickets a un agente.' }, { status: 403 });
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        if (!acceso.puede('tickets.delegar_agente')) {
+            return NextResponse.json({ error: 'No tenés permiso para delegar tickets a un agente.' }, { status: 403 });
         }
+        const { userId } = acceso;
 
         const ticket = await prisma.ticket.findUnique({ where: { id }, select: { id: true, codigo: true, estado: true } });
         if (!ticket) return NextResponse.json({ error: 'Ticket no encontrado.' }, { status: 404 });
@@ -53,6 +48,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
         await logAudit({
             userId,
+            userName: acceso.nombre,
             action: 'CREATE',
             entity: 'TICKET_AGENTE_TOKEN',
             entityId: ticket.id,
@@ -74,10 +70,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const { userId, canManage } = getActor(req);
-        if (!userId || !canManage) {
-            return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
-        }
+        const acceso = await exigirAcceso(req, ['tickets.delegar_agente']);
+        if (acceso instanceof NextResponse) return acceso;
 
         const { count } = await prisma.ticketAgenteToken.updateMany({
             where: { ticketId: id, revocadoEn: null },

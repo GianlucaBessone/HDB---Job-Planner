@@ -22,11 +22,7 @@ export interface ActorRRHH {
 
 export async function getActorRRHH(req: Request): Promise<ActorRRHH> {
     const acceso = await getAcceso(req);
-    let nombre = 'Usuario';
-    if (acceso.userId) {
-        const op = await prisma.operator.findUnique({ where: { id: acceso.userId }, select: { nombreCompleto: true } });
-        if (op) nombre = op.nombreCompleto;
-    }
+    const nombre = acceso.nombre || 'Usuario';
     const gestionar = acceso.puede('rrhh.reclutamiento_gestionar');
     return {
         id: acceso.userId,

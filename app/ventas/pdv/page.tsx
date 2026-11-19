@@ -846,9 +846,7 @@ export default function PdvPage() {
       headers: {
         'Content-Type': 'application/json',
         'X-Idempotency-Key': datosCobro.idempotencyKey,
-        'x-user-id': currentUser?.id || '',
         'x-user-name': activeVendorName,
-        'x-user-role': currentUser?.role || '',
       },
       body: JSON.stringify(payload),
     });
