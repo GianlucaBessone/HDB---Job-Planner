@@ -352,8 +352,6 @@ export default function CapacitacionPage() {
           descripcion: editCertData.descripcion,
           horas: editCertData.horas ? Number(editCertData.horas) : null,
           fechaEmision: editCertData.fechaEmision || null,
-          userId: user.id,
-          userName: user.nombreCompleto,
         }),
       });
       if (res.ok) {
@@ -362,7 +360,8 @@ export default function CapacitacionPage() {
         setPreviewCert({ ...previewCert, ...editCertData });
         loadCertificates();
       } else {
-        showToast("Error al actualizar datos", "error");
+        const err = await res.json().catch(() => ({}));
+        showToast(err.error || "Error al actualizar datos", "error");
       }
     } catch (error) {
       showToast("Error de red", "error");

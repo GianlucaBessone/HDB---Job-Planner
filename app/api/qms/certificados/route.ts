@@ -2,13 +2,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { performOCR } from '@/lib/ai';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
-        const operatorId = searchParams.get('operatorId');
+        // Sin "formacion.gestionar", solo la formación propia (se ignora ?operatorId).
+        const operatorId = acceso.puede('formacion.gestionar') ? searchParams.get('operatorId') : acceso.userId;
 
         const where: any = {};
         if (operatorId) {
@@ -88,9 +93,13 @@ const CERTIFICATE_RESPONSE_SCHEMA = {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
+        // Cada uno carga sus certificados; quien gestiona formación puede cargarlos a nombre de otro.
+        const operatorId: string = acceso.puede('formacion.gestionar') ? (data.operatorId || acceso.userId) : acceso.userId;
         const {
-            operatorId,
             nombreCurso,
             institucion,
             descripcion,
@@ -208,8 +217,13 @@ export async function POST(req: Request) {
 // Add updates (e.g. approve/reject certificates by supervisors)
 export async function PUT(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
-        const { id, estado, horas, fechaEmision, nombreCurso, institucion, descripcion, aiData, userId, userName } = data;
+        const { id, estado, horas, fechaEmision, nombreCurso, institucion, descripcion, aiData } = data;
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
 
         if (!id || !estado) {
             return NextResponse.json({ error: 'El ID de certificado y el estado son obligatorios.' }, { status: 400 });
@@ -221,6 +235,17 @@ export async function PUT(req: Request) {
 
         if (!certificate) {
             return NextResponse.json({ error: 'Certificado no encontrado.' }, { status: 404 });
+        }
+
+        // Sin "formacion.gestionar": solo los certificados propios, sin cambiar su estado
+        // (no se aprueban ni rechazan a sí mismos) y mientras no estén aprobados.
+        if (!acceso.puede('formacion.gestionar')) {
+            if (certificate.operatorId !== acceso.userId) {
+                return NextResponse.json({ error: 'No podés modificar certificados de otra persona.' }, { status: 403 });
+            }
+            if (estado !== certificate.estado || certificate.estado === 'aprobado') {
+                return NextResponse.json({ error: 'Validar un certificado lo hace quien gestiona la formación.' }, { status: 403 });
+            }
         }
 
         const updated = await prisma.externalCertificate.update({
@@ -299,6 +324,9 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
         
@@ -312,6 +340,11 @@ export async function DELETE(req: Request) {
 
         if (!certificate) {
             return NextResponse.json({ error: 'Certificado no encontrado.' }, { status: 404 });
+        }
+
+        // Sin "formacion.gestionar": solo los propios que todavía no fueron aprobados.
+        if (!acceso.puede('formacion.gestionar') && (certificate.operatorId !== acceso.userId || certificate.estado === 'aprobado')) {
+            return NextResponse.json({ error: 'No podés eliminar este certificado.' }, { status: 403 });
         }
 
         // Also clean up any pending/active competency that was created from this certificate

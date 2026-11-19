@@ -38,7 +38,8 @@ export interface ConfirmarVentaInput {
   almacenId?: string | null;
   vendedorId?: string | null;
   vendedorNombre?: string | null;
-  vendedorRol?: string | null;
+  /** Función "ventas.exceder_limite_credito" del usuario de la sesión (la resuelve la API). */
+  puedeExcederLimiteCredito?: boolean;
   items: ItemVentaInput[];
   pagos: PagoVentaInput[];
   descuentoPorcentaje?: number;
@@ -347,12 +348,7 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
           const haberPrevio = movsPrevios.reduce((acc, m) => acc + (m.haber || 0), 0);
           const saldoActualCC = Math.round((debePrevio - haberPrevio) * 100) / 100;
           const nuevoSaldoProyectado = Math.round((saldoActualCC + imputadoCuentaCorriente) * 100) / 100;
-          const rolVendedor = (input.vendedorRol || '').toLowerCase();
-
-          if (
-            nuevoSaldoProyectado > ccConfig.limiteCredito + 0.05 &&
-            !['admin', 'administrador', 'supervisor'].includes(rolVendedor)
-          ) {
+          if (nuevoSaldoProyectado > ccConfig.limiteCredito + 0.05 && !input.puedeExcederLimiteCredito) {
             const disponible = Math.max(0, Math.round((ccConfig.limiteCredito - saldoActualCC) * 100) / 100);
             throw new Error(
               `El monto a imputar ($${imputadoCuentaCorriente.toLocaleString('es-AR')}) supera el margen de crédito disponible del cliente ($${disponible.toLocaleString('es-AR')} sobre un límite de $${ccConfig.limiteCredito.toLocaleString('es-AR')}). Requiere autorización de Supervisor o Administrador.`
@@ -528,8 +524,7 @@ export async function anularVentaPDV(
   ventaId: string,
   motivo: string,
   usuarioId: string,
-  usuarioNombre?: string,
-  usuarioRol?: string
+  usuarioNombre?: string
 ) {
   if (!motivo || motivo.trim().length < 3) {
     throw new Error('Debe especificar un motivo válido de anulación (mínimo 3 caracteres)');
@@ -548,11 +543,7 @@ export async function anularVentaPDV(
     throw new Error('Esta venta ya se encuentra anulada');
   }
 
-  // Comprobar rol permitido (admin, administrador o supervisor)
-  const rol = (usuarioRol || '').toLowerCase();
-  if (rol && !['admin', 'administrador', 'supervisor'].includes(rol)) {
-    throw new Error('Solo usuarios con rol Administrador o Supervisor pueden anular ventas');
-  }
+  // Quién puede anular lo resuelve la API (función "ventas.anular_venta" o PIN de supervisor).
 
   // Si la venta fue imputada a Cuenta Corriente y ya posee cobros/recibos aplicados sobre ese saldo, impedir anular sin revertir antes el recibo
   if (

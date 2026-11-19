@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireSGIRole } from '@/lib/sgiAuth';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['okr.ver', 'okr.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const okrs = await prisma.okr.findMany({

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireSGIRole } from '@/lib/sgiAuth';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['calidad.ver', 'calidad.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const nc = await prisma.noConformidad.findUnique({
@@ -40,8 +40,8 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
 
 export async function PATCH(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['calidad.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const body = await req.json();
@@ -84,7 +84,7 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
         });
 
         await logAudit({
-            userId: auth.user.id,
+            userId: auth.userId,
             action: 'UPDATE',
             entity: 'NC',
             entityId: nc.id,
@@ -124,8 +124,8 @@ Causa Raíz: ${nc.analisisCausaRaiz?.map(acr => acr.causaRaiz || acr.descripcion
 
 export async function DELETE(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['calidad.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const nc = await prisma.noConformidad.findUnique({ where: { id: params.id } });
@@ -136,7 +136,7 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
 
         if (nc) {
             await logAudit({
-                userId: auth.user.id,
+                userId: auth.userId,
                 action: 'DELETE',
                 entity: 'NC',
                 entityId: nc.id,

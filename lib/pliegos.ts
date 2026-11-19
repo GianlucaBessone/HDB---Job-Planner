@@ -4,13 +4,7 @@ import { z } from 'zod';
 import type { BadgeTone } from '@/components/ui/Badge';
 
 // ── Permisos ────────────────────────────────────────────────────────
-/** Suben pliegos y piden el análisis (o un re-análisis). */
-export const PLIEGO_ROLES_GESTION = ['admin', 'supervisor'];
-/** Ven los análisis y marcan tareas dentro / fuera del pliego. */
-export const PLIEGO_ROLES_VER = ['operador', 'supervisor', 'admin', 'qa'];
-
-export const puedeGestionarPliegos = (rol: string | null | undefined) => !!rol && PLIEGO_ROLES_GESTION.includes(rol.toLowerCase());
-export const puedeVerPliegos = (rol: string | null | undefined) => !!rol && PLIEGO_ROLES_VER.includes(rol.toLowerCase());
+// Funciones "pliegos.ver" y "pliegos.gestionar" en lib/permisos.ts.
 
 // ── Archivo ─────────────────────────────────────────────────────────
 /** Límite del PDF: Gemini acepta hasta ~20 MB por request con el archivo en base64. */

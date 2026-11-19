@@ -10,6 +10,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.puedeVer) return prohibido();
         const url = await urlDescarga(id);
         if (!url) return noEncontrado('El PDF no está disponible.');
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.puedeGestionar) return prohibido('Solo admin y supervisores pueden subir pliegos.');
         return NextResponse.json(await urlSubida(id));
     } catch (error) {

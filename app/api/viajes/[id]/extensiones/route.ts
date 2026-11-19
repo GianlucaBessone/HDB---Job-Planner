@@ -13,6 +13,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     try {
         const { id } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         const viaje = await cargarViaje(id);
         if (!viaje || !puedeVer(viaje, actor)) return noEncontrado();
         if (!esResponsable(viaje, actor) && !actor.esGestor) return prohibido('Solo el responsable puede extender la estadía.');

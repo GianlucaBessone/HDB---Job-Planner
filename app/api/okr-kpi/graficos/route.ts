@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireSGIRole } from '@/lib/sgiAuth';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
 import { generateCodigoGrafico } from '@/lib/codeGenerator';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['okr.ver', 'okr.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const { searchParams } = new URL(req.url);
@@ -33,8 +33,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['okr.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const body = await req.json();
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
         });
 
         await logAudit({
-            userId: auth.user.id,
+            userId: auth.userId,
             action: 'CREATE',
             entity: 'GRAFICO',
             entityId: grafico.id,

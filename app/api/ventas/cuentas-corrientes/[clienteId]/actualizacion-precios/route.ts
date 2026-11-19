@@ -5,6 +5,7 @@ import {
   aplicarActualizacionDeuda,
   previsualizarActualizacionDeuda,
 } from '@/lib/ventas/actualizacionDeudaService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const aplicarSchema = z.object({
   ventaIds: z.array(z.string().min(1)).optional(),
@@ -13,9 +14,12 @@ const aplicarSchema = z.object({
 
 /** Vista previa de la actualización de deuda a precios vigentes. */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params: paramsPromise }: { params: Promise<{ clienteId: string }> }
 ) {
+  const acceso = await exigirAcceso(req, ['ventas.cc_ver'], 'No tenés permiso para ver cuentas corrientes');
+  if (acceso instanceof NextResponse) return acceso;
+
   const { clienteId } = await paramsPromise;
   try {
     const data = await previsualizarActualizacionDeuda(clienteId);
@@ -35,6 +39,9 @@ export async function POST(
   { params: paramsPromise }: { params: Promise<{ clienteId: string }> }
 ) {
   const { clienteId } = await paramsPromise;
+  const acceso = await exigirAcceso(req, ['ventas.cc_configurar'], 'No tenés permiso para actualizar la deuda a precios vigentes');
+  if (acceso instanceof NextResponse) return acceso;
+
   return withIdempotency(req, async () => {
     try {
       const body = await req.json().catch(() => ({}));
@@ -43,8 +50,8 @@ export async function POST(
       const resultado = await aplicarActualizacionDeuda({
         clienteId,
         ventaIds: parsed.ventaIds,
-        operadorId: req.headers.get('x-user-id'),
-        operadorNombre: parsed.operadorNombre || req.headers.get('x-user-name'),
+        operadorId: acceso.userId,
+        operadorNombre: acceso.nombre,
       });
 
       return NextResponse.json(

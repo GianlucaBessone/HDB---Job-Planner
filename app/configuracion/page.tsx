@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useAcceso } from '@/lib/store/useAccessStore';
 import {
     Settings,
     Tags,
@@ -200,6 +202,8 @@ function ConfigSkeleton() {
 
 // ----- TAGS SECTION -----
 function TagsSection() {
+    const { puede } = useAcceso();
+    const puedeGestionar = puede('config.administrar');
     const [tags, setTags] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -224,11 +228,16 @@ function TagsSection() {
         const method = id ? 'PUT' : 'POST';
         const body = id ? { id, ...form } : form;
 
-        await safeApiRequest('/api/config/tags', {
+        const res = await safeApiRequest('/api/config/tags', {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
+        if (!res.ok) {
+            const data = await res.json().catch(() => null);
+            showToast(data?.error || 'No se pudo guardar la etiqueta', 'error');
+            return;
+        }
         setEditingId(null);
         setForm({ name: '', active: true });
         loadTags();
@@ -241,9 +250,14 @@ function TagsSection() {
 
     const confirmDelete = async () => {
         if (!itemToDelete) return;
-        await safeApiRequest(`/api/config/tags?id=${itemToDelete}`, { method: 'DELETE' });
+        const res = await safeApiRequest(`/api/config/tags?id=${itemToDelete}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setItemToDelete(null);
+        if (!res.ok) {
+            const data = await res.json().catch(() => null);
+            showToast(data?.error || 'No se pudo eliminar la etiqueta', 'error');
+            return;
+        }
         loadTags();
     };
 
@@ -253,12 +267,14 @@ function TagsSection() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Etiquetas de Proyectos</h3>
-                <button
-                    onClick={() => setEditingId('new')}
-                    className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
-                >
-                    <Plus className="w-4 h-4" /> Nueva Etiqueta
-                </button>
+                {puedeGestionar && (
+                    <button
+                        onClick={() => setEditingId('new')}
+                        className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                    >
+                        <Plus className="w-4 h-4" /> Nueva Etiqueta
+                    </button>
+                )}
             </div>
 
             <div className="space-y-3">
@@ -324,7 +340,7 @@ function TagsSection() {
             <ConfirmDialog
                 isOpen={isConfirmOpen}
                 title="¿Eliminar etiqueta?"
-                message="Esta acción no se puede deshacer y puede afectar a los proyectos que la utilicen."
+                message="Esta acción no se puede deshacer. Se borran también su checklist y sus plantillas vinculadas, y puede afectar a los proyectos que la usan."
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
             />

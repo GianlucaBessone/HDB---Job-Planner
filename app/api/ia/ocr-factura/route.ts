@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { logAiRequest } from '@/lib/ai/audit';
 import { resolveRoute } from '@/lib/ai/router';
 import { calculateCost } from '@/lib/ai/costs';
@@ -74,18 +75,16 @@ const RESPONSE_SCHEMA = {
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
-  let userId = 'anonymous';
-  let userName = 'Usuario Anónimo';
-  let userRole = 'Desconocido';
-  
+  // Escanear facturas consume IA y es parte de la carga de gastos. El usuario sale de la sesión.
+  const acceso = await exigirAcceso(req, ['gastos.gestionar'], 'No tenés permiso para gestionar gastos');
+  if (acceso instanceof NextResponse) return acceso;
+  const userId = acceso.userId;
+  const userName = acceso.nombre;
+  const userRole = acceso.role;
+
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    
-    // We can also extract userId, userName, userRole if they are sent in formData
-    if (formData.has('userId')) userId = formData.get('userId') as string;
-    if (formData.has('userName')) userName = formData.get('userName') as string;
-    if (formData.has('userRole')) userRole = formData.get('userRole') as string;
     
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });

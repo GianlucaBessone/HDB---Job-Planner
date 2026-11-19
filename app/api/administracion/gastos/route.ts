@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const facturaSchema = z.object({
   fechaEmision: z.string(),
@@ -35,6 +36,9 @@ const facturaSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['gastos.ver', 'gastos.gestionar'], 'No tenés permiso para ver gastos');
+    if (acceso instanceof NextResponse) return acceso;
+
     const url = new URL(req.url);
     const month = url.searchParams.get('month');
     const year = url.searchParams.get('year');
@@ -72,6 +76,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['gastos.gestionar'], 'No tenés permiso para gestionar gastos');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const data = facturaSchema.parse(body);
 

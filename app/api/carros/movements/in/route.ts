@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { movementId, tools } = await req.json();
 
         if (!movementId) return NextResponse.json({ error: 'Falta el ID del movimiento.' }, { status: 400 });
@@ -13,6 +17,9 @@ export async function POST(req: Request) {
         });
 
         if (!mov) return NextResponse.json({ error: 'Movimiento no encontrado.' }, { status: 404 });
+        if (mov.operatorId !== acceso.userId && !acceso.puede('herramientas.gestionar')) {
+            return NextResponse.json({ error: 'Solo quien retiró el carro puede registrar su devolución.' }, { status: 403 });
+        }
         if (mov.estado !== 'ACTIVO') return NextResponse.json({ error: 'El movimiento ya fue cerrado.' }, { status: 400 });
 
         // Update items

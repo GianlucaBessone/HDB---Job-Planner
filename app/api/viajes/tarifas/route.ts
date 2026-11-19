@@ -21,6 +21,7 @@ function serializar(t: { id: string; vigenciaDesde: Date; valores: unknown; crea
 export async function GET(req: NextRequest) {
     try {
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.esGestor) return prohibido();
 
         const versiones = await prisma.viajeTarifa.findMany({
@@ -46,6 +47,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.esGestor) return prohibido('Solo administración configura los valores de referencia.');
 
         const parsed = tarifaSchema.safeParse(await req.json());

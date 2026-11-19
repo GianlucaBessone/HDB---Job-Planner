@@ -4,6 +4,7 @@ import {
   obtenerDetalleCuentaCorrienteCliente,
   actualizarConfiguracionCC,
 } from '@/lib/ventas/cuentaCorrienteService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const configSchema = z.object({
   limiteCredito: z.coerce.number().min(0).default(0),
@@ -18,6 +19,9 @@ export async function GET(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.cc_ver'], 'No tenés permiso para ver cuentas corrientes');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { clienteId } = params;
     const { searchParams } = new URL(req.url);
     const fechaDesde = searchParams.get('fechaDesde') || undefined;
@@ -44,12 +48,15 @@ export async function PUT(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.cc_configurar'], 'No tenés permiso para configurar el crédito del cliente');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { clienteId } = params;
     const body = await req.json();
     const parsed = configSchema.parse(body);
 
-    const userId = req.headers.get('x-user-id') || undefined;
-    const userName = req.headers.get('x-user-name') || undefined;
+    const userId = acceso.userId;
+    const userName = acceso.nombre;
 
     const config = await actualizarConfiguracionCC(clienteId, parsed, userId, userName);
     return NextResponse.json({

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
     try {
         const actor = await getActor(req);
-        if (!actor.userId) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+        if (actor instanceof NextResponse) return actor;
 
         const url = new URL(req.url);
         const mios = url.searchParams.get('mios') === '1';
@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const actor = await getActor(req);
-        if (!actor.userId) return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+        if (actor instanceof NextResponse) return actor;
         if (!actor.esGestor) return prohibido('Solo administración puede crear viajes.');
 
         const parsed = viajeConfigSchema.safeParse(await req.json());

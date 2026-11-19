@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const GESTORES = ['admin', 'qa', 'supervisor'];
-
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const userId = req.headers.get('x-user-id');
-        const role = (req.headers.get('x-user-role') || '').toLowerCase();
-
-        if (!userId) {
-            return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
-        }
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const { userId } = acceso;
 
         const adjunto = await prisma.ticketAdjunto.findUnique({
             where: { id },
@@ -23,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         // Lo ve quien lo subió, el autor del ticket o un gestor. Si no, 404 para no revelar que existe.
         const puedeVer = adjunto && (
-            GESTORES.includes(role) ||
+            acceso.puede('tickets.gestionar') ||
             adjunto.subidoPorId === userId ||
             adjunto.ticket?.reportadoPorId === userId
         );
