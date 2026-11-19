@@ -16,6 +16,7 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { getSessionFromRequest } from '@/lib/auth';
 import { EfectoPermiso, FuncionId, PermisoEspecial, normalizarRol, puedeFuncion } from '@/lib/permisos';
 
 /**
@@ -98,6 +99,15 @@ export async function getAccesoDeUsuario(userId: string | null | undefined): Pro
 /** Acceso del usuario de la sesión (el middleware deja x-user-id). */
 export async function getAcceso(req: Request): Promise<AccesoSesion> {
     return getAccesoDeUsuario(req.headers.get('x-user-id'));
+}
+
+/**
+ * Igual que getAcceso, para rutas que el middleware deja pasar sin sesión (no completa
+ * x-user-id): lee y valida la cookie. Sin cookie válida devuelve un acceso vacío.
+ */
+export async function getAccesoDeCookie(req: Request): Promise<AccesoSesion> {
+    const sesion = await getSessionFromRequest(req);
+    return getAccesoDeUsuario(sesion?.id);
 }
 
 /** Atajo para chequear una sola función. */

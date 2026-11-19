@@ -2,13 +2,21 @@ import { NextResponse } from 'next/server';
 import { generateObject } from '@/lib/ai';
 import { ChecklistGenOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
-        const { tipoTrabajo, etiquetas, categoria, normativa, userId, userName, userRole, saveAsTemplate } = body;
+        const { tipoTrabajo, etiquetas, categoria, normativa, saveAsTemplate } = body;
+        // Usuario, nombre y rol salen de la sesión (se ignoran los del cuerpo).
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
 
         if (!tipoTrabajo) {
             return NextResponse.json({ error: 'Falta parámetro obligatorio: tipoTrabajo.' }, { status: 400 });

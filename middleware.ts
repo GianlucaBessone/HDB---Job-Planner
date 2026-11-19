@@ -11,13 +11,19 @@ const PUBLIC_ROUTES = [
   '/api/agente', // se autentica con su propio token Bearer (lib/ticketsAgente.ts)
 ];
 
-const PUBLIC_DYNAMIC_ROUTES = [
-  /^\/api\/ordenes-servicio\/[^\/]+$/, // GET or PUT (firma) by publicToken
-  /^\/api\/ordenes-servicio\/[^\/]+\/pdf$/, // PDF generation
-  /^\/api\/encuesta-servicio$/, // POST
-  /^\/api\/encuesta-servicio\/[^\/]+$/, // GET
-  /^\/api\/centro-ayuda\/articulo\/[^\/]+$/, // GET ayuda contextual
-  /^\/api\/signatures\/verify\/[^\/]+$/, // POST verificacion publica
+// Rutas públicas por patrón, cada una solo con los métodos que necesita sin sesión.
+// Cualquier otro método sobre la misma ruta pasa por la validación de sesión.
+const PUBLIC_DYNAMIC_ROUTES: { pattern: RegExp; methods: string[] }[] = [
+  // OS para el cliente: ver y firmar por su link público. El handler solo acepta el
+  // linkPublico cuando no hay sesión; editar y borrar (PUT/DELETE) exigen sesión.
+  { pattern: /^\/api\/ordenes-servicio\/[^\/]+$/, methods: ['GET', 'POST'] },
+  { pattern: /^\/api\/ordenes-servicio\/[^\/]+\/pdf$/, methods: ['GET'] },
+  { pattern: /^\/api\/encuesta-servicio$/, methods: ['POST'] },
+  { pattern: /^\/api\/encuesta-servicio\/[^\/]+$/, methods: ['GET'] },
+  { pattern: /^\/api\/centro-ayuda\/articulo\/[^\/]+$/, methods: ['GET'] }, // ayuda contextual
+  { pattern: /^\/api\/signatures\/verify\/[^\/]+$/, methods: ['POST'] }, // verificación pública
+  // Lo llama cron-job.org sin sesión; el handler valida un token firmado por recordatorio.
+  { pattern: /^\/api\/tareas\/reminder-webhook$/, methods: ['GET'] },
 ];
 
 // Headers de identidad: solo los pone este middleware después de validar la cookie.
@@ -63,7 +69,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Permitir rutas publicas dinamicas
-  if (PUBLIC_DYNAMIC_ROUTES.some(regex => regex.test(pathname))) {
+  if (PUBLIC_DYNAMIC_ROUTES.some(r => r.methods.includes(request.method) && r.pattern.test(pathname))) {
     return siguientePublico(request);
   }
 

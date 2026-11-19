@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const {
             delegations, // Array of { materialId, cantidadADevolver, materialNombre, unidad }
@@ -11,16 +15,15 @@ export async function POST(req: Request) {
             delegadoAId,
             delegadoANombre,
             firmaDelegacion,
-            delegadoPorId,
-            delegadoPorNombre,
             projectId,
-            projectName,
-            operatorId
+            projectName
         } = body;
+        // Quien delega es la sesión (se ignoran delegadoPorId / delegadoPorNombre del cuerpo).
+        const delegadoPorId = acceso.userId;
+        const delegadoPorNombre = acceso.nombre;
 
-        if (!operatorId) {
-            return NextResponse.json({ error: 'operatorId es requerido para esta acción' }, { status: 401 });
-        }
+        // El actor es el usuario de la sesión (se ignoran operatorId y los nombres del cuerpo).
+        const operatorId = acceso.userId;
 
         const operator = await prisma.operator.findUnique({ where: { id: operatorId, activo: true } });
         if (!operator) {

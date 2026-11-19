@@ -3,13 +3,21 @@ import { generateObject } from '@/lib/ai';
 import { TrainingQuizOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
 import { responsabilidadesATexto } from '@/lib/documentoResponsabilidades';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
-        const { documentId, cantidadPreguntas, nivelDificultad, userId, userName, userRole, saveAsTraining, operatorId } = body;
+        const { documentId, cantidadPreguntas, nivelDificultad, saveAsTraining, operatorId } = body;
+        // Usuario, nombre y rol salen de la sesión (se ignoran los del cuerpo).
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
 
         if (!documentId) {
             return NextResponse.json({ error: 'Falta parámetro obligatorio: documentId.' }, { status: 400 });

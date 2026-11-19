@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
 import { generateObject } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
-        const { query, filterEntity, userId, userName, userRole } = body;
+        const { query, filterEntity } = body;
+        // Usuario, nombre y rol salen de la sesión (se ignoran los del cuerpo).
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
 
         if (!query) {
             return NextResponse.json({ error: 'Falta el parámetro obligatorio: query.' }, { status: 400 });

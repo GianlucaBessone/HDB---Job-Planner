@@ -1,26 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
-import { exigirAcceso, type AccesoSesion } from '@/lib/permisosServer';
-
-/**
- * Qué puede hacer el usuario de la sesión con una tarea (mismo criterio que la pantalla):
- *  - total:  quien tiene "tareas.ver_todas", el creador o un involucrado responsable.
- *  - estado: un involucrado colaborador, que solo cambia el estado.
- *  - ninguno: el resto (observadores incluidos).
- */
-type NivelTarea = 'total' | 'estado' | 'ninguno';
-
-function nivelSobreTarea(
-    acceso: AccesoSesion,
-    tarea: { creadorId: string; involucrados: { operatorId: string; rol: string }[] }
-): NivelTarea {
-    if (acceso.puede('tareas.ver_todas') || tarea.creadorId === acceso.userId) return 'total';
-    const inv = tarea.involucrados.find(i => i.operatorId === acceso.userId);
-    if (inv?.rol === 'responsable') return 'total';
-    if (inv?.rol === 'colaborador') return 'estado';
-    return 'ninguno';
-}
+import { exigirAcceso } from '@/lib/permisosServer';
+import { nivelSobreTarea } from '@/lib/tareas/acceso';
 
 /** Campos que un colaborador puede cambiar. */
 const CAMPOS_COLABORADOR = ['estado', 'fechaCompletada'];
@@ -218,7 +200,7 @@ export async function PUT(req: NextRequest) {
         }
 
         const nivel = nivelSobreTarea(acceso, oldTarea);
-        if (nivel === 'ninguno') {
+        if (nivel === 'ninguno' || nivel === 'lectura') {
             return NextResponse.json({ error: 'No tenés permiso para modificar esta tarea' }, { status: 403 });
         }
         if (nivel === 'estado' && (involucrados !== undefined || Object.keys(data).some(k => !CAMPOS_COLABORADOR.includes(k)))) {

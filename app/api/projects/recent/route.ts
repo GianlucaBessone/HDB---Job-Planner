@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const url = new URL(req.url);
-        const userId = url.searchParams.get('userId');
-        const userName = url.searchParams.get('userName');
+        // Recientes del usuario de la sesión (se ignoran ?userId y ?userName).
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
 
         if (!userId && !userName) {
             return NextResponse.json([]);

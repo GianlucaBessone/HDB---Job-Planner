@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso, getAccesoDeCookie } from '@/lib/permisosServer';
 
 const include = {
     project: {
@@ -38,8 +39,10 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
   const params = await paramsPromise;
     const { id } = params;
     try {
-        // Try by internal id first, then by linkPublico
-        let os = await prisma.ordenServicio.findUnique({ where: { id }, include });
+        // Con sesión: por id interno o por linkPublico. Sin sesión (cliente): solo por linkPublico,
+        // así el id interno (que figura en los QR internos) no da acceso a la OS.
+        const conSesion = !!(await getAccesoDeCookie(req)).userId;
+        let os = conSesion ? await prisma.ordenServicio.findUnique({ where: { id }, include }) : null;
         let isPublic = false;
         if (!os) {
             os = await prisma.ordenServicio.findUnique({ where: { linkPublico: id }, include });
@@ -74,8 +77,9 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
         // Use a single transaction for everything to avoid orphaned records or inconsistent states
         const result = await prisma.$transaction(async (tx) => {
             // Find OS within the transaction to ensure state hasn't changed
+            // La firma del cliente entra solo por el link público, nunca por el id interno.
             const os = await tx.ordenServicio.findFirst({
-                where: { OR: [{ id }, { linkPublico: id }] },
+                where: { linkPublico: id },
                 include: {
                     project: {
                         select: {
@@ -265,6 +269,10 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
   const params = await paramsPromise;
     const { id } = params;
     try {
+        // Editar y borrar exigen sesión (el middleware ya no deja pasar PUT/DELETE sin ella).
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const os = await prisma.ordenServicio.findUnique({ where: { id } });
         if (!os) return NextResponse.json({ error: 'Orden de servicio no encontrada' }, { status: 404 });
 
@@ -453,6 +461,10 @@ export async function DELETE(req: Request, { params: paramsPromise }: { params: 
   const params = await paramsPromise;
     const { id } = params;
     try {
+        // Editar y borrar exigen sesión (el middleware ya no deja pasar PUT/DELETE sin ella).
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const os = await prisma.ordenServicio.findUnique({ where: { id } });
         if (!os) return NextResponse.json({ error: 'Orden de servicio no encontrada' }, { status: 404 });
 

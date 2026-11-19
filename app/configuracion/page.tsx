@@ -37,7 +37,6 @@ import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { QRCodeCanvas } from 'qrcode.react';
 import { ViewConfig, getViewConfig, DEFAULT_SECTIONS, VISTAS_DESACTIVADAS } from '@/lib/viewAccess';
-import { useAcceso } from '@/lib/store/useAccessStore';
 import ModuleHeader from '@/components/ModuleHeader';
 
 type ConfigTab = 'tags' | 'checklists' | 'options' | 'os' | 'system' | 'vistas';
