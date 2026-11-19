@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,11 +12,13 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
-        const { operatorId, operatorNombre, signatureId } = await req.json();
+        // Cada uno confirma su propia lectura: se ignoran operatorId / operatorNombre del cuerpo.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const operatorId = acceso.userId;
+        const operatorNombre = acceso.nombre;
 
-        if (!operatorId || !operatorNombre) {
-            return NextResponse.json({ error: 'operatorId y operatorNombre son requeridos' }, { status: 400 });
-        }
+        const { signatureId } = await req.json();
 
         const doc = await prisma.controlledDocument.findUnique({
             where: { id: params.id }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateInitialPassword, hashPassword } from '@/lib/portalAuth';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +12,9 @@ export async function POST(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id: clientId, responsableId } = params;
 
     const responsable = await prisma.clientResponsable.findFirst({
@@ -33,8 +37,8 @@ export async function POST(
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'UPDATE',
       entity: 'CLIENT_RESPONSABLE_PASSWORD_RESET',
       entityId: responsableId,

@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 // POST /api/config/checklists - Vincular una plantilla de checklist a una etiqueta
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para cambiar la configuración');
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { tagId, checklistTemplateId } = body;
 
@@ -45,6 +49,9 @@ export async function POST(req: Request) {
 // DELETE /api/config/checklists - Desvincular plantilla de una etiqueta
 export async function DELETE(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para cambiar la configuración');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
         const tagId = searchParams.get('tagId');
         const checklistTemplateId = searchParams.get('checklistTemplateId');

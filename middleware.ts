@@ -4,6 +4,7 @@ import { decrypt, encrypt } from './lib/auth';
 
 const PUBLIC_ROUTES = [
   '/api/auth/login',
+  '/api/auth/logout', // solo borra la cookie; si pasara por acá, la renovación la volvería a escribir
   '/api/cron',
   '/api/public',
   '/api/portal-clientes',
@@ -62,6 +63,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
   }
 
+  // x-user-role es el rol guardado en el token. Para decidir permisos, las APIs usan
+  // getAcceso (lib/permisosServer.ts), que lee rol y estado desde la base en cada pedido.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-user-id', payload.id as string);
   requestHeaders.set('x-user-role', payload.role as string || '');

@@ -1,14 +1,32 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+/**
+ * Busca el destinatario (params.id es el recipientId que devuelve GET /api/activities)
+ * solo si pertenece al usuario de la sesión: nadie marca ni archiva avisos ajenos.
+ */
+async function destinatarioPropio(req: Request, recipientId: string) {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+    const recipient = await prisma.activityRecipient.findFirst({
+        where: { id: recipientId, operatorId: acceso.userId },
+        select: { id: true },
+    });
+    if (!recipient) return NextResponse.json({ error: 'Aviso no encontrado' }, { status: 404 });
+    return recipient;
+}
 
 export async function PATCH(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const propio = await destinatarioPropio(req, params.id);
+        if (propio instanceof NextResponse) return propio;
+
         const body = await req.json();
 
         const recipient = await prisma.activityRecipient.update({
-            // params.id is the recipientId we sent from the GET /api/activities
-            where: { id: params.id },
+            where: { id: propio.id },
             data: { readAt: body.read ? new Date() : null }
         });
 
@@ -21,8 +39,11 @@ export async function PATCH(req: Request, { params: paramsPromise }: { params: P
 export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const propio = await destinatarioPropio(req, params.id);
+        if (propio instanceof NextResponse) return propio;
+
         await prisma.activityRecipient.update({
-            where: { id: params.id },
+            where: { id: propio.id },
             data: { archivedAt: new Date() }
         });
         return NextResponse.json({ success: true });
