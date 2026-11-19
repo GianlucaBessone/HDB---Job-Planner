@@ -50,8 +50,10 @@ por usuario. El alta clásica sigue disponible en `/projects?alta=clasica`.
 Las horas por día del paso 5 vienen del presupuesto (o 8 en un proyecto manual), se pueden cambiar
 y quedan en el equipo asignado.
 
-La asignación de operadores solo se registra (`ProyectoAsignacion`); no crea bloques en
+La asignación de operadores se registra (`ProyectoAsignacion`); no crea bloques en
 Planificación. La disponibilidad cuenta Planificación, otras asignaciones, viajes y vacaciones.
+El fichado acepta la asignación como válida: un operario del equipo asignado no recibe la alerta
+"no asignado" aunque no figure en la agenda del día.
 
 ## Presupuestado vs. real
 

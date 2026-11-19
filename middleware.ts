@@ -84,6 +84,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
   }
 
+  // Sesión abierta con un PIN débil: lo único permitido es cambiarlo.
+  if (payload.cambiarPin && pathname !== '/api/auth/cambiar-pin') {
+    return NextResponse.json(
+      { error: 'Tenés que elegir un PIN nuevo antes de seguir.', code: 'CAMBIAR_PIN' },
+      { status: 403 }
+    );
+  }
+
   // x-user-role es el rol guardado en el token y puede estar desactualizado: los permisos
   // se resuelven con el rol de la base (lib/permisosServer.ts). Se mantiene solo como dato.
   const requestHeaders = sinHeadersDeSesion(request);
@@ -96,11 +104,18 @@ export async function middleware(request: NextRequest) {
     },
   });
 
+  // El cambio de PIN emite su propia sesión (sin la marca cambiarPin): no renovarla acá,
+  // o esta cookie pisaría la nueva en la misma respuesta.
+  if (pathname === '/api/auth/cambiar-pin') {
+    return response;
+  }
+
   // Implement rolling session (refresh token)
   const sessionPayload = {
       id: payload.id as string,
       role: payload.role as string | null,
-      nombreCompleto: payload.nombreCompleto as string
+      nombreCompleto: payload.nombreCompleto as string,
+      ...(payload.cambiarPin ? { cambiarPin: true } : {}),
   };
   const refreshedToken = await encrypt(sessionPayload);
   response.cookies.set('sgi_session', refreshedToken, {

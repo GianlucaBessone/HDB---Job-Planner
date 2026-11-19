@@ -41,6 +41,7 @@ export async function DELETE(req: Request) {
     const url = new URL(req.url);
     const id = url.searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-    await dataLayer.deleteProject(id, acceso);
-    return NextResponse.json({ success: true });
+    // Con historial (horas, fichadas, órdenes…) se desactiva en lugar de borrarse.
+    const resultado = await dataLayer.deleteProject(id, acceso);
+    return NextResponse.json({ success: true, ...resultado });
 }
