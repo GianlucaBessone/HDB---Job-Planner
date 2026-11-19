@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 
@@ -7,6 +8,12 @@ export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const forceSeed = searchParams.get('seed') === 'true';
+
+        // Forzar la recarga borra todas las etiquetas: es una acción de configuración.
+        if (forceSeed) {
+            const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para cambiar la configuración');
+            if (acceso instanceof NextResponse) return acceso;
+        }
 
         const targetTags = [
             "Seguridad eléctrica",
@@ -61,6 +68,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para cambiar la configuración');
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const tag = await prisma.projectTag.create({
             data: {
@@ -77,6 +87,9 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para cambiar la configuración');
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const tag = await prisma.projectTag.update({
             where: { id: body.id },
@@ -94,6 +107,9 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para cambiar la configuración');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });

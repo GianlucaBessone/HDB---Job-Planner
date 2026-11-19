@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { getAcceso } from '@/lib/permisosServer';
+import { exigirAcceso, getAcceso } from '@/lib/permisosServer';
 import { sendPushNotification } from '@/lib/onesignal';
 import { withIdempotency } from '@/lib/idempotency';
 
@@ -10,12 +10,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
-        const url = new URL(req.url);
-        const operatorId = url.searchParams.get('operatorId');
-        
-        if (!operatorId) {
-            return NextResponse.json({ error: 'Falta operatorId' }, { status: 400 });
-        }
+        // Siempre los avisos del usuario de la sesión: se ignora ?operatorId.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const operatorId = acceso.userId;
 
         const activities = await prisma.activity.findMany({
             where: {
@@ -174,12 +172,10 @@ export async function POST(req: Request) {
 // Clear or delete activities (Archive)
 export async function DELETE(req: Request) {
     try {
-        const url = new URL(req.url);
-        const operatorId = url.searchParams.get('operatorId');
-
-        if (!operatorId) {
-            return NextResponse.json({ error: 'Falta operatorId' }, { status: 400 });
-        }
+        // Solo se archivan avisos del usuario de la sesión: se ignora ?operatorId.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const operatorId = acceso.userId;
 
         let ids: string[] | undefined;
         try {

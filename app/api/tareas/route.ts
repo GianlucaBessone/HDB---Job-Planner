@@ -1,18 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
+import { exigirAcceso, type AccesoSesion } from '@/lib/permisosServer';
+
+/**
+ * Qué puede hacer el usuario de la sesión con una tarea (mismo criterio que la pantalla):
+ *  - total:  quien tiene "tareas.ver_todas", el creador o un involucrado responsable.
+ *  - estado: un involucrado colaborador, que solo cambia el estado.
+ *  - ninguno: el resto (observadores incluidos).
+ */
+type NivelTarea = 'total' | 'estado' | 'ninguno';
+
+function nivelSobreTarea(
+    acceso: AccesoSesion,
+    tarea: { creadorId: string; involucrados: { operatorId: string; rol: string }[] }
+): NivelTarea {
+    if (acceso.puede('tareas.ver_todas') || tarea.creadorId === acceso.userId) return 'total';
+    const inv = tarea.involucrados.find(i => i.operatorId === acceso.userId);
+    if (inv?.rol === 'responsable') return 'total';
+    if (inv?.rol === 'colaborador') return 'estado';
+    return 'ninguno';
+}
+
+/** Campos que un colaborador puede cambiar. */
+const CAMPOS_COLABORADOR = ['estado', 'fechaCompletada'];
 
 // ── GET — List tareas with filters ─────────────────────────────────
 export async function GET(req: NextRequest) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const url = new URL(req.url);
         const estado = url.searchParams.get('estado');
         const prioridad = url.searchParams.get('prioridad');
         const projectId = url.searchParams.get('projectId');
         const involucradoId = url.searchParams.get('involucradoId');
         const creadorId = url.searchParams.get('creadorId');
-        const userId = url.searchParams.get('userId');
-        const role = url.searchParams.get('role');
 
         const where: any = {};
         if (estado) where.estado = estado;
@@ -23,15 +47,13 @@ export async function GET(req: NextRequest) {
             where.involucrados = { some: { operatorId: involucradoId } };
         }
 
-        // Restricción de visualización: solo ver tareas propias o en las que se es involucrado
-        if (role !== 'admin' && userId) {
+        // Restricción de visualización: sin "tareas.ver_todas", solo las tareas propias
+        // o en las que se es involucrado. El usuario sale de la sesión (se ignoran ?userId y ?role).
+        if (!acceso.puede('tareas.ver_todas')) {
             where.OR = [
-                { creadorId: userId },
-                { involucrados: { some: { operatorId: userId } } }
+                { creadorId: acceso.userId },
+                { involucrados: { some: { operatorId: acceso.userId } } }
             ];
-        } else if (role !== 'admin' && !userId) {
-            // Si no hay usuario y no es admin, no devolvemos tareas
-            return NextResponse.json([]);
         }
 
         const tareas = await prisma.tarea.findMany({
@@ -66,6 +88,9 @@ export async function GET(req: NextRequest) {
 // ── POST — Create new tarea ────────────────────────────────────────
 export async function POST(req: NextRequest) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const {
             titulo,
@@ -76,14 +101,16 @@ export async function POST(req: NextRequest) {
             fechaInicio,
             fechaVencimiento,
             projectId,
-            creadorId,
-            creadorNombre,
             involucrados = [], // [{ operatorId, rol }]
             notas,
         } = body;
 
-        if (!titulo || !creadorId || !creadorNombre) {
-            return NextResponse.json({ error: 'Faltan campos obligatorios (titulo, creadorId, creadorNombre)' }, { status: 400 });
+        // El creador es siempre el usuario de la sesión.
+        const creadorId = acceso.userId;
+        const creadorNombre = acceso.nombre;
+
+        if (!titulo) {
+            return NextResponse.json({ error: 'Faltan campos obligatorios (titulo)' }, { status: 400 });
         }
 
         const tarea = await prisma.tarea.create({
@@ -170,8 +197,12 @@ export async function POST(req: NextRequest) {
 // ── PUT — Update tarea ─────────────────────────────────────────────
 export async function PUT(req: NextRequest) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
-        const { id, involucrados, actorId, actorName, ...data } = body;
+        // actorId / actorName del cuerpo se ignoran; el creador no se reasigna desde acá.
+        const { id, involucrados, actorId: _actorId, actorName: _actorName, creadorId: _creadorId, creadorNombre: _creadorNombre, ...data } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
@@ -184,6 +215,14 @@ export async function PUT(req: NextRequest) {
 
         if (!oldTarea) {
             return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
+        }
+
+        const nivel = nivelSobreTarea(acceso, oldTarea);
+        if (nivel === 'ninguno') {
+            return NextResponse.json({ error: 'No tenés permiso para modificar esta tarea' }, { status: 403 });
+        }
+        if (nivel === 'estado' && (involucrados !== undefined || Object.keys(data).some(k => !CAMPOS_COLABORADOR.includes(k)))) {
+            return NextResponse.json({ error: 'Como colaborador solo podés cambiar el estado de la tarea' }, { status: 403 });
         }
 
         // Parse dates if provided
@@ -242,8 +281,8 @@ export async function PUT(req: NextRequest) {
         });
 
         // ── Notifications Logic ──
-        const actingUserId = actorId || 'unknown';
-        const actingUserName = actorName || 'Sistema';
+        const actingUserId = acceso.userId;
+        const actingUserName = acceso.nombre;
 
         const keysChanged = Object.keys(data);
         const isPureStatusChange = keysChanged.length === 1 && keysChanged[0] === 'estado';
@@ -319,10 +358,11 @@ export async function PUT(req: NextRequest) {
 // ── DELETE — Delete tarea ──────────────────────────────────────────
 export async function DELETE(req: NextRequest) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const url = new URL(req.url);
         const id = url.searchParams.get('id');
-        const actorId = url.searchParams.get('actorId');
-        const actorName = url.searchParams.get('actorName');
 
         if (!id) {
             return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
@@ -335,6 +375,10 @@ export async function DELETE(req: NextRequest) {
 
         if (!oldTarea) {
             return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
+        }
+
+        if (nivelSobreTarea(acceso, oldTarea) !== 'total') {
+            return NextResponse.json({ error: 'No tenés permiso para eliminar esta tarea' }, { status: 403 });
         }
 
         // First, delete any cron-job.org jobs for this task's reminders
@@ -361,8 +405,8 @@ export async function DELETE(req: NextRequest) {
         await prisma.tarea.delete({ where: { id } });
 
         // ── Notifications Logic ──
-        const actingUserId = actorId || 'unknown';
-        const actingUserName = actorName || 'Sistema';
+        const actingUserId = acceso.userId;
+        const actingUserName = acceso.nombre;
 
         const targetIds = oldTarea.involucrados.map(i => i.operatorId).filter(id => id !== actingUserId);
         

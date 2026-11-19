@@ -17,9 +17,20 @@ import {
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
+import { showToast } from '@/components/Toast';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { useRef } from 'react';
+
+/** Mensaje de error que devuelve la API (p. ej. un 403 por permisos). */
+async function mensajeError(res: Response, porDefecto: string): Promise<string> {
+    try {
+        const data = await res.json();
+        return data?.error || porDefecto;
+    } catch {
+        return porDefecto;
+    }
+}
 
 interface Client {
     id: string;
@@ -119,7 +130,11 @@ export default function ClientsPage() {
         if (!formData.nombre.trim()) return;
         const method = editingClient ? 'PATCH' : 'POST';
         const url = editingClient ? `/api/clients?id=${editingClient.id}` : '/api/clients';
-        await safeApiRequest(url, { method, body: JSON.stringify(formData) });
+        const res = await safeApiRequest(url, { method, body: JSON.stringify(formData) });
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo guardar el cliente'), 'error');
+            return;
+        }
         setIsModalOpen(false);
         loadClients(true);
     };
@@ -132,18 +147,26 @@ export default function ClientsPage() {
     const confirmDelete = async () => {
         if (!clientToDelete) return;
         const id = clientToDelete;
-        setClients(prev => prev.filter(c => c.id !== id));
-        await safeApiRequest(`/api/clients?id=${id}`, { method: 'DELETE' });
+        const res = await safeApiRequest(`/api/clients?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setClientToDelete(null);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo eliminar el cliente'), 'error');
+            return;
+        }
+        setClients(prev => prev.filter(c => c.id !== id));
     };
 
     const toggleStatus = async (id: string, currentStatus: boolean) => {
         setClients(prev => prev.map(c => c.id === id ? { ...c, activo: !currentStatus } : c));
-        await safeApiRequest(`/api/clients?id=${id}`, {
+        const res = await safeApiRequest(`/api/clients?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ activo: !currentStatus })
         });
+        if (!res.ok) {
+            setClients(prev => prev.map(c => c.id === id ? { ...c, activo: currentStatus } : c));
+            showToast(await mensajeError(res, 'No se pudo cambiar el estado'), 'error');
+        }
     };
 
     const filteredClients = useMemo(() => {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(
   request: Request,
@@ -8,11 +9,17 @@ export async function POST(
 ) {
   const params = await paramsPromise;
   try {
+    // La copia controlada queda a nombre del usuario de la sesión.
+    const acceso = await exigirAcceso(request);
+    if (acceso instanceof NextResponse) return acceso;
+    const operatorId = acceso.userId;
+    const operatorNombre = acceso.nombre;
+
     const documentId = params.id;
     const body = await request.json();
-    const { operatorId, operatorNombre, versionId } = body;
+    const { versionId } = body;
 
-    if (!operatorId || !operatorNombre || !versionId) {
+    if (!versionId) {
       return NextResponse.json({ error: 'Faltan datos obligatorios' }, { status: 400 });
     }
 

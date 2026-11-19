@@ -171,7 +171,14 @@ export default function RootLayout({
     const vistaActual = findViewForPath(pathname, effectiveViews);
     const accesoDenegado = !!vistaActual && vistaDenegada(vistaActual.key);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        // La cookie de sesión es httpOnly: la borra el servidor. Sin conexión igual se
+        // cierra la sesión local; la cookie vence sola o se borra en el próximo cierre.
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {
+            console.error('No se pudo cerrar la sesión en el servidor:', e);
+        }
         localStorage.removeItem('currentUser');
         setCurrentUser(null);
     };

@@ -1,12 +1,23 @@
 /**
- * Control de accesos del lado del servidor: lee los permisos especiales del
- * usuario de la sesión y resuelve sus funciones. Catálogo y reglas en lib/permisos.ts.
+ * Control de accesos del lado del servidor: lee el usuario de la sesión y sus
+ * permisos especiales, y resuelve sus funciones. Catálogo y reglas en lib/permisos.ts.
  *
  * Uso en una API:
  *
+ *     const acceso = await exigirAcceso(req, ['ventas.anular_venta']);
+ *     if (acceso instanceof NextResponse) return acceso;
+ *     // acceso.userId / acceso.nombre son los del usuario de la sesión
+ *
+ * O, para decidir sin cortar el pedido:
+ *
  *     const acceso = await getAcceso(req);
  *     if (!acceso.puede('ventas.anular_venta')) return NextResponse.json({ error: '...' }, { status: 403 });
+ *
+ * El rol y el estado (activo) se leen siempre de la base, no del token: un cambio
+ * de rol o una baja aplican en el pedido siguiente, aunque la cookie siga vigente.
+ * Nunca uses el rol o el usuario que manda el navegador (cuerpo, query o headers propios).
  */
+import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { EfectoPermiso, FuncionId, PermisoEspecial, puedeFuncion } from '@/lib/permisos';
@@ -43,26 +54,72 @@ export async function getPermisosEspeciales(operatorId: string | null | undefine
 }
 
 export interface AccesoSesion {
+    /** Usuario de la sesión. Vacío si no hay sesión, o si el usuario no existe o está inactivo. */
     userId: string;
+    /** Nombre del usuario según la base, para auditoría. */
+    nombre: string;
+    /** Rol según la base (en minúsculas), no el del token. */
     role: string;
     permisos: PermisoEspecial[];
     puede: (funcion: FuncionId) => boolean;
 }
 
-/** Acceso del usuario de la sesión (el middleware deja x-user-id / x-user-role). */
+const SIN_SESION: AccesoSesion = {
+    userId: '',
+    nombre: '',
+    role: '',
+    permisos: [],
+    puede: () => false,
+};
+
+/**
+ * Acceso del usuario de la sesión. El middleware valida la cookie y deja x-user-id;
+ * rol, estado y nombre se leen de la base en cada pedido.
+ */
 export async function getAcceso(req: Request): Promise<AccesoSesion> {
     const userId = req.headers.get('x-user-id') || '';
-    const role = (req.headers.get('x-user-role') || '').toLowerCase();
-    const permisos = await getPermisosEspeciales(userId);
+    if (!userId) return SIN_SESION;
+
+    const [operador, permisos] = await Promise.all([
+        prisma.operator.findUnique({
+            where: { id: userId },
+            select: { id: true, nombreCompleto: true, role: true, activo: true },
+        }),
+        getPermisosEspeciales(userId),
+    ]);
+    // Usuario borrado o dado de baja: la sesión no vale aunque el token siga vigente.
+    if (!operador || !operador.activo) return SIN_SESION;
+
+    const role = (operador.role || '').trim().toLowerCase();
     return {
-        userId,
+        userId: operador.id,
+        nombre: operador.nombreCompleto,
         role,
         permisos,
-        puede: (funcion) => !!userId && puedeFuncion(funcion, role, permisos),
+        puede: (funcion) => puedeFuncion(funcion, role, permisos),
     };
 }
 
 /** Atajo para chequear una sola función. */
 export async function puede(req: Request, funcion: FuncionId): Promise<boolean> {
     return (await getAcceso(req)).puede(funcion);
+}
+
+/**
+ * Exige un usuario activo en la sesión y, si se pasan funciones, al menos una de ellas.
+ * Devuelve el acceso, o la respuesta de error (401/403) lista para retornar.
+ */
+export async function exigirAcceso(
+    req: Request,
+    funciones: FuncionId[] = [],
+    mensaje = 'No tenés permiso para esta acción'
+): Promise<AccesoSesion | NextResponse> {
+    const acceso = await getAcceso(req);
+    if (!acceso.userId) {
+        return NextResponse.json({ error: 'Iniciá sesión para continuar' }, { status: 401 });
+    }
+    if (funciones.length > 0 && !funciones.some(f => acceso.puede(f))) {
+        return NextResponse.json({ error: mensaje }, { status: 403 });
+    }
+    return acceso;
 }

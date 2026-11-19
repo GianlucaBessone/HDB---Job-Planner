@@ -1,17 +1,41 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+/** Rol de firma dentro del circuito del documento (no es el rol del usuario en el sistema). */
+const ROLES_FIRMA = ['creador', 'revisador', 'aprobador'] as const;
+type RolFirma = (typeof ROLES_FIRMA)[number];
+
+/** El usuario de la sesión solo firma en el lugar que tiene asignado en el documento. */
+function firmanteAsignado(
+    doc: { createdBy: string | null; revisadorId: string | null; aprobadorId: string | null },
+    rol: RolFirma
+): string | null {
+    if (rol === 'creador') return doc.createdBy;
+    if (rol === 'revisador') return doc.revisadorId;
+    return doc.aprobadorId;
+}
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
-        const data = await req.json();
-        const { userId, userName, role, status, comment, signature } = data;
+        // El firmante es siempre el usuario de la sesión: se ignoran userId / userName del cuerpo.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
 
-        if (!userId || !role || !status) {
-            return NextResponse.json({ error: 'Faltan parámetros obligatorios (userId, role, status)' }, { status: 400 });
+        const data = await req.json();
+        const { role, status, comment, signature } = data;
+
+        if (!role || !status) {
+            return NextResponse.json({ error: 'Faltan parámetros obligatorios (role, status)' }, { status: 400 });
+        }
+        if (!(ROLES_FIRMA as readonly string[]).includes(role)) {
+            return NextResponse.json({ error: 'Rol de firma inválido' }, { status: 400 });
         }
 
         const doc = await prisma.controlledDocument.findUnique({
@@ -26,6 +50,10 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
 
         if (!doc) {
             return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 });
+        }
+
+        if (firmanteAsignado(doc, role as RolFirma) !== userId) {
+            return NextResponse.json({ error: 'No sos el firmante asignado para este paso del documento' }, { status: 403 });
         }
 
         // Parse workflowState

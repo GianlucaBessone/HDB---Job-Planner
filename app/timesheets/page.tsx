@@ -180,9 +180,7 @@ export default function TimesheetsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id,
-                    estadoConfirmado: true,
-                    requestUserId: currentUser?.id,
-                    requestUserRole: currentUser?.role
+                    estadoConfirmado: true
                 })
             });
             loadData();
@@ -319,9 +317,7 @@ export default function TimesheetsPage() {
                     causaRegistro: a.type === 'causa' ? a.targetId : null,
                     isExtra: a.isDevolucion || a.type === 'causa' ? false : a.isExtra,
                     isDevolucion: a.type === 'causa' ? false : a.isDevolucion,
-                    descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null,
-                    requestUserId: currentUser?.id,
-                    requestUserRole: currentUser?.role
+                    descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null
                 };
                 
                 const res = await safeApiRequest('/api/time-entries', {
@@ -360,9 +356,7 @@ export default function TimesheetsPage() {
                         causaRegistro: a.type === 'causa' ? a.targetId : null,
                         isExtra: a.isDevolucion || a.type === 'causa' ? false : a.isExtra,
                         isDevolucion: a.type === 'causa' ? false : a.isDevolucion,
-                        descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null,
-                        requestUserId: currentUser?.id,
-                        requestUserRole: currentUser?.role
+                        descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null
                     };
 
                     return safeApiRequest('/api/time-entries', {
@@ -408,9 +402,7 @@ export default function TimesheetsPage() {
         const id = entryToDelete || pendingAction?.id;
         if (!id) return;
         try {
-            let url = `/api/time-entries?id=${id}`;
-            if (currentUser?.id) url += `&requestUserId=${currentUser.id}`;
-            if (currentUser?.role) url += `&requestUserRole=${currentUser.role}`;
+            const url = `/api/time-entries?id=${id}`;
 
             const res = await safeApiRequest(url, { method: 'DELETE' });
             if (!res.ok) {
