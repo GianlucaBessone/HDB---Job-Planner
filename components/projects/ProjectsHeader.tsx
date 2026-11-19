@@ -38,7 +38,7 @@ export default function ProjectsHeader({
 
     return (
         <ModuleHeader
-            title="Gestión de Proyectos"
+            title="Proyectos"
             description="Control y seguimiento de proyectos activos"
             icon={<Layout className="w-5 h-5" />}
             helpSlug="gestion-proyectos"
@@ -47,7 +47,7 @@ export default function ProjectsHeader({
                 { id: 'proyectos', label: 'Proyectos' },
                 { id: 'cronograma', label: 'Cronograma' },
                 { id: 'recursos', label: 'Recursos' },
-                { id: 'riesgos', label: 'Riesgos' },
+                { id: 'riesgos', label: 'Bloqueos' },
                 { id: 'documentacion', label: 'Documentación' },
                 { id: 'reportes', label: 'Reportes' },
             ]}

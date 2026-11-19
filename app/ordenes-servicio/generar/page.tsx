@@ -374,7 +374,7 @@ function GenerarOSContent() {
                     title={projectId ? 'Proyecto no encontrado' : 'Falta elegir un proyecto'}
                     description={projectId
                         ? 'El proyecto de esta orden no existe o ya no está disponible.'
-                        : 'Las órdenes de servicio se generan desde un proyecto: abrilo en Mis Proyectos o en Gestión de Proyectos y elegí Generar orden de servicio.'}
+                        : 'Las órdenes de servicio se generan desde un proyecto: abrilo en Mis proyectos o en Proyectos y elegí Generar orden de servicio.'}
                     action={<button className="btn btn-secondary" onClick={() => router.push('/my-projects')}>Ir a Mis Proyectos</button>}
                 />
             </div>

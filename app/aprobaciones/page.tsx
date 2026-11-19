@@ -133,7 +133,7 @@ export default function ApprovalsPage() {
                 <div>
                     <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
                         <ShieldCheck className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Aprobación de Fichadas
+                        Fichadas a aprobar
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Revisa las entradas que requieren validación manual.</p>
                 </div>

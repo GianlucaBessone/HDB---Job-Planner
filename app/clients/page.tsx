@@ -206,7 +206,7 @@ export default function ClientsPage() {
                 <div className="space-y-1">
                     <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
                         <UserCircle2 className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Gestión de Clientes
+                        Clientes
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Administra la base de datos de tus clientes</p>
                 </div>
