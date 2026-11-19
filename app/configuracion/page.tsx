@@ -248,7 +248,7 @@ function ConfigSkeleton() {
 // ----- TAGS SECTION -----
 function TagsSection() {
     const { puede } = useAcceso();
-    const puedeGestionar = puede('config.etiquetas_gestionar');
+    const puedeGestionar = puede('config.administrar');
     const [tags, setTags] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -807,11 +807,16 @@ function SystemSection() {
                 daysWithoutHoursThreshold: setting.daysWithoutHoursThreshold
             };
 
-            await safeApiRequest('/api/config/system', {
+            const saveRes = await safeApiRequest('/api/config/system', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
+            if (!saveRes.ok) {
+                const err = await saveRes.json().catch(() => ({}));
+                showToast(err.error || 'Error al guardar configuración.', 'error');
+                return;
+            }
             showToast('Configuración de sistema guardada correctamente.', 'success');
         } catch (e) {
             showToast('Error al guardar configuración.', 'error');
@@ -1108,11 +1113,16 @@ function ViewsSection() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await safeApiRequest('/api/config/views', {
+            const saveRes = await safeApiRequest('/api/config/views', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(views)
             });
+            if (!saveRes.ok) {
+                const err = await saveRes.json().catch(() => ({}));
+                showToast(err.error || 'Error al guardar configuración de vistas.', 'error');
+                return;
+            }
             // Refetch the updated view configuration
             const res = await safeApiRequest('/api/config/views');
             const data = await res.json();

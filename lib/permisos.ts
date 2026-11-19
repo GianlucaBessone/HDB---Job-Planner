@@ -38,13 +38,32 @@ export interface FuncionConfig {
 export const FUNCIONES = [
     // ─ Usuarios ─
     { id: 'usuarios.gestionar', label: 'Gestionar usuarios', description: 'Crear, editar y eliminar usuarios', grupo: 'Usuarios', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'usuarios.asignar_rol', label: 'Asignar roles', description: 'Cambiar el rol de otros usuarios, hasta el rango propio', grupo: 'Usuarios', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'usuarios.accesos', label: 'Administrar accesos', description: 'Otorgar y quitar permisos especiales a otros usuarios', grupo: 'Usuarios', roles: ['admin'] },
 
     // ─ Configuración ─
-    { id: 'config.etiquetas_gestionar', label: 'Gestionar etiquetas de proyecto', description: 'Crear, renombrar y eliminar etiquetas de proyecto (eliminar borra también su checklist y sus plantillas vinculadas)', grupo: 'Configuración', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'config.administrar', label: 'Administrar configuración', description: 'Ajustes del sistema, fichaje, etiquetas, opciones y plantillas de checklist', grupo: 'Configuración', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'config.vistas', label: 'Configurar vistas por rol', description: 'Definir qué roles ven cada pantalla del menú', grupo: 'Configuración', roles: ['admin'] },
+    { id: 'config.prompts_ia', label: 'Editar prompts de IA', description: 'Modificar las plantillas de prompts que usa la IA', grupo: 'Configuración', roles: ['admin'] },
+
+    // ─ Auditoría ─
+    { id: 'auditoria.ver', label: 'Ver auditoría', description: 'Consultar el registro de auditoría de todo el sistema', grupo: 'Auditoría', roles: ['admin', 'supervisor', 'qa'] },
 
     // ─ Registro de tiempos ─
     { id: 'timesheets.control_horario', label: 'Control horario', description: 'Cruce entre registro de tiempos y fichadas, con ajustes', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor'] },
+    { id: 'timesheets.gestionar_horas', label: 'Gestionar horas de otros', description: 'Cargar, editar y borrar horas de otros usuarios y de días ya confirmados', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'fichadas.aprobar', label: 'Aprobar fichadas', description: 'Ver, aprobar y rechazar fichadas pendientes de aprobación', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Tareas ─
+    { id: 'tareas.ver_todas', label: 'Ver y gestionar todas las tareas', description: 'Ver, editar y eliminar tareas aunque no sea creador ni involucrado', grupo: 'Tareas', roles: ['admin'] },
+
+    // ─ Clientes ─
+    { id: 'clientes.gestionar', label: 'Gestionar clientes', description: 'Crear y editar clientes, sectores, tarifas y responsables del portal', grupo: 'Clientes', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'clientes.eliminar', label: 'Eliminar clientes', description: 'Eliminar clientes', grupo: 'Clientes', roles: ['admin', 'supervisor'] },
+
+    // ─ Calidad y documentación ─
+    { id: 'documentos.gestionar', label: 'Gestionar documentos', description: 'Crear y editar documentos controlados, versiones, archivos, reglas, cuestionarios y subaccesos', grupo: 'Calidad y documentación', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'documentos.eliminar', label: 'Eliminar documentos', description: 'Eliminar un documento controlado con todas sus versiones', grupo: 'Calidad y documentación', roles: ['admin', 'qa'] },
 
     // ─ Ventas ─
     { id: 'ventas.anular_venta', label: 'Anular ventas', description: 'Anular ventas del Punto de Venta sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
@@ -53,7 +72,8 @@ export const FUNCIONES = [
     { id: 'ventas.mano_obra_gestionar', label: 'Gestionar mano de obra', description: 'Editar categorías de mano de obra y su valor hora', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
 
     // ─ Proyectos ─
-    { id: 'proyectos.crear', label: 'Crear y planificar proyectos', description: 'Crear proyectos con el asistente, asignar el equipo y marcar tareas', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'proyectos.crear', label: 'Crear y planificar proyectos', description: 'Crear y editar proyectos, asignar el equipo y marcar tareas', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'proyectos.eliminar', label: 'Eliminar proyectos', description: 'Eliminar un proyecto con sus órdenes de servicio, horas y fichadas', grupo: 'Proyectos', roles: ['admin', 'supervisor'] },
 
     // ─ Presupuestos de servicio ─
     { id: 'presupuestos.ver', label: 'Ver presupuestos de servicio', description: 'Consultar presupuestos, sus revisiones y el reporte presupuestado vs. real', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor', 'qa'] },
@@ -131,6 +151,28 @@ export function parseClave(clave: string): { tipo: 'vista' | 'funcion'; id: stri
 export function normalizarRol(role: string | null | undefined): string {
     const r = (role || '').trim().toLowerCase();
     return r === 'administrador' ? 'admin' : r;
+}
+
+// ── Roles y rango ──────────────────────────────────────────────────
+
+/** Roles válidos de un usuario. */
+export const ROLES = ['admin', 'supervisor', 'qa', 'vendedor', 'operador'] as const;
+export type Rol = (typeof ROLES)[number];
+
+/**
+ * Rango de cada rol. Nadie asigna un rol de rango mayor al propio ni edita
+ * a un usuario de rango mayor (ver lib/operators/reglasRol.ts).
+ */
+const RANGO_ROL: Record<Rol, number> = { admin: 3, supervisor: 2, qa: 2, vendedor: 1, operador: 1 };
+
+export function esRolValido(role: string | null | undefined): role is Rol {
+    return (ROLES as readonly string[]).includes(normalizarRol(role));
+}
+
+/** Rango del rol; 0 si el rol no existe. */
+export function rangoRol(role: string | null | undefined): number {
+    const r = normalizarRol(role);
+    return esRolValido(r) ? RANGO_ROL[r] : 0;
 }
 
 /** Permiso especial del usuario para una clave, o null si rige el rol. */

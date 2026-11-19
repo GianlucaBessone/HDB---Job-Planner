@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { puede } from '@/lib/permisosServer';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,12 +27,12 @@ export async function GET() {
     }
 }
 
-// Crear, editar y borrar exigen la función "config.etiquetas_gestionar" (lib/permisos.ts):
+// Crear, editar y borrar exigen la función "config.administrar" (lib/permisos.ts):
 // por rol o por permiso especial del usuario. Borrar una etiqueta borra en cascada su
 // checklist y sus vínculos con plantillas.
 async function sinPermiso(req: Request): Promise<NextResponse | null> {
-    if (await puede(req, 'config.etiquetas_gestionar')) return null;
-    return NextResponse.json({ error: 'No tenés permiso para modificar etiquetas de proyecto.' }, { status: 403 });
+    const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para cambiar la configuración');
+    return acceso instanceof NextResponse ? acceso : null;
 }
 
 const nombreSchema = z.string({ error: 'El nombre es obligatorio' }).trim().min(1, 'El nombre es obligatorio').max(100, 'El nombre no puede superar los 100 caracteres');

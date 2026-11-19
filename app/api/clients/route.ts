@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar clientes';
 
 export async function GET() {
     try {
@@ -13,6 +16,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['clientes.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
         const client = await dataLayer.createClient(data);
         return NextResponse.json(client);
@@ -23,6 +29,9 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['clientes.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
@@ -37,6 +46,9 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['clientes.eliminar'], 'No tenés permiso para eliminar clientes');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });

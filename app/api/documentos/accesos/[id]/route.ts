@@ -1,14 +1,23 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar documentos';
 
 export const dynamic = 'force-dynamic';
 
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+        // Quien actúa es siempre el usuario de la sesión: se ignoran userId / userName del pedido.
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
         const body = await req.json();
-        const { codigo, nombre, descripcion, icon, orden, moduleId, userId, userName } = body;
+        const { codigo, nombre, descripcion, icon, orden, moduleId } = body;
 
         const existing = await prisma.documentSubAccess.findUnique({
             where: { id: params.id }
@@ -54,9 +63,12 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
 export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
-        const { searchParams } = new URL(req.url);
-        const userId = searchParams.get('userId') || undefined;
-        const userName = searchParams.get('userName') || undefined;
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+        // Quien actúa es siempre el usuario de la sesión: se ignoran userId / userName del pedido.
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
 
         const existing = await prisma.documentSubAccess.findUnique({
             where: { id: params.id },

@@ -103,7 +103,7 @@ export default function ApprovalsPage() {
             const res = await safeApiRequest('/api/time-entries/approve', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, action, approvedById: currentUser.id })
+                body: JSON.stringify({ id, action })
             });
             if (res.ok) {
                 showToast(action === 'APPROVED' ? "Fichada aprobada" : "Fichada rechazada", "success");
