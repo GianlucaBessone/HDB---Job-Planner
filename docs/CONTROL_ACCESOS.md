@@ -14,7 +14,7 @@ Hay dos tipos de acceso:
 
 | Tipo | Qué controla | Accesos por defecto del rol | Clave |
 |---|---|---|---|
-| Vista | Una pantalla del menú | `lib/viewAccess.ts`, editable en Configuración | `vista:/ventas/pdv` |
+| Vista | Una pantalla del menú | `lib/viewAccess.ts`; los roles se ajustan en Configuración → Roles por vista (función `config.vistas`) | `vista:/ventas/pdv` |
 | Función | Una acción dentro de una vista | `FUNCIONES` en `lib/permisos.ts` | `funcion:ventas.anular_venta` |
 
 ## Dónde se administra
@@ -69,7 +69,7 @@ y el editor avisa que no puede guardar.
 - **Pantalla**: `const { puede, puedeVer } = useAcceso()` (`lib/store/useAccessStore.ts`).
 - **Función nueva**: agregala a `FUNCIONES` en `lib/permisos.ts` con sus roles por defecto.
   Aparece sola en el editor.
-- **Vista nueva**: se declara en `lib/viewAccess.ts`, como siempre.
+- **Vista nueva**: se declara en `lib/viewAccess.ts`, en la sección de su dominio. Sección, nombre, ícono y ubicación salen siempre del código; de lo guardado en Configuración solo se toman los roles (`getViewConfig`). Una vista con `access: 'oculta'` no aparece en el menú ni en el inicio, pero se puede abrir y sigue sujeta a permisos (así están Notificaciones, Tickets y Centro de ayuda, que se abren desde el encabezado).
 - No compares roles a mano (`role === 'admin'`): un permiso especial no lo vería.
 
 ## Alcance actual

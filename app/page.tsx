@@ -22,6 +22,7 @@ import {
 import { renderIcon } from "@/lib/iconRegistry";
 import {
   getRecentViews,
+  prefsUserId,
   getFavorites,
   setFavorites as saveFavorites,
   getHomePrefs,
@@ -92,7 +93,7 @@ export default function HomePage() {
         setUserData(user);
         setUserRole(user.role?.toLowerCase() || "operador");
         setUserName(user.nombreCompleto || "Usuario");
-        const uid = user.legajo || "default";
+        const uid = prefsUserId(user);
         setUserId(uid);
         setFavoritesLocal(getFavorites(uid));
         setRecentKeys(getRecentViews(uid));

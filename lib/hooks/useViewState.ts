@@ -24,17 +24,20 @@ export function useViewState<T>(key: string, initialState: T): [T, (state: Parti
         return initialState;
     });
 
+    // El store global se sincroniza después del render. Actualizarlo dentro del
+    // updater de setState disparaba "Cannot update a component while rendering
+    // a different component" en las pantallas con pestañas o filtros.
+    useEffect(() => {
+        setStoreState(key, localState);
+    }, [key, localState, setStoreState]);
+
     const updateState = (newState: Partial<T> | ((prev: T) => Partial<T>)) => {
         setLocalState((prev) => {
             const updated = typeof newState === 'function' ? (newState as any)(prev) : newState;
-            let nextState: T;
             if (typeof prev === 'object' && prev !== null && !Array.isArray(prev)) {
-                nextState = { ...prev, ...updated };
-            } else {
-                nextState = updated;
+                return { ...prev, ...updated };
             }
-            setStoreState(key, nextState);
-            return nextState;
+            return updated;
         });
     };
 

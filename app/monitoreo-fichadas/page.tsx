@@ -338,7 +338,7 @@ export default function FichadasAdminPage() {
                         <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg">
                             <Clock className="w-6 h-6" />
                         </div>
-                        Monitoreo de Fichadas
+                        Fichadas en curso
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Control auditado de ingresos y egresos (GPS / Dispositivo)</p>
                 </div>

@@ -6,7 +6,7 @@ import { useAccessStore, useAcceso } from '@/lib/store/useAccessStore';
 import { Lock } from 'lucide-react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/ui';
-import { trackRecentView } from '@/lib/viewPreferences';
+import { prefsUserId, trackRecentView } from '@/lib/viewPreferences';
 import "./globals.css";
 import { usePathname, useRouter } from "next/navigation";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -56,10 +56,10 @@ export default function RootLayout({
 
     // Track recent views
     useEffect(() => {
-        if (currentUser?.legajo && pathname) {
-            trackRecentView(pathname, currentUser.legajo);
+        if (currentUser?.id && pathname) {
+            trackRecentView(pathname, prefsUserId(currentUser));
         }
-    }, [pathname, currentUser?.legajo]);
+    }, [pathname, currentUser?.id]);
 
     const handleLoginSuccess = (user: any) => {
         setCurrentUser(user);

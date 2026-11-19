@@ -173,7 +173,7 @@ export default function DashboardPage() {
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             <ModuleHeader
-                title="Panel de Análisis"
+                title="Tablero general"
                 description="Resumen del estado operativo y métricas de rendimiento"
                 icon={<LayoutDashboard />}
                 tabs={[

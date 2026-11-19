@@ -174,8 +174,9 @@ La acción `primary` se ubica siempre última. Un `h1` por vista: el del encabez
 ### 2.8 Navegación
 
 - **Barra lateral** (`components/shell/AppSidebar`): fija en ≥1024 px, panel deslizante en móvil y en PDV/Cotizaciones. Secciones colapsables; la del módulo actual se abre sola. Ítem activo por prefijo de ruta (`isRouteActive`) con `aria-current="page"`. El usuario puede ocultarla (preferencia en `localStorage`: `sgi:sidebar-pinned`).
-- **Barra superior** (`AppTopbar`): migas de pan con "Volver", buscador (`Ctrl K`), indicador de sincronización, reportar falla, tema, actividad.
-- **Menú de usuario** (pie de la barra lateral): activar notificaciones, cerrar sesión.
+- **Menú lateral**: organizado por dominios (Mi trabajo, Proyectos, Personas, Comercial, Logística, Finanzas, Calidad, Indicadores, Ajustes), definido en `lib/viewAccess.ts`. No se agregan secciones por cláusula ISO ni por tipo de actividad ("Gestión", "Administración").
+- **Barra superior** (`AppTopbar`): migas de pan con "Volver", buscador (`Ctrl K`), indicador de sincronización, **Ayuda y soporte** (`HelpMenu`: reportar un problema, tickets, centro de ayuda), tema claro/oscuro, actividad.
+- **Menú de usuario** (pie de la barra lateral): activar notificaciones, color de acento (preferencia personal del dispositivo), cerrar sesión.
 - Clase utilitaria `.nav-item` para cualquier lista de navegación (portal de clientes incluido).
 
 ### 2.9 Avisos (toast)

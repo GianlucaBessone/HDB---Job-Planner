@@ -5,6 +5,39 @@
 
 const MAX_RECENTS = 8;
 
+// ── Usuario ────────────────────────────────────────────────────────
+
+const CLAVES_POR_USUARIO = ['hdb_favorites_', 'hdb_home_prefs_', 'hdb_sidebar_fav_'];
+
+/**
+ * Clave de usuario para guardar preferencias: el id del operador.
+ *
+ * Antes se usaba `legajo`, un campo que el usuario no tiene, así que todo quedaba
+ * bajo "default": los recientes no se registraban y los favoritos de todas las
+ * personas de un mismo dispositivo se mezclaban. La primera vez que se usa el id,
+ * se copian las preferencias guardadas bajo "default" para no perderlas.
+ */
+export function prefsUserId(user: { id?: string | null } | null | undefined): string {
+    const id = user?.id;
+    if (!id) return 'default';
+    migrarPreferenciasLegado(id);
+    return id;
+}
+
+function migrarPreferenciasLegado(id: string) {
+    try {
+        const marca = `hdb_prefs_migradas_${id}`;
+        if (localStorage.getItem(marca)) return;
+        for (const base of CLAVES_POR_USUARIO) {
+            const legado = localStorage.getItem(`${base}default`);
+            if (legado !== null && localStorage.getItem(`${base}${id}`) === null) {
+                localStorage.setItem(`${base}${id}`, legado);
+            }
+        }
+        localStorage.setItem(marca, '1');
+    } catch { /* sin almacenamiento: se usan los valores por defecto */ }
+}
+
 // ── Recents ────────────────────────────────────────────────────────
 
 interface RecentEntry {
