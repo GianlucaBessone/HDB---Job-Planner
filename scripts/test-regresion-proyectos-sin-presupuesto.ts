@@ -70,7 +70,7 @@ async function main() {
     // ── Fase A: usar todo el módulo sin crear proyectos ──
     const base = {
         clienteId: cliente.id, clienteNombre: null, alcance: null, condiciones: null, fechaInicioTentativa: null, fechaFinTentativa: null,
-        operariosSimultaneos: 1, validezDias: 15, listaPrecioId: null, descuentoPorcentaje: 0, notaRevision: null, materiales: [],
+        operariosSimultaneos: 1, horasDia: 8, validezDias: 15, listaPrecioId: null, descuentoPorcentaje: 0, notaRevision: null, materiales: [],
         tareas: [{ descripcion: 'Tarea', etiqueta: null, manoObra: [{ categoriaId: null, categoriaNombre: 'Oficial', modo: 'costo' as const, horas: 10, valorHora: 1000, importe: 0, ivaPorcentaje: 21 }] }],
     };
     const a = await crearPresupuesto({ ...base, titulo: `TEST RegA ${sx}` }, usuario);

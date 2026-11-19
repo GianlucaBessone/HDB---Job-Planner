@@ -92,7 +92,6 @@ export const dataLayer = {
         noEnMetricas?: boolean;
         observaciones?: string;
         horasEstimadas?: number;
-        horasConsumidas?: number;
         cliente?: string;
         clientId?: string;
         responsable?: string;
@@ -115,6 +114,9 @@ export const dataLayer = {
         proyectoFijo?: boolean;
     }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
+        // Project.horasConsumidas se calcula solo desde el registro de tiempos
+        // (app/api/time-entries/route.ts): se ignora si viene en el body.
+        delete (sanitizedData as { horasConsumidas?: unknown }).horasConsumidas;
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
         if (sanitizedData.responsableId === "") delete sanitizedData.responsableId;
         if (sanitizedData.listaPrecioId === "") sanitizedData.listaPrecioId = null;
@@ -150,7 +152,6 @@ export const dataLayer = {
         noEnMetricas?: boolean;
         observaciones?: string;
         horasEstimadas?: number;
-        horasConsumidas?: number;
         cliente?: string;
         clientId?: string;
         responsable?: string;
@@ -174,6 +175,8 @@ export const dataLayer = {
         proyectoFijo?: boolean;
     }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
+        // Project.horasConsumidas no se edita a mano: lo mantiene el registro de tiempos.
+        delete (sanitizedData as { horasConsumidas?: unknown }).horasConsumidas;
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
         if (sanitizedData.responsableId === "") sanitizedData.responsableId = null as any;
         if (sanitizedData.listaPrecioId === "") sanitizedData.listaPrecioId = null as any;

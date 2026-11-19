@@ -11,7 +11,7 @@ async function destinatarioPropio(req: Request, recipientId: string) {
     if (acceso instanceof NextResponse) return acceso;
     const recipient = await prisma.activityRecipient.findFirst({
         where: { id: recipientId, operatorId: acceso.userId },
-        select: { id: true },
+        select: { id: true, activityId: true },
     });
     if (!recipient) return NextResponse.json({ error: 'Aviso no encontrado' }, { status: 404 });
     return recipient;
@@ -36,14 +36,28 @@ export async function PATCH(req: Request, { params: paramsPromise }: { params: P
     }
 }
 
+/**
+ * Archiva el aviso para quien lo recibió (`id` es el recipientId, y tiene que ser del
+ * usuario de la sesión). Con `?todos=1` lo archiva para todos sus destinatarios: se usa al
+ * aprobar o rechazar una solicitud, para que no les quede pendiente a los demás supervisores.
+ */
 export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
         const propio = await destinatarioPropio(req, params.id);
         if (propio instanceof NextResponse) return propio;
 
-        await prisma.activityRecipient.update({
-            where: { id: propio.id },
+        const todos = new URL(req.url).searchParams.get('todos') === '1';
+        if (!todos) {
+            await prisma.activityRecipient.update({
+                where: { id: propio.id },
+                data: { archivedAt: new Date() }
+            });
+            return NextResponse.json({ success: true });
+        }
+
+        await prisma.activityRecipient.updateMany({
+            where: { activityId: propio.activityId, archivedAt: null },
             data: { archivedAt: new Date() }
         });
         return NextResponse.json({ success: true });

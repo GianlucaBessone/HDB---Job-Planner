@@ -174,7 +174,7 @@ export function PresupuestoPdfDocument(props: PresupuestoPdfProps) {
                             <Text style={t.destacado ? { fontFamily: 'Helvetica-Bold', fontSize: 10 } : undefined}>{money(t.importe)}</Text>
                         </View>
                     ))}
-                    {v.listaPrecioNombre ? <Text style={[S.meta, { textAlign: 'right' }]}>Lista de precios: {v.listaPrecioNombre}</Text> : null}
+                    {/* La lista de precios es un dato interno: no se imprime en el documento del cliente. */}
                 </View>
 
                 {doc.plazo ? (

@@ -215,7 +215,6 @@ function ProjectsContent() {
             noEnMetricas: project.noEnMetricas || false,
             observaciones: project.observaciones || '',
             horasEstimadas: project.horasEstimadas || 0,
-            horasConsumidas: project.horasConsumidas || 0,
             cliente: project.cliente || '',
             clientId: project.clientId || '',
             responsable: project.responsable || '',
@@ -324,7 +323,6 @@ function ProjectsContent() {
         const submissionData = {
             ...formData,
             horasEstimadas: Number(formData.horasEstimadas) || 0,
-            horasConsumidas: Number(formData.horasConsumidas) || 0,
             qrToken: formData.qrToken || null, // Explicitly ensure it's passed
         };
         const res = await safeApiRequest(url, { method, body: JSON.stringify(submissionData), headers: { 'Content-Type': 'application/json' } });
@@ -1370,16 +1368,17 @@ function ProjectModal({
                                     onChange={e => set('horasEstimadas', e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Horas Consumidas</label>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    inputMode="decimal"
-                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                    value={formData.horasConsumidas}
-                                    onChange={e => set('horasConsumidas', e.target.value)}
-                                />
+                            {/* Solo lectura: lo mantiene el registro de tiempos (app/api/time-entries) */}
+                            <div>
+                                <span id="horas-consumidas-label" className="field-label">Horas Consumidas</span>
+                                <div
+                                    aria-labelledby="horas-consumidas-label"
+                                    aria-describedby="horas-consumidas-hint"
+                                    className="w-full bg-muted text-foreground border border-border rounded-2xl py-3 px-4 font-medium tabular-nums"
+                                >
+                                    {editingProject ? editingProject.horasConsumidas : 0} h
+                                </div>
+                                <p id="horas-consumidas-hint" className="field-hint">Se calcula desde el registro de tiempos.</p>
                             </div>
                         </div>
 

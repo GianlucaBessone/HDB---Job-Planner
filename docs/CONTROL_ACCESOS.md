@@ -125,7 +125,8 @@ Reglas por usuario, sin función:
   colaborador solo cambia el estado; un observador, nada. El creador de una tarea nueva es
   el usuario de la sesión.
 - **Avisos** (`/api/activities`, `/api/activities/[id]`): cada uno lee, marca y archiva solo
-  sus propios avisos.
+  sus propios avisos. `?todos=1` cierra el aviso para todos sus destinatarios, y solo puede
+  hacerlo uno de ellos.
 - **Documentos**: firmar (`/api/documentos/[id]/firmar`) solo puede el firmante asignado al
   paso (creador, revisor o aprobador del documento). Confirmar lectura e imprimir una copia
   controlada quedan a nombre del usuario de la sesión.
@@ -136,7 +137,8 @@ Todavía dependen solo del rol, y hay que migrarlos por etapas:
   pliegos, comentarios de OT, `requireSGIRole`) usan el rol guardado en el token: un cambio
   de rol o una baja recién aplican ahí cuando la sesión vence o el usuario vuelve a entrar.
   Migrarlas a `getAcceso` lo corrige. Lo mismo para las APIs que solo piden sesión.
-- `POST /api/activities` deja crear avisos para cualquier usuario.
+- `POST /api/activities` toma el emisor de la sesión, pero cualquier usuario con sesión puede
+  enviar un aviso a cualquier otro (`operatorId`) o a todos los supervisores (`forSupervisors`).
 
 - Las APIs que usan `requireSGIRole` (`lib/sgiAuth.ts`): calidad (`/api/sgi`), OKR/KPI,
   datasets y diccionario de datos. Otorgar esas vistas a un rol que no las tiene muestra

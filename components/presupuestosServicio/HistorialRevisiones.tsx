@@ -23,6 +23,7 @@ export function diferencias(a: any, b: any): Cambio[] {
     campo('Inicio tentativo', a.fechaInicioTentativa, b.fechaInicioTentativa, fechaCorta);
     campo('Fin tentativo', a.fechaFinTentativa, b.fechaFinTentativa, fechaCorta);
     campo('Operarios en simultáneo', a.operariosSimultaneos, b.operariosSimultaneos);
+    campo('Horas por día', a.horasDia ?? 8, b.horasDia ?? 8, (v) => horasTxt(v));
     campo('Validez (días)', a.validezDias, b.validezDias);
     campo('Descuento', `${n2(a.descuentoPorcentaje)} %`, `${n2(b.descuentoPorcentaje)} %`);
     campo('Alcance', (a.alcance || '').trim(), (b.alcance || '').trim(), (v) => (v ? (v.length > 60 ? v.slice(0, 60) + '…' : v) : '—'));

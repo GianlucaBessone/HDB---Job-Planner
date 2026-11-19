@@ -7,7 +7,8 @@ import { Badge, Button, EmptyState, Panel, SegmentedControl } from '@/components
 import SearchableSelect from '@/components/SearchableSelect';
 import MapPicker from '@/components/MapPicker';
 import { cn } from '@/lib/cn';
-import { api, pesos, horasTxt, fechaCorta, fechaHora } from '@/components/presupuestosServicio/cliente';
+import { api, pesos, horasTxt, fechaCorta, fechaHora, reemplazarAlEditar } from '@/components/presupuestosServicio/cliente';
+import BuscadorMateriales, { type ProductoBuscado } from '@/components/presupuestosServicio/BuscadorMateriales';
 import {
     MarcaOrigen, cambiosVsPresupuesto, diasDelRango, finSugerido, fmt, horasTotales, nuevaKey, num,
     type WizardState, type TareaWiz, type MaterialWiz,
@@ -137,12 +138,12 @@ export function PasoDatos({ s, set, errores, cat }: { s: WizardState; set: Set; 
         <div className="space-y-4">
             <Panel title="Datos generales" actions={sug ? <span className="text-xs text-slate-500 dark:text-slate-400 inline-flex items-center gap-1.5"><MarcaOrigen desdePresupuesto /> = dato del presupuesto</span> : undefined}>
                 <div className="space-y-4">
-                    <label className="block">
-                        <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><span className="field-label !mb-0">Nombre del proyecto<span className="text-danger-600 ml-0.5" aria-hidden="true">*</span></span>
+                    <div>
+                        <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><label htmlFor="wiz-nombre" className="field-label !mb-0">Nombre del proyecto<span className="text-danger-600 ml-0.5" aria-hidden="true">*</span></label>
                             <MarcaOrigen desdePresupuesto={Boolean(sug)} texto="Sugerido" modificado={Boolean(sug) && s.nombre !== sug!.nombre} onRestaurar={() => set({ nombre: sug!.nombre })} /></span>
-                        <input className="input" value={s.nombre} onChange={(e) => set({ nombre: e.target.value })} maxLength={200} aria-invalid={Boolean(errores.nombre)} placeholder="Ej.: Cliente – Obra" />
+                        <input id="wiz-nombre" className="input" value={s.nombre} onChange={(e) => set({ nombre: e.target.value })} maxLength={200} aria-invalid={Boolean(errores.nombre)} placeholder="Ej.: Cliente – Obra" />
                         <Err msg={errores.nombre} />
-                    </label>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><span className="field-label !mb-0">Cliente</span>
@@ -185,11 +186,11 @@ export function PasoDatos({ s, set, errores, cat }: { s: WizardState; set: Set; 
                         </div>
                         <p className="field-hint">Generan el checklist de avance técnico, como hoy.</p>
                     </div>
-                    <label className="block">
-                        <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><span className="field-label !mb-0">Observaciones</span>
+                    <div>
+                        <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><label htmlFor="wiz-observaciones" className="field-label !mb-0">Observaciones</label>
                             <MarcaOrigen desdePresupuesto={Boolean(sug)} modificado={Boolean(sug) && s.observaciones !== (sug!.observaciones || '')} onRestaurar={() => set({ observaciones: sug!.observaciones || '' })} /></span>
-                        <textarea className="input min-h-[72px] py-2" value={s.observaciones} onChange={(e) => set({ observaciones: e.target.value })} maxLength={5000} />
-                    </label>
+                        <textarea id="wiz-observaciones" className="input min-h-[72px] py-2" value={s.observaciones} onChange={(e) => set({ observaciones: e.target.value })} maxLength={5000} />
+                    </div>
                 </div>
             </Panel>
 
@@ -249,7 +250,7 @@ export function PasoTareas({ s, set, errores, cat }: { s: WizardState; set: Set;
                     <p className="text-sm text-slate-500 dark:text-slate-400">Sin tareas. Podés cargar solo las horas estimadas totales.</p>
                     <label className="block max-w-xs">
                         <span className="field-label">Horas estimadas</span>
-                        <input className="input tabular-nums" inputMode="decimal" value={s.horasSinTareas} onChange={(e) => set({ horasSinTareas: e.target.value })} />
+                        <input className="input tabular-nums" inputMode="decimal" placeholder="0" value={s.horasSinTareas} {...reemplazarAlEditar} onChange={(e) => set({ horasSinTareas: e.target.value })} />
                     </label>
                 </div>
             ) : (
@@ -283,7 +284,7 @@ export function PasoTareas({ s, set, errores, cat }: { s: WizardState; set: Set;
                                     </td>
                                     {deP && <td className="text-right tabular-nums pt-3">{t.horasPresupuesto ?? '—'}</td>}
                                     <td>
-                                        <input className="input h-8 text-right tabular-nums" inputMode="decimal" value={t.horasEstimadas} onChange={(e) => editar(t.key, { horasEstimadas: e.target.value })} aria-label={`Horas de la tarea ${i + 1}`} aria-invalid={Boolean(errores[`tarea.${i}.horas`])} />
+                                        <input className="input h-8 text-right tabular-nums" inputMode="decimal" placeholder="0" value={t.horasEstimadas} {...reemplazarAlEditar} onChange={(e) => editar(t.key, { horasEstimadas: e.target.value })} aria-label={`Horas de la tarea ${i + 1}`} aria-invalid={Boolean(errores[`tarea.${i}.horas`])} />
                                         <Err msg={errores[`tarea.${i}.horas`]} />
                                     </td>
                                     <td className="pt-2.5">
@@ -311,26 +312,22 @@ export function PasoTareas({ s, set, errores, cat }: { s: WizardState; set: Set;
 // ── Paso 4: materiales ─────────────────────────────────────────────
 
 export function PasoMateriales({ s, set, errores, cat }: { s: WizardState; set: Set; errores: Record<string, string>; cat: Catalogos }) {
-    const [q, setQ] = useState('');
-    const [res, setRes] = useState<any[]>([]);
-    const [buscando, setBuscando] = useState(false);
-    useEffect(() => {
-        if (q.trim().length < 2) { setRes([]); return; }
-        const t = setTimeout(async () => {
-            setBuscando(true);
-            const r = await api<any>(`/api/ventas/pdv/buscar-productos?q=${encodeURIComponent(q.trim())}&limit=8${s.listaPrecioId ? `&listaPrecioId=${s.listaPrecioId}` : ''}`).catch(() => null);
-            setRes(r?.productos || []);
-            setBuscando(false);
-        }, 250);
-        return () => clearTimeout(t);
-    }, [q, s.listaPrecioId]);
     const editar = (key: string, patch: Partial<MaterialWiz>) => set((p) => ({ materiales: p.materiales.map((m) => (m.key === key ? { ...m, ...patch } : m)) }));
     const quitar = (key: string) => set((p) => ({ materiales: p.materiales.filter((m) => m.key !== key) }));
-    const agregar = (m: Partial<MaterialWiz>) => {
+    const agregar = (m: Partial<MaterialWiz>) =>
         set((p) => ({ materiales: [...p.materiales, { key: nuevaKey(), productoId: null, codigo: '', nombre: '', unidad: 'unidad', cantidad: '1', cantidadPresupuesto: null, precioVenta: null, ...m }] }));
-        setQ('');
-        setRes([]);
-    };
+    const cantidades = useMemo(() => {
+        const r = new Map<string, number>();
+        for (const m of s.materiales) if (m.productoId) r.set(m.productoId, (r.get(m.productoId) || 0) + num(m.cantidad));
+        return r;
+    }, [s.materiales]);
+    /** Agrega el producto; si ya está en la lista, le suma 1 a la cantidad. */
+    const agregarProducto = (p: ProductoBuscado) =>
+        set((prev) => {
+            const i = prev.materiales.findIndex((m) => m.productoId === p.id);
+            if (i >= 0) return { materiales: prev.materiales.map((m, j) => (j === i ? { ...m, cantidad: String(Math.round((num(m.cantidad) + 1) * 100) / 100) } : m)) };
+            return { materiales: [...prev.materiales, { key: nuevaKey(), productoId: p.id, codigo: p.sku, nombre: p.descripcion, unidad: p.unidad || 'unidad', cantidad: '1', cantidadPresupuesto: null, precioVenta: p.precioAplicado }] };
+        });
     const deP = s.origen === 'presupuesto';
     const lista = cat.listas.find((l) => l.id === s.listaPrecioId);
 
@@ -350,23 +347,7 @@ export function PasoMateriales({ s, set, errores, cat }: { s: WizardState; set: 
                 </label>
             </section>
             <Panel title="Materiales" actions={<Button variant="secondary" size="sm" icon={<PackagePlus />} onClick={() => agregar({})}>Ítem manual</Button>} bodyClassName="p-0">
-                <div className="p-4 pb-2 relative">
-                    <label className="relative block">
-                        <span className="sr-only">Agregar desde Gestión Comercial</span>
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-                        <input className="input pl-9" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Agregar desde Gestión Comercial: SKU o nombre…" />
-                        {buscando && <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-slate-400" aria-hidden="true" />}
-                    </label>
-                    {res.length > 0 && (
-                        <ul className="absolute z-20 left-4 right-4 mt-1 rounded-lg border border-border bg-popover shadow-lg max-h-72 overflow-auto">
-                            {res.map((p) => (
-                                <li key={p.id}><button type="button" className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex justify-between gap-3" onClick={() => agregar({ productoId: p.id, codigo: p.sku, nombre: p.descripcion, unidad: p.unidad || 'unidad', precioVenta: p.precioAplicado })}>
-                                    <span><span className="font-mono text-xs text-slate-500 mr-2">{p.sku}</span>{p.descripcion}</span><span className="tabular-nums text-sm">{pesos(p.precioAplicado)}</span>
-                                </button></li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+                <BuscadorMateriales listaPrecioId={s.listaPrecioId || null} cantidades={cantidades} onAgregar={agregarProducto} />
                 {s.materiales.length === 0 ? (
                     <p className="px-4 pb-4 text-sm text-slate-500 dark:text-slate-400">Sin materiales.</p>
                 ) : (
@@ -391,7 +372,7 @@ export function PasoMateriales({ s, set, errores, cat }: { s: WizardState; set: 
                                         <td>{m.productoId || m.cantidadPresupuesto !== null ? <span className="block pt-1.5">{m.nombre}</span> : (<><input className="input h-8" value={m.nombre} onChange={(e) => editar(m.key, { nombre: e.target.value })} aria-label="Descripción del material" placeholder="Descripción" aria-invalid={Boolean(errores[`material.${i}.nombre`])} /><Err msg={errores[`material.${i}.nombre`]} /></>)}</td>
                                         <td className="pt-3">{m.unidad}</td>
                                         {deP && <td className="text-right tabular-nums pt-3">{m.cantidadPresupuesto ?? '—'}</td>}
-                                        <td><input className="input h-8 text-right tabular-nums" inputMode="decimal" value={m.cantidad} onChange={(e) => editar(m.key, { cantidad: e.target.value })} aria-label="Cantidad a cargar" aria-invalid={Boolean(errores[`material.${i}.cantidad`])} /><Err msg={errores[`material.${i}.cantidad`]} /></td>
+                                        <td><input className="input h-8 text-right tabular-nums" inputMode="decimal" placeholder="0" value={m.cantidad} {...reemplazarAlEditar} onChange={(e) => editar(m.key, { cantidad: e.target.value })} aria-label="Cantidad a cargar" aria-invalid={Boolean(errores[`material.${i}.cantidad`])} /><Err msg={errores[`material.${i}.cantidad`]} /></td>
                                         <td className="text-right tabular-nums pt-3">{m.precioVenta !== null ? pesos(m.precioVenta) : '—'}</td>
                                         <td className="pt-2.5">{m.cantidadPresupuesto !== null ? <MarcaOrigen desdePresupuesto modificado={num(m.cantidad) !== m.cantidadPresupuesto} onRestaurar={() => editar(m.key, { cantidad: String(m.cantidadPresupuesto) })} /> : deP ? <Badge tone="info">Agregado</Badge> : null}</td>
                                         <td><Button variant="ghost" size="icon-sm" icon={<Trash2 />} aria-label="Quitar material" onClick={() => quitar(m.key)} /></td>
@@ -468,23 +449,28 @@ export function PasoFechasEquipo({ s, set, errores }: { s: WizardState; set: Set
         <div className="space-y-4">
             <Panel title="Fechas">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <label className="block">
-                        <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><span className="field-label !mb-0">Inicio<span className="text-danger-600 ml-0.5" aria-hidden="true">*</span></span>
+                    <div>
+                        <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><label htmlFor="wiz-inicio" className="field-label !mb-0">Inicio<span className="text-danger-600 ml-0.5" aria-hidden="true">*</span></label>
                             <MarcaOrigen desdePresupuesto={Boolean(sug)} modificado={Boolean(sug) && s.fechaInicio !== sug!.fechaInicio} onRestaurar={() => set({ fechaInicio: sug!.fechaInicio, fechaFin: sug!.fechaFin, finManual: false })} /></span>
-                        <input type="date" className="input" value={s.fechaInicio} onChange={(e) => set({ fechaInicio: e.target.value })} aria-invalid={Boolean(errores.fechaInicio)} required />
+                        <input id="wiz-inicio" type="date" className="input" value={s.fechaInicio} onChange={(e) => set({ fechaInicio: e.target.value })} aria-invalid={Boolean(errores.fechaInicio)} required />
                         <Err msg={errores.fechaInicio} />
-                    </label>
-                    <label className="block">
-                        <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><span className="field-label !mb-0">Fin<span className="text-danger-600 ml-0.5" aria-hidden="true">*</span></span>
+                    </div>
+                    <div>
+                        <span className="flex flex-wrap items-center justify-between gap-2 mb-1.5"><label htmlFor="wiz-fin" className="field-label !mb-0">Fin<span className="text-danger-600 ml-0.5" aria-hidden="true">*</span></label>
                             {s.finManual ? <button type="button" className="text-xs text-primary hover:underline" onClick={() => set({ finManual: false })}>Volver al calculado</button> : <Badge tone="neutral">Calculado</Badge>}</span>
-                        <input type="date" className="input" value={s.fechaFin} min={s.fechaInicio || undefined} onChange={(e) => set({ fechaFin: e.target.value, finManual: true })} aria-invalid={Boolean(errores.fechaFin)} required />
+                        <input id="wiz-fin" type="date" className="input" value={s.fechaFin} min={s.fechaInicio || undefined} onChange={(e) => set({ fechaFin: e.target.value, finManual: true })} aria-invalid={Boolean(errores.fechaFin)} required />
                         <Err msg={errores.fechaFin} />
-                    </label>
-                    <label className="block">
-                        <span className="field-label">Horas por día</span>
-                        <input className="input tabular-nums" inputMode="decimal" value={s.horasDia} onChange={(e) => set({ horasDia: e.target.value })} aria-invalid={Boolean(errores.horasDia)} />
-                        <Err msg={errores.horasDia} />
-                    </label>
+                    </div>
+                    <div>
+                        <label htmlFor="wiz-horas-dia" className="field-label">Horas por día</label>
+                        <input id="wiz-horas-dia" className="input tabular-nums" inputMode="decimal" placeholder="8" value={s.horasDia} {...reemplazarAlEditar} onChange={(e) => set({ horasDia: e.target.value })} aria-invalid={Boolean(errores.horasDia)} />
+                        {errores.horasDia ? <Err msg={errores.horasDia} /> : (
+                            <span className="field-hint flex flex-wrap items-center gap-1.5">
+                                Jornada de trabajo de este proyecto.
+                                <MarcaOrigen desdePresupuesto={Boolean(sug)} modificado={Boolean(sug) && num(s.horasDia) !== (sug!.horasDia || 8)} onRestaurar={() => set({ horasDia: String(sug!.horasDia || 8) })} />
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <p className="mt-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 px-3 py-2 text-sm">
                     <b className="font-semibold">{diasRango} {diasRango === 1 ? 'día hábil' : 'días hábiles'}</b>

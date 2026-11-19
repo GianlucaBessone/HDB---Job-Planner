@@ -131,22 +131,13 @@ export async function createOrdenServicio(data: {
         },
     });
 
-    // Update project total hours
-    const totalOSHours = operadores.reduce((acc: number, op: any) => {
-        const h = Number(op.horas);
-        return acc + (op.isExtra ? Math.ceil(h) * 2 : Math.ceil(h));
-    }, 0);
-
-    // Update project total hours and automatically set state to 'finalizado'
-    const updateData: any = { estado: 'finalizado' };
-    
-    if (totalOSHours > 0) {
-        updateData.horasConsumidas = { increment: totalOSHours };
-    }
-
+    // Las horas de los operadores de la OS NO se suman a Project.horasConsumidas:
+    // se precargan desde el registro de tiempos del proyecto, que ya las contó
+    // (app/api/time-entries/route.ts es la única fuente de ese contador).
+    // Generar la OS pasa el proyecto a 'finalizado'.
     await prisma.project.update({
         where: { id: projectId },
-        data: updateData
+        data: { estado: 'finalizado' }
     });
 
     return os;

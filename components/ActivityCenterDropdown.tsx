@@ -144,7 +144,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                 return;
             }
 
-            const feedbackRes = await safeApiRequest('/api/activities', {
+            const feedbackRes = notif.createdBy && await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'SYSTEM_MESSAGE',
@@ -152,18 +152,18 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                     category: 'System',
                     title: 'Solicitud Aprobada',
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido aprobada.`,
-                    entityType: 'general',
-                    entityId: 'system',
-                    recipients: [{ operatorId: notif.operatorId }]
+                    entityType: 'timeEntry',
+                    entityId: notif.entityId,
+                    operatorId: notif.createdBy
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            if (!feedbackRes.ok) {
+            if (feedbackRes && !feedbackRes.ok) {
                 console.warn('Feedback notification failed to send');
             }
 
-            await safeApiRequest(`/api/activities/${notif.recipientId}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/activities/${notif.recipientId}?todos=1`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n.id !== notif.id));
             setSelectedNotification(null);
             showToast('Modificación aprobada y aplicada.', 'success');
@@ -180,7 +180,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
             const notif = selectedNotification;
             const resData = notif.metadata;
 
-            const feedbackRes = await safeApiRequest('/api/activities', {
+            const feedbackRes = notif.createdBy && await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'SYSTEM_MESSAGE',
@@ -188,18 +188,18 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                     category: 'System',
                     title: 'Solicitud Rechazada',
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido rechazada por el supervisor.`,
-                    entityType: 'general',
-                    entityId: 'system',
-                    recipients: [{ operatorId: notif.operatorId }]
+                    entityType: 'timeEntry',
+                    entityId: notif.entityId,
+                    operatorId: notif.createdBy
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            if (!feedbackRes.ok) {
+            if (feedbackRes && !feedbackRes.ok) {
                 console.warn('Feedback notification failed to send');
             }
 
-            await safeApiRequest(`/api/activities/${notif.recipientId}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/activities/${notif.recipientId}?todos=1`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n.id !== notif.id));
             setSelectedNotification(null);
             showToast('Solicitud rechazada.', 'success');
