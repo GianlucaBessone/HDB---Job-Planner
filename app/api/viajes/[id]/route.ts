@@ -16,6 +16,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         const viaje = await cargarViaje(id);
         // 404 también cuando no tiene acceso, para no revelar que existe.
         if (!viaje || !puedeVer(viaje, actor)) return noEncontrado();
@@ -30,6 +31,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.esGestor) return prohibido('Solo administración puede editar el viaje.');
 
         const actual = await cargarViaje(id);
@@ -145,6 +147,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.esGestor) return prohibido('Solo administración puede eliminar viajes.');
 
         const viaje = await prisma.viaje.findUnique({ where: { id }, select: { id: true, codigo: true, estado: true, _count: { select: { gastos: true } } } });

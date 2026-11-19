@@ -241,9 +241,7 @@ export default function CuentasCorrientesPage() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'x-user-id': currentUser?.id || '',
                         'x-user-name': operadorNombre,
-                        'x-user-role': currentUser?.role || '',
                     },
                     body: JSON.stringify({
                         motivo: motivoAnulacion.trim(),

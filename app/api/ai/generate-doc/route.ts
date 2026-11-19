@@ -2,24 +2,26 @@ import { NextResponse } from 'next/server';
 import { generateObject } from '@/lib/ai';
 import { IsoDocGenOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        // Solo quien tiene "Generar documentos con IA". Usuario y rol salen de la sesión, no del cuerpo.
+        const acceso = await exigirAcceso(req, ['ia.generar_documentos']);
+        if (acceso instanceof NextResponse) return acceso;
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
+
         const body = await req.json();
-        const { proceso, sector, alcance, responsables, userId, userName, userRole, saveAsDraft } = body;
+        const { proceso, sector, alcance, responsables, saveAsDraft } = body;
         const descripcion = body.descripcion || body.detallesAdicionales || '';
 
         // 1. Validaciones de Entrada
         if (!proceso || !sector || !alcance || !descripcion) {
             return NextResponse.json({ error: 'Faltan parámetros obligatorios: proceso, sector, alcance y descripción.' }, { status: 400 });
-        }
-
-        // 2. Control de Permisos
-        const allowedRoles = ['admin', 'qa', 'supervisor'];
-        if (userRole && !allowedRoles.includes(userRole)) {
-            return NextResponse.json({ error: 'Permisos insuficientes. Rol no autorizado para generar documentación controlada.' }, { status: 403 });
         }
 
         // Fetch user roles / positions dynamically from the system config (Operator database table)

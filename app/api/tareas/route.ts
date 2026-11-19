@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 // ── GET — List tareas with filters ─────────────────────────────────
 export async function GET(req: NextRequest) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const url = new URL(req.url);
         const estado = url.searchParams.get('estado');
         const prioridad = url.searchParams.get('prioridad');
         const projectId = url.searchParams.get('projectId');
         const involucradoId = url.searchParams.get('involucradoId');
         const creadorId = url.searchParams.get('creadorId');
-        const userId = url.searchParams.get('userId');
-        const role = url.searchParams.get('role');
 
         const where: any = {};
         if (estado) where.estado = estado;
@@ -23,15 +25,13 @@ export async function GET(req: NextRequest) {
             where.involucrados = { some: { operatorId: involucradoId } };
         }
 
-        // Restricción de visualización: solo ver tareas propias o en las que se es involucrado
-        if (role !== 'admin' && userId) {
+        // Sin la función "Ver todas las tareas" solo se ven las propias o en las que se participa.
+        // El usuario sale de la sesión: userId / role de la URL se ignoran.
+        if (!acceso.puede('tareas.ver_todas')) {
             where.OR = [
-                { creadorId: userId },
-                { involucrados: { some: { operatorId: userId } } }
+                { creadorId: acceso.userId },
+                { involucrados: { some: { operatorId: acceso.userId } } }
             ];
-        } else if (role !== 'admin' && !userId) {
-            // Si no hay usuario y no es admin, no devolvemos tareas
-            return NextResponse.json([]);
         }
 
         const tareas = await prisma.tarea.findMany({

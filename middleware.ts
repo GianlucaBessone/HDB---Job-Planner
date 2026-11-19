@@ -19,6 +19,21 @@ const PUBLIC_DYNAMIC_ROUTES = [
   /^\/api\/signatures\/verify\/[^\/]+$/, // POST verificacion publica
 ];
 
+// Headers de identidad: solo los pone este middleware después de validar la cookie.
+// Si llegan desde el navegador se descartan, también en las rutas públicas.
+const HEADERS_SESION = ['x-user-id', 'x-user-role'];
+
+function sinHeadersDeSesion(request: NextRequest): Headers {
+  const headers = new Headers(request.headers);
+  for (const h of HEADERS_SESION) headers.delete(h);
+  return headers;
+}
+
+/** Deja pasar el pedido sin identidad de usuario. */
+function siguientePublico(request: NextRequest) {
+  return NextResponse.next({ request: { headers: sinHeadersDeSesion(request) } });
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -29,26 +44,26 @@ export async function middleware(request: NextRequest) {
 
   // Permitir rutas publicas exactas
   if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
-    return NextResponse.next();
+    return siguientePublico(request);
   }
 
   // Permitir GET a /api/operators (necesario para el login)
   if (pathname === '/api/operators' && request.method === 'GET') {
-    return NextResponse.next();
+    return siguientePublico(request);
   }
 
   // Pizarra pública de sugerencias (/ideas-sugerencias-reclamos): listar, enviar
   // y descargar adjuntos. Gestionar (/[id], /analizar) requiere sesión.
   if (pathname === '/api/sugerencias' && (request.method === 'GET' || request.method === 'POST')) {
-    return NextResponse.next();
+    return siguientePublico(request);
   }
   if (/^\/api\/sugerencias\/adjuntos\/[^\/]+$/.test(pathname) && request.method === 'GET') {
-    return NextResponse.next();
+    return siguientePublico(request);
   }
 
   // Permitir rutas publicas dinamicas
   if (PUBLIC_DYNAMIC_ROUTES.some(regex => regex.test(pathname))) {
-    return NextResponse.next();
+    return siguientePublico(request);
   }
 
   // Validar token JWT
@@ -62,7 +77,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
   }
 
-  const requestHeaders = new Headers(request.headers);
+  // x-user-role es el rol guardado en el token y puede estar desactualizado: los permisos
+  // se resuelven con el rol de la base (lib/permisosServer.ts). Se mantiene solo como dato.
+  const requestHeaders = sinHeadersDeSesion(request);
   requestHeaders.set('x-user-id', payload.id as string);
   requestHeaders.set('x-user-role', payload.role as string || '');
 

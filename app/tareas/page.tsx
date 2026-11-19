@@ -167,7 +167,7 @@ export default function TareasPage() {
     const loadTareas = useCallback(async () => {
         if (!currentUser?.id) return;
         try {
-            const url = `/api/tareas?userId=${currentUser.id}&role=${currentUser.role || ''}`;
+            const url = '/api/tareas'; // el servidor filtra según la sesión
             const data = await safeApiRequest(url).then(r => r.json());
             setTareas(Array.isArray(data) ? data : []);
         } catch (e) {

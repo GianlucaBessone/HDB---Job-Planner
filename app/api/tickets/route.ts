@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 import {
     computePrioridad,
     generarCodigoTicket,
@@ -11,8 +12,6 @@ import {
 } from '@/lib/tickets';
 
 export const dynamic = 'force-dynamic';
-
-const GESTORES = ['admin', 'qa', 'supervisor'];
 
 const contextoShape = z.object({
     ruta: z.string().max(500).optional(),
@@ -47,15 +46,18 @@ const crearTicketSchema = z.object({
     reportadoPorNombre: z.string().max(200).optional().nullable(),
 });
 
-function getActor(req: NextRequest) {
-    const role = (req.headers.get('x-user-role') || 'operador').toLowerCase();
-    const userId = req.headers.get('x-user-id') || null;
-    return { role, userId, canManage: GESTORES.includes(role) };
+// Usuario de la sesión, leído de la base: rol, si está activo y la función de gestión.
+async function getActor(req: NextRequest) {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+    return { userId: acceso.userId, nombre: acceso.nombre, canManage: acceso.puede('tickets.gestionar') };
 }
 
 export async function GET(req: NextRequest) {
     try {
-        const { userId, canManage } = getActor(req);
+        const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
+        const { userId, canManage } = actor;
         const url = new URL(req.url);
 
         const estado = url.searchParams.get('estado');
@@ -82,7 +84,7 @@ export async function GET(req: NextRequest) {
 
         // Los usuarios que no gestionan solo ven sus propios tickets.
         if (!canManage) {
-            where.reportadoPorId = userId || '__sin_usuario__';
+            where.reportadoPorId = userId;
         }
 
         const tickets = await prisma.ticket.findMany({
@@ -108,7 +110,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const { userId, canManage } = getActor(req);
+        const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
+        const { userId, canManage } = actor;
         const body = await req.json();
         const parsed = crearTicketSchema.safeParse(body);
 
@@ -160,7 +164,7 @@ export async function POST(req: NextRequest) {
             const adjuntoIds = Array.from(new Set((data.adjuntos || []).map(a => a.id)));
             const archivos = adjuntoIds.length > 0
                 ? await tx.ticketAdjunto.findMany({
-                    where: { id: { in: adjuntoIds }, subidoPorId: userId || '__sin_usuario__', ticketId: null },
+                    where: { id: { in: adjuntoIds }, subidoPorId: userId, ticketId: null },
                     select: { id: true, nombre: true, size: true },
                     orderBy: { createdAt: 'asc' },
                 })
@@ -211,8 +215,8 @@ export async function POST(req: NextRequest) {
         });
 
         await logAudit({
-            userId: userId || undefined,
-            userName: reportadoPorNombre,
+            userId,
+            userName: actor.nombre,
             action: 'CREATE',
             entity: 'TICKET',
             entityId: ticket.id,

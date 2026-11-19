@@ -3,25 +3,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { Prisma } from '@prisma/client';
 import type { ZodError } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { sendPushNotification } from '@/lib/onesignal';
-import { calcularResumen, esGestorViajes, toISODate, VIAJE_GESTORES } from '@/lib/viajes';
+import { calcularResumen, toISODate, VIAJE_GESTORES } from '@/lib/viajes';
 
 export interface ViajeActor {
-    userId: string | null;
+    userId: string;
     role: string;
     nombre: string;
+    /** Función "viajes.gestionar" (rol o permiso especial). */
     esGestor: boolean;
 }
 
-export async function getActor(req: NextRequest): Promise<ViajeActor> {
-    const userId = req.headers.get('x-user-id') || null;
-    const role = (req.headers.get('x-user-role') || 'operador').toLowerCase();
-    let nombre = 'Usuario';
-    if (userId) {
-        const op = await prisma.operator.findUnique({ where: { id: userId }, select: { nombreCompleto: true } });
-        if (op) nombre = op.nombreCompleto;
-    }
-    return { userId, role, nombre, esGestor: esGestorViajes(role) };
+/**
+ * Usuario activo de la sesión, leído de la base. Si no hay sesión o el usuario
+ * está dado de baja, devuelve la respuesta 401 lista para retornar.
+ */
+export async function getActor(req: NextRequest): Promise<ViajeActor | NextResponse> {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+    return {
+        userId: acceso.userId,
+        role: acceso.role,
+        nombre: acceso.nombre,
+        esGestor: acceso.puede('viajes.gestionar'),
+    };
 }
 
 export function errorValidacion(error: ZodError) {

@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
     try {
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.puedeGestionar) return prohibido();
         const [clientes, proyectos] = await Promise.all([
             prisma.hdbClient.findMany({ where: { activo: true }, select: { id: true, nombre: true }, orderBy: { nombre: 'asc' } }),

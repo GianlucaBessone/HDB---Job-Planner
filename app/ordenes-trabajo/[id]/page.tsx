@@ -334,12 +334,8 @@ export default function DetalleOrdenTrabajoPage() {
       const res = await fetch(`/api/ordenes-trabajo/${id}/comentarios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          texto: newComment.trim(),
-          usuarioId: currentUser?.id,
-          usuarioNombre: currentUser?.nombreCompleto || 'Operador',
-          usuarioRol: currentUser?.role || 'operador',
-        }),
+        // El autor del comentario lo pone el servidor desde la sesión.
+        body: JSON.stringify({ texto: newComment.trim() }),
       });
       if (res.ok) {
         setNewComment('');

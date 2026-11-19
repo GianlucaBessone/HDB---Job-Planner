@@ -79,6 +79,52 @@ export const FUNCIONES = [
     { id: 'rrhh.epp_ver', label: 'Ver EPP del personal', description: 'Consultar matriz, catálogo, kardex, solicitudes y legajo de EPP', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'rrhh.epp_gestionar', label: 'Gestionar EPP', description: 'Editar catálogo y stock, resolver solicitudes y administrar enlaces públicos de la matriz', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'rrhh.epp_entregar', label: 'Entregar EPP', description: 'Registrar actas de entrega de EPP y descontar stock', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Ventas: cuenta corriente ─
+    { id: 'ventas.exceder_limite_credito', label: 'Superar el límite de crédito', description: 'Confirmar ventas a cuenta corriente que superan el límite de crédito del cliente', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+
+    // ─ Registro de tiempos: horas de otros ─
+    { id: 'timesheets.cargar_otros', label: 'Cargar horas de otros', description: 'Cargar, editar y borrar registros de tiempo de otros operadores', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'timesheets.editar_confirmados', label: 'Editar días confirmados', description: 'Editar y borrar registros de tiempo de un día ya confirmado', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+
+    // ─ Tareas ─
+    { id: 'tareas.ver_todas', label: 'Ver todas las tareas', description: 'Ver las tareas de todos, no solo las propias o en las que se participa', grupo: 'Tareas', roles: ['admin'] },
+
+    // ─ Calidad (SGI) ─
+    { id: 'calidad.ver', label: 'Ver SGI de calidad', description: 'Consultar no conformidades, CAPA, riesgos, oportunidades y objetivos de calidad', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'calidad.gestionar', label: 'Gestionar SGI de calidad', description: 'Crear, editar y eliminar NC, CAPA, riesgos, oportunidades y objetivos; análisis de causa y verificación de eficacia', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'calidad.indicadores_capa', label: 'Ver indicadores de CAPA', description: 'Resumen de acciones correctivas en el tablero', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa', 'operador'] },
+
+    // ─ Sugerencias ─
+    { id: 'sugerencias.gestionar', label: 'Gestionar sugerencias', description: 'Cambiar estado, asignar responsable, comentar, cargar acciones de mejora y analizar con IA', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Tickets de soporte ─
+    { id: 'tickets.gestionar', label: 'Gestionar tickets', description: 'Ver todos los tickets, clasificar, asignar, cambiar estados, notas internas y volver a analizar con IA', grupo: 'Tickets de soporte', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'tickets.delegar_agente', label: 'Delegar tickets a un agente', description: 'Generar y revocar el acceso de un agente externo a un ticket', grupo: 'Tickets de soporte', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ OKR y KPI ─
+    { id: 'okr.ver', label: 'Ver OKR y KPI', description: 'Consultar OKR, KPI, mediciones, gráficos, planes de acción y tablero', grupo: 'OKR y KPI', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'okr.gestionar', label: 'Gestionar OKR y KPI', description: 'Crear y editar OKR, KPI, gráficos y planes de acción; cargar y sincronizar mediciones', grupo: 'OKR y KPI', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Datos ─
+    { id: 'datasets.usar', label: 'Usar datasets', description: 'Consultar, previsualizar, probar y ejecutar datasets', grupo: 'Datos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'datasets.gestionar', label: 'Gestionar datasets', description: 'Crear, editar y eliminar datasets', grupo: 'Datos', roles: ['admin', 'supervisor'] },
+    { id: 'diccionario.ver', label: 'Ver diccionario de datos', description: 'Consultar tablas y campos del diccionario de datos', grupo: 'Datos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'diccionario.editar', label: 'Editar diccionario de datos', description: 'Cargar y editar tablas y campos del diccionario de datos', grupo: 'Datos', roles: ['admin', 'supervisor'] },
+
+    // ─ Viajes y viáticos ─
+    { id: 'viajes.gestionar', label: 'Gestionar viajes', description: 'Crear, editar, eliminar y rendir viajes; ver todos los viajes y comprobantes; valores de referencia', grupo: 'Viajes y viáticos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Análisis de pliegos ─
+    { id: 'pliegos.ver', label: 'Ver pliegos', description: 'Consultar análisis de pliegos y marcar tareas dentro o fuera del pliego', grupo: 'Análisis de pliegos', roles: ['admin', 'supervisor', 'qa', 'operador'] },
+    { id: 'pliegos.gestionar', label: 'Gestionar pliegos', description: 'Subir, analizar y borrar pliegos', grupo: 'Análisis de pliegos', roles: ['admin', 'supervisor'] },
+
+    // ─ Informes técnicos ─
+    { id: 'informes.eliminar_finalizados', label: 'Eliminar informes finalizados', description: 'Eliminar informes técnicos finalizados, con DNI, firma y justificación', grupo: 'Informes técnicos', roles: ['admin', 'supervisor'] },
+
+    // ─ Inteligencia artificial ─
+    { id: 'ia.prompts_editar', label: 'Editar prompts de IA', description: 'Modificar las plantillas de prompts que usa la IA', grupo: 'Inteligencia artificial', roles: ['admin'] },
+    { id: 'ia.generar_documentos', label: 'Generar documentos con IA', description: 'Generar documentación controlada con IA', grupo: 'Inteligencia artificial', roles: ['admin', 'supervisor', 'qa'] },
 ] as const satisfies readonly FuncionConfig[];
 
 export type FuncionId = (typeof FUNCIONES)[number]['id'];

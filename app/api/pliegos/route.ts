@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
     try {
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.puedeVer) return prohibido();
         const q = req.nextUrl.searchParams.get('q')?.trim().slice(0, 100) || undefined;
         return NextResponse.json({ pliegos: await listarPliegos(q), puedeGestionar: actor.puedeGestionar });
@@ -19,6 +20,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.puedeGestionar) return prohibido('Solo admin y supervisores pueden subir pliegos.');
         const parsed = pliegoAltaSchema.safeParse(await req.json().catch(() => null));
         if (!parsed.success) return errorValidacion(parsed.error);

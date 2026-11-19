@@ -159,7 +159,7 @@ async function main() {
             clienteNombre: cliente.nombre,
             clienteIdentificacion: `30-99${suffix}-9`,
             vendedorNombre: 'Tester',
-            vendedorRol: 'vendedor',
+            puedeExcederLimiteCredito: false,
             items: [
                 {
                     productoId: testProductId,
@@ -198,7 +198,7 @@ async function main() {
             await confirmarVentaPDV({
                 clienteId: testClientId,
                 clienteNombre: cliente.nombre,
-                vendedorRol: 'vendedor',
+                puedeExcederLimiteCredito: false,
                 items: [
                     {
                         productoId: testProductId,
@@ -232,7 +232,7 @@ async function main() {
             await confirmarVentaPDV({
                 clienteId: testClientId,
                 clienteNombre: cliente.nombre,
-                vendedorRol: 'admin',
+                puedeExcederLimiteCredito: true,
                 items: [
                     {
                         productoId: testProductId,
@@ -382,7 +382,7 @@ async function main() {
             clienteId: testClientId,
             clienteNombre: cliente.nombre,
             vendedorNombre: 'Tester',
-            vendedorRol: 'vendedor',
+            puedeExcederLimiteCredito: false,
             items: [
                 {
                     productoId: testProductId,
@@ -422,7 +422,7 @@ async function main() {
         assert.equal(cotEstado.estado, 'CONVERTIDA');
 
         // Anular la venta y verificar que la cotización vuelve a APROBADA
-        await anularVentaPDV(ventaConManual.id, 'Prueba de liberación de cotización', '', 'Tester', 'supervisor');
+        await anularVentaPDV(ventaConManual.id, 'Prueba de liberación de cotización', '', 'Tester');
         cotEstado = await obtenerCotizacionPorId(cotConManual.id);
         assert.equal(cotEstado.estado, 'APROBADA');
         assert.equal(cotEstado.ventaId, null);

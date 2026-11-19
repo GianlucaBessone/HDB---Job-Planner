@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 import { calculateHours } from '@/lib/timeUtils';
 
@@ -50,9 +51,14 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     return withIdempotency(req, async () => {
         try {
+            // Quién carga sale de la sesión: los datos de usuario del cuerpo se ignoran.
+            const acceso = await exigirAcceso(req);
+            if (acceso instanceof NextResponse) return acceso;
+            const requestUserId = acceso.userId;
+
             const data = await req.json();
 
-            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion, requestUserId, requestUserRole } = data;
+            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion } = data;
 
             // DEVOLUCIÓN requires a description
             if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
@@ -72,7 +78,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'No puede seleccionar Proyecto y Causa simultáneamente.' }, { status: 400 });
             }
 
-            if (requestUserRole === 'operador' && requestUserId !== operatorId) {
+            if (operatorId !== requestUserId && !acceso.puede('timesheets.cargar_otros')) {
                 return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
             }
 
@@ -114,10 +120,9 @@ export async function POST(req: Request) {
             }
 
             // Audit
-            const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
             await logAudit({
                 userId: requestUserId,
-                userName: requestOperator?.nombreCompleto,
+                userName: acceso.nombre,
                 action: 'CREATE',
                 entity: 'TIME_ENTRY',
                 entityId: entry.id,
@@ -136,8 +141,13 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
     try {
+        // Quién edita sale de la sesión: los datos de usuario del cuerpo se ignoran.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const requestUserId = acceso.userId;
+
         const data = await req.json();
-        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion, requestUserId, requestUserRole } = data;
+        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion } = data;
 
         // DEVOLUCIÓN requires a description
         if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
@@ -148,13 +158,13 @@ export async function PUT(req: Request) {
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
 
-        if (requestUserRole === 'operador' && existing.operatorId !== requestUserId) {
+        if (existing.operatorId !== requestUserId && !acceso.puede('timesheets.cargar_otros')) {
             return NextResponse.json({ error: 'No tienes permisos para modificar los registros de otros operadores.' }, { status: 403 });
         }
 
-        // If it was already confirmed, restrict operators from editing
+        // Un día ya confirmado solo lo edita quien tiene "Editar días confirmados"
         if (existing.estadoConfirmado) {
-            if (requestUserRole === 'operador') {
+            if (!acceso.puede('timesheets.editar_confirmados')) {
                 return NextResponse.json({ error: 'No tienes permisos para editar un día ya confirmado.' }, { status: 403 });
             }
         }
@@ -230,10 +240,9 @@ export async function PUT(req: Request) {
         }
 
         // Audit
-        const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
         await logAudit({
             userId: requestUserId,
-            userName: requestOperator?.nombreCompleto,
+            userName: acceso.nombre,
             action: 'UPDATE',
             entity: 'TIME_ENTRY',
             entityId: id,
@@ -250,22 +259,25 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
+        // Quién borra sale de la sesión: los datos de usuario de la URL se ignoran.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const requestUserId = acceso.userId;
+
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
-        const requestUserId = searchParams.get('requestUserId');
-        const requestUserRole = searchParams.get('requestUserRole');
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-        if (requestUserRole === 'operador' && existing.operatorId !== requestUserId) {
+        if (existing.operatorId !== requestUserId && !acceso.puede('timesheets.cargar_otros')) {
             return NextResponse.json({ error: 'No tienes permisos para eliminar los registros de otros operadores.' }, { status: 403 });
         }
 
         if (existing.estadoConfirmado) {
-            if (requestUserRole === 'operador') {
+            if (!acceso.puede('timesheets.editar_confirmados')) {
                 return NextResponse.json({ error: 'No tienes permisos para eliminar un día ya confirmado.' }, { status: 403 });
             }
         }
@@ -282,10 +294,9 @@ export async function DELETE(req: Request) {
         }
 
         // Audit
-        const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
         await logAudit({
             userId: requestUserId,
-            userName: requestOperator?.nombreCompleto,
+            userName: acceso.nombre,
             action: 'DELETE',
             entity: 'TIME_ENTRY',
             entityId: id,

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { DEFAULT_PROMPTS } from '@/lib/ai/prompts';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,16 +39,17 @@ export async function GET(req: Request) {
 // POST: Crear o actualizar un prompt en la base de datos (con control de versiones)
 export async function POST(req: Request) {
     try {
+        // Solo quien tiene "Editar prompts de IA". Usuario y rol salen de la sesión, no del cuerpo.
+        const acceso = await exigirAcceso(req, ['ia.prompts_editar']);
+        if (acceso instanceof NextResponse) return acceso;
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
         const body = await req.json();
-        const { key, template, systemInstruction, userId, userName, userRole } = body;
+        const { key, template, systemInstruction } = body;
 
         if (!key || !template) {
             return NextResponse.json({ error: 'Faltan parámetros obligatorios: key y template.' }, { status: 400 });
-        }
-
-        // Validación de permisos
-        if (userRole && userRole !== 'admin') {
-            return NextResponse.json({ error: 'Permisos insuficientes. Solo administradores pueden modificar plantillas de prompts.' }, { status: 403 });
         }
 
         const defaultPrompt = DEFAULT_PROMPTS[key];
