@@ -99,10 +99,12 @@ Pasan por el control de accesos:
 
 Los GET de configuración, proyectos, clientes y documentos siguen pidiendo solo sesión:
 los usan pantallas de todos los roles (Fichado, Registro de tiempos, Capacitación…).
+`GET /api/config/tags` es solo lectura: no crea ni borra etiquetas. Las etiquetas base se
+siembran con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
 
 | Función | Roles por defecto | APIs |
 |---|---|---|
-| `config.administrar` | admin, supervisor, qa | `PUT /api/config/system`; `POST/PUT/DELETE` de `/api/config/tags`, `/api/config/options`, `/api/config/checklists`, `/api/checklist-templates`; `GET /api/config/tags?seed=true` |
+| `config.administrar` | admin, supervisor, qa | `PUT /api/config/system`; `POST/PUT/DELETE` de `/api/config/tags`, `/api/config/options`, `/api/config/checklists`, `/api/checklist-templates` |
 | `config.vistas` | admin | `PUT /api/config/views` (queda en Auditoría como `VIEW_ACCESS`); opciones de la categoría `VIEW_ACCESS` en `/api/config/options` |
 | `config.prompts_ia` | admin | `POST /api/ai/prompts` |
 | `usuarios.gestionar` | admin, supervisor, qa | `POST/PATCH/DELETE /api/operators`, `POST /api/operators/reset-devices` |
