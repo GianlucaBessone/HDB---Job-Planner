@@ -171,6 +171,26 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: RouteP
 
             justificacion = just;
             metadataToLog = { justificacion, adminDni: dni, signatureId };
+
+            // Un informe finalizado no se borra: se anula y se conserva, con la firma y la justificación.
+            await prisma.technicalReport.update({ where: { id: params.id }, data: { status: 'anulado' } });
+            await prisma.auditLog.create({
+                data: {
+                    userId: acceso.userId,
+                    userEmail: '',
+                    userName: acceso.nombre,
+                    action: 'UPDATE',
+                    entity: 'TECHNICAL_REPORT',
+                    entityId: params.id,
+                    oldValue: { reportNumber: existing.reportNumber, status: existing.status },
+                    newValue: { status: 'anulado' },
+                    metadata: { ...metadataToLog, message: 'Anulado en lugar de eliminado: estaba finalizado' },
+                }
+            });
+            return NextResponse.json({ success: true, modo: 'anulado' });
+        }
+        if (existing.status === 'anulado') {
+            return NextResponse.json({ error: 'El informe ya está anulado' }, { status: 409 });
         }
 
         await prisma.technicalReport.delete({ where: { id: params.id } });

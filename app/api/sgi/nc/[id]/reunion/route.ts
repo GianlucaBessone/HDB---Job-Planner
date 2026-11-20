@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
-import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +10,6 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
     if (acceso instanceof NextResponse) return acceso;
 
   const params = await paramsPromise;
-    const acceso = await exigirAcceso(req, ['calidad.gestionar']);
-    if (acceso instanceof NextResponse) return acceso;
     try {
         const body = await req.json();
         
