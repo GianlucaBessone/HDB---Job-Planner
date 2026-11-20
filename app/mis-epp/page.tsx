@@ -18,7 +18,6 @@ import {
     Square
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
-import { safeApiRequest } from '@/lib/offline';
 import { getMyEppData, signEppDelivery } from './actions';
 import EppRequestModal from '@/components/epp/EppRequestModal';
 import SignatureDetailModal from '@/components/SignatureDetailModal';
@@ -138,37 +137,13 @@ export default function MisEppPage() {
             return;
         }
 
-        const userDni = currentUser.dni || '00000000';
-
         setSigningDeliveryId(delivery.id);
         try {
-            // 1. Invocar el endpoint estándar de firma digital con checksum
-            const signRes = await safeApiRequest('/api/signatures/sign', {
-                method: 'POST',
-                body: JSON.stringify({
-                    documentId: delivery.id,
-                    documentVersion: '1.0',
-                    userId: currentUser.id,
-                    userName: currentUser.nombreCompleto,
-                    dni: userDni,
-                    deviceId: deviceId
-                })
-            });
-
-            if (!signRes.ok) {
-                const errData = await signRes.json();
-                throw new Error(errData.error || 'Error al generar firma criptográfica');
-            }
-
-            const signatureAudit = await signRes.json();
-
-            // 2. Confirmar entrega y actualizar items
+            // La firma digital la genera el servidor a nombre del usuario de la sesión.
             const result = await signEppDelivery({
                 deliveryId: delivery.id,
-                operatorId: currentUser.id,
                 itemIdsConfirmed: confirmedItems,
-                signatureId: signatureAudit.SignatureID,
-                signatureHash: signatureAudit.HashSignature
+                deviceId
             });
 
             if (result.success) {

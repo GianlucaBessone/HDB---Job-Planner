@@ -51,8 +51,9 @@ Pasan por el control de accesos:
 - Acceso a Punto de Venta y Auditoría de IA.
 - Funciones: gestionar usuarios, administrar accesos, control horario, anular ventas,
   modificar precios, anular comprobantes de cuenta corriente, las diez acciones de
-  Almacén y stock y Reclutamiento de RRHH (ver, gestionar y eliminar; ver
-  `docs/rrhh/RECLUTAMIENTO.md`).
+  Almacén y stock, Reclutamiento de RRHH (ver, gestionar y eliminar; ver
+  `docs/rrhh/RECLUTAMIENTO.md`) y ver el registro de firmas digitales
+  (`GET /api/signatures/verify`).
 
 Todavía dependen solo del rol, y hay que migrarlos por etapas:
 

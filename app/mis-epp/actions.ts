@@ -2,6 +2,11 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { cookies, headers } from 'next/headers';
+import { z } from 'zod';
+import { decrypt } from '@/lib/auth';
+import { logAudit } from '@/lib/audit';
+import { datosFirmaSchema, firmarComoOperador, FirmaError, ipDesdeHeaders } from '@/lib/signatureServer';
 
 function safeRevalidate(path: string) {
     try {
@@ -123,26 +128,38 @@ export async function getMyEppData(operatorId: string) {
     }
 }
 
-export async function signEppDelivery(data: {
-    deliveryId: string;
-    operatorId: string;
-    itemIdsConfirmed: string[];
-    signatureId: string;
-    signatureHash: string;
-    firmaManuscritaUrl?: string;
-}) {
-    try {
-        const { deliveryId, operatorId, itemIdsConfirmed, signatureId, signatureHash, firmaManuscritaUrl } = data;
+/** Operador de la sesión. Las server actions no pasan por el middleware de /api. */
+async function getOperadorSesionId(): Promise<string | null> {
+    const token = (await cookies()).get('sgi_session')?.value;
+    const session = token ? await decrypt(token) : null;
+    return session?.id || null;
+}
 
-        if (!deliveryId || !operatorId) {
-            return { success: false, error: 'Parámetros incompletos' };
+const firmaEppSchema = z.object({
+    deliveryId: z.string().trim().min(1, 'Acta de entrega requerida'),
+    itemIdsConfirmed: z.array(z.string().min(1)).min(1, 'Debe seleccionar y confirmar al menos un ítem entregado'),
+    deviceId: datosFirmaSchema.shape.deviceId,
+    firmaManuscritaUrl: z.string().optional(),
+});
+
+/**
+ * Firma un acta de entrega de EPP. La firma digital (DocumentSignatureAudit) se
+ * genera acá, a nombre del operador de la sesión, en la misma transacción que
+ * actualiza el acta. Ni el operador ni la firma se aceptan del cliente.
+ */
+export async function signEppDelivery(data: z.input<typeof firmaEppSchema>) {
+    try {
+        const operatorId = await getOperadorSesionId();
+        if (!operatorId) {
+            return { success: false, error: 'Debe iniciar sesión para firmar la entrega' };
         }
-        if (!itemIdsConfirmed || itemIdsConfirmed.length === 0) {
-            return { success: false, error: 'Debe seleccionar y confirmar al menos un ítem entregado' };
+
+        const parsed = firmaEppSchema.safeParse(data);
+        if (!parsed.success) {
+            return { success: false, error: parsed.error.issues[0]?.message || 'Parámetros incompletos' };
         }
-        if (!signatureId || !signatureHash) {
-            return { success: false, error: 'Firma digital con checksum requerida' };
-        }
+        const { deliveryId, itemIdsConfirmed, deviceId, firmaManuscritaUrl } = parsed.data;
+        const ipAddress = ipDesdeHeaders(await headers());
 
         const result = await prisma.$transaction(async (tx) => {
             const delivery = await tx.eppDelivery.findUnique({
@@ -156,19 +173,28 @@ export async function signEppDelivery(data: {
 
             const now = new Date();
 
-            // 1. Actualizar acta de entrega
+            // 1. Firma digital a nombre del operador de la sesión
+            const firma = await firmarComoOperador(tx, {
+                documentId: delivery.id,
+                documentVersion: '1.0',
+                deviceId,
+                operatorId,
+                ipAddress,
+            });
+
+            // 2. Actualizar acta de entrega
             const updatedDelivery = await tx.eppDelivery.update({
                 where: { id: deliveryId },
                 data: {
                     estado: 'FIRMADA',
-                    signatureId,
-                    signatureHash,
+                    signatureId: firma.SignatureID,
+                    signatureHash: firma.HashSignature,
                     firmaManuscritaUrl: firmaManuscritaUrl || null,
                     signedAt: now
                 }
             });
 
-            // 2. Actualizar cada ítem de la entrega
+            // 3. Actualizar cada ítem de la entrega
             for (const item of delivery.items) {
                 const isConfirmed = itemIdsConfirmed.includes(item.id);
 
@@ -216,13 +242,26 @@ export async function signEppDelivery(data: {
                 }
             }
 
-            return updatedDelivery;
+            return { updatedDelivery, firma };
+        });
+
+        await logAudit({
+            action: 'CREATE',
+            entity: 'SIGNATURE_AUDIT',
+            entityId: result.firma.SignatureID,
+            newValue: result.firma,
+            userId: result.firma.UserID,
+            userName: result.firma.UserName,
+            metadata: { eppDeliveryId: deliveryId }
         });
 
         safeRevalidate('/mis-epp');
         safeRevalidate('/rrhh/personal/epp');
-        return { success: true, data: result };
+        return { success: true, data: result.updatedDelivery };
     } catch (error: any) {
+        if (error instanceof FirmaError) {
+            return { success: false, error: error.message };
+        }
         console.error('Error al firmar entrega de EPP:', error);
         return { success: false, error: error.message };
     }

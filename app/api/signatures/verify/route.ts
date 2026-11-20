@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
+        // El listado expone nombre y DNI de todos los firmantes.
+        const acceso = await getAcceso(req);
+        if (!acceso.puede('firmas.ver_registro')) {
+            return NextResponse.json({ error: 'No tenés permiso para ver el registro de firmas' }, { status: 403 });
+        }
+
         const signatures = await prisma.documentSignatureAudit.findMany({
             orderBy: { SignedAtUTC: 'desc' }
         });

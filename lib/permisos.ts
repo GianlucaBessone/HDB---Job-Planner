@@ -48,6 +48,9 @@ export const FUNCIONES = [
     { id: 'ventas.modificar_precios', label: 'Modificar precios', description: 'Cambiar el precio unitario en una venta sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.anular_comprobante_cc', label: 'Anular comprobantes de cuenta corriente', description: 'Anular recibos y movimientos sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
 
+    // ─ Calidad ─
+    { id: 'firmas.ver_registro', label: 'Ver registro de firmas', description: 'Consultar todas las firmas digitales, con nombre y DNI del firmante', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa'] },
+
     // ─ Recursos Humanos ─
     { id: 'rrhh.reclutamiento_ver', label: 'Ver reclutamiento', description: 'Consultar vacantes, postulantes, CV y análisis de IA', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'rrhh.reclutamiento_gestionar', label: 'Gestionar reclutamiento', description: 'Crear y editar vacantes y postulantes, mover etapas y analizar CV con IA', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },

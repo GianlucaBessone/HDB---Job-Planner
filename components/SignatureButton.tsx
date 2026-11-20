@@ -70,12 +70,10 @@ export default function SignatureButton({ documentId, documentVersion, onSignCom
         try {
             const res = await safeApiRequest('/api/signatures/sign', {
                 method: 'POST',
+                // La identidad del firmante la pone el servidor desde la sesión.
                 body: JSON.stringify({
                     documentId,
                     documentVersion,
-                    userId: currentUser.id,
-                    userName: currentUser.nombreCompleto,
-                    dni: currentUser.dni,
                     deviceId
                 })
             });

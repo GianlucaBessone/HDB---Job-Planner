@@ -21,9 +21,7 @@ export default function VerifySignaturePage() {
 
         try {
             const res = await fetch(`/api/signatures/verify/${code}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ verifiedBy: 'Portal Público' })
+                method: 'POST'
             });
 
             const data = await res.json();
