@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import ProjectsHeader from '@/components/projects/ProjectsHeader';
 import { AlertTriangle, Loader2, Calendar } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
@@ -81,10 +82,10 @@ export default function RiesgosPage() {
                                 {risks.map(risk => (
                                     <tr key={risk.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                         <td className="px-6 py-4">
-                                            <p className="font-bold text-slate-700 dark:text-slate-200">
+                                            <Link href={`/projects/ficha/${risk.projectId}?tab=bitacora`} className="font-bold text-slate-700 dark:text-slate-200 hover:underline">
                                                 {risk.project.codigoProyecto && <span className="font-mono text-primary mr-1.5">{risk.project.codigoProyecto}</span>}
                                                 {risk.project.nombre}
-                                            </p>
+                                            </Link>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wider ${

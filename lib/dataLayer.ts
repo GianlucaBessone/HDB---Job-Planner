@@ -673,7 +673,7 @@ export const dataLayer = {
             orderBy: { fecha: 'desc' }
         });
     },
-    async createClientDelay(data: { projectId: string; fecha: string; hora: string; operador: string; area: string; responsableArea?: string; motivo: string; duracion: number }) {
+    async createClientDelay(data: { projectId: string; fecha: string; hora: string; operador: string; operadorId?: string; area: string; responsableArea?: string; motivo: string; duracion: number }) {
         return await prisma.clientDelay.create({ data });
     },
     async deleteClientDelay(id: string) {
@@ -718,7 +718,7 @@ export const dataLayer = {
             orderBy: { fecha: 'desc' }
         });
     },
-    async createProjectLog(data: { projectId: string; fecha: string; responsable: string; observacion: string; categoria?: string }) {
+    async createProjectLog(data: { projectId: string; fecha: string; responsable: string; responsableId?: string; observacion: string; categoria?: string }) {
         return await prisma.projectLog.create({ data });
     },
     async deleteProjectLog(id: string) {

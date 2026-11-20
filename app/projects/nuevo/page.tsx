@@ -199,7 +199,7 @@ function Wizard() {
             const r = await api<any>('/api/projects/wizard', { method: 'POST', json: payload(s, borradorId) });
             try { localStorage.removeItem(CLAVE_LOCAL(userId)); } catch { /* noop */ }
             showToast(r.message, 'success');
-            router.push(`/projects?proyecto=${r.project.id}`);
+            router.push(`/projects/ficha/${r.project.id}`);
         } catch (e: any) {
             showToast(e.message, 'error');
             setCreando(false);

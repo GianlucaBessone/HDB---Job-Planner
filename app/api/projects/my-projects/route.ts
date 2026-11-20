@@ -22,20 +22,21 @@ export async function GET(req: Request) {
             estado: { notIn: ['finalizado'] }
         };
 
+        // "Mis proyectos": donde la persona es responsable (por id o, en los viejos, por nombre)
+        // o está en el equipo asignado con una asignación vigente o futura.
+        const hoy = new Date().toISOString().slice(0, 10);
+        if (!responsableId) {
+            return NextResponse.json({ error: 'Falta responsableId' }, { status: 400 });
+        }
+        const asignaciones = await prisma.proyectoAsignacion
+            .findMany({ where: { operatorId: responsableId, fechaHasta: { gte: hoy } }, select: { projectId: true } })
+            .catch(() => [] as { projectId: string }[]); // la tabla puede no existir en bases viejas
+        const enEquipo = new Set(asignaciones.map(a => a.projectId));
+
         if (!all) {
-            if (!responsableId) {
-                return NextResponse.json({ error: 'Falta responsableId' }, { status: 400 });
-            }
-
-            // Match by ID (new relational field) OR by legacy name field
-            const orConditions: any[] = [
-                { responsableId: responsableId }
-            ];
-
-            if (nombreCompleto) {
-                orConditions.push({ responsable: nombreCompleto });
-            }
-
+            const orConditions: any[] = [{ responsableId }];
+            if (nombreCompleto) orConditions.push({ responsableId: null, responsable: nombreCompleto });
+            if (enEquipo.size) orConditions.push({ id: { in: Array.from(enEquipo) } });
             where.OR = orConditions;
         }
 
@@ -56,7 +57,14 @@ export async function GET(req: Request) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return NextResponse.json(projects);
+        // Cómo participa la persona en cada proyecto, para mostrarlo en la lista
+        const conRol = projects.map(p => ({
+            ...p,
+            miRol: p.responsableId === responsableId || (!p.responsableId && p.responsable === nombreCompleto)
+                ? 'responsable'
+                : enEquipo.has(p.id) ? 'equipo' : null,
+        }));
+        return NextResponse.json(conRol);
     } catch (error) {
         console.error('Error fetching my projects:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
