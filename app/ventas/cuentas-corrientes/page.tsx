@@ -168,7 +168,10 @@ export default function CuentasCorrientesPage() {
                     const primerConDeuda = (data.clientes || []).find(
                         (c: ClienteCarteraItem) => c.saldoActual > 0.01
                     );
-                    const inicial = primerConDeuda || (data.clientes || [])[0];
+                    // La ficha del cliente enlaza con ?cliente=<id> para abrir su cuenta directamente.
+                    const pedido = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('cliente') : null;
+                    const desdeEnlace = pedido ? (data.clientes || []).find((c: ClienteCarteraItem) => c.id === pedido) : null;
+                    const inicial = desdeEnlace || primerConDeuda || (data.clientes || [])[0];
                     if (inicial) {
                         setSelectedClienteId(inicial.id);
                     }

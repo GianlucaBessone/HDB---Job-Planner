@@ -241,6 +241,11 @@ model Planning {
 model HdbClient {
   id                        String                      @id @default(cuid())
   nombre                    String
+  // Datos fiscales (prisma/sql/20261120_clientes_datos_fiscales). Opcionales: los clientes
+  // existentes no los tienen. Ventas y cotizaciones los toman de acá en vez de tipearlos.
+  razonSocial               String?
+  cuit                      String?                     // Formato 30-12345678-9
+  condicionIva              String?                     // CONDICIONES_IVA de lib/ventas/proveedorVentas.ts
   email                     String?
   telefono                  String?
   direccion                 String?
@@ -272,6 +277,7 @@ model HdbClient {
   presupuestosServicio      PresupuestoServicio[]
 
   @@index([listaPrecioId])
+  @@index([cuit])
 }
 
 model TimeEntry {

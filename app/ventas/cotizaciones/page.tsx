@@ -1114,7 +1114,8 @@ export default function CotizacionesPage() {
                 onSeleccionar={async (cli) => {
                     setClienteId(cli.id);
                     setClienteNombre(cli.nombre);
-                    setClienteCuit('');
+                    // CUIT de la ficha del cliente; se puede corregir a mano en la cotización.
+                    setClienteCuit(cli.identificacion || '');
                     setClienteTelefono(cli.telefono || '');
                     setClienteEmail(cli.email || '');
                     setClienteDireccion(cli.direccion || '');

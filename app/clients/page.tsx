@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import {
     Plus,
     Search,
@@ -35,6 +36,9 @@ async function mensajeError(res: Response, porDefecto: string): Promise<string> 
 interface Client {
     id: string;
     nombre: string;
+    razonSocial?: string | null;
+    cuit?: string | null;
+    condicionIva?: string | null;
     email?: string;
     telefono?: string;
     direccion?: string;
@@ -50,6 +54,7 @@ interface Client {
 
 const EMPTY_FORM = {
     nombre: '',
+    cuit: '',
     email: '',
     telefono: '',
     direccion: '',
@@ -116,6 +121,7 @@ export default function ClientsPage() {
         setEditingClient(client);
         setFormData({
             nombre: client.nombre,
+            cuit: client.cuit || '',
             email: client.email || '',
             telefono: client.telefono || '',
             direccion: client.direccion || '',
@@ -304,8 +310,9 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                     </div>
                     <div>
                         <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-1 group-hover:text-primary transition-colors">
-                            {client.nombre}
+                            <Link href={`/clients/${client.id}`} className="hover:underline">{client.nombre}</Link>
                         </h4>
+                        {client.cuit && <p className="text-xs text-muted-foreground font-mono">CUIT {client.cuit}</p>}
                         <div className="flex items-center gap-1.5 mt-0.5">
                             <span className={`w-2 h-2 rounded-full ${client.activo ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                             <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
@@ -406,6 +413,19 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
                                 value={formData.nombre}
                                 onChange={e => setField('nombre', e.target.value)}
                             />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">CUIT</label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                placeholder="30-12345678-9"
+                                value={formData.cuit}
+                                onChange={e => setField('cuit', e.target.value)}
+                            />
+                            <p className="field-hint px-1">Razón social y condición de IVA se completan en la ficha del cliente.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
