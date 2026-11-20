@@ -43,6 +43,9 @@ export default function VerificacionFirmasPage() {
             if (res.ok) {
                 const data = await res.json();
                 setSignatures(data);
+            } else {
+                const err = await res.json().catch(() => null);
+                showToast(err?.error || 'No se pudo cargar el registro de firmas', 'error');
             }
         } catch (e) {
             console.error('Failed to load signatures', e);
@@ -73,9 +76,9 @@ export default function VerificacionFirmasPage() {
     const verifyIntegrity = async (id: string) => {
         setIsVerifying(id);
         try {
+            // Quién verifica lo toma el servidor de la sesión.
             const res = await safeApiRequest(`/api/signatures/verify/${id}`, {
-                method: 'POST',
-                body: JSON.stringify({ verifiedBy: currentUser?.id })
+                method: 'POST'
             });
 
             if (res.ok) {

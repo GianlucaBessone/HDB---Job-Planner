@@ -7,11 +7,15 @@ import { getAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
+// El payload del HMAC (lib/signature.ts) separa los campos con '|': no se acepta en
+// los datos del cliente para que un valor no pueda correrse a otro campo.
+const campoFirma = (max: number) => z.string().trim().min(1).max(max).refine(v => !v.includes('|'));
+
 // El firmante sale de la sesión, no del body: cualquier userId / userName / dni que mande el cliente se ignora.
 const bodySchema = z.object({
-    documentId: z.string().trim().min(1).max(200),
-    documentVersion: z.string().trim().min(1).max(50),
-    deviceId: z.string().trim().min(1).max(200),
+    documentId: campoFirma(200),
+    documentVersion: campoFirma(50),
+    deviceId: campoFirma(200),
 });
 
 export async function POST(req: Request) {

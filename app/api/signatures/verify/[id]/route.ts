@@ -2,20 +2,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateSignatureHash } from '@/lib/signature';
 import { logAudit } from '@/lib/audit';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
-        let verifiedBy = null;
-        try {
-            const bodyText = await req.text();
-            if (bodyText) {
-                const body = JSON.parse(bodyText);
-                verifiedBy = body.verifiedBy;
-            }
-        } catch (e) {
-            // ignore
-        }
+        // Ruta pública (el middleware la deja pasar sin sesión y no pisa x-user-id),
+        // así que quién verifica se toma de la cookie de sesión validada, nunca del cuerpo.
+        const session = await getSessionFromRequest(req);
+        const verifiedBy = session?.id || 'Portal Público';
 
         const signatureId = params.id;
         
@@ -52,7 +47,7 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
             data: {
                 VerificationStatus: newStatus,
                 VerifiedAtUTC: new Date(),
-                VerifiedBy: verifiedBy || null
+                VerifiedBy: verifiedBy
             }
         });
 
@@ -61,7 +56,8 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
             entity: 'SIGNATURE_AUDIT',
             entityId: signatureId,
             newValue: updatedSignature,
-            userId: verifiedBy,
+            userId: session?.id,
+            userName: session?.nombreCompleto,
             metadata: { result: newStatus }
         });
 
