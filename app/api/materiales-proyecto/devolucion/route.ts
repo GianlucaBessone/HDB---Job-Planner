@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { conciliarStockMaterialObra } from '@/lib/inventario/consumos';
 
 // POST /api/materiales-proyecto/devolucion
 export async function POST(req: Request) {
@@ -137,6 +138,9 @@ export async function POST(req: Request) {
                     }
                 }
             }
+
+            // Lo devuelto y cerrado por el depósito vuelve al stock (P9)
+            await conciliarStockMaterialObra(tx, finalMaterialId, { id: acceso.userId, nombre: acceso.nombre });
 
             return { devolucion, materialInfo: updatedMat };
         });

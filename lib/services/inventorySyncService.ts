@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { conciliarMaterialesObra } from '@/lib/inventario/consumos';
 
 export async function syncInventoryForOS(os: any, materiales: any[], operadores: any[]) {
     if (!materiales || materiales.length === 0) return;
@@ -6,6 +7,7 @@ export async function syncInventoryForOS(os: any, materiales: any[], operadores:
     const firstOp = await prisma.operator.findUnique({ where: { id: operadores[0].operadorId } });
     const opName = firstOp ? firstOp.nombreCompleto : 'Desconocido';
 
+    const creados: string[] = [];
     for (const osm of os.materiales) {
         let finalMatId = osm.materialProyectoId;
         const cant = Number(osm.cantidad);
@@ -26,6 +28,7 @@ export async function syncInventoryForOS(os: any, materiales: any[], operadores:
                 }
             });
             finalMatId = newMatProv.id;
+            creados.push(newMatProv.id);
             
             // Link OS material to the new provision record
             await prisma.ordenServicioMaterial.update({
@@ -52,4 +55,7 @@ export async function syncInventoryForOS(os: any, materiales: any[], operadores:
             });
         }
     }
+
+    // Material que la OS usó sin provisión previa: sale del stock como entrega a obra (P9)
+    await conciliarMaterialesObra(creados);
 }

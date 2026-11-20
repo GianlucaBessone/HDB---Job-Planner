@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { conciliarMaterialesObra } from '@/lib/inventario/consumos';
 import { prisma } from '@/lib/prisma';
 import { buildProductSearchWhere, getWordVariants } from '@/lib/ventas/skuUtils';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
@@ -446,6 +447,9 @@ export async function POST(req: Request) {
             console.warn('Upsert fallback legacy MaterialMaestro ignored:', e);
         }
     }
+
+    // Lo entregado a obra sale del stock (P9)
+    await conciliarMaterialesObra([material.id], { id: acceso.userId, nombre: acceso.nombre });
 
     return NextResponse.json(material, { status: 201 });
 }

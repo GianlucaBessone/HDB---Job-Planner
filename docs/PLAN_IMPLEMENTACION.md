@@ -104,11 +104,25 @@ Migración `prisma/sql/20261121_cc_cargo_por_orden` (aditiva: `origenTipo` y `or
 | OS | Una OS ya cargada no cambia su cobro (409: hay que anular el cargo). "Marcar pagada" avisa que el cobro se registra en Cuentas corrientes |
 | Por qué con un clic y no automático | Hoy se factura en otro sistema y AFIP llega el próximo sprint (Anexo A). Pasarlo a automático al firmar es cambiar dónde se llama `cargarOrdenesACuenta` |
 
+### Hecho: consumos reales mueven el stock (P9)
+
+Sin cambios de base de datos: usa el kardex existente (`ProductoStockMovimiento` con `referenciaTipo` y `referenciaId`) y la marca `Venta.stockDescontado`. Lógica en `lib/inventario/consumos.ts`.
+
+| Origen | Cuándo mueve el stock |
+|---|---|
+| Venta del PDV | Al confirmarla sale lo vendido (del almacén de la venta o el predeterminado). Cancelar pendientes devuelve lo cancelado; anularla devuelve todo |
+| Entrega a obra | Sale lo entregado menos lo devuelto y cerrado por el depósito. Alta, edición, importación de provisión, materiales que agrega una OS y devoluciones; borrar el material devuelve lo que quedaba afuera |
+| Stock negativo | Permitido: una venta nunca se frena por stock (Anexo A). El movimiento queda marcado `stockNegativo` para corregirlo con un conteo o ajuste |
+
+- **Conciliación**: cada origen tiene una salida neta objetivo; se registra solo la diferencia con lo que ya está en el kardex para ese origen. Repetirla no duplica nada (bloqueo por origen dentro de la transacción).
+- **Lo anterior no se toca**: ventas confirmadas antes del cambio (`stockDescontado = false`) y materiales de obra creados antes de `STOCK_OBRA_DESDE` (20/11/2026 21:00 UTC; se puede mover con esa variable de entorno) no mueven stock, para no restar dos veces lo que ya se ajustó a mano.
+- **Vínculo con el catálogo**: el material de obra se busca por código = SKU (también sin ceros a la izquierda o por código de barras), igual que su precio. Un material sin producto en el catálogo no mueve stock.
+- **Fuera de alcance**: los materiales de las OT salen de `MaterialMaestro`, no de `Producto`; se integran con P8.
+
 ### Pendiente en esta fase
 
 - Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
-- P8 · Una sola fuente de precios de materiales (`Producto`); se retira `MaterialMaestro`.
-- P9 · Stock integrado con ventas, entregas a obra y órdenes (crítico: el stock se usa para comprar y cobrar; puede quedar negativo).
+- P8 · Una sola fuente de precios de materiales (`Producto`); se retira `MaterialMaestro`. Con eso, los materiales de las OT también mueven el stock (P9).
 - P20 · Tarifas de mano de obra con una sola regla.
 - P24 · Proveedores únicos.
 - P27 · Tipo de proyecto con valores por defecto y estados calculados.

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { conciliarMaterialesObra } from '@/lib/inventario/consumos';
 
 export async function POST(req: Request) {
     const acceso = await exigirAcceso(req, ['provision.gestionar'], 'No tenés permiso para gestionar la provisión de materiales');
@@ -16,6 +17,7 @@ export async function POST(req: Request) {
         }
 
         const results = [];
+        const tocados: string[] = [];
 
         // Lista de precios por defecto del sistema
         const defaultListaPrecio = await prisma.listaPrecio.findFirst({
@@ -152,6 +154,7 @@ export async function POST(req: Request) {
                             }
                         }
 
+                        tocados.push(existingMaterial.id);
                         await prisma.materialProyecto.update({
                             where: { id: existingMaterial.id },
                             data: {
@@ -173,7 +176,7 @@ export async function POST(req: Request) {
                         }
                         let nuevoEstado = (numEntregada > 0) ? 'material_entregado' : 'material_cargado';
 
-                        await prisma.materialProyecto.create({
+                        const creado = await prisma.materialProyecto.create({
                             data: {
                                 proyectoId: project.id,
                                 nombre: nombreMaterial,
@@ -186,6 +189,7 @@ export async function POST(req: Request) {
                                 estado: nuevoEstado
                             }
                         });
+                        tocados.push(creado.id);
                         processedRows++;
                     }
 
@@ -216,6 +220,9 @@ export async function POST(req: Request) {
                 message: processedRows > 0 ? 'Importado con éxito' : 'Sin datos válidos'
             });
         }
+
+        // Lo entregado a obra sale del stock (P9)
+        await conciliarMaterialesObra(tocados, { id: acceso.userId, nombre: acceso.nombre });
 
         return NextResponse.json({ success: true, results });
     } catch (error: any) {

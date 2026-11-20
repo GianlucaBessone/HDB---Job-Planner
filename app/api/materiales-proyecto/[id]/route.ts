@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { conciliarMaterialesObra, devolverStockMaterialBorrado } from '@/lib/inventario/consumos';
 
 // PUT /api/materiales-proyecto/[id] — actualizar material
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
@@ -134,6 +135,9 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
         }
     }
 
+    // Lo entregado a obra sale del stock (P9)
+    await conciliarMaterialesObra([id], { id: acceso.userId, nombre: acceso.nombre });
+
     return NextResponse.json(material);
 }
 
@@ -160,7 +164,12 @@ export async function DELETE(_req: Request, { params: paramsPromise }: { params:
     }
 
     try {
-        await prisma.materialProyecto.delete({ where: { id } });
+        // Lo que había salido del stock por este material vuelve al almacén (P9)
+        await prisma.$transaction(async (tx) => {
+            const mat = await tx.materialProyecto.findUnique({ where: { id }, select: { nombre: true } });
+            await devolverStockMaterialBorrado(tx, id, mat?.nombre || 'material', { id: acceso.userId, nombre: acceso.nombre });
+            await tx.materialProyecto.delete({ where: { id } });
+        });
         return NextResponse.json({ success: true });
     } catch (e) {
         return NextResponse.json({ error: 'Error al eliminar el material' }, { status: 500 });
