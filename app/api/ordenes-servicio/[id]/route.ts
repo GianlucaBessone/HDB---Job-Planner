@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { logAudit } from '@/lib/audit';
 import { exigirAcceso, getAccesoDeCookie } from '@/lib/permisosServer';
 
 const include = {
@@ -467,6 +468,26 @@ export async function DELETE(req: Request, { params: paramsPromise }: { params: 
 
         const os = await prisma.ordenServicio.findUnique({ where: { id } });
         if (!os) return NextResponse.json({ error: 'Orden de servicio no encontrada' }, { status: 404 });
+        const motivo = new URL(req.url).searchParams.get('motivo')?.trim() || null;
+
+        // Una OS firmada, cobrada o pagada es un registro con el cliente: nunca se borra, se anula.
+        if (['firmada', 'cobrada', 'pagada'].includes(os.estado)) {
+            await prisma.ordenServicio.update({ where: { id }, data: { estado: 'anulada' } });
+            await logAudit({
+                userId: acceso.userId,
+                userName: acceso.nombre,
+                action: 'UPDATE',
+                entity: 'ORDEN_SERVICIO',
+                entityId: id,
+                oldValue: { estado: os.estado },
+                newValue: { estado: 'anulada' },
+                metadata: { message: 'Anulada en lugar de eliminada: ya estaba firmada', motivo, codigo: (os as any).codigo },
+            });
+            return NextResponse.json({ success: true, modo: 'anulada', message: 'La OS estaba firmada: quedó anulada y se conserva' });
+        }
+        if (os.estado === 'anulada') {
+            return NextResponse.json({ error: 'La OS ya está anulada' }, { status: 409 });
+        }
 
         await prisma.$transaction(async (tx: any) => {
             // Drop old relations
@@ -479,7 +500,17 @@ export async function DELETE(req: Request, { params: paramsPromise }: { params: 
             await tx.ordenServicio.delete({ where: { id } });
         });
 
-        return NextResponse.json({ success: true, message: 'Orden de servicio eliminada' });
+        await logAudit({
+            userId: acceso.userId,
+            userName: acceso.nombre,
+            action: 'DELETE',
+            entity: 'ORDEN_SERVICIO',
+            entityId: id,
+            oldValue: { codigo: (os as any).codigo, estado: os.estado, projectId: os.projectId },
+            metadata: { motivo },
+        });
+
+        return NextResponse.json({ success: true, modo: 'eliminada', message: 'Orden de servicio eliminada' });
     } catch (e) {
         console.error('DELETE OS error:', e);
         return NextResponse.json({ error: 'Error al eliminar la OS', details: String(e) }, { status: 500 });

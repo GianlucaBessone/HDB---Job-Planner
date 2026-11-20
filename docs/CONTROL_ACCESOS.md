@@ -56,6 +56,23 @@ Nadie puede cambiar su propio permiso de administrar accesos.
 - **Bajas:** borrar una persona, un cliente o un proyecto con historial (horas, fichadas,
   órdenes, ventas…) lo desactiva en lugar de borrarlo (`lib/dataLayer.ts`); la API responde
   `modo: 'desactivado'` y queda en Auditoría. Solo se borra lo que no tiene nada registrado.
+  Lo mismo para otros registros, con estado de anulación en vez de borrado (la API responde
+  `modo: 'anulado'`/`'anulada'` o `'eliminado'`; el motivo opcional va en `?motivo=` y queda en
+  Auditoría):
+  - **Documentos controlados**: con versión aprobada, firmas, lecturas, capacitaciones,
+    competencias, impresiones o uso en OS → `anulado` (sale de la biblioteca, se conserva todo).
+    Un borrador sin historial se borra. La auditoría y las firmas nunca se borran.
+  - **Órdenes de servicio**: firmada, cobrada o pagada → `anulada` (no cuenta en el panel).
+    Pendiente de firma → se borra, con registro en Auditoría.
+  - **SGI** (NC, CAPA, riesgos, oportunidades, objetivos): se borran solo si son de las
+    últimas 24 h, siguen en su estado inicial y no tienen nada vinculado (error de carga);
+    si no, quedan anuladas (`lib/sgi/bajas.ts`).
+  - **Informes técnicos finalizados** → `anulado`, con la firma y la justificación. Los
+    borradores se borran.
+  - Siguen con borrado físico, a propósito: facturas de gastos (la auditoría guarda la copia
+    completa), tareas y recordatorios, registros de horas, líneas de OT y materiales de
+    proyecto, catálogos de configuración, viajes planificados sin gastos, datasets y
+    postulantes de RRHH (datos personales).
 
 ### Rutas sin sesión, a propósito
 

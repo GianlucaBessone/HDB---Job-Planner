@@ -22,7 +22,9 @@ export async function GET(req: Request) {
 
         if (tipo) where.tipoDocumento = tipo;
         if (area) where.area = area;
+        // Los anulados no aparecen en la biblioteca salvo que se pidan (?estado=anulado).
         if (estado) where.estado = estado;
+        else where.estado = { not: 'anulado' };
         if (criticidad) where.nivelCriticidad = criticidad;
         if (subAccessId) {
             if (subAccessId === 'unassigned') {
@@ -44,7 +46,7 @@ export async function GET(req: Request) {
         // Filtrar documentos con próxima revisión vencida
         if (vencidos === 'true') {
             where.proximaRevision = { lte: new Date() };
-            where.estado = { not: 'obsoleto' };
+            where.estado = { notIn: ['obsoleto', 'anulado'] };
         }
 
         const docs = await prisma.controlledDocument.findMany({

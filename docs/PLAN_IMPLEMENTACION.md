@@ -37,6 +37,7 @@ Sin cambios de base de datos.
 | P33 | Fichadas a aprobar: selección múltiple y "Aprobar N". El rechazo sigue de a una porque borra la fichada |
 | P14, X10 | El fichado acepta como asignado al operario que está en el equipo del proyecto (`ProyectoAsignacion`) para esa fecha, aunque no figure en la agenda |
 | P7, X14 | Personas, clientes y proyectos con historial se desactivan en lugar de borrarse en cascada; la pantalla lo informa y queda en Auditoría (antes borrar un cliente no dejaba registro) |
+| P7 (resto) | Documentos controlados, OS firmadas, registros del SGI e informes técnicos finalizados se anulan en lugar de borrarse; el documento ya no purga su auditoría. Detalle en `docs/CONTROL_ACCESOS.md` (Bajas). Sin cambios de base de datos |
 | P23 | Ingresar con un PIN débil (1234, repetidos, escaleras) obliga a elegir uno nuevo antes de entrar. El servidor lo exige con una marca en la sesión, no solo la pantalla |
 
 ### Pasan a la Fase 3

@@ -203,8 +203,14 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                 method: 'DELETE'
             });
             if (res.ok) {
+                const data = await res.json().catch(() => ({}));
                 cachedLibraryDocs = null;
-                showToast(`Documento ${docToDelete.codigo} e historial eliminados correctamente`, 'success');
+                showToast(
+                    data.modo === 'anulado'
+                        ? `Documento ${docToDelete.codigo} anulado: tiene historial y se conserva`
+                        : `Borrador ${docToDelete.codigo} eliminado`,
+                    'success'
+                );
                 setDocToDelete(null);
                 loadData();
             } else {
@@ -1193,9 +1199,9 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                 isOpen={Boolean(docToDelete)}
                 onClose={() => setDocToDelete(null)}
                 onConfirm={executeDeleteDoc}
-                title="Eliminar Documento Controlado"
-                message={`¿Está seguro de eliminar definitivamente el documento "${docToDelete?.codigo}: ${docToDelete?.titulo}" y TODO su historial de revisiones?\n\nEsta acción no dejará registros en el sistema.`}
-                confirmText="Eliminar Definitivamente"
+                title="Eliminar o anular documento"
+                message={`"${docToDelete?.codigo}: ${docToDelete?.titulo}"\n\nSi el documento tiene historial (versiones aprobadas, firmas, lecturas o capacitaciones) queda anulado: sale de la biblioteca y se conserva su trazabilidad. Si es un borrador sin historial, se elimina. En los dos casos queda registrado en Auditoría.`}
+                confirmText="Confirmar"
                 cancelText="Cancelar"
                 isDestructive={true}
             />
