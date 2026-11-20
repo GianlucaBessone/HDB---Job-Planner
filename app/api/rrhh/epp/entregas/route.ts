@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createEppDelivery } from '@/lib/rrhh/eppServer';
 import { idSchema, leerBody, responder, sesionEpp } from '@/lib/rrhh/eppSesion';
+import { firmaImagenSchema } from '@/lib/rrhh/eppFirma';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,9 +15,9 @@ const entregaSchema = z.object({
     })).min(1, 'Debe seleccionar al menos un elemento de EPP').max(100),
     observaciones: z.string().max(2000).optional(),
     // Firma manuscrita en el puesto de entrega (data URL de la imagen).
-    firmaPresencialBase64: z.string().max(5_000_000).optional(),
-    signatureId: z.string().max(200).optional(),
-    signatureHash: z.string().max(500).optional(),
+    // No se aceptan signatureId/signatureHash: una firma con checksum solo la genera
+    // el operario desde Mis EPP.
+    firmaPresencialBase64: firmaImagenSchema.optional(),
 });
 
 /** Acta de entrega de EPP. "Entregado por" es siempre el usuario de la sesión. */

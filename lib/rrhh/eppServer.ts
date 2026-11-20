@@ -439,13 +439,13 @@ export async function addEppStock(usuario: UsuarioEpp, data: {
 
             if (!item) throw new Error('Elemento de EPP no encontrado');
 
-            const stockAnterior = item.stockActual;
-            const stockPosterior = stockAnterior + qty;
-
+            // Incremento atómico: dos ingresos simultáneos no se pisan.
             const updatedItem = await tx.eppItem.update({
                 where: { id: data.eppItemId },
-                data: { stockActual: stockPosterior }
+                data: { stockActual: { increment: qty } }
             });
+            const stockPosterior = updatedItem.stockActual;
+            const stockAnterior = stockPosterior - qty;
 
             const movement = await tx.eppStockMovement.create({
                 data: {
@@ -516,8 +516,6 @@ export async function createEppDelivery(usuario: UsuarioEpp, data: {
     }>;
     observaciones?: string;
     firmaPresencialBase64?: string; // Si se firmó directamente en el puesto de entrega
-    signatureId?: string;
-    signatureHash?: string;
 }) {
     try {
         if (!data.operatorId) return { success: false, error: 'Debe seleccionar un operador' };
@@ -531,11 +529,16 @@ export async function createEppDelivery(usuario: UsuarioEpp, data: {
             });
             const dbItemMap = new Map<string, any>(dbItems.map(i => [i.id, i]));
 
+            // Se controla el total por elemento: el mismo EPP puede venir en varias líneas.
+            const pedido = new Map<string, number>();
             for (const reqItem of data.items) {
-                const dbItem = dbItemMap.get(reqItem.eppItemId);
-                if (!dbItem) throw new Error(`Elemento no encontrado en catálogo: ${reqItem.eppItemId}`);
-                if (dbItem.stockActual < reqItem.cantidad) {
-                    throw new Error(`Stock insuficiente para "${dbItem.nombre}". Disponible: ${dbItem.stockActual}, Solicitado: ${reqItem.cantidad}`);
+                pedido.set(reqItem.eppItemId, (pedido.get(reqItem.eppItemId) || 0) + reqItem.cantidad);
+            }
+            for (const [eppItemId, cantidad] of Array.from(pedido.entries())) {
+                const dbItem = dbItemMap.get(eppItemId);
+                if (!dbItem) throw new Error(`Elemento no encontrado en catálogo: ${eppItemId}`);
+                if (dbItem.stockActual < cantidad) {
+                    throw new Error(`Stock insuficiente para "${dbItem.nombre}". Disponible: ${dbItem.stockActual}, Solicitado: ${cantidad}`);
                 }
             }
 
@@ -544,7 +547,7 @@ export async function createEppDelivery(usuario: UsuarioEpp, data: {
             const countThisYear = await tx.eppDelivery.count();
             const codigoActa = `EPP-ENT-${todayYear}-${String(countThisYear + 1).padStart(4, '0')}`;
 
-            const isPresencialSigned = Boolean(data.firmaPresencialBase64 || data.signatureHash);
+            const isPresencialSigned = Boolean(data.firmaPresencialBase64);
 
             // 3. Crear acta de entrega
             const delivery = await tx.eppDelivery.create({
@@ -554,8 +557,6 @@ export async function createEppDelivery(usuario: UsuarioEpp, data: {
                     entregadoPor: usuario.nombre,
                     estado: isPresencialSigned ? 'FIRMADA' : 'PENDIENTE_FIRMA',
                     firmaManuscritaUrl: data.firmaPresencialBase64 || null,
-                    signatureId: data.signatureId || null,
-                    signatureHash: data.signatureHash || null,
                     signedAt: isPresencialSigned ? new Date() : null,
                     observaciones: data.observaciones || null
                 }
@@ -583,14 +584,20 @@ export async function createEppDelivery(usuario: UsuarioEpp, data: {
                     }
                 });
 
-                // Descontar stock
-                const stockAnterior = dbItem.stockActual;
-                const stockPosterior = stockAnterior - cant;
-
-                await tx.eppItem.update({
-                    where: { id: dbItem.id },
-                    data: { stockActual: stockPosterior }
+                // Descontar stock solo si alcanza: si otra entrega simultánea se lo llevó,
+                // falla toda la transacción en vez de dejar el stock en negativo.
+                const descontado = await tx.eppItem.updateMany({
+                    where: { id: dbItem.id, stockActual: { gte: cant } },
+                    data: { stockActual: { decrement: cant } }
                 });
+                if (descontado.count === 0) {
+                    throw new Error(`Stock insuficiente para "${dbItem.nombre}". Otra entrega lo usó recién; volvé a intentar.`);
+                }
+                const { stockActual: stockPosterior } = await tx.eppItem.findUniqueOrThrow({
+                    where: { id: dbItem.id },
+                    select: { stockActual: true }
+                });
+                const stockAnterior = stockPosterior + cant;
 
                 // Movimiento Kardex
                 await tx.eppStockMovement.create({
@@ -668,9 +675,11 @@ export async function resolveEppRequest(usuario: UsuarioEpp, data: {
             select: { id: true, estado: true, operatorId: true, eppItemId: true }
         });
         if (!actual) return { success: false, error: 'Solicitud no encontrada' };
+        if (actual.estado !== 'PENDIENTE') return { success: false, error: 'La solicitud ya fue resuelta' };
 
-        const updated = await prisma.eppRequest.update({
-            where: { id: data.requestId },
+        // Condicionado al estado: dos resoluciones simultáneas no pasan las dos.
+        const marcada = await prisma.eppRequest.updateMany({
+            where: { id: data.requestId, estado: 'PENDIENTE' },
             data: {
                 estado: data.accion === 'APROBAR' ? 'APROBADA' : 'RECHAZADA',
                 fechaResolucion: new Date(),
@@ -678,6 +687,8 @@ export async function resolveEppRequest(usuario: UsuarioEpp, data: {
                 motivoRechazo: data.motivoRechazo || null
             }
         });
+        if (marcada.count === 0) return { success: false, error: 'La solicitud ya fue resuelta' };
+        const updated = await prisma.eppRequest.findUniqueOrThrow({ where: { id: data.requestId } });
 
         await logAudit({
             action: data.accion === 'APROBAR' ? 'APPROVE' : 'REJECT',
