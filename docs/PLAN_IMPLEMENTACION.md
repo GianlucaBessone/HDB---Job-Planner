@@ -76,9 +76,23 @@ Sin cambios de base de datos.
 | Materiales | Un solo cálculo del saldo en poder, igual al de la API (antes la pantalla permitía informar uso por encima de lo devuelto y contaba las delegaciones rechazadas) |
 | Enlaces | `/projects?proyecto=<id>` lleva a la ficha; Bloqueos, la ficha del cliente, presupuestos y el alta de proyecto abren la ficha. `GET /api/projects/[id]` ya no se cachea en la CDN (`private, no-store`) |
 
+### Hecho: configuración repartida (P19, SE1)
+
+Sin cambios de base de datos ni de APIs: mismos endpoints y mismo permiso (`config.administrar`; roles por vista con `config.vistas`).
+
+| Antes, en Configuración | Ahora |
+|---|---|
+| Etiquetas, checklists por etiqueta, categorías y tipos de actividad | Proyectos → Ajustes (`/projects/ajustes`) |
+| Áreas y motivos de demora | Proyectos → Ajustes → Demoras del cliente (lo que usa la bitácora) |
+| Valor de mano de obra ("Órdenes de servicio") | Proyectos → Ajustes → Mano de obra: lo usan el costo del proyecto y el cobro de la OS |
+| Alerta diaria de carga de horas y fichaje en la base | Asistencia y horas → Ajustes (`/monitoreo-fichadas/ajustes`) |
+| Causas de registro de tiempo | Asistencia y horas → Ajustes |
+| Roles por vista | Sigue en Configuración, que además muestra dónde se configura cada módulo |
+
+Las secciones viven en `components/configuracion/secciones.tsx` y cada módulo monta las suyas; la pestaña Ajustes aparece solo con `config.administrar`.
+
 ### Pendiente en esta fase
 
-- P19 · Configuración repartida: cada catálogo junto a la ficha o el módulo que lo usa.
 - Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
 - P8 · Una sola fuente de precios de materiales (`Producto`); se retira `MaterialMaestro`.
 - P9 · Stock integrado con ventas, entregas a obra y órdenes.

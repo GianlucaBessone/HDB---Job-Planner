@@ -123,7 +123,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/okr-kpi',   label: 'Objetivos e indicadores',  description: 'OKR, KPI y planes de acción',              roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'indicadores', iconName: 'Target',          color: 'bg-emerald-600' },
 
     // ─ Ajustes: lo transversal y lo técnico ─
-    { key: '/configuracion',     label: 'Configuración',         description: 'Catálogos, fichaje de la base y accesos por rol', roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'ajustes', iconName: 'Settings', color: 'bg-slate-400' },
+    { key: '/configuracion',     label: 'Configuración',         description: 'Roles por vista y dónde se configura cada módulo', roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'ajustes', iconName: 'Settings', color: 'bg-slate-400' },
     { key: '/datasets',          label: 'Motor de datasets',     description: 'Consultas que alimentan los indicadores',        roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'ajustes', iconName: 'Database', color: 'bg-indigo-600' },
     { key: '/diccionario-datos', label: 'Diccionario de datos',  description: 'Tablas y campos de la base',                     roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'ajustes', iconName: 'Table',    color: 'bg-slate-600' },
     { key: '/auditoria-ia',      label: 'Consumo de IA',         description: 'Llamadas, errores y costo de la IA',             roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'ajustes', iconName: 'Sparkles', color: 'bg-fuchsia-600' },

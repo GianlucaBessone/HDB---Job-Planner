@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import ModuleHeader from '@/components/ModuleHeader';
 import { Layout, Plus } from 'lucide-react';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 interface ProjectsHeaderProps {
     activeTabId: string;
@@ -18,6 +19,8 @@ export default function ProjectsHeader({
     onNewProject
 }: ProjectsHeaderProps) {
     const router = useRouter();
+    // Ajustes: los catálogos que usan los proyectos (antes en Configuración)
+    const { puede } = useAcceso();
 
     const handleTabChange = (tabId: string) => {
         if (tabId === 'proyectos') {
@@ -50,6 +53,7 @@ export default function ProjectsHeader({
                 { id: 'riesgos', label: 'Bloqueos' },
                 { id: 'documentacion', label: 'Documentación' },
                 { id: 'reportes', label: 'Reportes' },
+                ...(puede('config.administrar') ? [{ id: 'ajustes', label: 'Ajustes' }] : []),
             ]}
             activeTabId={activeTabId}
             onTabChange={handleTabChange}

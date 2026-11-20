@@ -99,7 +99,7 @@ export default function PresupuestoVsReal({ data }: { data: any }) {
                 </table>
                 <p className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
                     Valorizado con los precios del presupuesto. Las horas reales no tienen categoría, así que se valorizan al promedio del presupuesto ({pesos(monto.valorHoraPromedio, 0)}/h).
-                    El costo interno con el valor de mano de obra de Configuración sigue en la pestaña Costo real, sin cambios.
+                    El costo interno con el valor de mano de obra de Proyectos → Ajustes sigue en la pestaña Costo real, sin cambios.
                 </p>
             </Panel>
         </div>

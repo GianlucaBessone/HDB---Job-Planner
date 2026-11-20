@@ -138,7 +138,7 @@
     color-scheme: dark;
   }
 
-  /* ── Temas de acento (Configuración → Tema). Solo cambian la rampa de marca;
+  /* ── Temas de acento (menú del usuario → Color de acento). Solo cambian la rampa de marca;
         los neutros se mantienen para que la legibilidad no dependa del tema. ── */
   :root, [data-color-theme="actual"] {
     --brand-50: 242 246 253;
