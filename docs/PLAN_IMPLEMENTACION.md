@@ -26,23 +26,30 @@ Sin cambios de base de datos.
 | P22, E20 | Órdenes de trabajo: lista global con búsqueda por número, cliente o proyecto, filtro por estado y paginación |
 | — | `useViewState` ya no actualiza el store global durante el render (aviso de React al cambiar de pestaña) |
 
-## Fase 2 · Pantallas unificadas — próxima
+## Fase 2 · Pantallas unificadas — hecha
 
 Sin cambios de base de datos.
 
-- P11 · Inicio "Mi día": pendientes del usuario (fichadas a aprobar, pedidos, tareas vencidas, EPP por firmar, viajes por rendir, capacitaciones).
-- P13 · Asistencia y horas: una pantalla con Hoy (fichadas en curso), Excepciones (aprobaciones) y Período (control horario).
-- P14 · El equipo asignado a un proyecto cuenta como asignación para el fichado.
-- P19 · Configuración repartida: cada catálogo junto al módulo que lo usa.
-- P7 · Archivar en lugar de borrar personas, clientes y proyectos con historia.
-- P23 · PIN temporal y cambio obligatorio al primer ingreso.
-- P28 · Demoras del cliente como tipo de entrada de la bitácora del proyecto.
-- P33 · Aprobación masiva de fichadas.
+| Propuesta | Cambio |
+|---|---|
+| P11, FU12 | Inicio "Mi día" (`components/inicio/MiDia.tsx`, `GET /api/inicio/pendientes`): jornada en curso, agenda de hoy (Planificación y equipo asignado) y pendientes de la persona: fichadas a aprobar, tareas vencidas y para hoy, actas de EPP por firmar, viajes por rendir, capacitaciones, solicitudes de EPP y avisos sin leer. Cada pendiente depende de la sesión y de sus permisos |
+| P13, FU2 | Asistencia y horas: navegación común (`components/asistencia/AsistenciaNav.tsx`) entre Fichadas en curso, Fichadas a aprobar y Control horario. Una sola entrada de menú ("Asistencia y horas") |
+| P33 | Fichadas a aprobar: selección múltiple y "Aprobar N". El rechazo sigue de a una porque borra la fichada |
+| P14, X10 | El fichado acepta como asignado al operario que está en el equipo del proyecto (`ProyectoAsignacion`) para esa fecha, aunque no figure en la agenda |
+| P7, X14 | Personas, clientes y proyectos con historial se desactivan en lugar de borrarse en cascada; la pantalla lo informa y queda en Auditoría (antes borrar un cliente no dejaba registro) |
+| P23 | Ingresar con un PIN débil (1234, repetidos, escaleras) obliga a elegir uno nuevo antes de entrar. El servidor lo exige con una marca en la sesión, no solo la pantalla |
 
+### Pasan a la Fase 3
 
-## Fase 3 · Datos maestros e integración
+- P19 · Configuración repartida en los módulos: conviene hacerla junto con las fichas (cliente, persona, proyecto) para no mover los catálogos dos veces.
+- P28 · Demoras del cliente dentro de la bitácora: se hace con la ficha única del proyecto (FU11).
+
+## Fase 3 · Fichas y datos maestros — próxima
 
 Requiere cambios de esquema; las migraciones se aplican solo con autorización.
+
+- P19 · Configuración repartida: cada catálogo junto a la ficha o el módulo que lo usa.
+- FU11, P28 · Ficha única del proyecto (Mis proyectos como filtro) con la bitácora que incluye las demoras del cliente.
 
 - P12 · Ficha de cliente con razón social, CUIT y condición de IVA, y su configuración en un solo lugar.
 - P8 · Una sola fuente de precios de materiales (`Producto`); se retira `MaterialMaestro`.

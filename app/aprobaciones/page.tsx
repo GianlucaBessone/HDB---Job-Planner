@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
+import { AsistenciaNav } from '@/components/asistencia/AsistenciaNav';
 import { format } from "date-fns";
 import { useCommandStore } from "@/lib/store/useCommandStore";
 import { 
@@ -58,6 +59,10 @@ export default function ApprovalsPage() {
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [selectedEntry, setSelectedEntry] = useState<any>(null);
+    // Selección para aprobar varias fichadas a la vez. El rechazo sigue siendo de a una:
+    // rechazar borra la fichada.
+    const [seleccion, setSeleccion] = useState<Set<string>>(new Set());
+    const [aprobandoVarias, setAprobandoVarias] = useState(false);
 
     const registerCommand = useCommandStore((state) => state.registerCommand);
     const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
@@ -69,6 +74,8 @@ export default function ApprovalsPage() {
             const res = await safeApiRequest('/api/time-entries/approve?status=PENDING_APPROVAL');
             const data = await res.json();
             setEntries(data);
+            const ids = new Set<string>((Array.isArray(data) ? data : []).map((e: any) => e.id));
+            setSeleccion(prev => new Set(Array.from(prev).filter(id => ids.has(id))));
         } catch (error) {
             console.error(error);
             showToast("Error al cargar fichadas", "error");
@@ -115,6 +122,44 @@ export default function ApprovalsPage() {
         }
     };
 
+    const toggleSeleccion = (id: string) => {
+        setSeleccion(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const lista = Array.isArray(entries) ? entries : [];
+    const todasSeleccionadas = lista.length > 0 && lista.every(e => seleccion.has(e.id));
+
+    const aprobarSeleccionadas = async () => {
+        const ids = Array.from(seleccion);
+        if (ids.length === 0) return;
+        setAprobandoVarias(true);
+        let ok = 0;
+        let error: string | null = null;
+        for (const id of ids) {
+            try {
+                const res = await safeApiRequest('/api/time-entries/approve', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, action: 'APPROVED' })
+                });
+                if (res.ok) ok++;
+                else if (!error) error = (await res.json().catch(() => null))?.error || 'No se pudo aprobar';
+            } catch {
+                if (!error) error = 'Error de conexión';
+            }
+        }
+        setAprobandoVarias(false);
+        if (ok > 0) showToast(ok === 1 ? '1 fichada aprobada' : `${ok} fichadas aprobadas`, 'success');
+        if (ok < ids.length) showToast(`${ids.length - ok} sin aprobar: ${error}`, 'error');
+        setSeleccion(new Set());
+        setSelectedEntry(null);
+        loadEntries();
+    };
+
     const getStatusStyle = (status: string) => {
         switch (status) {
             case 'AUTO_APPROVED': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
@@ -128,6 +173,7 @@ export default function ApprovalsPage() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-200">
+            <AsistenciaNav />
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -149,6 +195,30 @@ export default function ApprovalsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Entries List */}
                 <div className="lg:col-span-1 space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200">
+                    {!loading && lista.length > 0 && (
+                        <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2">
+                            <label className="flex items-center gap-2 text-[13px] text-foreground cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 accent-primary"
+                                    checked={todasSeleccionadas}
+                                    onChange={() => setSeleccion(todasSeleccionadas ? new Set() : new Set(lista.map(e => e.id)))}
+                                />
+                                {seleccion.size > 0 ? `${seleccion.size} seleccionadas` : 'Seleccionar todas'}
+                            </label>
+                            {seleccion.size > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={aprobarSeleccionadas}
+                                    disabled={aprobandoVarias}
+                                    className="btn btn-primary btn-sm"
+                                >
+                                    <CheckCircle2 aria-hidden="true" />
+                                    {aprobandoVarias ? 'Aprobando…' : `Aprobar ${seleccion.size}`}
+                                </button>
+                            )}
+                        </div>
+                    )}
                     {loading ? (
                         <div className="p-8 text-center bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800">
                             <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
@@ -161,10 +231,17 @@ export default function ApprovalsPage() {
                         </div>
                     ) : (
                         Array.isArray(entries) && entries.map(entry => (
+                            <div key={entry.id} className="relative">
+                            <input
+                                type="checkbox"
+                                aria-label={`Seleccionar la fichada de ${entry.operator?.nombreCompleto || 'operador'}`}
+                                className="absolute bottom-5 right-5 z-10 w-4 h-4 accent-primary"
+                                checked={seleccion.has(entry.id)}
+                                onChange={() => toggleSeleccion(entry.id)}
+                            />
                             <button
-                                key={entry.id}
                                 onClick={() => setSelectedEntry(entry)}
-                                className={`w-full text-left p-5 rounded-3xl border transition-all duration-200 cursor-pointer ${
+                                className={`w-full text-left p-5 pr-12 rounded-3xl border transition-all duration-200 cursor-pointer ${
                                     selectedEntry?.id === entry.id 
                                     ? 'bg-card text-card-foreground border-primary shadow-xl ring-2 ring-primary/5' 
                                     : 'bg-card text-card-foreground border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600'
@@ -187,6 +264,7 @@ export default function ApprovalsPage() {
                                     ))}
                                 </div>
                             </button>
+                            </div>
                         ))
                     )}
                 </div>

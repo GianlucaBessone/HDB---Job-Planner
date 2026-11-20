@@ -154,7 +154,15 @@ export default function ClientsPage() {
             showToast(await mensajeError(res, 'No se pudo eliminar el cliente'), 'error');
             return;
         }
+        const data = await res.json().catch(() => null);
+        if (data?.modo === 'desactivado') {
+            // Tiene proyectos, ventas u órdenes: queda inactivo para no perder ese historial.
+            setClients(prev => prev.map(c => c.id === id ? { ...c, activo: false } : c));
+            showToast('Tiene historial: quedó desactivado en lugar de eliminarse', 'info');
+            return;
+        }
         setClients(prev => prev.filter(c => c.id !== id));
+        showToast('Cliente eliminado', 'success');
     };
 
     const toggleStatus = async (id: string, currentStatus: boolean) => {
@@ -273,7 +281,7 @@ export default function ClientsPage() {
             <ConfirmDialog
                 isOpen={isConfirmOpen}
                 title="Eliminar Cliente"
-                message="¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer."
+                message="Si tiene proyectos, ventas u órdenes, queda desactivado para conservar ese historial. Si no tiene nada, se elimina y no se puede deshacer."
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
             />

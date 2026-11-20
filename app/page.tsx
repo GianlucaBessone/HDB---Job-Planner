@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { MiDia } from "@/components/inicio/MiDia";
 import { useRouter } from "next/navigation";
 import {
   Check,
@@ -250,6 +251,9 @@ export default function HomePage() {
           </button>
         </div>
       </header>
+
+      {/* Mi día: jornada, agenda y pendientes */}
+      {!isSearching && <MiDia />}
 
       {/* Personalización */}
       {editMode && (

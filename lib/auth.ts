@@ -5,6 +5,11 @@ export interface SessionPayload {
   id: string;
   role: string | null;
   nombreCompleto: string;
+  /**
+   * Entró con un PIN débil (p. ej. el 1234 por defecto): hasta que lo cambie, el
+   * middleware solo deja pasar POST /api/auth/cambiar-pin.
+   */
+  cambiarPin?: boolean;
 }
 
 export async function encrypt(payload: SessionPayload) {
