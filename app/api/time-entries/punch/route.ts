@@ -219,10 +219,18 @@ export async function POST(req: Request) {
                 const planning = await prisma.planning.findUnique({ where: { fecha: dateStr } });
                 if (planning) {
                     const blocks = planning.blocks as any[];
-                    const isAssigned = blocks.some((block: any) => {
+                    const enPlanificacion = blocks.some((block: any) => {
                         const opIds = Array.isArray(block.operatorIds) ? block.operatorIds : (block.operatorIds ? JSON.parse(block.operatorIds) : []);
                         return block.projectId === projectId && opIds.includes(operatorId);
                     });
+                    // El equipo asignado al proyecto (asistente de proyectos) también cuenta:
+                    // esa asignación no escribe en Planificación y sin esto la fichada caía en
+                    // Aprobaciones como "no asignado". Fechas YYYY-MM-DD: se comparan como texto.
+                    const enEquipo = enPlanificacion || !!(await prisma.proyectoAsignacion.findFirst({
+                        where: { projectId, operatorId, fechaDesde: { lte: dateStr }, fechaHasta: { gte: dateStr } },
+                        select: { id: true },
+                    }));
+                    const isAssigned = enPlanificacion || enEquipo;
                     if (!isAssigned) {
                         // Check if project is marked as "Fijo" — any operator can punch in
                         const punchProject = await prisma.project.findUnique({ where: { id: projectId }, select: { proyectoFijo: true } });

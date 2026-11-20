@@ -29,6 +29,29 @@ function withoutPin<T extends { pin?: string } | null>(operator: T) {
 }
 
 
+// ── Borrado seguro ────────────────────────────────────────────────
+// Personas, clientes y proyectos con historial no se borran: se desactivan.
+// Borrarlos eliminaba en cascada horas, fichadas y órdenes firmadas (auditoría, X14).
+
+export interface ResultadoBaja {
+    modo: 'eliminado' | 'desactivado';
+    /** Qué historial impidió el borrado, con cantidades. */
+    historial: Record<string, number>;
+}
+
+function conHistorial(conteos: Record<string, number> | undefined | null): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const [k, v] of Object.entries(conteos || {})) if (v > 0) out[k] = v;
+    return out;
+}
+
+/** Texto para mostrar qué historial tiene un registro ("12 registros de horas, 3 órdenes…"). */
+export function describirHistorial(historial: Record<string, number>, etiquetas: Record<string, string>): string {
+    return Object.entries(historial)
+        .map(([k, n]) => `${n} ${etiquetas[k] || k}`)
+        .join(', ');
+}
+
 export const dataLayer = {
     // Projects
     async autoUpdateProjectStatuses() {
@@ -376,19 +399,46 @@ export const dataLayer = {
         return project;
     },
 
-    async deleteProject(id: string, actor?: ActorAuditoria) {
-        const oldProject = await prisma.project.findUnique({ where: { id } });
-        const res = await prisma.project.delete({ where: { id } });
-        
+    async deleteProject(id: string, actor?: ActorAuditoria): Promise<ResultadoBaja> {
+        const oldProject = await prisma.project.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        timeEntries: true, fichadas: true, ordenesServicio: true, ordenesTrabajo: true,
+                        materialesProyecto: true, technicalReports: true, logs: true, clientDelays: true,
+                        encuestas: true, viajes: true, tareas: true,
+                    },
+                },
+            },
+        });
+        if (!oldProject) throw new Error('Proyecto no encontrado');
+        const { _count, ...datos } = oldProject;
+        const historial = conHistorial(_count);
+
+        if (Object.keys(historial).length > 0) {
+            await prisma.project.update({ where: { id }, data: { activo: false } });
+            await logAudit({
+                ...autor(actor),
+                action: 'UPDATE',
+                entity: 'PROJECT',
+                entityId: id,
+                oldValue: { activo: datos.activo },
+                newValue: { activo: false },
+                metadata: { message: 'Desactivado en lugar de eliminado: tiene historial', historial },
+            });
+            return { modo: 'desactivado', historial };
+        }
+
+        await prisma.project.delete({ where: { id } });
         await logAudit({
             ...autor(actor),
             action: 'DELETE',
             entity: 'PROJECT',
             entityId: id,
-            oldValue: oldProject
+            oldValue: datos
         });
-
-        return res;
+        return { modo: 'eliminado', historial };
     },
 
     // Operators
@@ -447,19 +497,47 @@ export const dataLayer = {
 
         return operator;
     },
-    async deleteOperator(id: string, actor?: ActorAuditoria) {
-        const oldOperator = await prisma.operator.findUnique({ where: { id } });
-        const res = await prisma.operator.delete({ where: { id } });
+    async deleteOperator(id: string, actor?: ActorAuditoria): Promise<ResultadoBaja> {
+        const oldOperator = await prisma.operator.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        timeEntries: true, fichadas: true, ordenesServicio: true, otCicloOperadores: true,
+                        ordenesTrabajoCreadas: true, ordenesTrabajoResponsable: true, eppDeliveries: true,
+                        toolMovements: true, ventasRealizadas: true, cotizacionesRealizadas: true,
+                        viajesResponsable: true, technicalReports: true, projectLogs: true, responsibleProjects: true,
+                    },
+                },
+            },
+        });
+        if (!oldOperator) throw new Error('Usuario no encontrado');
+        const { _count, ...datos } = oldOperator;
+        const historial = conHistorial(_count);
 
+        if (Object.keys(historial).length > 0) {
+            await prisma.operator.update({ where: { id }, data: { activo: false } });
+            await logAudit({
+                ...autor(actor),
+                action: 'UPDATE',
+                entity: 'OPERATOR',
+                entityId: id,
+                oldValue: { activo: datos.activo },
+                newValue: { activo: false },
+                metadata: { message: 'Desactivado en lugar de eliminado: tiene historial', historial },
+            });
+            return { modo: 'desactivado', historial };
+        }
+
+        await prisma.operator.delete({ where: { id } });
         await logAudit({
             ...autor(actor),
             action: 'DELETE',
             entity: 'OPERATOR',
             entityId: id,
-            oldValue: withoutPin(oldOperator)
+            oldValue: withoutPin(datos)
         });
-
-        return res;
+        return { modo: 'eliminado', historial };
     },
     async resetAllDevices(actor?: ActorAuditoria) {
         const res = await prisma.operator.updateMany({
@@ -545,8 +623,45 @@ export const dataLayer = {
         if (cleanData.listaPrecioId === '') cleanData.listaPrecioId = null;
         return await prisma.hdbClient.update({ where: { id }, data: cleanData });
     },
-    async deleteClient(id: string) {
-        return await prisma.hdbClient.delete({ where: { id } });
+    async deleteClient(id: string, actor?: ActorAuditoria): Promise<ResultadoBaja> {
+        const oldClient = await prisma.hdbClient.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        projects: true, ordenesTrabajo: true, ventas: true, cotizaciones: true,
+                        cuentaCorrienteMovs: true, presupuestosServicio: true, pliegos: true, technicalReports: true,
+                    },
+                },
+            },
+        });
+        if (!oldClient) throw new Error('Cliente no encontrado');
+        const { _count, ...datos } = oldClient;
+        const historial = conHistorial(_count);
+
+        if (Object.keys(historial).length > 0) {
+            await prisma.hdbClient.update({ where: { id }, data: { activo: false } });
+            await logAudit({
+                ...autor(actor),
+                action: 'UPDATE',
+                entity: 'CLIENT',
+                entityId: id,
+                oldValue: { activo: datos.activo },
+                newValue: { activo: false },
+                metadata: { message: 'Desactivado en lugar de eliminado: tiene historial', historial },
+            });
+            return { modo: 'desactivado', historial };
+        }
+
+        await prisma.hdbClient.delete({ where: { id } });
+        await logAudit({
+            ...autor(actor),
+            action: 'DELETE',
+            entity: 'CLIENT',
+            entityId: id,
+            oldValue: datos
+        });
+        return { modo: 'eliminado', historial };
     },
 
     // Client Delays

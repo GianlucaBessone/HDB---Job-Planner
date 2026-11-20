@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AsistenciaNav } from '@/components/asistencia/AsistenciaNav';
 import { AlertTriangle, Check, ClipboardCheck, FilterX, Loader2, MapPin, PenLine, Printer, RefreshCw, ShieldAlert, ClipboardList } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import SearchableSelect from '@/components/ui/SearchableSelect';
@@ -189,6 +190,7 @@ export default function ControlHorarioPage() {
 
     return (
         <div className="w-full space-y-5">
+            <AsistenciaNav />
             <ModuleHeader
                 title="Control horario"
                 description="Cruce del registro de tiempos con la fichada GPS y ajuste manual por jornada"

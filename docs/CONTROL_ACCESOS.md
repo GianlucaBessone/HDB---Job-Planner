@@ -47,6 +47,16 @@ Nadie puede cambiar su propio permiso de administrar accesos.
   Si una ruta pública necesita saber si hay sesión (p. ej. para mostrar más datos), usa
   `getAccesoDeCookie(req)`, que valida la cookie y el usuario contra la base.
 
+- **PIN débil:** si alguien ingresa con un PIN fácil de adivinar (el `1234` por defecto,
+  dígitos repetidos o una escalera; `pinDebil` en `lib/pinAuth.ts`), la sesión lleva la
+  marca `cambiarPin` y el middleware responde 403 (`code: 'CAMBIAR_PIN'`) a todo salvo
+  `POST /api/auth/cambiar-pin`. Esa API verifica el PIN actual, exige uno nuevo de 4 a 8
+  números que no sea débil y emite una sesión sin la marca. La pantalla de ingreso pide
+  el PIN nuevo antes de entrar.
+- **Bajas:** borrar una persona, un cliente o un proyecto con historial (horas, fichadas,
+  órdenes, ventas…) lo desactiva en lugar de borrarlo (`lib/dataLayer.ts`); la API responde
+  `modo: 'desactivado'` y queda en Auditoría. Solo se borra lo que no tiene nada registrado.
+
 ### Rutas sin sesión, a propósito
 
 | Ruta | Métodos | Cómo se protege |

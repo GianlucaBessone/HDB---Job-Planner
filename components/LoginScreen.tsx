@@ -13,6 +13,8 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    // Ingresó con un PIN débil (p. ej. el 1234 por defecto): antes de entrar elige uno nuevo.
+    const [cambioPin, setCambioPin] = useState<any | null>(null);
 
     useEffect(() => {
         // Load operators
@@ -59,17 +61,33 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
             }
 
             const userData = await res.json();
-            // Cache last used user simply by ID
-            localStorage.setItem('lastActiveUserId', userData.id);
-            // Save current session
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-
-            onLoginSuccess(userData);
+            if (userData.debeCambiarPin) {
+                setCambioPin(userData);
+                setIsSubmitting(false);
+                return;
+            }
+            completarIngreso(userData);
         } catch (err) {
             setError('Error de conexión');
             setPin('');
             setIsSubmitting(false);
         }
+    };
+
+    const completarIngreso = (userData: any) => {
+        const { debeCambiarPin: _marca, ...usuario } = userData;
+        // Cache last used user simply by ID
+        localStorage.setItem('lastActiveUserId', usuario.id);
+        // Save current session
+        localStorage.setItem('currentUser', JSON.stringify(usuario));
+        onLoginSuccess(usuario);
+    };
+
+    const cancelarCambioPin = async () => {
+        // La sesión quedó abierta con la marca de cambio obligatorio: se cierra.
+        try { await fetch('/api/auth/logout', { method: 'POST' }); } catch { /* sin conexión */ }
+        setCambioPin(null);
+        setPin('');
     };
 
     const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -132,6 +150,15 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                         <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">HDB <span className="font-normal text-slate-500">SGI</span></span>
                     </div>
 
+                    {cambioPin ? (
+                        <CambioPinObligatorio
+                            nombre={cambioPin.nombreCompleto}
+                            pinActual={pin}
+                            onListo={() => completarIngreso(cambioPin)}
+                            onCancelar={cancelarCambioPin}
+                        />
+                    ) : (
+                    <>
                     <h1 className="text-title text-slate-900 dark:text-slate-50">Ingresar</h1>
                     <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">Elegí tu usuario e ingresá tu PIN.</p>
 
@@ -257,8 +284,108 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                             {isSubmitting ? 'Ingresando…' : 'Ingresar'}
                         </button>
                     </form>
+                    </>
+                    )}
                 </div>
             </main>
         </div>
+    );
+}
+
+/** Paso obligatorio cuando se ingresó con un PIN débil: elegir uno nuevo. */
+function CambioPinObligatorio({ nombre, pinActual, onListo, onCancelar }: {
+    nombre: string;
+    pinActual: string;
+    onListo: () => void;
+    onCancelar: () => void;
+}) {
+    const [nuevo, setNuevo] = useState('');
+    const [repetido, setRepetido] = useState('');
+    const [error, setError] = useState('');
+    const [guardando, setGuardando] = useState(false);
+
+    const guardar = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        if (nuevo !== repetido) {
+            setError('Los dos PIN no coinciden.');
+            return;
+        }
+        setGuardando(true);
+        try {
+            // Sin cola offline: el cambio de PIN tiene que confirmarse en el servidor.
+            const res = await fetch('/api/auth/cambiar-pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pinActual, pinNuevo: nuevo }),
+            });
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                setError(data?.error || 'No se pudo cambiar el PIN.');
+                setGuardando(false);
+                return;
+            }
+            onListo();
+        } catch {
+            setError('Error de conexión. Probá de nuevo.');
+            setGuardando(false);
+        }
+    };
+
+    const soloNumeros = (v: string) => v.replace(/\D/g, '').slice(0, 8);
+
+    return (
+        <>
+            <h1 className="text-title text-slate-900 dark:text-slate-50">Elegí un PIN nuevo</h1>
+            <p className="mt-1 text-[13px] text-slate-500 dark:text-slate-400">
+                {nombre}, tu PIN es el de por defecto o es muy fácil de adivinar. Cambialo para seguir.
+            </p>
+            <form onSubmit={guardar} className="mt-8 space-y-5" noValidate>
+                <div>
+                    <label htmlFor="pin-nuevo" className="field-label">PIN nuevo</label>
+                    <input
+                        id="pin-nuevo"
+                        type="password"
+                        inputMode="numeric"
+                        autoComplete="new-password"
+                        className="input h-11 text-lg tracking-wider font-mono"
+                        value={nuevo}
+                        onChange={e => setNuevo(soloNumeros(e.target.value))}
+                        aria-describedby="pin-nuevo-ayuda"
+                        autoFocus
+                    />
+                    <p id="pin-nuevo-ayuda" className="field-hint">Entre 4 y 8 números. Evitá 1234, números repetidos o escaleras.</p>
+                </div>
+                <div>
+                    <label htmlFor="pin-repetido" className="field-label">Repetí el PIN nuevo</label>
+                    <input
+                        id="pin-repetido"
+                        type="password"
+                        inputMode="numeric"
+                        autoComplete="new-password"
+                        className="input h-11 text-lg tracking-wider font-mono"
+                        value={repetido}
+                        onChange={e => setRepetido(soloNumeros(e.target.value))}
+                    />
+                </div>
+
+                {error && (
+                    <div role="alert" className="flex items-start gap-2 p-3 rounded-lg border border-danger-200 bg-danger-50 text-danger-800 dark:border-danger-900 dark:bg-danger-950 dark:text-danger-200">
+                        <AlertCircle className="w-4 h-4 mt-px shrink-0" aria-hidden="true" />
+                        <p className="text-[13px] font-medium">{error}</p>
+                    </div>
+                )}
+
+                <div className="flex flex-col gap-2">
+                    <button type="submit" disabled={guardando || nuevo.length < 4 || !repetido} className="btn btn-primary btn-lg w-full">
+                        {guardando ? <Loader2 className="animate-spin" aria-hidden="true" /> : <Lock aria-hidden="true" />}
+                        {guardando ? 'Guardando…' : 'Guardar e ingresar'}
+                    </button>
+                    <button type="button" onClick={onCancelar} disabled={guardando} className="btn btn-ghost w-full">
+                        Volver
+                    </button>
+                </div>
+            </form>
+        </>
     );
 }
