@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateObject } from '@/lib/ai/service';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const acceso = await exigirAcceso(req, ['calidad.gestionar'], 'No tenés permiso para gestionar el SGI de calidad');
+    if (acceso instanceof NextResponse) return acceso;
+
   const params = await paramsPromise;
     try {
         const nc = await prisma.noConformidad.findUnique({
@@ -59,7 +63,9 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
                 operatorTrainingInfo
             },
             {
-                userId: "sistema",
+                userId: acceso.userId,
+                userName: acceso.nombre,
+                userRole: acceso.role,
                 entityId: nc.id,
                 entity: "NoConformidad"
             }

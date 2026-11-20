@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: Request) {
+    const acceso = await exigirAcceso(req, ['dashboard.ver'], 'No tenés permiso para ver el panel de análisis');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { searchParams } = new URL(req.url);
     const from = searchParams.get('from');
     const to = searchParams.get('to');

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { cancelarPendientesVenta } from '@/lib/ventas/pdvService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const itemCancelarSchema = z.object({
   ventaItemId: z.string().min(1),
@@ -16,6 +17,9 @@ const cancelarSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.pdv_operar'], 'No tenés permiso para operar el Punto de Venta');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { searchParams } = new URL(req.url);
     const q = (searchParams.get('q') || '').trim().toLowerCase();
 
@@ -107,6 +111,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.pdv_operar'], 'No tenés permiso para operar el Punto de Venta');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const parsed = cancelarSchema.parse(body);
 

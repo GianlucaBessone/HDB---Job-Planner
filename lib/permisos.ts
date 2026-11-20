@@ -45,14 +45,17 @@ export const FUNCIONES = [
     { id: 'config.administrar', label: 'Administrar configuración', description: 'Ajustes del sistema, fichaje, etiquetas, opciones y plantillas de checklist', grupo: 'Configuración', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'config.vistas', label: 'Configurar vistas por rol', description: 'Definir qué roles ven cada pantalla del menú', grupo: 'Configuración', roles: ['admin'] },
     { id: 'config.prompts_ia', label: 'Editar prompts de IA', description: 'Modificar las plantillas de prompts que usa la IA', grupo: 'Configuración', roles: ['admin'] },
+    { id: 'sistema.mantenimiento', label: 'Mantenimiento del sistema', description: 'Correr procesos masivos de corrección de datos (sincronizar checklists y proyectos finalizados)', grupo: 'Configuración', roles: ['admin'] },
 
     // ─ Auditoría ─
     { id: 'auditoria.ver', label: 'Ver auditoría', description: 'Consultar el registro de auditoría de todo el sistema', grupo: 'Auditoría', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'dashboard.ver', label: 'Ver panel de análisis', description: 'Métricas globales, métricas de servicio, puntajes de operadores y riesgos de proyectos', grupo: 'Auditoría', roles: ['admin', 'supervisor', 'qa'] },
 
     // ─ Registro de tiempos ─
     { id: 'timesheets.control_horario', label: 'Control horario', description: 'Cruce entre registro de tiempos y fichadas, con ajustes', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor'] },
     { id: 'timesheets.gestionar_horas', label: 'Gestionar horas de otros', description: 'Cargar, editar y borrar horas de otros usuarios y de días ya confirmados', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'fichadas.aprobar', label: 'Aprobar fichadas', description: 'Ver, aprobar y rechazar fichadas pendientes de aprobación', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'fichadas.monitorear', label: 'Monitorear fichadas', description: 'Ver las fichadas de todo el personal y el cruce con el registro de tiempos', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
 
     // ─ Planificación ─
     { id: 'planificacion.gestionar', label: 'Gestionar planificación', description: 'Armar la agenda diaria y avisar al equipo asignado', grupo: 'Planificación', roles: ['admin', 'supervisor', 'qa'] },
@@ -89,11 +92,19 @@ export const FUNCIONES = [
     { id: 'ventas.cc_cobrar', label: 'Registrar cobranzas', description: 'Registrar cobranzas en la cuenta corriente de un cliente', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
     { id: 'ventas.cc_ajustar', label: 'Ajustes de cuenta corriente', description: 'Registrar ajustes manuales (débitos y créditos) en la cuenta corriente', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
     { id: 'ventas.cc_configurar', label: 'Configurar crédito y actualizar deuda', description: 'Cambiar el límite y las condiciones de crédito y actualizar la deuda a precios vigentes', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+    { id: 'ventas.catalogo_gestionar', label: 'Gestionar catálogo comercial', description: 'Crear, editar e importar productos, listas de precios y proveedores, y ajustar precios', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
+    { id: 'ventas.pdv_operar', label: 'Operar el Punto de Venta', description: 'Confirmar ventas, ver el historial de ventas, entregar pendientes y emitir remitos', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
 
     // ─ Proyectos ─
     { id: 'proyectos.crear', label: 'Crear y planificar proyectos', description: 'Crear y editar proyectos, asignar el equipo y marcar tareas', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'provision.gestionar', label: 'Gestionar provisión de materiales', description: 'Cargar y editar materiales de proyecto, importar, avisar faltantes y corregir estados', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
     { id: 'proyectos.eliminar', label: 'Eliminar proyectos', description: 'Eliminar un proyecto con sus órdenes de servicio, horas y fichadas', grupo: 'Proyectos', roles: ['admin', 'supervisor'] },
+    { id: 'proyectos.finalizar', label: 'Finalizar proyectos', description: 'Finalizar un proyecto (el responsable lo pide por aviso)', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'proyectos.costos', label: 'Ver y ajustar costos de proyecto', description: 'Costo del proyecto, materiales cargados y sincronización de precios', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'demoras.gestionar', label: 'Gestionar demoras del cliente', description: 'Editar y eliminar demoras registradas (cargarlas está abierto a todos)', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'os.gestionar', label: 'Gestionar órdenes de servicio', description: 'Crear y editar órdenes de servicio de cualquier proyecto (el responsable del proyecto gestiona las suyas)', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'os.eliminar', label: 'Eliminar órdenes de servicio', description: 'Eliminar una orden de servicio con sus materiales, operadores y firma', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor'] },
+    { id: 'os.cobrar', label: 'Cobrar órdenes de servicio', description: 'Cargar el cobro de una orden de servicio', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor'] },
 
     // ─ Presupuestos de servicio ─
     { id: 'presupuestos.ver', label: 'Ver presupuestos de servicio', description: 'Consultar presupuestos, sus revisiones y el reporte presupuestado vs. real', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor', 'qa'] },
@@ -160,6 +171,7 @@ export const FUNCIONES = [
 
     // ─ Inteligencia artificial ─
     { id: 'ia.generar_documentos', label: 'Generar documentos con IA', description: 'Generar documentación controlada con IA', grupo: 'Inteligencia artificial', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'ia.consumo_ver', label: 'Ver consumo de IA', description: 'Auditoría de consumo y costo de la IA por usuario', grupo: 'Inteligencia artificial', roles: ['admin', 'supervisor', 'qa'] },
 ] as const satisfies readonly FuncionConfig[];
 
 export type FuncionId = (typeof FUNCIONES)[number]['id'];

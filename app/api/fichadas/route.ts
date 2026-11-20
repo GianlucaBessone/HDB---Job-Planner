@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const { searchParams } = new URL(req.url);
-        const operatorId = searchParams.get('operatorId');
+        // Sin "fichadas.monitorear", solo las fichadas propias (se ignora ?operatorId).
+        const operatorId = acceso.puede('fichadas.monitorear') ? searchParams.get('operatorId') : acceso.userId;
         const projectId = searchParams.get('projectId');
         const from = searchParams.get('from');
         const to = searchParams.get('to');

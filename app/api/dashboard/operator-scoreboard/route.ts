@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateOperatorScore, ScoreFeatureFlags } from '@/lib/operators/scoreCalculator';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+    const acceso = await exigirAcceso(request, ['dashboard.ver'], 'No tenés permiso para ver el panel de análisis');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const { searchParams } = new URL(request.url);
         const monthParam = searchParams.get('month'); // YYYY-MM

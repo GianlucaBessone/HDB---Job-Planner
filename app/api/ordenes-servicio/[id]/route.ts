@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { exigirAcceso, getAccesoDeCookie } from '@/lib/permisosServer';
+import { puedeGestionarOSDelProyecto, SIN_PERMISO_OS } from '@/lib/os/acceso';
 
 const include = {
     project: {
@@ -275,6 +276,9 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
 
         const os = await prisma.ordenServicio.findUnique({ where: { id } });
         if (!os) return NextResponse.json({ error: 'Orden de servicio no encontrada' }, { status: 404 });
+        if (!(await puedeGestionarOSDelProyecto(acceso, os.projectId))) {
+            return NextResponse.json({ error: SIN_PERMISO_OS }, { status: 403 });
+        }
 
         const body = await req.json();
         const { reporte, comentario, materiales, operadores, estado, notaInterna, listaPrecioId } = body;
@@ -462,7 +466,7 @@ export async function DELETE(req: Request, { params: paramsPromise }: { params: 
     const { id } = params;
     try {
         // Editar y borrar exigen sesión (el middleware ya no deja pasar PUT/DELETE sin ella).
-        const acceso = await exigirAcceso(req);
+        const acceso = await exigirAcceso(req, ['os.eliminar'], 'No tenés permiso para eliminar órdenes de servicio');
         if (acceso instanceof NextResponse) return acceso;
 
         const os = await prisma.ordenServicio.findUnique({ where: { id } });

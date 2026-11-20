@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const acceso = await exigirAcceso(req, ['calidad.gestionar'], 'No tenés permiso para gestionar el SGI de calidad');
+    if (acceso instanceof NextResponse) return acceso;
+
   const params = await paramsPromise;
     try {
         const body = await req.json();
