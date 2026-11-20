@@ -4,6 +4,7 @@ import { sendPushNotification } from '@/lib/onesignal';
 import { format, subDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { getSessionFromRequest } from '@/lib/auth';
+import { getAccesoDeUsuario } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,12 +14,12 @@ export async function GET(req: Request) {
         const isManual = url.searchParams.get('manual') === 'true';
 
         if (isManual) {
-            // Ejecución manual desde Configuración: requiere sesión con rol de gestión
+            // Ejecución manual desde Configuración. /api/cron no pasa por el middleware:
+            // se lee la cookie, y rol y estado salen de la base (no del token).
             const session = await getSessionFromRequest(req);
-            const role = (session?.role || '').toLowerCase();
-            if (!session || !['admin', 'supervisor', 'qa'].includes(role)) {
-                return new Response('Unauthorized', { status: 401 });
-            }
+            const acceso = await getAccesoDeUsuario(session?.id);
+            if (!acceso.activo) return new Response('Unauthorized', { status: 401 });
+            if (!acceso.puede('config.administrar')) return new Response('Forbidden', { status: 403 });
         } else {
             const cronSecret = process.env.CRON_SECRET;
             const authHeader = req.headers.get('authorization');

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { withIdempotency } from '@/lib/idempotency';
 import { confirmarVentaPDV } from '@/lib/ventas/pdvService';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { leerAutorizacion } from '@/lib/autorizacionSupervisor';
 
 const itemSchema = z.object({
   productoId: z.string().optional().nullable(),
@@ -18,6 +19,8 @@ const itemSchema = z.object({
   ivaPorcentaje: z.coerce.number().default(21),
   precioModificado: z.boolean().default(false),
   motivoModificacion: z.string().optional().nullable(),
+  /** Autorización firmada que entrega /api/auth/verificar-supervisor al validar el PIN. */
+  autorizacionPrecio: z.string().max(2000).optional().nullable(),
 });
 
 const pagoSchema = z.object({
@@ -65,24 +68,27 @@ export async function POST(req: NextRequest) {
       const body = await req.json();
       const parsed = confirmarVentaSchema.parse(body);
 
-      // Validar si algún item tuvo precio modificado manualmente y si el usuario puede hacerlo
-      const hayPreciosModificados = parsed.items.some((i) => i.precioModificado);
-      if (hayPreciosModificados) {
-        // Sin la función "Modificar precios" (por rol o permiso especial), la venta tiene que
-        // venir autorizada o provenir de una cotización formal
-        if (
-          !acceso.puede('ventas.modificar_precios') &&
-          !body.autorizadoPorSupervisor &&
-          !parsed.cotizacionId
-        ) {
-          return NextResponse.json(
-            {
-              error:
-                'Se requiere autorización de un Supervisor o Administrador para modificar precios unitarios.',
-              requiereAutorizacion: true,
-            },
-            { status: 403 }
-          );
+      // Precios modificados: los acepta quien tiene "Modificar precios" (rol o permiso especial),
+      // una venta que viene de una cotización formal, o un ítem con la autorización firmada de
+      // un supervisor (PIN validado en el servidor, emitida para este mismo usuario).
+      const items = [];
+      const necesitaAutorizacion = !acceso.puede('ventas.modificar_precios') && !parsed.cotizacionId;
+      for (const { autorizacionPrecio, ...item } of parsed.items) {
+        if (item.precioModificado && necesitaAutorizacion) {
+          const autorizante = await leerAutorizacion(autorizacionPrecio, 'ventas.modificar_precios', acceso.userId);
+          if (!autorizante) {
+            return NextResponse.json(
+              {
+                error: `El precio de ${item.sku} necesita la autorización de un Supervisor o Administrador (o venció). Volvé a cambiarlo con el PIN.`,
+                requiereAutorizacion: true,
+              },
+              { status: 403 }
+            );
+          }
+          const motivo = (item.motivoModificacion || 'Precio modificado').trim();
+          items.push({ ...item, motivoModificacion: `${motivo} · Autorizó: ${autorizante.nombre}` });
+        } else {
+          items.push(item);
         }
       }
 
@@ -90,6 +96,7 @@ export async function POST(req: NextRequest) {
       const venta = await confirmarVentaPDV(
         {
           ...parsed,
+          items,
           vendedorId: acceso.userId,
           vendedorNombre: acceso.nombre,
           puedeExcederLimiteCredito: acceso.puede('ventas.exceder_limite_credito'),

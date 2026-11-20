@@ -123,6 +123,9 @@ export const FUNCIONES = [
     { id: 'rrhh.epp_gestionar', label: 'Gestionar EPP', description: 'Editar catálogo y stock, resolver solicitudes y administrar enlaces públicos de la matriz', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'rrhh.epp_entregar', label: 'Entregar EPP', description: 'Registrar actas de entrega de EPP y descontar stock', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
 
+    // ─ Avisos ─
+    { id: 'avisos.enviar', label: 'Enviar avisos', description: 'Enviar un aviso a cualquier usuario (responder una solicitud recibida no lo necesita)', grupo: 'Avisos', roles: ['admin', 'supervisor', 'qa'] },
+
     // ─ Ventas: cuenta corriente ─
     { id: 'ventas.exceder_limite_credito', label: 'Superar el límite de crédito', description: 'Confirmar ventas a cuenta corriente que superan el límite de crédito del cliente', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
 

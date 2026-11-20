@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { generateObject } from '@/lib/ai/service';
 
@@ -6,6 +7,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
+    const acceso = await exigirAcceso(req, ['calidad.gestionar']);
+    if (acceso instanceof NextResponse) return acceso;
     try {
         const nc = await prisma.noConformidad.findUnique({
             where: { id: params.id },
@@ -59,7 +62,9 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
                 operatorTrainingInfo
             },
             {
-                userId: "sistema",
+                userId: acceso.userId,
+                userName: acceso.nombre,
+                userRole: acceso.role,
                 entityId: nc.id,
                 entity: "NoConformidad"
             }
