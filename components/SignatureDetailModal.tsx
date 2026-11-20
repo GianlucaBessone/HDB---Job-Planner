@@ -5,11 +5,11 @@ interface Signature {
     SignatureID: string;
     DocumentID: string;
     DocumentVersion: string;
-    UserID: string;
+    UserID?: string;
     UserName: string;
     DNI: string;
-    DeviceID: string;
-    IPAddress: string;
+    DeviceID?: string;
+    IPAddress?: string;
     SignedAtUTC: string;
     HashSignature: string;
     VerificationStatus: string;
@@ -17,6 +17,8 @@ interface Signature {
     VerifiedBy?: string;
     RecalculatedHash?: string;
     DocumentCode?: string;
+    /** La API omite UserID, dispositivo e IP y enmascara el DNI si no hay permiso de auditoría. */
+    VistaReducida?: boolean;
 }
 
 interface Props {
@@ -125,10 +127,12 @@ export default function SignatureDetailModal({ isOpen, onClose, signature: initi
                             <span className="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Firmante</span>
                             <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{signature.UserName} (DNI: {signature.DNI})</span>
                         </div>
-                        <div className="bg-background text-foreground p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                            <span className="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Dispositivo / IP</span>
-                            <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{signature.DeviceID} / {signature.IPAddress}</span>
-                        </div>
+                        {!signature.VistaReducida && (
+                            <div className="bg-background text-foreground p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <span className="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Dispositivo / IP</span>
+                                <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{signature.DeviceID} / {signature.IPAddress}</span>
+                            </div>
+                        )}
                         <div className="bg-background text-foreground p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <span className="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Última Verificación</span>
                             <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{new Date(signature.VerifiedAtUTC).toLocaleString()}</span>
