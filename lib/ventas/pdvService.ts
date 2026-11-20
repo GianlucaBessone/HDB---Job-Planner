@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { conciliarStockVenta } from '@/lib/inventario/consumos';
 import { logAudit } from '@/lib/audit';
 import { calculateSuggestedPrice, ListaPrecioConfig, resolverPrecioProducto } from '@/lib/ventas/priceRules';
 
@@ -484,6 +485,12 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
         }
       }
 
+      // Lo vendido sale del stock al confirmar la venta (P9). Puede quedar negativo: nunca frena la venta.
+      await conciliarStockVenta(tx, venta.id, {
+        integrar: true,
+        usuario: { id: validVendedorId || userId || null, nombre: vendedorNombre },
+      });
+
       return venta;
     },
     {
@@ -571,6 +578,9 @@ export async function anularVentaPDV(
         listaPrecio: true,
       },
     });
+
+    // Lo vendido vuelve al stock (solo si la venta lo había descontado)
+    await conciliarStockVenta(tx, ventaId, { usuario: { id: usuarioId || null, nombre: usuarioNombre || null } });
 
     // Si la venta provenía de una cotización convertida, liberar la cotización a estado APROBADA
     try {
@@ -946,6 +956,9 @@ export async function cancelarPendientesVenta(
       where: { id: venta.id },
       data: { estadoEntrega: nuevoEstado },
     });
+
+    // Lo cancelado que no se va a entregar vuelve al stock
+    await conciliarStockVenta(tx, venta.id, { motivo: `Cancelación de pendientes de la venta ${venta.numero}${motivo ? `: ${motivo}` : ''}` });
   });
 
   return prisma.venta.findUnique({

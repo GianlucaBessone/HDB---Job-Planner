@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { conciliarMaterialesObra } from '@/lib/inventario/consumos';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { exigirAcceso, getAccesoDeCookie } from '@/lib/permisosServer';
@@ -425,6 +426,8 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
                         }
                     });
                     finalMatId = newMatProv.id;
+                    // Material que la OS usó sin provisión previa: sale del stock como entrega a obra (P9)
+                    await conciliarMaterialesObra([newMatProv.id]);
                     
                     // Link OS material to the new provision record
                     await prisma.ordenServicioMaterial.update({
