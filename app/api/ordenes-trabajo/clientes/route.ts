@@ -75,7 +75,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const acceso = await exigirAcceso(req);
+    const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
     if (acceso instanceof NextResponse) return acceso;
 
     const body = await req.json();
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const acceso = await exigirAcceso(req);
+    const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
     if (acceso instanceof NextResponse) return acceso;
 
     const { searchParams } = new URL(req.url);

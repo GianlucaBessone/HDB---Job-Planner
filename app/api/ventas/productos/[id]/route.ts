@@ -5,6 +5,7 @@ import { logAudit } from '@/lib/audit';
 
 import { calculateSuggestedPrice } from '@/lib/ventas/priceRules';
 import { normalizeSku, mensajeProductoDuplicado } from '@/lib/ventas/skuUtils';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const productoUpdateSchema = z.object({
   sku: z.string().min(1, 'El SKU es obligatorio'),
@@ -89,6 +90,9 @@ export async function PUT(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const body = await req.json();
     const data = productoUpdateSchema.parse(body);
@@ -368,6 +372,9 @@ export async function DELETE(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const userId = req.headers.get('x-user-id') || undefined;
 

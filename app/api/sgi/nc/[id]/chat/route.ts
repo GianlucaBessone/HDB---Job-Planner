@@ -3,10 +3,14 @@ import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { generateObject } from '@/lib/ai/service';
 import { getEmbedding, cosineSimilarity } from '@/lib/ai/embeddings';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const acceso = await exigirAcceso(req, ['calidad.gestionar'], 'No tenés permiso para gestionar el SGI de calidad');
+    if (acceso instanceof NextResponse) return acceso;
+
   const params = await paramsPromise;
     const acceso = await exigirAcceso(req, ['calidad.gestionar']);
     if (acceso instanceof NextResponse) return acceso;

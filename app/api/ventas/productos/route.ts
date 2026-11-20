@@ -6,6 +6,7 @@ import { logAudit } from '@/lib/audit';
 import { calculateSuggestedPrice } from '@/lib/ventas/priceRules';
 import { normalizeSku, buildProductSearchWhere, mensajeProductoDuplicado } from '@/lib/ventas/skuUtils';
 import { getNextInventarioNumero } from '@/lib/inventario/counter';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const productoCreateSchema = z.object({
   sku: z.string().min(1, 'El SKU es obligatorio'),
@@ -279,6 +280,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const data = productoCreateSchema.parse(body);
     data.sku = normalizeSku(data.sku);

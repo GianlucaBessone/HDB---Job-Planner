@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
@@ -98,11 +99,24 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
 export async function PATCH(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { itemId, completed, excluded, justification, requestChange } = body;
 
         const item = await prisma.checklistItem.findUnique({ where: { id: itemId } });
-        if (!item) return NextResponse.json({ error: 'Item no encontrado' }, { status: 404 });
+        if (!item || item.projectId !== params.id) return NextResponse.json({ error: 'Item no encontrado' }, { status: 404 });
+
+        // Marcar ítems: el responsable del proyecto o quien gestiona proyectos.
+        // Excluir un ítem es una decisión de supervisión: solo quien gestiona proyectos.
+        const gestiona = acceso.puede('proyectos.crear');
+        if (!gestiona) {
+            const proyecto = await prisma.project.findUnique({ where: { id: params.id }, select: { responsableId: true } });
+            if (excluded !== undefined || proyecto?.responsableId !== acceso.userId) {
+                return NextResponse.json({ error: 'No tenés permiso para modificar el checklist de este proyecto' }, { status: 403 });
+            }
+        }
 
         // Logic for confirmation/locking
         // Excluded items can be toggled by supervisors even if confirmed?

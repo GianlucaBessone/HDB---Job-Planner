@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
-        const acceso = await exigirAcceso(req);
+        const acceso = await exigirAcceso(req, ['config.administrar'], 'No tenés permiso para generar plantillas de checklist');
         if (acceso instanceof NextResponse) return acceso;
 
         const body = await req.json();

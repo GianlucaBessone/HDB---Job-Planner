@@ -3,6 +3,11 @@ import { prisma } from '../lib/prisma';
 import { GET, POST } from '../app/api/materiales-proyecto/route';
 
 async function testApi() {
+    // Las escrituras de materiales exigen "provision.gestionar": los pedidos van como un admin activo
+    // (es lo que deja el middleware en x-user-id después de validar la sesión).
+    const admin = await prisma.operator.findFirst({ where: { activo: true, role: 'admin' }, select: { id: true } });
+    if (!admin) throw new Error('No hay un usuario admin activo en la base de prueba');
+    const adminId = admin.id;
   console.log('=== TEST SUITE: API /api/materiales-proyecto con Gestión Comercial ===\n');
 
   const suffix = Date.now().toString().slice(-5);
@@ -82,7 +87,7 @@ async function testApi() {
     console.log('\n- Test C: POST crear material de proyecto sin especificar precioVenta');
     const reqC = new Request('http://localhost:3333/api/materiales-proyecto', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-user-id': adminId },
       body: JSON.stringify({
         proyectoId: testProj.id,
         nombre: testProd.descripcion,

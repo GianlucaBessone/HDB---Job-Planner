@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { getEmbedding, cosineSimilarity } from '@/lib/ai/embeddings';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const acceso = await exigirAcceso(req, ['calidad.ver', 'calidad.gestionar'], 'No tenés permiso para ver el SGI de calidad');
+    if (acceso instanceof NextResponse) return acceso;
+
   const params = await paramsPromise;
     const acceso = await exigirAcceso(req, ['calidad.ver', 'calidad.gestionar']);
     if (acceso instanceof NextResponse) return acceso;

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,9 @@ interface CruceRow {
 }
 
 export async function GET(req: Request) {
+    const acceso = await exigirAcceso(req, ['fichadas.monitorear'], 'No tenés permiso para monitorear fichadas');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const { searchParams } = new URL(req.url);
         const from = searchParams.get('from');

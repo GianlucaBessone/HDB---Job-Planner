@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const acceso = await exigirAcceso(req, ['calidad.gestionar'], 'No tenés permiso para gestionar el SGI de calidad');
+    if (acceso instanceof NextResponse) return acceso;
+
   const params = await paramsPromise;
     const acceso = await exigirAcceso(req, ['calidad.gestionar']);
     if (acceso instanceof NextResponse) return acceso;
@@ -36,6 +40,9 @@ export async function PATCH(req: Request, { params: paramsPromise }: { params: P
 }
 
 export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const acceso = await exigirAcceso(req, ['calidad.gestionar'], 'No tenés permiso para gestionar el SGI de calidad');
+    if (acceso instanceof NextResponse) return acceso;
+
   const params = await paramsPromise;
     const acceso = await exigirAcceso(req, ['calidad.gestionar']);
     if (acceso instanceof NextResponse) return acceso;

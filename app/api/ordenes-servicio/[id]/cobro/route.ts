@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['os.cobrar'], 'No tenés permiso para cobrar órdenes de servicio');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { id } = params;
         const body = await req.json();
 

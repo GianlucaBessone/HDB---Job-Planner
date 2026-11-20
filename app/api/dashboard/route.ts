@@ -3,8 +3,12 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 import { dataLayer } from '@/lib/dataLayer';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(request: Request) {
+    const acceso = await exigirAcceso(request, ['dashboard.ver'], 'No tenés permiso para ver el panel de análisis');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         await dataLayer.autoUpdateProjectStatuses();
 

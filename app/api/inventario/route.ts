@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { codigo, nombre, precioVenta, costo } = body;
 

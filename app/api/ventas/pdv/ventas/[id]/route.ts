@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(
   req: NextRequest,
@@ -7,6 +8,9 @@ export async function GET(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.pdv_operar'], 'No tenés permiso para operar el Punto de Venta');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
 
     const venta = await prisma.venta.findUnique({

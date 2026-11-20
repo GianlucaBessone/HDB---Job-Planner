@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { calculateOperatorScore } from '@/lib/operators/scoreCalculator';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
+    const acceso = await exigirAcceso(req, ['dashboard.ver'], 'No tenés permiso para ver el panel de análisis');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const { searchParams } = new URL(req.url);
         const operatorId = searchParams.get('operatorId');

@@ -190,6 +190,31 @@ siembran con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
 | `ventas.cc_cobrar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/cobranzas` |
 | `ventas.cc_ajustar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/movimientos` (saldo inicial, cargo manual, nota de crédito) |
 | `ventas.cc_configurar` | admin, supervisor | `PUT /api/ventas/cuentas-corrientes/[clienteId]` (crédito) y `POST .../actualizacion-precios` |
+| `ventas.catalogo_gestionar` | admin, supervisor, vendedor | Escrituras de `/api/ventas/productos/**`, `/listas-precios/**`, `/proveedores/**`, `/precios/**` y del inventario viejo (`/api/inventario/**`). La lectura sigue abierta: la usan presupuestos, OS y proyectos |
+| `ventas.pdv_operar` | admin, supervisor, vendedor | `POST /api/ventas/pdv/confirmar`, `/pdv/ventas` y `/pdv/ventas/[id]` (historial), `/pdv/pendientes`, `/pdv/remitos` |
+| `os.gestionar` | admin, supervisor, qa (y el responsable del proyecto, sobre sus OS) | `POST /api/ordenes-servicio`, `PUT /api/ordenes-servicio/[id]`; `GET /api/ordenes-servicio` sin filtro (con `?projectId`, también el responsable) |
+| `os.eliminar` | admin, supervisor | `DELETE /api/ordenes-servicio/[id]` |
+| `os.cobrar` | admin, supervisor | `PUT /api/ordenes-servicio/[id]/cobro` (el PDF del cobro: `os.cobrar` ∨ `os.gestionar`) |
+| `proyectos.costos` | admin, supervisor, qa | `/api/projects/[id]/cost`, `cost/materials`, `cost/sync-prices` |
+| `proyectos.finalizar` | admin, supervisor, qa | `POST /api/projects/[id]/finalize` (el responsable la pide por aviso) |
+| `provision.gestionar` | admin, supervisor, qa, vendedor | Altas, ediciones y bajas de `/api/materiales-proyecto`, `provision-materiales/importar` y `notificar-faltantes`, `POST /api/provision-proyectos/reparar` |
+| `demoras.gestionar` | admin, supervisor, qa | `PATCH/DELETE /api/delays` (cargar sigue abierto) |
+| `dashboard.ver` | admin, supervisor, qa | `/api/dashboard`, `dashboard/raw`, `dashboard/operator-scoreboard`, `metricas-servicio`, `operators/scores`, `riesgos` |
+| `fichadas.monitorear` | admin, supervisor, qa | Fichadas de otros en `GET /api/fichadas` (sin la función, las propias); `GET /api/verificar-cruce` |
+| `ia.consumo_ver` | admin, supervisor, qa | `GET /api/ai/audit` |
+| `sistema.mantenimiento` | admin | `POST /api/sync-checklists`, `POST /api/sync-finalized` |
+
+Otras rutas que pasaron a funciones existentes: planificación (`/api/favorites`) →
+`planificacion.gestionar`; clientes de OT (`/api/ordenes-trabajo/clientes`) → `clientes.gestionar`;
+borrar bitácora de proyecto → `proyectos.crear`; registro de firmas (`GET /api/signatures/verify`)
+→ `auditoria.ver`; plantillas de checklist con IA → `config.administrar`; evaluaciones con IA
+(`/api/ai/training`) → `documentos.gestionar`; NC con IA, reuniones y NC similares
+(`/api/sgi/nc/[id]/{ia-docs,reunion,chat,similares}`, `/api/sgi/reunion/[id]`) →
+`calidad.gestionar` (`similares`: `calidad.ver` ∨ `calidad.gestionar`).
+
+Sin función, con reglas por usuario: el checklist del proyecto lo marca su responsable o quien
+tiene `proyectos.crear` (excluir ítems, solo `proyectos.crear`); el checklist QMS de una OS lo
+completa cualquier usuario activo y queda a su nombre.
 
 Reglas por usuario, sin función:
 
@@ -276,6 +301,17 @@ que alcanza con una de las dos.
 Todavía dependen solo del rol, o de datos que manda el navegador, y hay que migrarlos:
 
 - Chequeos de rol sueltos dentro de las pantallas (botones y acciones que se muestran
+  según `role`; por ejemplo, Viajes usa `esGestorViajes`).
+- El PIN de supervisor (`/api/auth/verificar-supervisor` y las anulaciones de ventas y
+  cuenta corriente) compara el rol de quien lo ingresa a mano.
+- El PDV manda siempre `autorizadoPorSupervisor: true`: el servidor no comprueba esa
+  autorización.
+- `/api/cron/reminders?manual=true` usa el rol del token.
+- En `/api/time-entries` cada usuario puede marcar como confirmado un día propio.
+- `/api/sgi/reunion/[id]`, `nc/[id]/chat`, `nc/[id]/reunion`, `nc/[id]/similares` y
+  `nc/[id]/ia-docs` solo piden sesión.
+- Una vista que el rol no tiene, sin denegación puntual, solo se oculta del menú: no se
+  bloquea la URL directa (igual que antes de este módulo).
   según `role`; por ejemplo, Viajes usa `esGestorViajes`). Las APIs ya controlan con
   funciones; falta que las pantallas usen `useAcceso().puede(...)`.
 - `POST /api/ordenes-trabajo` toma el creador del cuerpo (`creadorId`).

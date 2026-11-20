@@ -4,9 +4,13 @@ import { logAudit } from '@/lib/audit';
 import { parseExcelNumber } from '@/lib/formatCurrency';
 import { normalizeSku } from '@/lib/ventas/skuUtils';
 import { getNextInventarioNumero } from '@/lib/inventario/counter';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const { modo, filas, opciones = {}, maestrosACrear = {}, correcciones = {}, nombreArchivo = 'productos.xlsx' } = body;
 

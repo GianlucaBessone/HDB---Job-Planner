@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 // PUT /api/materiales-proyecto/[id] — actualizar material
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const acceso = await exigirAcceso(req, ['provision.gestionar'], 'No tenés permiso para gestionar la provisión de materiales');
+    if (acceso instanceof NextResponse) return acceso;
+
   const params = await paramsPromise;
     const { id } = params;
     const body = await req.json();
@@ -135,6 +139,9 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
 
 // DELETE /api/materiales-proyecto/[id]
 export async function DELETE(_req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const acceso = await exigirAcceso(_req, ['provision.gestionar'], 'No tenés permiso para gestionar la provisión de materiales');
+    if (acceso instanceof NextResponse) return acceso;
+
   const params = await paramsPromise;
     const { id } = params;
 

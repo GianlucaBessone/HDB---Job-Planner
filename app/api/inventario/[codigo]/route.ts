@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ codigo: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { nombre, precioVenta, costo } = body;
 
@@ -32,6 +36,9 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
 export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ codigo: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+        if (acceso instanceof NextResponse) return acceso;
+
         await prisma.materialMaestro.delete({
             where: { codigo: params.codigo }
         });

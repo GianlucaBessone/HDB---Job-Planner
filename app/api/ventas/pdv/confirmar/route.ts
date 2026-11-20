@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   return withIdempotency(req, async () => {
     try {
       // Usuario, rol y funciones salen de la sesión (base de datos), no del navegador.
-      const acceso = await exigirAcceso(req);
+      const acceso = await exigirAcceso(req, ['ventas.pdv_operar'], 'No tenés permiso para operar el Punto de Venta');
       if (acceso instanceof NextResponse) return acceso;
 
       const body = await req.json();

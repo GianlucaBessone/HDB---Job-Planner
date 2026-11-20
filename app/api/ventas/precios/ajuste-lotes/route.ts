@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
 import { buildProductSearchWhere } from '@/lib/ventas/skuUtils';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const ajusteLotesSchema = z.object({
   filtros: z.object({
@@ -28,6 +29,9 @@ const ajusteLotesSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const { filtros, porcentaje, tipoAjuste, margenRentabilidad, preview, countOnly } = ajusteLotesSchema.parse(body);
 
