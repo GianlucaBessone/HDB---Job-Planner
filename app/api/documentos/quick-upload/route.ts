@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar documentos';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+        // Quien actúa es siempre el usuario de la sesión: se ignoran userId / userName del pedido.
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
         const body = await req.json();
         const {
             fileName,
@@ -22,9 +31,7 @@ export async function POST(req: Request) {
             revisadorId,
             revisadorNombre,
             aprobadorId,
-            aprobadorNombre,
-            userId,
-            userName
+            aprobadorNombre
         } = body;
 
         if (!fileName || !fileContent) {

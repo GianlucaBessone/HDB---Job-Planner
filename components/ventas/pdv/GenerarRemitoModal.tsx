@@ -188,8 +188,6 @@ export default function GenerarRemitoModal({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': currentUser?.id || '',
-          'x-user-name': vendedorNombre || '',
         },
         body: JSON.stringify(payload),
       });

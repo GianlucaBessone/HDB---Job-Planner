@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +82,9 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
 export async function PUT(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const body = await req.json();
     const { reporteTrabajo, sector, refCliente, responsableId } = body;
@@ -145,8 +149,8 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: { params:
       }
     }
 
-    const currentUserId = req.headers.get('x-user-id') || undefined;
-    const currentUserName = req.headers.get('x-user-name') || undefined;
+    const currentUserId = acceso.userId;
+    const currentUserName = acceso.nombre;
 
     if (responsableChanged) {
       await logAudit({

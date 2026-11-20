@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id: clientId } = params;
     const body = await req.json();
     const { operatorId, valorHora } = body;
@@ -43,8 +47,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'UPDATE',
       entity: 'CLIENT_OPERATOR_RATE',
       entityId: rate.id,
@@ -61,6 +65,9 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
 export async function PUT(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id: clientId } = params;
     const body = await req.json();
     const { rateId, valorHora, activo } = body;
@@ -99,8 +106,8 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: { params:
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'UPDATE',
       entity: 'CLIENT_OPERATOR_RATE',
       entityId: rateId,
@@ -117,6 +124,9 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: { params:
 export async function DELETE(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id: clientId } = params;
     const { searchParams } = new URL(req.url);
     const rateId = searchParams.get('rateId');
@@ -153,8 +163,8 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
       });
 
       await logAudit({
-        userId: req.headers.get('x-user-id') || undefined,
-        userName: req.headers.get('x-user-name') || undefined,
+        userId: acceso.userId,
+        userName: acceso.nombre,
         action: 'UPDATE',
         entity: 'CLIENT_OPERATOR_RATE',
         entityId: rateId,
@@ -173,8 +183,8 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'DELETE',
       entity: 'CLIENT_OPERATOR_RATE',
       entityId: rateId,

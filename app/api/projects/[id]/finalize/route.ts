@@ -1,11 +1,31 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
+import { logAudit } from '@/lib/audit';
 
+const bodySchema = z.object({
+    /** Cerrar aunque queden verificaciones del checklist sin completar. */
+    force: z.boolean().optional().default(false),
+});
+
+/**
+ * Finaliza el proyecto. Pide `proyectos.finalizar`: quien no la tiene pide el cierre a un
+ * supervisor (aviso PROJECT_FINALIZE_REQUEST). Usuario y permisos salen de la sesión.
+ */
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        // Finaliza quien tiene la función; el responsable lo pide por aviso desde "Mis proyectos".
+        const acceso = await exigirAcceso(req, ['proyectos.finalizar'], 'No tenés permiso para finalizar proyectos. Pedí la finalización a un supervisor.');
+        if (acceso instanceof NextResponse) return acceso;
+
+        const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
+        if (!parsed.success) {
+            return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Datos inválidos' }, { status: 400 });
+        }
+        const { force } = parsed.data;
         const { id } = params;
-        const { force, userId } = await req.json();
 
         // 1. Get checklist and project
         const [project, checklist] = await Promise.all([
@@ -29,18 +49,32 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
         }
 
         // 3. Update project
+        const fechaFin = new Date().toISOString().split('T')[0];
         await prisma.project.update({
             where: { id },
             data: {
                 estado: 'finalizado',
-                fechaFin: new Date().toISOString().split('T')[0],
+                fechaFin,
                 finalizadoConPendientes: pendingItems.length > 0,
                 pendientesSnapshot: pendingItems.length > 0 ? pendingItems : null,
             }
         });
 
-        // Log who forced it if applicable
-        console.log(`Proyecto ${id} finalizado por ${userId}${pendingItems.length > 0 ? ' CON PENDIENTES' : ''}`);
+        // Quién lo cerró, y si fue con pendientes
+        await logAudit({
+            userId: acceso.userId,
+            userName: acceso.nombre,
+            action: 'UPDATE',
+            entity: 'PROJECT',
+            entityId: id,
+            oldValue: { estado: project.estado, fechaFin: project.fechaFin },
+            newValue: { estado: 'finalizado', fechaFin },
+            metadata: {
+                accion: 'finalizar',
+                conPendientes: pendingItems.length,
+                pendientes: pendingItems.map(p => ({ tag: p.tag, description: p.description })),
+            },
+        });
 
         return NextResponse.json({ success: true });
     } catch (error) {

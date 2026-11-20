@@ -1,30 +1,23 @@
-'use server';
-
+/**
+ * Lógica del portal "Mis EPP". Solo se usa desde app/api/rrhh/epp/mis-epp/**:
+ * el operador siempre es el de la sesión, nunca uno que mande el cliente.
+ * No es un módulo de server actions: no le agregues esa directiva, o sus
+ * funciones quedarían invocables sin pasar por las APIs.
+ */
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
-import { cookies, headers } from 'next/headers';
-import { z } from 'zod';
-import { decrypt } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
-import { datosFirmaSchema, firmarComoOperador, FirmaError, ipDesdeHeaders } from '@/lib/signatureServer';
+import type { UsuarioEpp } from '@/lib/rrhh/eppSesion';
 
-function safeRevalidate(path: string) {
+export async function getMyEppData(operador: UsuarioEpp) {
     try {
-        revalidatePath(path);
-    } catch (_) {}
-}
-
-// ==========================================
-// ACCIONES PARA EL PORTAL DEL OPERADOR: MIS EPP
-// ==========================================
-
-export async function getMyEppData(operatorId: string) {
-    try {
-        if (!operatorId) {
-            return { success: false, error: 'Identificador de operador requerido' };
-        }
-
+        const operatorId = operador.id;
         const now = Date.now();
+
+        const operator = await prisma.operator.findUnique({
+            where: { id: operatorId },
+            select: { id: true, nombreCompleto: true, dni: true }
+        });
+        if (!operator) return { success: false, error: 'Operador no encontrado' };
 
         // 1. Entregas pendientes de firma para este operador
         const pendingDeliveries = await prisma.eppDelivery.findMany({
@@ -115,6 +108,7 @@ export async function getMyEppData(operatorId: string) {
         return {
             success: true,
             data: {
+                operator,
                 pendingDeliveries,
                 assignedItems,
                 signedDeliveries,
@@ -128,38 +122,26 @@ export async function getMyEppData(operatorId: string) {
     }
 }
 
-/** Operador de la sesión. Las server actions no pasan por el middleware de /api. */
-async function getOperadorSesionId(): Promise<string | null> {
-    const token = (await cookies()).get('sgi_session')?.value;
-    const session = token ? await decrypt(token) : null;
-    return session?.id || null;
-}
-
-const firmaEppSchema = z.object({
-    deliveryId: z.string().trim().min(1, 'Acta de entrega requerida'),
-    itemIdsConfirmed: z.array(z.string().min(1)).min(1, 'Debe seleccionar y confirmar al menos un ítem entregado'),
-    deviceId: datosFirmaSchema.shape.deviceId,
-    firmaManuscritaUrl: z.string().optional(),
-});
-
-/**
- * Firma un acta de entrega de EPP. La firma digital (DocumentSignatureAudit) se
- * genera acá, a nombre del operador de la sesión, en la misma transacción que
- * actualiza el acta. Ni el operador ni la firma se aceptan del cliente.
- */
-export async function signEppDelivery(data: z.input<typeof firmaEppSchema>) {
+export async function signEppDelivery(operador: UsuarioEpp, data: {
+    deliveryId: string;
+    itemIdsConfirmed: string[];
+    signatureId: string;
+    signatureHash: string;
+    firmaManuscritaUrl?: string;
+}) {
     try {
-        const operatorId = await getOperadorSesionId();
-        if (!operatorId) {
-            return { success: false, error: 'Debe iniciar sesión para firmar la entrega' };
-        }
+        const { deliveryId, itemIdsConfirmed, signatureId, signatureHash, firmaManuscritaUrl } = data;
+        const operatorId = operador.id;
 
-        const parsed = firmaEppSchema.safeParse(data);
-        if (!parsed.success) {
-            return { success: false, error: parsed.error.issues[0]?.message || 'Parámetros incompletos' };
+        if (!deliveryId) {
+            return { success: false, error: 'Parámetros incompletos' };
         }
-        const { deliveryId, itemIdsConfirmed, deviceId, firmaManuscritaUrl } = parsed.data;
-        const ipAddress = ipDesdeHeaders(await headers());
+        if (!itemIdsConfirmed || itemIdsConfirmed.length === 0) {
+            return { success: false, error: 'Debe seleccionar y confirmar al menos un ítem entregado' };
+        }
+        if (!signatureId || !signatureHash) {
+            return { success: false, error: 'Firma digital con checksum requerida' };
+        }
 
         const result = await prisma.$transaction(async (tx) => {
             const delivery = await tx.eppDelivery.findUnique({
@@ -169,34 +151,46 @@ export async function signEppDelivery(data: z.input<typeof firmaEppSchema>) {
 
             if (!delivery) throw new Error('Acta de entrega no encontrada');
             if (delivery.operatorId !== operatorId) throw new Error('No autorizado para firmar esta entrega');
-            if (delivery.estado === 'FIRMADA') throw new Error('Esta entrega ya fue firmada previamente');
+            if (delivery.estado !== 'PENDIENTE_FIRMA') throw new Error('Esta entrega ya fue firmada previamente');
+
+            const confirmados = itemIdsConfirmed.filter(id => delivery.items.some(i => i.id === id));
+            if (confirmados.length === 0) throw new Error('Debe seleccionar y confirmar al menos un ítem entregado');
+
+            // La firma con checksum la genera /api/signatures/sign con la sesión. Acá se
+            // comprueba que exista, que sea de este operador y de esta acta, y que no se
+            // haya usado ya en otra: el cliente no puede inventar ni reutilizar una firma.
+            const firma = await tx.documentSignatureAudit.findUnique({ where: { SignatureID: signatureId } });
+            if (
+                !firma ||
+                firma.DocumentID !== deliveryId ||
+                firma.UserID !== operatorId ||
+                firma.HashSignature !== signatureHash ||
+                firma.VerificationStatus !== 'VALIDA'
+            ) {
+                throw new Error('La firma digital no corresponde a esta entrega');
+            }
+            const usada = await tx.eppDelivery.findFirst({ where: { signatureId, NOT: { id: deliveryId } }, select: { id: true } });
+            if (usada) throw new Error('La firma digital ya se usó en otra entrega');
 
             const now = new Date();
 
-            // 1. Firma digital a nombre del operador de la sesión
-            const firma = await firmarComoOperador(tx, {
-                documentId: delivery.id,
-                documentVersion: '1.0',
-                deviceId,
-                operatorId,
-                ipAddress,
-            });
-
-            // 2. Actualizar acta de entrega
-            const updatedDelivery = await tx.eppDelivery.update({
-                where: { id: deliveryId },
+            // 1. Marcar el acta solo si sigue pendiente: dos firmas simultáneas no pasan las dos.
+            const marcada = await tx.eppDelivery.updateMany({
+                where: { id: deliveryId, operatorId, estado: 'PENDIENTE_FIRMA' },
                 data: {
                     estado: 'FIRMADA',
-                    signatureId: firma.SignatureID,
-                    signatureHash: firma.HashSignature,
+                    signatureId,
+                    signatureHash,
                     firmaManuscritaUrl: firmaManuscritaUrl || null,
                     signedAt: now
                 }
             });
+            if (marcada.count === 0) throw new Error('Esta entrega ya fue firmada previamente');
+            const updatedDelivery = await tx.eppDelivery.findUniqueOrThrow({ where: { id: deliveryId } });
 
-            // 3. Actualizar cada ítem de la entrega
+            // 2. Actualizar cada ítem de la entrega
             for (const item of delivery.items) {
-                const isConfirmed = itemIdsConfirmed.includes(item.id);
+                const isConfirmed = confirmados.includes(item.id);
 
                 if (isConfirmed) {
                     const dias = item.diasValidez || item.eppItem.diasValidez || 365;
@@ -221,8 +215,8 @@ export async function signEppDelivery(data: z.input<typeof firmaEppSchema>) {
                         }
                     });
 
-                    // Devolver al stock
-                    await tx.eppItem.update({
+                    // Devolver al stock (el kardex usa el valor real después del incremento)
+                    const devuelto = await tx.eppItem.update({
                         where: { id: item.eppItemId },
                         data: { stockActual: { increment: item.cantidad } }
                     });
@@ -232,56 +226,58 @@ export async function signEppDelivery(data: z.input<typeof firmaEppSchema>) {
                             eppItemId: item.eppItemId,
                             tipo: 'AJUSTE',
                             cantidad: item.cantidad,
-                            stockAnterior: item.eppItem.stockActual,
-                            stockPosterior: item.eppItem.stockActual + item.cantidad,
+                            stockAnterior: devuelto.stockActual - item.cantidad,
+                            stockPosterior: devuelto.stockActual,
                             deliveryId: delivery.id,
                             motivo: `Devolución al pañol: no recibido por operario en Acta ${delivery.codigoActa}`,
-                            registradoPor: 'Sistema / Operador'
+                            registradoPor: operador.nombre
                         }
                     });
                 }
             }
 
-            return { updatedDelivery, firma };
+            return updatedDelivery;
         });
 
         await logAudit({
-            action: 'CREATE',
-            entity: 'SIGNATURE_AUDIT',
-            entityId: result.firma.SignatureID,
-            newValue: result.firma,
-            userId: result.firma.UserID,
-            userName: result.firma.UserName,
-            metadata: { eppDeliveryId: deliveryId }
+            action: 'UPDATE',
+            entity: 'EPP_DELIVERY_SIGNATURE',
+            entityId: result.id,
+            userId: operador.id,
+            userName: operador.nombre,
+            newValue: { estado: result.estado, signatureId, itemIdsConfirmed: data.itemIdsConfirmed.filter(id => id) },
+            metadata: { codigoActa: result.codigoActa }
         });
 
-        safeRevalidate('/mis-epp');
-        safeRevalidate('/rrhh/personal/epp');
-        return { success: true, data: result.updatedDelivery };
+        return { success: true, data: result };
     } catch (error: any) {
-        if (error instanceof FirmaError) {
-            return { success: false, error: error.message };
-        }
         console.error('Error al firmar entrega de EPP:', error);
         return { success: false, error: error.message };
     }
 }
 
-export async function createOperatorEppRequest(data: {
-    operatorId: string;
+export async function createOperatorEppRequest(operador: UsuarioEpp, data: {
     eppItemId: string;
     talle?: string;
     motivo: string;
     comentario?: string;
 }) {
     try {
-        if (!data.operatorId || !data.eppItemId) {
-            return { success: false, error: 'Operador y elemento de EPP requeridos' };
+        if (!data.eppItemId) {
+            return { success: false, error: 'Elemento de EPP requerido' };
+        }
+
+        const item = await prisma.eppItem.findUnique({
+            where: { id: data.eppItemId },
+            select: { activo: true }
+        });
+        if (!item || !item.activo) {
+            return { success: false, error: 'El elemento de EPP no está disponible' };
         }
 
         const newRequest = await prisma.eppRequest.create({
             data: {
-                operatorId: data.operatorId,
+                operatorId: operador.id,
                 eppItemId: data.eppItemId,
                 talle: data.talle || null,
                 motivo: data.motivo || 'VENCIMIENTO',
@@ -290,8 +286,6 @@ export async function createOperatorEppRequest(data: {
             }
         });
 
-        safeRevalidate('/mis-epp');
-        safeRevalidate('/rrhh/personal/epp');
         return { success: true, data: newRequest };
     } catch (error: any) {
         return { success: false, error: error.message };

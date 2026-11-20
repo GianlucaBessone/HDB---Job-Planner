@@ -4,6 +4,11 @@ import { PUT as materialesPut, DELETE as materialesDelete } from '../app/api/mat
 import { DEFAULT_VIEWS, getViewConfig, isViewAllowed } from '../lib/viewAccess';
 
 async function runExhaustiveAudit() {
+    // Las escrituras de materiales exigen "provision.gestionar": los pedidos van como un admin activo
+    // (es lo que deja el middleware en x-user-id después de validar la sesión).
+    const admin = await prisma.operator.findFirst({ where: { activo: true, role: 'admin' }, select: { id: true } });
+    if (!admin) throw new Error('No hay un usuario admin activo en la base de prueba');
+    const adminId = admin.id;
     console.log('===============================================================');
     console.log(' INICIO DE AUDITORÍA EXHAUSTIVA DE PROVISIÓN Y GESTIÓN COMERCIAL');
     console.log('===============================================================');
@@ -172,7 +177,7 @@ async function runExhaustiveAudit() {
         console.log('\n[6/8] Probando POST /api/materiales-proyecto con auto-resolución de precio...');
         const postReq = new Request('http://localhost:3000/api/materiales-proyecto', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'x-user-id': adminId },
             body: JSON.stringify({
                 proyectoId: prj.id,
                 codigo: testSku,
@@ -203,7 +208,7 @@ async function runExhaustiveAudit() {
         // Cambiar el código a "00003" (Cable unipolar 1.5mm) sin pasar precioVenta
         const putReq = new Request(`http://localhost:3000/api/materiales-proyecto/${createdMaterialId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'x-user-id': adminId },
             body: JSON.stringify({
                 codigo: '00003',
                 nombre: 'Cable unipolar cambiado en PUT',

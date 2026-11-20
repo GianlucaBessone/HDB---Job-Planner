@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -83,6 +84,9 @@ function fmtARS(val: number): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const { filas, confirmar, nombreArchivo } = importarExcelSchema.parse(body);
 

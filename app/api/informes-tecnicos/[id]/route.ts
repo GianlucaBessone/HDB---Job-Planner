@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,9 @@ const include = {
 export async function GET(req: NextRequest, { params: paramsPromise }: RouteParams) {
     const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const report = await prisma.technicalReport.findUnique({
             where: { id: params.id },
             include
@@ -37,6 +41,9 @@ export async function GET(req: NextRequest, { params: paramsPromise }: RoutePara
 export async function PUT(req: NextRequest, { params: paramsPromise }: RouteParams) {
     const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const existing = await prisma.technicalReport.findUnique({ where: { id: params.id } });
         if (!existing) return NextResponse.json({ error: 'Informe no encontrado' }, { status: 404 });
         const body = await req.json();
@@ -110,15 +117,11 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: RoutePara
             });
         });
 
-        // Audit Log
-        const reqHeaders = new Headers(req.headers);
-        const userId = reqHeaders.get('x-user-id') || null;
-        
         await prisma.auditLog.create({
             data: {
-                userId: userId,
-                userEmail: '', // Not available in x-user-id headers, maybe query user if needed
-                userName: 'Sistema',
+                userId: acceso.userId,
+                userEmail: '',
+                userName: acceso.nombre,
                 action: 'UPDATE',
                 entity: 'TECHNICAL_REPORT',
                 entityId: updated.id,
@@ -136,6 +139,9 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: RoutePara
 export async function DELETE(req: NextRequest, { params: paramsPromise }: RouteParams) {
     const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const existing = await prisma.technicalReport.findUnique({ where: { id: params.id } });
         if (!existing) return NextResponse.json({ error: 'Informe no encontrado' }, { status: 404 });
 
@@ -143,20 +149,17 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: RouteP
         let metadataToLog: any = undefined;
 
         if (existing.status === 'finalizado') {
+            if (!acceso.puede('informes.eliminar_finalizados')) {
+                return NextResponse.json({ error: 'No tenés permiso para eliminar informes finalizados.' }, { status: 403 });
+            }
+
             const body = await req.json().catch(() => null);
             if (!body) return NextResponse.json({ error: 'Se requiere justificación y firma para eliminar un informe finalizado' }, { status: 400 });
             
             const { signatureId, justificacion: just, dni } = body;
             if (!signatureId || !just || !dni) return NextResponse.json({ error: 'Faltan datos requeridos (firma, justificación, DNI)' }, { status: 400 });
 
-            const reqHeaders = new Headers(req.headers);
-            const userId = reqHeaders.get('x-user-id');
-            const userRole = reqHeaders.get('x-user-role');
-            if (!userId || !['admin', 'supervisor'].includes((userRole || '').trim().toLowerCase())) {
-                return NextResponse.json({ error: `No tienes permisos de administrador/supervisor para realizar esta acción (Tu rol detectado: "${userRole || 'Ninguno'}")` }, { status: 403 });
-            }
-
-            const operator = await prisma.operator.findUnique({ where: { id: userId } });
+            const operator = await prisma.operator.findUnique({ where: { id: acceso.userId } });
             if (!operator || operator.dni !== dni) {
                 return NextResponse.json({ error: 'El DNI ingresado no coincide con el registrado en tu usuario' }, { status: 400 });
             }
@@ -168,18 +171,35 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: RouteP
 
             justificacion = just;
             metadataToLog = { justificacion, adminDni: dni, signatureId };
+
+            // Un informe finalizado no se borra: se anula y se conserva, con la firma y la justificación.
+            await prisma.technicalReport.update({ where: { id: params.id }, data: { status: 'anulado' } });
+            await prisma.auditLog.create({
+                data: {
+                    userId: acceso.userId,
+                    userEmail: '',
+                    userName: acceso.nombre,
+                    action: 'UPDATE',
+                    entity: 'TECHNICAL_REPORT',
+                    entityId: params.id,
+                    oldValue: { reportNumber: existing.reportNumber, status: existing.status },
+                    newValue: { status: 'anulado' },
+                    metadata: { ...metadataToLog, message: 'Anulado en lugar de eliminado: estaba finalizado' },
+                }
+            });
+            return NextResponse.json({ success: true, modo: 'anulado' });
+        }
+        if (existing.status === 'anulado') {
+            return NextResponse.json({ error: 'El informe ya está anulado' }, { status: 409 });
         }
 
         await prisma.technicalReport.delete({ where: { id: params.id } });
 
-        const reqHeadersFinal = new Headers(req.headers);
-        const userIdFinal = reqHeadersFinal.get('x-user-id') || null;
-        
         await prisma.auditLog.create({
             data: {
-                userId: userIdFinal,
+                userId: acceso.userId,
                 userEmail: '',
-                userName: 'Sistema',
+                userName: acceso.nombre,
                 action: 'DELETE',
                 entity: 'TECHNICAL_REPORT',
                 entityId: params.id,

@@ -32,6 +32,16 @@ import { useAcceso } from '@/lib/store/useAccessStore';
 
 // PREDEFINED_TAGS is now loaded dynamically from the backend config
 
+/** Mensaje de error que devuelve la API (p. ej. un 403 por rango o por permisos). */
+async function mensajeError(res: Response, porDefecto: string): Promise<string> {
+    try {
+        const data = await res.json();
+        return data?.error || porDefecto;
+    } catch {
+        return porDefecto;
+    }
+}
+
 export default function OperatorsPage() {
     const [operators, setOperators] = useState<any[]>([]);
     const [filters, setFilters] = useViewState('operators-filters', {
@@ -129,10 +139,14 @@ export default function OperatorsPage() {
         const method = editingOperator ? 'PATCH' : 'POST';
         const url = editingOperator ? `/api/operators?id=${editingOperator.id}` : '/api/operators';
 
-        await safeApiRequest(url, {
+        const res = await safeApiRequest(url, {
             method,
             body: JSON.stringify(formData)
         });
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo guardar el usuario'), 'error');
+            return;
+        }
 
         setIsModalOpen(false);
         setEditingOperator(null);
@@ -161,10 +175,14 @@ export default function OperatorsPage() {
     const toggleStatus = async (id: string, currentStatus: boolean) => {
         // Optimistic update
         setOperators(prev => prev.map(op => op.id === id ? { ...op, activo: !currentStatus } : op));
-        await safeApiRequest(`/api/operators?id=${id}`, {
+        const res = await safeApiRequest(`/api/operators?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ activo: !currentStatus })
         });
+        if (!res.ok) {
+            setOperators(prev => prev.map(op => op.id === id ? { ...op, activo: currentStatus } : op));
+            showToast(await mensajeError(res, 'No se pudo cambiar el estado'), 'error');
+        }
     };
 
     const handleDeleteClick = (id: string) => {
@@ -175,11 +193,22 @@ export default function OperatorsPage() {
     const confirmDelete = async () => {
         if (!operatorToDelete) return;
         const id = operatorToDelete;
-        setOperators(prev => prev.filter(op => op.id !== id));
-        await safeApiRequest(`/api/operators?id=${id}`, { method: 'DELETE' });
+        const res = await safeApiRequest(`/api/operators?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setOperatorToDelete(null);
-        showToast('Operador eliminado', 'success');
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo eliminar el usuario'), 'error');
+            return;
+        }
+        const data = await res.json().catch(() => null);
+        if (data?.modo === 'desactivado') {
+            // Tiene horas, fichadas u órdenes: queda inactivo para no perder ese historial.
+            setOperators(prev => prev.map(op => op.id === id ? { ...op, activo: false } : op));
+            showToast('Tiene historial: quedó desactivado en lugar de eliminarse', 'info');
+            return;
+        }
+        setOperators(prev => prev.filter(op => op.id !== id));
+        showToast('Usuario eliminado', 'success');
     };
 
     const handleResetAllClick = () => {
@@ -187,9 +216,13 @@ export default function OperatorsPage() {
     };
 
     const confirmResetAllDevices = async () => {
-        await safeApiRequest('/api/operators/reset-devices', { method: 'POST' });
-        loadData(true);
+        const res = await safeApiRequest('/api/operators/reset-devices', { method: 'POST' });
         setIsResetAllConfirmOpen(false);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudieron resetear los dispositivos'), 'error');
+            return;
+        }
+        loadData(true);
         showToast('Se han reseteado los dispositivos de todos los operadores.', 'success');
     };
 
@@ -201,13 +234,17 @@ export default function OperatorsPage() {
     const confirmResetDevice = async () => {
         if (!operatorToReset) return;
         const id = operatorToReset;
-        await safeApiRequest(`/api/operators?id=${id}`, {
+        const res = await safeApiRequest(`/api/operators?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ primaryDeviceId: null })
         });
-        loadData(true);
         setIsResetDeviceConfirmOpen(false);
         setOperatorToReset(null);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo resetear el dispositivo'), 'error');
+            return;
+        }
+        loadData(true);
         showToast('El dispositivo del operador ha sido reseteado.', 'success');
     };
 
@@ -242,7 +279,7 @@ export default function OperatorsPage() {
                 <div className="space-y-1">
                     <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
                         <UsersIcon className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Gestión de Operadores
+                        Usuarios y accesos
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Controla el equipo técnico disponible</p>
                 </div>
@@ -374,9 +411,10 @@ export default function OperatorsPage() {
                                         className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-wider"
                                         value={formData.pin}
                                         onChange={e => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 8) })}
-                                        placeholder={editingOperator ? 'Dejar vacío para no cambiarlo' : 'Ej: 1234'}
+                                        placeholder={editingOperator ? 'Dejar vacío para no cambiarlo' : 'PIN inicial'}
                                         required={!editingOperator}
                                     />
+                                    <p className="field-hint px-1">Si el PIN es 1234, números repetidos o una escalera, la persona va a tener que elegir uno nuevo al ingresar.</p>
                                 </div>
 
                                 {editingOperator && currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
@@ -636,7 +674,7 @@ export default function OperatorsPage() {
             <ConfirmDialog
                 isOpen={isConfirmOpen}
                 title="Eliminar Operador"
-                message="¿Estás seguro de que deseas eliminar este operador? Esta acción no se puede deshacer."
+                message="Si tiene horas, fichadas u órdenes registradas, queda desactivado para conservar ese historial. Si no tiene nada, se elimina y no se puede deshacer."
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
             />

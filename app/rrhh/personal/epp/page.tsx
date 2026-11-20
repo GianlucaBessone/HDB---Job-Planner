@@ -24,7 +24,7 @@ import {
     getEppCatalog, 
     getEppRequests, 
     resolveEppRequest 
-} from './actions';
+} from '@/lib/rrhh/eppCliente';
 import EppMatrixTable from '@/components/rrhh/EppMatrixTable';
 import EppStockManager from '@/components/rrhh/EppStockManager';
 import EppOperatorDrawer from '@/components/rrhh/EppOperatorDrawer';
@@ -101,8 +101,7 @@ export default function EppManagementPage() {
         try {
             const res = await resolveEppRequest({
                 requestId,
-                accion,
-                resueltoPor: 'Administrador de RRHH'
+                accion
             });
 
             if (res.success) {

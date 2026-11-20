@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
-        const operatorId = searchParams.get('operatorId');
+        // Sin "herramientas.gestionar", solo los movimientos propios (se ignora ?operatorId).
+        const gestiona = acceso.puede('herramientas.gestionar');
+        const operatorId = gestiona ? searchParams.get('operatorId') : acceso.userId;
 
         const whereClause: any = { estado: 'ACTIVO' };
         if (operatorId) {

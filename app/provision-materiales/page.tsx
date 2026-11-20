@@ -2083,6 +2083,8 @@ export default function ProvisionMaterialesPage() {
 
   const loadData = useCallback(async (showLoader = false) => {
     if (showLoader) setLoading(true);
+    // Corrige estados de materiales antes de listar (antes lo hacía el GET). Sin permiso, se lista igual.
+    await fetch('/api/provision-proyectos/reparar', { method: 'POST' }).catch(() => null);
     const res = await fetch(`/api/provision-proyectos?t=${Date.now()}`, {
       cache: "no-store",
     });

@@ -1,7 +1,9 @@
 import { prisma } from './prisma';
+import type { ClienteInput } from './clientes';
 import { generateCodigoProyecto } from '@/lib/codeGenerator';
 import { logAudit } from '@/lib/audit';
 import { hashPin, isPinHashed } from '@/lib/pinAuth';
+import { crearChecklistsPorEtiqueta } from '@/lib/proyectos/checklistsPorEtiqueta';
 
 export { prisma };
 
@@ -11,12 +13,45 @@ function withHashedPin<T extends { pin?: string }>(data: T): T {
     return data;
 }
 
+/** Usuario de la sesión que hace el cambio, para la auditoría. */
+export interface ActorAuditoria {
+    userId: string;
+    nombre: string;
+}
+
+function autor(actor?: ActorAuditoria) {
+    return actor ? { userId: actor.userId, userName: actor.nombre } : {};
+}
+
 function withoutPin<T extends { pin?: string } | null>(operator: T) {
     if (!operator) return operator;
     const { pin: _pin, ...rest } = operator as any;
     return rest;
 }
 
+
+// ── Borrado seguro ────────────────────────────────────────────────
+// Personas, clientes y proyectos con historial no se borran: se desactivan.
+// Borrarlos eliminaba en cascada horas, fichadas y órdenes firmadas (auditoría, X14).
+
+export interface ResultadoBaja {
+    modo: 'eliminado' | 'desactivado';
+    /** Qué historial impidió el borrado, con cantidades. */
+    historial: Record<string, number>;
+}
+
+function conHistorial(conteos: Record<string, number> | undefined | null): Record<string, number> {
+    const out: Record<string, number> = {};
+    for (const [k, v] of Object.entries(conteos || {})) if (v > 0) out[k] = v;
+    return out;
+}
+
+/** Texto para mostrar qué historial tiene un registro ("12 registros de horas, 3 órdenes…"). */
+export function describirHistorial(historial: Record<string, number>, etiquetas: Record<string, string>): string {
+    return Object.entries(historial)
+        .map(([k, n]) => `${n} ${etiquetas[k] || k}`)
+        .join(', ');
+}
 
 export const dataLayer = {
     // Projects
@@ -81,7 +116,6 @@ export const dataLayer = {
         noEnMetricas?: boolean;
         observaciones?: string;
         horasEstimadas?: number;
-        horasConsumidas?: number;
         cliente?: string;
         clientId?: string;
         responsable?: string;
@@ -102,8 +136,11 @@ export const dataLayer = {
         qrToken?: string;
         fichajeHabilitado?: boolean;
         proyectoFijo?: boolean;
-    }) {
+    }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
+        // Project.horasConsumidas se calcula solo desde el registro de tiempos
+        // (app/api/time-entries/route.ts): se ignora si viene en el body.
+        delete (sanitizedData as { horasConsumidas?: unknown }).horasConsumidas;
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
         if (sanitizedData.responsableId === "") delete sanitizedData.responsableId;
         if (sanitizedData.listaPrecioId === "") sanitizedData.listaPrecioId = null;
@@ -120,72 +157,11 @@ export const dataLayer = {
 
         // Automated checklist based on tags — merge static templates + DB templates
         if (data.tags && data.tags.length > 0) {
-            // Import static templates
-            const { CHECKLIST_TEMPLATES } = require('@/lib/checklistTemplates');
-
-            // Get DB-defined templates
-            const tagTemplates = await prisma.projectTag.findMany({
-                where: { name: { in: data.tags } },
-                include: {
-                    checklists: { where: { active: true } },
-                    templates: {
-                        include: {
-                            checklistTemplate: true
-                        }
-                    }
-                }
-            });
-
-            for (const tagName of data.tags) {
-                // Merge: static + DB (deduplicate)
-                const staticItems: string[] = CHECKLIST_TEMPLATES[tagName] || [];
-                const dbTag = tagTemplates.find(t => t.name === tagName);
-                const dbItems: string[] = dbTag ? dbTag.checklists.map((c: any) => c.description) : [];
-                const allDescriptions = Array.from(new Set([...staticItems, ...dbItems]));
-
-                for (const desc of allDescriptions) {
-                    await prisma.checklistItem.create({
-                        data: {
-                            projectId: project.id,
-                            tag: tagName,
-                            description: desc,
-                            completed: false
-                        }
-                    });
-                }
-
-                // NEW: Create DocumentChecklist snapshots from ChecklistTemplates
-                if (dbTag?.templates) {
-                    let order = 0;
-                    for (const link of dbTag.templates) {
-                        const tmpl = link.checklistTemplate;
-                        if (tmpl.status !== 'active') continue;
-
-                        await prisma.documentChecklist.create({
-                            data: {
-                                projectId: project.id,
-                                templateId: tmpl.id,
-                                templateVersion: tmpl.version,
-                                templateName: tmpl.name,
-                                snapshotData: {
-                                    requiresEvidence: tmpl.requiresEvidence,
-                                    requiresPhotos: tmpl.requiresPhotos,
-                                    requiresSignature: tmpl.requiresSignature,
-                                    riskLevel: tmpl.riskLevel,
-                                    items: tmpl.checklistItems
-                                } as any,
-                                editable: false,
-                                mandatory: true,
-                                order: order++,
-                                status: 'pending'
-                            }
-                        });
-                    }
-                }
-            }
+            await crearChecklistsPorEtiqueta(prisma, project.id, data.tags);
         }
 
         await logAudit({
+            ...autor(actor),
             action: 'CREATE',
             entity: 'PROJECT',
             entityId: project.id,
@@ -200,7 +176,6 @@ export const dataLayer = {
         noEnMetricas?: boolean;
         observaciones?: string;
         horasEstimadas?: number;
-        horasConsumidas?: number;
         cliente?: string;
         clientId?: string;
         responsable?: string;
@@ -222,8 +197,10 @@ export const dataLayer = {
         qrToken?: string;
         fichajeHabilitado?: boolean;
         proyectoFijo?: boolean;
-    }) {
+    }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
+        // Project.horasConsumidas no se edita a mano: lo mantiene el registro de tiempos.
+        delete (sanitizedData as { horasConsumidas?: unknown }).horasConsumidas;
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
         if (sanitizedData.responsableId === "") sanitizedData.responsableId = null as any;
         if (sanitizedData.listaPrecioId === "") sanitizedData.listaPrecioId = null as any;
@@ -241,6 +218,7 @@ export const dataLayer = {
         const project = await prisma.project.update({ where: { id }, data: sanitizedData as any });
 
         await logAudit({
+            ...autor(actor),
             action: 'UPDATE',
             entity: 'PROJECT',
             entityId: project.id,
@@ -422,18 +400,46 @@ export const dataLayer = {
         return project;
     },
 
-    async deleteProject(id: string) {
-        const oldProject = await prisma.project.findUnique({ where: { id } });
-        const res = await prisma.project.delete({ where: { id } });
-        
+    async deleteProject(id: string, actor?: ActorAuditoria): Promise<ResultadoBaja> {
+        const oldProject = await prisma.project.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        timeEntries: true, fichadas: true, ordenesServicio: true, ordenesTrabajo: true,
+                        materialesProyecto: true, technicalReports: true, logs: true, clientDelays: true,
+                        encuestas: true, viajes: true, tareas: true,
+                    },
+                },
+            },
+        });
+        if (!oldProject) throw new Error('Proyecto no encontrado');
+        const { _count, ...datos } = oldProject;
+        const historial = conHistorial(_count);
+
+        if (Object.keys(historial).length > 0) {
+            await prisma.project.update({ where: { id }, data: { activo: false } });
+            await logAudit({
+                ...autor(actor),
+                action: 'UPDATE',
+                entity: 'PROJECT',
+                entityId: id,
+                oldValue: { activo: datos.activo },
+                newValue: { activo: false },
+                metadata: { message: 'Desactivado en lugar de eliminado: tiene historial', historial },
+            });
+            return { modo: 'desactivado', historial };
+        }
+
+        await prisma.project.delete({ where: { id } });
         await logAudit({
+            ...autor(actor),
             action: 'DELETE',
             entity: 'PROJECT',
             entityId: id,
-            oldValue: oldProject
+            oldValue: datos
         });
-
-        return res;
+        return { modo: 'eliminado', historial };
     },
 
     // Operators
@@ -442,12 +448,13 @@ export const dataLayer = {
             orderBy: { nombreCompleto: 'asc' }
         });
     },
-    async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; dni?: string; posicion?: string }) {
+    async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; dni?: string; posicion?: string }, actor?: ActorAuditoria) {
         const operator = await prisma.operator.create({
             data: { ...withHashedPin({ ...data, pin: data.pin || '1234' }), etiquetas: data.etiquetas as any }
         });
 
         await logAudit({
+            ...autor(actor),
             action: 'CREATE',
             entity: 'OPERATOR',
             entityId: operator.id,
@@ -464,7 +471,7 @@ export const dataLayer = {
 
         return operator;
     },
-    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; dni?: string; posicion?: string; primaryDeviceId?: string | null }) {
+    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; dni?: string; posicion?: string; primaryDeviceId?: string | null }, actor?: ActorAuditoria) {
         const updateData: any = withHashedPin({ ...data });
         if (data.etiquetas) updateData.etiquetas = data.etiquetas as any;
         
@@ -472,6 +479,7 @@ export const dataLayer = {
         const operator = await prisma.operator.update({ where: { id }, data: updateData });
 
         await logAudit({
+            ...autor(actor),
             action: 'UPDATE',
             entity: 'OPERATOR',
             entityId: operator.id,
@@ -490,25 +498,55 @@ export const dataLayer = {
 
         return operator;
     },
-    async deleteOperator(id: string) {
-        const oldOperator = await prisma.operator.findUnique({ where: { id } });
-        const res = await prisma.operator.delete({ where: { id } });
+    async deleteOperator(id: string, actor?: ActorAuditoria): Promise<ResultadoBaja> {
+        const oldOperator = await prisma.operator.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        timeEntries: true, fichadas: true, ordenesServicio: true, otCicloOperadores: true,
+                        ordenesTrabajoCreadas: true, ordenesTrabajoResponsable: true, eppDeliveries: true,
+                        toolMovements: true, ventasRealizadas: true, cotizacionesRealizadas: true,
+                        viajesResponsable: true, technicalReports: true, projectLogs: true, responsibleProjects: true,
+                    },
+                },
+            },
+        });
+        if (!oldOperator) throw new Error('Usuario no encontrado');
+        const { _count, ...datos } = oldOperator;
+        const historial = conHistorial(_count);
 
+        if (Object.keys(historial).length > 0) {
+            await prisma.operator.update({ where: { id }, data: { activo: false } });
+            await logAudit({
+                ...autor(actor),
+                action: 'UPDATE',
+                entity: 'OPERATOR',
+                entityId: id,
+                oldValue: { activo: datos.activo },
+                newValue: { activo: false },
+                metadata: { message: 'Desactivado en lugar de eliminado: tiene historial', historial },
+            });
+            return { modo: 'desactivado', historial };
+        }
+
+        await prisma.operator.delete({ where: { id } });
         await logAudit({
+            ...autor(actor),
             action: 'DELETE',
             entity: 'OPERATOR',
             entityId: id,
-            oldValue: withoutPin(oldOperator)
+            oldValue: withoutPin(datos)
         });
-
-        return res;
+        return { modo: 'eliminado', historial };
     },
-    async resetAllDevices() {
+    async resetAllDevices(actor?: ActorAuditoria) {
         const res = await prisma.operator.updateMany({
             data: { primaryDeviceId: null }
         });
         
         await logAudit({
+            ...autor(actor),
             action: 'UPDATE',
             entity: 'OPERATOR',
             entityId: 'ALL',
@@ -558,6 +596,9 @@ export const dataLayer = {
             select: {
                 id: true,
                 nombre: true,
+                razonSocial: true,
+                cuit: true,
+                condicionIva: true,
                 email: true,
                 telefono: true,
                 direccion: true,
@@ -576,18 +617,52 @@ export const dataLayer = {
             orderBy: { nombre: 'asc' }
         });
     },
-    async createClient(data: { nombre: string; email?: string; telefono?: string; direccion?: string; activo?: boolean; listaPrecioId?: string | null }) {
-        const cleanData = { ...data };
-        if (cleanData.listaPrecioId === '') cleanData.listaPrecioId = null;
-        return await prisma.hdbClient.create({ data: cleanData });
+    // Los datos llegan validados por clienteSchema (lib/clientes.ts).
+    async createClient(data: ClienteInput) {
+        return await prisma.hdbClient.create({ data });
     },
-    async updateClient(id: string, data: { nombre?: string; email?: string; telefono?: string; direccion?: string; activo?: boolean; listaPrecioId?: string | null }) {
-        const cleanData = { ...data };
-        if (cleanData.listaPrecioId === '') cleanData.listaPrecioId = null;
-        return await prisma.hdbClient.update({ where: { id }, data: cleanData });
+    async updateClient(id: string, data: Partial<ClienteInput>) {
+        return await prisma.hdbClient.update({ where: { id }, data });
     },
-    async deleteClient(id: string) {
-        return await prisma.hdbClient.delete({ where: { id } });
+    async deleteClient(id: string, actor?: ActorAuditoria): Promise<ResultadoBaja> {
+        const oldClient = await prisma.hdbClient.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        projects: true, ordenesTrabajo: true, ventas: true, cotizaciones: true,
+                        cuentaCorrienteMovs: true, presupuestosServicio: true, pliegos: true, technicalReports: true,
+                    },
+                },
+            },
+        });
+        if (!oldClient) throw new Error('Cliente no encontrado');
+        const { _count, ...datos } = oldClient;
+        const historial = conHistorial(_count);
+
+        if (Object.keys(historial).length > 0) {
+            await prisma.hdbClient.update({ where: { id }, data: { activo: false } });
+            await logAudit({
+                ...autor(actor),
+                action: 'UPDATE',
+                entity: 'CLIENT',
+                entityId: id,
+                oldValue: { activo: datos.activo },
+                newValue: { activo: false },
+                metadata: { message: 'Desactivado en lugar de eliminado: tiene historial', historial },
+            });
+            return { modo: 'desactivado', historial };
+        }
+
+        await prisma.hdbClient.delete({ where: { id } });
+        await logAudit({
+            ...autor(actor),
+            action: 'DELETE',
+            entity: 'CLIENT',
+            entityId: id,
+            oldValue: datos
+        });
+        return { modo: 'eliminado', historial };
     },
 
     // Client Delays

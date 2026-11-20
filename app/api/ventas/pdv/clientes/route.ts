@@ -10,6 +10,8 @@ export async function GET(req: NextRequest) {
     if (search) {
       where.OR = [
         { nombre: { contains: search, mode: 'insensitive' } },
+        { razonSocial: { contains: search, mode: 'insensitive' } },
+        { cuit: { contains: search } },
         { email: { contains: search, mode: 'insensitive' } },
         { telefono: { contains: search, mode: 'insensitive' } },
         { direccion: { contains: search, mode: 'insensitive' } },
@@ -23,6 +25,9 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         nombre: true,
+        razonSocial: true,
+        cuit: true,
+        condicionIva: true,
         email: true,
         telefono: true,
         direccion: true,

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar documentos';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,6 +74,12 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+        // Quien actúa es siempre el usuario de la sesión: se ignoran userId / userName del pedido.
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
         const data = await req.json();
         const {
             titulo, tipoDocumento, area, estado,
@@ -80,8 +89,7 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
             tags, operatorIds, observaciones, proximaRevision, validezMeses,
-            descripcion, creatorSignature, subAccessId,
-            userId, userName
+            descripcion, creatorSignature, subAccessId
         } = data;
 
         const oldDoc = await prisma.controlledDocument.findUnique({ where: { id: params.id } }) as any;
@@ -212,9 +220,12 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
 export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['documentos.eliminar'], 'No tenés permiso para eliminar documentos');
+        if (acceso instanceof NextResponse) return acceso;
+
         const doc = await prisma.controlledDocument.findUnique({
             where: { id: params.id },
-            include: { versions: { select: { id: true } } }
+            include: { versions: { select: { id: true, estado: true } } }
         });
 
         if (!doc) {
@@ -222,6 +233,41 @@ export async function DELETE(req: Request, { params: paramsPromise }: { params: 
         }
 
         const versionIds = doc.versions.map(v => v.id);
+        const motivo = new URL(req.url).searchParams.get('motivo')?.trim() || null;
+
+        // Un documento con historial (versión aprobada, firmas, lecturas, capacitaciones,
+        // competencias, impresiones controladas o uso en OS) no se borra: se anula. ISO 9001
+        // exige conservar la información documentada y su trazabilidad.
+        const [firmas, lecturas, capacitaciones, competencias, impresiones, enOS] = await Promise.all([
+            prisma.documentSignatureAudit.count({ where: { DocumentID: params.id } }),
+            prisma.documentReadConfirmation.count({ where: { documentId: params.id } }),
+            prisma.technicianTraining.count({ where: { documentId: params.id } }),
+            prisma.technicianCompetency.count({ where: { documentId: params.id } }),
+            prisma.documentPrint.count({ where: { documentId: params.id } }),
+            prisma.ordenServicioDocumento.count({ where: { documentId: params.id } }),
+        ]);
+        const versionesAprobadas = doc.versions.filter(v => ['vigente', 'obsoleto', 'obsoleta'].includes(v.estado)).length;
+        const historial = Object.fromEntries(Object.entries({
+            versionesAprobadas, firmas, lecturas, capacitaciones, competencias, impresiones, enOS,
+        }).filter(([, n]) => n > 0));
+
+        if (Object.keys(historial).length > 0 || doc.estado === 'vigente' || doc.estado === 'obsoleto') {
+            if (doc.estado === 'anulado') {
+                return NextResponse.json({ error: 'El documento ya está anulado' }, { status: 409 });
+            }
+            await prisma.controlledDocument.update({ where: { id: params.id }, data: { estado: 'anulado' } });
+            await logAudit({
+                userId: acceso.userId,
+                userName: acceso.nombre,
+                action: 'UPDATE',
+                entity: 'CONTROLLED_DOCUMENT',
+                entityId: params.id,
+                oldValue: { estado: doc.estado },
+                newValue: { estado: 'anulado' },
+                metadata: { message: 'Anulado en lugar de eliminado: tiene historial', motivo, historial },
+            });
+            return NextResponse.json({ ok: true, modo: 'anulado', historial, message: 'El documento tiene historial: quedó anulado y se conserva su trazabilidad' });
+        }
 
         await prisma.$transaction(async (tx) => {
             // 1. Desvincular documentos que lo tengan como documentoReemplazadoId
@@ -313,18 +359,20 @@ export async function DELETE(req: Request, { params: paramsPromise }: { params: 
             await tx.controlledDocument.delete({
                 where: { id: params.id }
             });
-
-            // 14. Purgar registros de auditoría y firmas ("sin registro")
-            await tx.documentSignatureAudit.deleteMany({
-                where: { DocumentID: params.id }
-            });
-
-            await tx.auditLog.deleteMany({
-                where: { entityId: params.id }
-            });
         });
 
-        return NextResponse.json({ ok: true, message: 'Documento e historial de versiones eliminados sin registro' });
+        // Borrador sin historial: se borra, pero la auditoría se conserva y registra la baja.
+        await logAudit({
+            userId: acceso.userId,
+            userName: acceso.nombre,
+            action: 'DELETE',
+            entity: 'CONTROLLED_DOCUMENT',
+            entityId: params.id,
+            oldValue: { codigo: (doc as any).codigoDocumental, titulo: doc.titulo, estado: doc.estado },
+            metadata: { motivo },
+        });
+
+        return NextResponse.json({ ok: true, modo: 'eliminado', message: 'Borrador eliminado' });
     } catch (e: any) {
         console.error('Error al eliminar documento:', e);
         return NextResponse.json({ error: 'Error al eliminar documento', details: e.message }, { status: 500 });

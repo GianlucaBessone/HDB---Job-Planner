@@ -1,17 +1,24 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { action } = body;
 
         if (action === 'acknowledge') {
-            const { osDocumentoId, operatorId, operatorNombre, gpsLat, gpsLng, ip, dispositivo } = body;
+            const { osDocumentoId, gpsLat, gpsLng, ip, dispositivo } = body;
+            // Quien confirma la lectura es el usuario de la sesión.
+            const operatorId = acceso.userId;
+            const operatorNombre = acceso.nombre;
 
             // Upsert to allow re-confirming but we only care about the record
             const ack = await prisma.oSDocumentAcknowledgement.create({
@@ -61,11 +68,16 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
 export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { action } = body;
 
         if (action === 'document_checklist_item') {
-            const { documentChecklistId, itemIndex, completado, observacion, foto, firma, operatorId, operatorNombre } = body;
+            const { documentChecklistId, itemIndex, completado, observacion, foto, firma } = body;
+            const operatorId = acceso.userId;
+            const operatorNombre = acceso.nombre;
 
             const docChecklist = await prisma.documentChecklist.findUnique({
                 where: { id: documentChecklistId }
@@ -118,7 +130,8 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
         }
 
         if (action === 'checklist_item') {
-            const { itemId, completado, observaciones, operatorId } = body;
+            const { itemId, completado, observaciones } = body;
+            const operatorId = acceso.userId;
 
             const item = await prisma.oSChecklistItem.update({
                 where: { id: itemId },

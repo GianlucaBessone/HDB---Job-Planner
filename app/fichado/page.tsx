@@ -38,12 +38,22 @@ interface Project {
     qrToken: string | null;
 }
 
+// Destino posible según el GPS. id '' = Base / Empresa.
+interface DestinoCandidato {
+    id: string;
+    nombre: string;
+    distancia: number;
+    asignado: boolean;
+}
+
 export default function PunchInPage() {
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [projects, setProjects] = useState<Project[]>([]);
     const [activeEntries, setActiveEntries] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+    const [candidatos, setCandidatos] = useState<DestinoCandidato[]>([]);
+    const [proyectosAsignadosHoy, setProyectosAsignadosHoy] = useState<string[]>([]);
     const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
     const [isRefreshingLocation, setIsRefreshingLocation] = useState(false);
@@ -114,15 +124,28 @@ export default function PunchInPage() {
     const loadData = async (userId: string) => {
         setIsLoading(true);
         try {
-            const [projectsRes, entriesRes, systemRes] = await Promise.all([
+            const hoy = new Date().toLocaleDateString("en-CA", { timeZone: "America/Argentina/Buenos_Aires" });
+            const [projectsRes, entriesRes, systemRes, planningRes] = await Promise.all([
                 safeApiRequest('/api/projects').then(res => res.json()),
                 safeApiRequest(`/api/fichadas?operatorId=${userId}&openOnly=true`).then(res => res.json()),
-                safeApiRequest('/api/config/system').then(res => res.json())
+                safeApiRequest('/api/config/system').then(res => res.json()),
+                // La planificación solo desempata destinos superpuestos: si falla, se sigue sin ella.
+                safeApiRequest(`/api/planning?fecha=${hoy}`).then(res => res.json()).catch(() => null)
             ]);
-            
+
             setProjects(Array.isArray(projectsRes) ? filterOperatorProjects(projectsRes) : []);
             setActiveEntries(Array.isArray(entriesRes) ? entriesRes.filter((e: any) => !e.horaEgreso) : []);
             setSystemSetting(systemRes && !systemRes.error ? systemRes : null);
+
+            const blocks: any[] = Array.isArray(planningRes?.blocks) ? planningRes.blocks : [];
+            const asignados = blocks
+                .filter(b => {
+                    let ids: unknown = b?.operatorIds;
+                    if (typeof ids === 'string') { try { ids = JSON.parse(ids); } catch { ids = []; } }
+                    return b?.projectId && Array.isArray(ids) && ids.includes(userId);
+                })
+                .map(b => b.projectId as string);
+            setProyectosAsignadosHoy(Array.from(new Set(asignados)));
         } catch (err) {
             console.error(err);
         } finally {
@@ -163,34 +186,39 @@ export default function PunchInPage() {
         return R * c;
     };
 
-    // Auto-select project based on GPS
+    // Destino según GPS. Si la ubicación cae en varias geovallas (base y/o proyectos superpuestos):
+    // 1) proyecto asignado hoy en la planificación, 2) base, 3) proyecto con centro más cercano.
+    // Con más de un candidato, el operador puede cambiar el destino propuesto.
     useEffect(() => {
-        if (!location || validationMode === 'qr') return;
-        
-        let foundProjId = ''; // Default to base/out of bounds
-        
-        // 1. Check if inside Base geofence first
+        if (!location || validationMode === 'qr') {
+            setCandidatos([]);
+            return;
+        }
+
+        const encontrados: DestinoCandidato[] = [];
+
         if (systemSetting?.companyGeofenceLat && systemSetting?.companyGeofenceLng && systemSetting?.companyGeofenceRadius) {
             const dist = getDistance(location.lat, location.lng, systemSetting.companyGeofenceLat, systemSetting.companyGeofenceLng);
             if (dist <= systemSetting.companyGeofenceRadius) {
-                setSelectedProjectId('');
-                return;
+                encontrados.push({ id: '', nombre: 'Base / Empresa', distancia: dist, asignado: false });
             }
         }
-        
-        // 2. Check all active projects
+
         for (const p of projects) {
             if (p.geofenceLat && p.geofenceLng && p.geofenceRadius) {
                 const dist = getDistance(location.lat, location.lng, p.geofenceLat, p.geofenceLng);
                 if (dist <= p.geofenceRadius) {
-                    foundProjId = p.id;
-                    break;
+                    encontrados.push({ id: p.id, nombre: p.nombre, distancia: dist, asignado: proyectosAsignadosHoy.includes(p.id) });
                 }
             }
         }
-        
-        setSelectedProjectId(foundProjId);
-    }, [location, projects, systemSetting, validationMode]);
+
+        const prioridad = (c: DestinoCandidato) => (c.asignado ? 0 : c.id === '' ? 1 : 2);
+        encontrados.sort((a, b) => prioridad(a) - prioridad(b) || a.distancia - b.distancia);
+
+        setCandidatos(encontrados);
+        setSelectedProjectId(encontrados[0]?.id ?? ''); // Fuera de toda geovalla = Base
+    }, [location, projects, systemSetting, validationMode, proyectosAsignadosHoy]);
 
     // Pre-validation: check geofence client-side before sending to backend
     const checkGeofenceClientSide = (): boolean => {
@@ -481,6 +509,38 @@ export default function PunchInPage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Geovallas superpuestas: el operador confirma o cambia el destino */}
+                    {validationMode === 'gps' && candidatos.length > 1 && (
+                        <div className="space-y-2">
+                            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                                Estás dentro de {candidatos.length} zonas. Elegí el destino:
+                            </p>
+                            <div role="radiogroup" aria-label="Destino de la jornada" className="space-y-2">
+                                {candidatos.map(c => {
+                                    const activo = c.id === selectedProjectId;
+                                    return (
+                                        <button
+                                            key={c.id || 'base'}
+                                            type="button"
+                                            role="radio"
+                                            aria-checked={activo}
+                                            onClick={() => setSelectedProjectId(c.id)}
+                                            className={`w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${activo ? 'border-primary bg-primary/10' : 'border-border bg-card hover:bg-muted'}`}
+                                        >
+                                            <span className="text-sm font-semibold text-foreground truncate">{c.nombre}</span>
+                                            <span className="flex items-center gap-2 shrink-0">
+                                                {c.asignado && (
+                                                    <span className="rounded-md bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">Asignado hoy</span>
+                                                )}
+                                                <span className="text-[11px] font-medium text-muted-foreground">{Math.round(c.distancia)} m</span>
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Validation UI based on mode */}
                     {validationMode === 'qr' ? (

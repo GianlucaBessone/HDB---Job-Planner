@@ -79,6 +79,8 @@ interface ItemCarrito {
   subtotal: number;
   precioModificado: boolean;
   motivoModificacion?: string | null;
+  /** Autorización firmada del supervisor que habilitó el cambio de precio (PIN). */
+  autorizacionPrecio?: string | null;
   stockActual: number;
   esFallbackPrecio?: boolean;
 }
@@ -570,7 +572,7 @@ export default function PdvPage() {
     setItemParaModificarPrecio(item);
   };
 
-  const handlePrecioModificado = (nuevoPrecio: number, motivo: string) => {
+  const handlePrecioModificado = (nuevoPrecio: number, motivo: string, autorizacion?: string | null) => {
     if (!itemParaModificarPrecio) return;
     const itemTarget = itemParaModificarPrecio;
     setCarrito((prev) =>
@@ -585,6 +587,7 @@ export default function PdvPage() {
           precioUnitario: nuevoPrecio,
           precioModificado: true,
           motivoModificacion: motivo,
+          autorizacionPrecio: autorizacion || null,
           descuentoMonto,
           subtotal,
         };
@@ -814,7 +817,6 @@ export default function PdvPage() {
 
     const payload = {
       cotizacionId: cotizacionOrigen?.id || null,
-      autorizadoPorSupervisor: true,
       clienteId: cliente.id,
       clienteNombre: cliente.nombre,
       clienteIdentificacion: cliente.identificacion,
@@ -836,6 +838,7 @@ export default function PdvPage() {
         ivaPorcentaje: it.ivaPorcentaje,
         precioModificado: it.precioModificado,
         motivoModificacion: it.motivoModificacion,
+        autorizacionPrecio: it.autorizacionPrecio || null,
       })),
       pagos: datosCobro.pagos,
       observaciones: datosCobro.observaciones,
@@ -846,9 +849,6 @@ export default function PdvPage() {
       headers: {
         'Content-Type': 'application/json',
         'X-Idempotency-Key': datosCobro.idempotencyKey,
-        'x-user-id': currentUser?.id || '',
-        'x-user-name': activeVendorName,
-        'x-user-role': currentUser?.role || '',
       },
       body: JSON.stringify(payload),
     });

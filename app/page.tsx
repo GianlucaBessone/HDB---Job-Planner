@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { MiDia } from "@/components/inicio/MiDia";
 import { useRouter } from "next/navigation";
 import {
   Check,
@@ -22,6 +23,7 @@ import {
 import { renderIcon } from "@/lib/iconRegistry";
 import {
   getRecentViews,
+  prefsUserId,
   getFavorites,
   setFavorites as saveFavorites,
   getHomePrefs,
@@ -92,7 +94,7 @@ export default function HomePage() {
         setUserData(user);
         setUserRole(user.role?.toLowerCase() || "operador");
         setUserName(user.nombreCompleto || "Usuario");
-        const uid = user.legajo || "default";
+        const uid = prefsUserId(user);
         setUserId(uid);
         setFavoritesLocal(getFavorites(uid));
         setRecentKeys(getRecentViews(uid));
@@ -249,6 +251,9 @@ export default function HomePage() {
           </button>
         </div>
       </header>
+
+      {/* Mi día: jornada, agenda y pendientes */}
+      {!isSearching && <MiDia />}
 
       {/* Personalización */}
       {editMode && (

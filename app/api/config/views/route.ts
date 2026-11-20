@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +33,13 @@ export async function GET() {
 
 export async function PUT(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.vistas'], 'No tenés permiso para configurar las vistas por rol');
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
+        if (!Array.isArray(body)) {
+            return NextResponse.json({ error: 'Se esperaba la lista de vistas' }, { status: 400 });
+        }
         // body is an array of ViewConfig objects
         const views: Array<{
             key: string;
@@ -70,6 +78,16 @@ export async function PUT(req: Request) {
                 }
             });
         }
+
+        // Cambiar los roles de una vista es un cambio de accesos: queda en Auditoría.
+        await logAudit({
+            userId: acceso.userId,
+            userName: acceso.nombre,
+            action: 'UPDATE',
+            entity: 'VIEW_ACCESS',
+            entityId: 'ALL',
+            newValue: views.map(v => ({ key: v.key, roles: v.roles, access: v.access })),
+        });
 
         return NextResponse.json({ ok: true });
     } catch (error) {

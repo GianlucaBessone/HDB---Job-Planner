@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateToolIds } from '@/lib/codeGenerator';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['herramientas.gestionar'], 'No tenés permiso para gestionar herramientas y carros');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { toolId, cantidad, carroId } = await req.json();
 
         if (!toolId) {

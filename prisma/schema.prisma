@@ -64,6 +64,11 @@ model Project {
   viajes                  Viaje[]
   pliegos                 Pliego[]
 
+  // Presupuestos de servicio (relaciones inversas: no agregan columnas a Project)
+  presupuestoServicio     PresupuestoServicio?
+  proyectoTareas          ProyectoTarea[]
+  asignacionesOperadores  ProyectoAsignacion[]
+
   @@index([qrToken])
 }
 
@@ -208,6 +213,9 @@ model Operator {
   viajesResponsable         Viaje[]                     @relation("ViajeResponsable")
   viajesCreados             Viaje[]                     @relation("ViajeCreador")
   viajesParticipante        ViajeParticipante[]
+
+  // Proyectos: operadores asignados desde el wizard de creación
+  proyectoAsignaciones      ProyectoAsignacion[]
 }
 
 model FavoriteBlock {
@@ -233,6 +241,11 @@ model Planning {
 model HdbClient {
   id                        String                      @id @default(cuid())
   nombre                    String
+  // Datos fiscales (prisma/sql/20261120_clientes_datos_fiscales). Opcionales: los clientes
+  // existentes no los tienen. Ventas y cotizaciones los toman de acá en vez de tipearlos.
+  razonSocial               String?
+  cuit                      String?                     // Formato 30-12345678-9
+  condicionIva              String?                     // CONDICIONES_IVA de lib/ventas/proveedorVentas.ts
   email                     String?
   telefono                  String?
   direccion                 String?
@@ -260,7 +273,11 @@ model HdbClient {
   // Operaciones
   pliegos                   Pliego[]
 
+  // Presupuestos de servicio
+  presupuestosServicio      PresupuestoServicio[]
+
   @@index([listaPrecioId])
+  @@index([cuit])
 }
 
 model TimeEntry {
@@ -2651,6 +2668,7 @@ model ListaPrecio {
   clients          HdbClient[]
   ventas           Venta[]
   cotizaciones     Cotizacion[]
+  presupuestoServicioVersiones PresupuestoServicioVersion[]
 
   @@index([tipoAjuste])
   @@index([aplicaA])
@@ -2731,6 +2749,7 @@ model Producto {
   ordenesServicioMateriales OrdenServicioMaterial[]
   ventaItems                VentaItem[]
   cotizacionItems           CotizacionItem[]
+  presupuestoServicioMateriales PresupuestoServicioMaterial[]
   conteoDetalles            ConteoInventarioDetalle[]
 
   @@index([sku])
@@ -3985,4 +4004,225 @@ model OperatorPermiso {
 
   @@unique([operatorId, clave])
   @@index([operatorId])
+}
+
+// ════════════════════════════════════════════════════════════════════
+// PRESUPUESTOS DE SERVICIO — mano de obra + materiales → proyecto
+// Tablas nuevas y aditivas. Migración: prisma/sql/20261118_presupuestos_servicio
+// El vínculo con el proyecto vive en PresupuestoServicio.proyectoId (Project no cambia).
+// ════════════════════════════════════════════════════════════════════
+
+// Catálogo de categorías de mano de obra (Oficial, Medio oficial, Ayudante…).
+// Se edita desde Ventas y Comercial › Presupuestos de servicios › Mano de obra.
+model ManoObraCategoria {
+  id            String                        @id @default(cuid())
+  nombre        String                        @unique
+  valorHora     Float                         @default(0)
+  ivaPorcentaje Float                         @default(21)
+  orden         Int                           @default(0)
+  activo        Boolean                       @default(true)
+  createdAt     DateTime                      @default(now())
+  updatedAt     DateTime                      @updatedAt
+  lineas        PresupuestoServicioManoObra[]
+}
+
+model PresupuestoServicioCounter {
+  year          Int @id
+  currentNumber Int @default(0)
+}
+
+// Cabecera estable del presupuesto. El contenido vive en sus versiones.
+model PresupuestoServicio {
+  id               String                       @id @default(cuid())
+  numero           String                       @unique // PS-2026-000001
+  clienteId        String?
+  cliente          HdbClient?                   @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  clienteNombre    String
+  titulo           String
+  estado           String                       @default("borrador") // borrador | enviado | aceptado | rechazado | vencido
+  versionActual    Int                          @default(1)
+  fechaVencimiento String? // YYYY-MM-DD: validez de la versión enviada
+  motivoRechazo    String?
+  proyectoId       String?                      @unique
+  proyecto         Project?                     @relation(fields: [proyectoId], references: [id], onDelete: SetNull)
+  convertidoEn     DateTime?
+  convertidoPorId  String?
+  creadoPorId      String?
+  creadoPorNombre  String?
+  createdAt        DateTime                     @default(now())
+  updatedAt        DateTime                     @updatedAt
+  versiones        PresupuestoServicioVersion[]
+  snapshot         PresupuestoServicioSnapshot?
+
+  @@index([clienteId])
+  @@index([estado])
+  @@index([createdAt])
+}
+
+// Una fila por revisión. Solo la última, en borrador, se puede editar.
+model PresupuestoServicioVersion {
+  id                   String                        @id @default(cuid())
+  presupuestoId        String
+  presupuesto          PresupuestoServicio           @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+  version              Int
+  estado               String                        @default("borrador") // borrador | enviada | reemplazada | aceptada | rechazada
+  alcance              String?                       @db.Text
+  fechaInicioTentativa String? // YYYY-MM-DD
+  fechaFinTentativa    String? // YYYY-MM-DD
+  operariosSimultaneos Int                           @default(1)
+  horasDia             Float                         @default(8) // jornada de trabajo para estimar el plazo
+  validezDias          Int                           @default(15)
+  listaPrecioId        String?
+  listaPrecio          ListaPrecio?                  @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  listaPrecioNombre    String?
+  ivaDiscriminado      Boolean                       @default(true)
+  descuentoPorcentaje  Float                         @default(0)
+  horasTotales         Float                         @default(0)
+  subtotalManoObra     Float                         @default(0)
+  subtotalMateriales   Float                         @default(0)
+  descuentoMonto       Float                         @default(0)
+  neto                 Float                         @default(0)
+  impuestos            Float                         @default(0)
+  total                Float                         @default(0)
+  condiciones          String?                       @db.Text
+  opcionesDocumento    Json? // { nivel: 1-4, cantidades, horas, tareas, plazo, condiciones }
+  notaRevision         String?
+  creadoPorId          String?
+  creadoPorNombre      String?
+  enviadaEn            DateTime?
+  enviadaPorId         String?
+  createdAt            DateTime                      @default(now())
+  updatedAt            DateTime                      @updatedAt
+  tareas               PresupuestoServicioTarea[]
+  materiales           PresupuestoServicioMaterial[]
+  snapshot             PresupuestoServicioSnapshot?
+
+  @@unique([presupuestoId, version])
+  @@index([presupuestoId])
+  @@index([listaPrecioId])
+}
+
+model PresupuestoServicioTarea {
+  id          String                        @id @default(cuid())
+  versionId   String
+  version     PresupuestoServicioVersion    @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  orden       Int                           @default(0)
+  descripcion String
+  etiqueta    String? // etiqueta técnica (ProjectTag.name)
+  horas       Float                         @default(0) // suma de sus líneas de mano de obra
+  importe     Float                         @default(0)
+  manoObra    PresupuestoServicioManoObra[]
+
+  @@index([versionId])
+}
+
+// Línea de mano de obra de una tarea. modo: manual | costo (importe = horas × valor hora)
+// | tiempo (horas = importe ÷ valor hora). Todos los valores quedan editables.
+model PresupuestoServicioManoObra {
+  id              String                   @id @default(cuid())
+  tareaId         String
+  tarea           PresupuestoServicioTarea @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  orden           Int                      @default(0)
+  categoriaId     String?
+  categoria       ManoObraCategoria?       @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  categoriaNombre String
+  modo            String                   @default("costo")
+  horas           Float                    @default(0)
+  valorHora       Float                    @default(0)
+  importe         Float                    @default(0)
+  ivaPorcentaje   Float                    @default(21)
+
+  @@index([tareaId])
+  @@index([categoriaId])
+}
+
+model PresupuestoServicioMaterial {
+  id               String                     @id @default(cuid())
+  versionId        String
+  version          PresupuestoServicioVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  orden            Int                        @default(0)
+  productoId       String?
+  producto         Producto?                  @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  sku              String?
+  descripcion      String
+  unidad           String?
+  cantidad         Float                      @default(1)
+  precioUnitario   Float                      @default(0)
+  precioModificado Boolean                    @default(false)
+  ivaPorcentaje    Float                      @default(21)
+  subtotal         Float                      @default(0)
+
+  @@index([versionId])
+  @@index([productoId])
+}
+
+// Copia congelada de la versión aceptada. Solo INSERT: un trigger rechaza UPDATE y DELETE.
+model PresupuestoServicioSnapshot {
+  id                String                     @id @default(cuid())
+  presupuestoId     String                     @unique
+  presupuesto       PresupuestoServicio        @relation(fields: [presupuestoId], references: [id], onDelete: Restrict)
+  versionId         String                     @unique
+  version           PresupuestoServicioVersion @relation(fields: [versionId], references: [id], onDelete: Restrict)
+  numeroVersion     Int
+  datos             Json
+  hashSha256        String
+  esquemaVersion    String                     @default("1.0")
+  fechaAceptacion   String // YYYY-MM-DD
+  referenciaCliente String?
+  comentario        String?
+  aceptadoPorId     String?
+  aceptadoPorNombre String?
+  createdAt         DateTime                   @default(now())
+}
+
+// Tareas del proyecto (precargadas del presupuesto o agregadas en el wizard).
+model ProyectoTarea {
+  id                 String    @id @default(cuid())
+  projectId          String
+  project            Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  presupuestoTareaId String?
+  origen             String    @default("manual") // presupuesto | manual
+  orden              Int       @default(0)
+  descripcion        String
+  etiqueta           String?
+  horasEstimadas     Float     @default(0)
+  completada         Boolean   @default(false)
+  completadaEn       DateTime?
+  completadaPorId    String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([projectId])
+}
+
+// Operadores asignados al proyecto en un rango de fechas. No escribe en Planning.
+model ProyectoAsignacion {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  operatorId  String
+  operator    Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  fechaDesde  String // YYYY-MM-DD
+  fechaHasta  String // YYYY-MM-DD
+  horasDia    Float    @default(8)
+  creadoPorId String?
+  createdAt   DateTime @default(now())
+
+  @@unique([projectId, operatorId])
+  @@index([operatorId])
+  @@index([fechaDesde, fechaHasta])
+}
+
+// Borrador del wizard de nuevo proyecto (no es un Project: no cuenta en KPI).
+model ProyectoBorrador {
+  id            String   @id @default(cuid())
+  creadoPorId   String
+  presupuestoId String?
+  titulo        String?
+  paso          Int      @default(1)
+  datos         Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([creadoPorId])
 }

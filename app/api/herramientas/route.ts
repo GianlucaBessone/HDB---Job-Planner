@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateToolId, generateToolIds } from '@/lib/codeGenerator';
 import { enriquecerTool } from '@/lib/toolControl';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,6 +75,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['herramientas.gestionar'], 'No tenés permiso para gestionar herramientas y carros');
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
         const {
             nombre, marca, descripcion, tipo, subtipo, rubro,

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireSGIRole } from '@/lib/sgiAuth';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa', 'operador']); // Broad access for dashboard
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['calidad.indicadores_capa', 'calidad.ver', 'calidad.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const acciones = await prisma.accionMejora.findMany({

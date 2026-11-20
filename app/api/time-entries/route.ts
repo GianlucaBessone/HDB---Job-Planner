@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 import { calculateHours } from '@/lib/timeUtils';
 
@@ -47,12 +49,55 @@ export async function GET(req: Request) {
     }
 }
 
+// Formatos que mandan Registro de tiempos y la campana (aprobar una modificación).
+const fechaSchema = z.string({ error: 'Falta la fecha' }).regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (AAAA-MM-DD)');
+/** "HH:mm" (o "HH:mm:ss"); vacío o null cuando no hay hora (p. ej. ausencias). */
+const horaSchema = z.union([z.literal(''), z.string().regex(/^\d{1,2}:\d{2}(:\d{2})?$/, 'Hora inválida (HH:mm)')]).nullish();
+const idSchema = z.string().trim().max(64);
+const textoSchema = z.string().max(2000).nullish();
+
+/** Usuario y rol salen de la sesión: requestUserId / requestUserRole del cuerpo se descartan. */
+const postSchema = z.object({
+    operatorId: z.string({ error: 'Falta el operador' }).trim().min(1, 'Falta el operador').max(64),
+    fecha: fechaSchema,
+    projectId: idSchema.nullish(),
+    causaRegistro: z.string().trim().max(200).nullish(),
+    horaIngreso: horaSchema,
+    horaEgreso: horaSchema,
+    isExtra: z.boolean().optional(),
+    isDevolucion: z.boolean().optional(),
+    descripcionDevolucion: textoSchema,
+});
+
+/** Campos ausentes conservan el valor guardado; null lo borra donde el campo lo admite. */
+const putSchema = z.object({
+    id: z.string({ error: 'Falta el id del registro' }).trim().min(1, 'Falta el id del registro').max(64),
+    fecha: fechaSchema.optional(),
+    projectId: idSchema.nullish(),
+    causaRegistro: z.string().trim().max(200).nullish(),
+    horaIngreso: horaSchema,
+    horaEgreso: horaSchema,
+    estadoConfirmado: z.boolean().optional(),
+    isExtra: z.boolean().optional(),
+    isDevolucion: z.boolean().optional(),
+    descripcionDevolucion: textoSchema,
+});
+
+function datosInvalidos(error: z.ZodError) {
+    return NextResponse.json({ error: error.issues[0]?.message || 'Datos inválidos' }, { status: 400 });
+}
+
 export async function POST(req: Request) {
     return withIdempotency(req, async () => {
         try {
-            const data = await req.json();
+            // Usuario y permisos salen de la sesión: se ignoran requestUserId / requestUserRole del cuerpo.
+            const acceso = await exigirAcceso(req);
+            if (acceso instanceof NextResponse) return acceso;
+            const gestionaHoras = acceso.puede('timesheets.gestionar_horas');
 
-            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion, requestUserId, requestUserRole } = data;
+            const parsed = postSchema.safeParse(await req.json().catch(() => null));
+            if (!parsed.success) return datosInvalidos(parsed.error);
+            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion } = parsed.data;
 
             // DEVOLUCIÓN requires a description
             if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
@@ -72,7 +117,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'No puede seleccionar Proyecto y Causa simultáneamente.' }, { status: 400 });
             }
 
-            if (requestUserRole === 'operador' && requestUserId !== operatorId) {
+            if (!gestionaHoras && operatorId !== acceso.userId) {
                 return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
             }
 
@@ -114,10 +159,9 @@ export async function POST(req: Request) {
             }
 
             // Audit
-            const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
             await logAudit({
-                userId: requestUserId,
-                userName: requestOperator?.nombreCompleto,
+                userId: acceso.userId,
+                userName: acceso.nombre,
                 action: 'CREATE',
                 entity: 'TIME_ENTRY',
                 entityId: entry.id,
@@ -136,8 +180,13 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
     try {
-        const data = await req.json();
-        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion, requestUserId, requestUserRole } = data;
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const gestionaHoras = acceso.puede('timesheets.gestionar_horas');
+
+        const parsed = putSchema.safeParse(await req.json().catch(() => null));
+        if (!parsed.success) return datosInvalidos(parsed.error);
+        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion } = parsed.data;
 
         // DEVOLUCIÓN requires a description
         if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
@@ -148,15 +197,13 @@ export async function PUT(req: Request) {
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
 
-        if (requestUserRole === 'operador' && existing.operatorId !== requestUserId) {
+        if (!gestionaHoras && existing.operatorId !== acceso.userId) {
             return NextResponse.json({ error: 'No tienes permisos para modificar los registros de otros operadores.' }, { status: 403 });
         }
 
-        // If it was already confirmed, restrict operators from editing
-        if (existing.estadoConfirmado) {
-            if (requestUserRole === 'operador') {
-                return NextResponse.json({ error: 'No tienes permisos para editar un día ya confirmado.' }, { status: 403 });
-            }
+        // Un día ya confirmado solo lo edita quien gestiona horas
+        if (existing.estadoConfirmado && !gestionaHoras) {
+            return NextResponse.json({ error: 'No tienes permisos para editar un día ya confirmado.' }, { status: 403 });
         }
 
         const oldProjectId = existing.projectId;
@@ -189,7 +236,10 @@ export async function PUT(req: Request) {
                 isDevolucion: newIsDevolucion,
                 descripcionDevolucion: newIsDevolucion ? ((descripcionDevolucion !== undefined ? descripcionDevolucion?.trim() : existing.descripcionDevolucion) || null) : null,
                 estadoConfirmado: estadoConfirmado !== undefined ? estadoConfirmado : existing.estadoConfirmado,
-                confirmadoPorSupervisor: estadoConfirmado ? requestUserId : null
+                // Solo cambia quién confirmó cuando se confirma o desconfirma; editar no lo borra
+                confirmadoPorSupervisor: estadoConfirmado === undefined
+                    ? existing.confirmadoPorSupervisor
+                    : (estadoConfirmado ? acceso.userId : null)
             }
         });
 
@@ -230,10 +280,9 @@ export async function PUT(req: Request) {
         }
 
         // Audit
-        const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
         await logAudit({
-            userId: requestUserId,
-            userName: requestOperator?.nombreCompleto,
+            userId: acceso.userId,
+            userName: acceso.nombre,
             action: 'UPDATE',
             entity: 'TIME_ENTRY',
             entityId: id,
@@ -250,24 +299,24 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const gestionaHoras = acceso.puede('timesheets.gestionar_horas');
+
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
-        const requestUserId = searchParams.get('requestUserId');
-        const requestUserRole = searchParams.get('requestUserRole');
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-        if (requestUserRole === 'operador' && existing.operatorId !== requestUserId) {
+        if (!gestionaHoras && existing.operatorId !== acceso.userId) {
             return NextResponse.json({ error: 'No tienes permisos para eliminar los registros de otros operadores.' }, { status: 403 });
         }
 
-        if (existing.estadoConfirmado) {
-            if (requestUserRole === 'operador') {
-                return NextResponse.json({ error: 'No tienes permisos para eliminar un día ya confirmado.' }, { status: 403 });
-            }
+        if (existing.estadoConfirmado && !gestionaHoras) {
+            return NextResponse.json({ error: 'No tienes permisos para eliminar un día ya confirmado.' }, { status: 403 });
         }
 
         await prisma.timeEntry.delete({ where: { id } });
@@ -282,10 +331,9 @@ export async function DELETE(req: Request) {
         }
 
         // Audit
-        const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
         await logAudit({
-            userId: requestUserId,
-            userName: requestOperator?.nombreCompleto,
+            userId: acceso.userId,
+            userName: acceso.nombre,
             action: 'DELETE',
             entity: 'TIME_ENTRY',
             entityId: id,

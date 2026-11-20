@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from "react";
-import { ViewConfig, DEFAULT_VIEWS, getViewConfig, findViewForPath } from '@/lib/viewAccess';
+import { ViewConfig, DEFAULT_VIEWS, getViewConfig, findViewForPath, canOpenView } from '@/lib/viewAccess';
 import { useAccessStore, useAcceso } from '@/lib/store/useAccessStore';
 import { Lock } from 'lucide-react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/ui';
-import { trackRecentView } from '@/lib/viewPreferences';
+import { prefsUserId, trackRecentView } from '@/lib/viewPreferences';
 import "./globals.css";
 import { usePathname, useRouter } from "next/navigation";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -45,6 +45,8 @@ export default function RootLayout({
         }
         return null;
     });
+    // La configuración de vistas del servidor ya respondió (bien o mal): recién ahí se bloquea una URL.
+    const [viewConfigLeida, setViewConfigLeida] = useState(false);
 
     const router = useRouter();
     const pathname = usePathname();
@@ -56,10 +58,10 @@ export default function RootLayout({
 
     // Track recent views
     useEffect(() => {
-        if (currentUser?.legajo && pathname) {
-            trackRecentView(pathname, currentUser.legajo);
+        if (currentUser?.id && pathname) {
+            trackRecentView(pathname, prefsUserId(currentUser));
         }
-    }, [pathname, currentUser?.legajo]);
+    }, [pathname, currentUser?.id]);
 
     const handleLoginSuccess = (user: any) => {
         setCurrentUser(user);
@@ -115,14 +117,15 @@ export default function RootLayout({
                     localStorage.setItem('cachedViewConfig', JSON.stringify(data));
                 }
             })
-            .catch(() => {});
+            .catch(() => {})
+            .finally(() => setViewConfigLeida(true));
     }, []);
 
     // Permisos especiales del usuario (lib/permisos.ts). Se releen al volver a la
     // pestaña, así un cambio hecho por un administrador aplica sin cerrar sesión.
     const cargarAccesos = useAccessStore(s => s.cargar);
     const setAccessViews = useAccessStore(s => s.setViews);
-    const { vistaDenegada } = useAcceso();
+    const { vistaDenegada, cargado: accesosCargados, role: rolAcceso, permisos: permisosAcceso } = useAcceso();
     const currentUserId = currentUser?.id;
     const currentUserRole = currentUser?.role;
 
@@ -167,11 +170,24 @@ export default function RootLayout({
     const effectiveViews = viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;
     const sidebarDocked = sidebarPinned && !isPdvPage;
 
-    // Una vista denegada puntualmente al usuario no se abre aunque entre por un enlace directo.
+    // Una vista que el usuario no puede ver no se abre aunque entre por un enlace directo:
+    // ni la denegada puntualmente ni la que su rol no tiene. Lo segundo se decide cuando ya
+    // llegaron el rol y los permisos del servidor y la configuración de vistas, para no
+    // bloquear de más mientras cargan (las APIs controlan los datos de todas formas).
     const vistaActual = findViewForPath(pathname, effectiveViews);
-    const accesoDenegado = !!vistaActual && vistaDenegada(vistaActual.key);
+    const denegadaPuntual = !!vistaActual && vistaDenegada(vistaActual.key);
+    const sinAccesoPorRol = !!vistaActual && !denegadaPuntual && accesosCargados && viewConfigLeida
+        && !canOpenView(vistaActual.key, rolAcceso, effectiveViews, permisosAcceso);
+    const accesoDenegado = denegadaPuntual || sinAccesoPorRol;
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        // La cookie de sesión es httpOnly: la borra el servidor. Sin conexión igual se
+        // cierra la sesión local; la cookie vence sola o se borra en el próximo cierre.
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {
+            console.error('No se pudo cerrar la sesión en el servidor:', e);
+        }
         localStorage.removeItem('currentUser');
         setCurrentUser(null);
     };
@@ -254,7 +270,9 @@ export default function RootLayout({
                             <EmptyState
                                 icon={<Lock />}
                                 title="No tenés acceso a esta vista"
-                                description={`Un administrador te quitó el acceso a "${vistaActual?.label}". Si lo necesitás, pedí que te lo habiliten desde Gestión de Usuarios.`}
+                                description={denegadaPuntual
+                                    ? `Un administrador te quitó el acceso a "${vistaActual?.label}". Si lo necesitás, pedí que te lo habiliten desde Gestión de Usuarios.`
+                                    : `Tu rol no tiene acceso a "${vistaActual?.label}". Si lo necesitás, pedí que te lo habiliten desde Gestión de Usuarios.`}
                                 action={<Link href="/" className="btn btn-secondary">Volver al inicio</Link>}
                             />
                         ) : children}

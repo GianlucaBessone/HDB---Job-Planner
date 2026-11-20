@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar documentos';
 import { DEFAULT_ACCESS_STRUCTURE } from '@/lib/constants/documentAccessStructure';
 
 export const dynamic = 'force-dynamic';
@@ -99,8 +102,14 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+        // Quien actúa es siempre el usuario de la sesión: se ignoran userId / userName del pedido.
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
         const body = await req.json();
-        const { moduleId, codigo, nombre, descripcion, icon, orden, userId, userName } = body;
+        const { moduleId, codigo, nombre, descripcion, icon, orden } = body;
 
         if (!moduleId || !nombre?.trim()) {
             return NextResponse.json({ error: 'El módulo y el nombre del sub-acceso son obligatorios.' }, { status: 400 });

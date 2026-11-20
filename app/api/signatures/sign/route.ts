@@ -1,49 +1,94 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { getAcceso } from '@/lib/permisosServer';
-import { datosFirmaSchema, firmarComoOperador, FirmaError, ipDesdeHeaders } from '@/lib/signatureServer';
+import { generateSignatureId, generateSignatureHash } from '@/lib/signature';
 import { logAudit } from '@/lib/audit';
+import { getAcceso } from '@/lib/permisosServer';
 
-// La identidad del firmante (userId, userName, dni) no se acepta del cliente:
-// sale de la sesión (lib/signatureServer.ts).
+export const dynamic = 'force-dynamic';
+
+// El payload del HMAC (lib/signature.ts) separa los campos con '|': no se acepta en
+// los datos del cliente para que un valor no pueda correrse a otro campo.
+const campoFirma = (max: number) => z.string().trim().min(1).max(max).refine(v => !v.includes('|'));
+
+// El firmante sale de la sesión, no del body: cualquier userId / userName / dni que mande el cliente se ignora.
+const bodySchema = z.object({
+    documentId: campoFirma(200),
+    documentVersion: campoFirma(50),
+    deviceId: campoFirma(200),
+});
+
 export async function POST(req: Request) {
+    const { userId } = await getAcceso(req);
+    if (!userId) {
+        return NextResponse.json({ error: 'Tenés que iniciar sesión para firmar' }, { status: 401 });
+    }
+
+    const parsed = bodySchema.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+        return NextResponse.json({ error: 'Faltan datos de la firma (documento, versión o dispositivo)' }, { status: 400 });
+    }
+    const { documentId, documentVersion, deviceId } = parsed.data;
+
     try {
-        const acceso = await getAcceso(req);
-        if (!acceso.userId) {
-            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+        const operador = await prisma.operator.findUnique({
+            where: { id: userId },
+            select: { id: true, nombreCompleto: true, dni: true, activo: true },
+        });
+        if (!operador || !operador.activo) {
+            return NextResponse.json({ error: 'Tu usuario no está activo' }, { status: 401 });
         }
 
-        const body = await req.json().catch(() => null);
-        const parsed = datosFirmaSchema.safeParse(body);
-        if (!parsed.success) {
+        const dni = operador.dni?.trim();
+        if (!dni) {
             return NextResponse.json(
-                { error: 'Datos de firma inválidos', details: parsed.error.flatten().fieldErrors },
-                { status: 400 }
+                { error: 'Tu usuario no tiene DNI cargado. Pedile a un administrador que lo cargue para poder firmar.' },
+                { status: 422 }
             );
         }
 
-        const auditRecord = await firmarComoOperador(prisma, {
-            ...parsed.data,
-            operatorId: acceso.userId,
-            ipAddress: ipDesdeHeaders(req.headers),
+        const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('remote-addr') || 'unknown';
+        const signatureId = generateSignatureId();
+        const signedAtUTC = new Date();
+
+        const hash = generateSignatureHash(
+            documentId,
+            documentVersion,
+            operador.id,
+            operador.nombreCompleto,
+            dni,
+            deviceId,
+            signedAtUTC
+        );
+
+        const auditRecord = await prisma.documentSignatureAudit.create({
+            data: {
+                SignatureID: signatureId,
+                DocumentID: documentId,
+                DocumentVersion: documentVersion,
+                UserID: operador.id,
+                UserName: operador.nombreCompleto,
+                DNI: dni,
+                DeviceID: deviceId,
+                IPAddress: ipAddress,
+                SignedAtUTC: signedAtUTC,
+                HashSignature: hash,
+                VerificationStatus: 'VALIDA'
+            }
         });
 
         await logAudit({
             action: 'CREATE',
             entity: 'SIGNATURE_AUDIT',
-            entityId: auditRecord.SignatureID,
+            entityId: signatureId,
             newValue: auditRecord,
-            userId: auditRecord.UserID,
-            userName: auditRecord.UserName
+            userId: operador.id,
+            userName: operador.nombreCompleto
         });
 
         return NextResponse.json(auditRecord);
-
-    } catch (e: any) {
-        if (e instanceof FirmaError) {
-            return NextResponse.json({ error: e.message }, { status: e.status });
-        }
+    } catch (e: unknown) {
         console.error('Signature Error:', e);
-        return NextResponse.json({ error: 'Error al generar la firma', details: e.message }, { status: 500 });
+        return NextResponse.json({ error: 'No se pudo generar la firma' }, { status: 500 });
     }
 }

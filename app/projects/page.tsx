@@ -3,7 +3,7 @@
 import Link from 'next/link';
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
     Plus,
     Search,
@@ -76,10 +76,25 @@ import ProjectGanttView from '@/components/projects/ProjectGanttView';
 import ProjectCalendarView from '@/components/projects/ProjectCalendarView';
 import ProjectsHeader from '@/components/projects/ProjectsHeader';
 import ProjectCostModal from '@/components/projects/ProjectCostModal';
+import ProyectoPresupuestoPanel from '@/components/projects/ProyectoPresupuestoPanel';
+
+/** Mensaje de error que devuelve la API (p. ej. un 403 por permisos). */
+async function mensajeError(res: Response, porDefecto: string): Promise<string> {
+    try {
+        const data = await res.json();
+        return data?.error || porDefecto;
+    } catch {
+        return porDefecto;
+    }
+}
 
 // ── Content Component ──────────────────────────────────────────────────────────
 function ProjectsContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
+    // Presupuesto de servicio de origen por proyecto (vacío si el módulo no está instalado).
+    const [presupuestos, setPresupuestos] = useState<Record<string, { id: string; numero: string }>>({});
+    const [costTabInicial, setCostTabInicial] = useState<'costo' | 'pvr'>('costo');
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<{ id: string; nombreCompleto: string; role?: string }[]>([]);
     const [clients, setClients] = useState<{ id: string; nombre: string; listaPrecioId?: string | null; listaPrecio?: any }[]>([]);
@@ -101,7 +116,8 @@ function ProjectsContent() {
     const [selectedProjectForCost, setSelectedProjectForCost] = useState<Project | null>(null);
     const [isCostModalOpen, setIsCostModalOpen] = useState(false);
 
-    const openCostModal = (project: Project) => {
+    const openCostModal = (project: Project, tab: 'costo' | 'pvr' = 'costo') => {
+        setCostTabInicial(tab);
         setSelectedProjectForCost(project);
         setIsCostModalOpen(true);
     };
@@ -139,6 +155,23 @@ function ProjectsContent() {
         }
     }, [searchParams]);
 
+    // ?alta=clasica abre el formulario de siempre; ?proyecto=<id> abre el detalle de ese proyecto.
+    const enlaceAtendido = useRef('');
+    useEffect(() => {
+        const alta = searchParams.get('alta');
+        const proyectoId = searchParams.get('proyecto');
+        const clave = `${alta}|${proyectoId}`;
+        if (enlaceAtendido.current === clave) return;
+        if (alta === 'clasica') {
+            enlaceAtendido.current = clave;
+            openCreate();
+        } else if (proyectoId && projects.length) {
+            enlaceAtendido.current = clave;
+            const p = projects.find(x => x.id === proyectoId);
+            if (p) openDetails(p);
+        }
+    }, [searchParams, projects]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const loadData = async (silent = false) => {
         if (!silent) setIsLoading(true);
         try {
@@ -156,6 +189,10 @@ function ProjectsContent() {
             setConfigOptions(configOptionsData);
             setSystemTags(Array.isArray(tagsData) ? tagsData.filter((t: any) => t.active) : []);
             setListasPrecios(Array.isArray(listasData) ? listasData : []);
+            fetch('/api/presupuestos-servicio/vinculos', { cache: 'no-store' })
+                .then((r) => (r.ok ? r.json() : {}))
+                .then((m: any) => setPresupuestos(m && typeof m === 'object' ? m : {}))
+                .catch(() => undefined);
         } catch (e) {
             console.error(e);
         } finally {
@@ -178,7 +215,6 @@ function ProjectsContent() {
             noEnMetricas: project.noEnMetricas || false,
             observaciones: project.observaciones || '',
             horasEstimadas: project.horasEstimadas || 0,
-            horasConsumidas: project.horasConsumidas || 0,
             cliente: project.cliente || '',
             clientId: project.clientId || '',
             responsable: project.responsable || '',
@@ -287,10 +323,13 @@ function ProjectsContent() {
         const submissionData = {
             ...formData,
             horasEstimadas: Number(formData.horasEstimadas) || 0,
-            horasConsumidas: Number(formData.horasConsumidas) || 0,
             qrToken: formData.qrToken || null, // Explicitly ensure it's passed
         };
-        await safeApiRequest(url, { method, body: JSON.stringify(submissionData), headers: { 'Content-Type': 'application/json' } });
+        const res = await safeApiRequest(url, { method, body: JSON.stringify(submissionData), headers: { 'Content-Type': 'application/json' } });
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo guardar el proyecto'), 'error');
+            return;
+        }
         setIsModalOpen(false);
         await loadData(true);
     };
@@ -303,10 +342,22 @@ function ProjectsContent() {
     const confirmDelete = async () => {
         if (!projectToDelete) return;
         const id = projectToDelete;
-        setProjects(prev => prev.filter(p => p.id !== id));
-        await safeApiRequest(`/api/projects?id=${id}`, { method: 'DELETE' });
+        const res = await safeApiRequest(`/api/projects?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setProjectToDelete(null);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo eliminar el proyecto'), 'error');
+            return;
+        }
+        const data = await res.json().catch(() => null);
+        if (data?.modo === 'desactivado') {
+            // Tiene horas, fichadas u órdenes: queda inactivo para no perder ese historial.
+            setProjects(prev => prev.map(p => p.id === id ? { ...p, activo: false } : p));
+            showToast('Tiene historial: quedó desactivado en lugar de eliminarse', 'info');
+            return;
+        }
+        setProjects(prev => prev.filter(p => p.id !== id));
+        showToast('Proyecto eliminado', 'success');
     };
 
     // ── Filters ───────────────────────────────────────────────────────────────
@@ -356,10 +407,11 @@ function ProjectsContent() {
 
     const registerCommand = useCommandStore((state) => state.registerCommand);
     const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
-    const latestActions = useRef({ openCreate });
+    const abrirWizard = () => router.push('/projects/nuevo');
+    const latestActions = useRef({ openCreate: abrirWizard });
     
     useEffect(() => {
-        latestActions.current = { openCreate };
+        latestActions.current = { openCreate: abrirWizard };
     });
 
     useEffect(() => {
@@ -388,7 +440,7 @@ function ProjectsContent() {
                     activeTabId="proyectos"
                     searchValue={searchTerm}
                     onSearchChange={setSearchTerm}
-                    onNewProject={openCreate}
+                    onNewProject={abrirWizard}
                 />
                 
                 {/* View Selector and Filter Row */}
@@ -521,7 +573,7 @@ function ProjectsContent() {
                         <p className="text-sm text-slate-400 dark:text-slate-500 mt-2 font-medium">Aún no se han registrado proyectos en este estado.</p>
                     </div>
                 ) : activeView === 'card' ? (
-                    <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} onViewCost={openCostModal} />
+                    <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} onViewCost={openCostModal} presupuestos={presupuestos} />
                 ) : activeView === 'spreadsheet' ? (
                     <ProjectSpreadsheetView projects={filteredProjects} onRefresh={loadData} onViewCost={openCostModal} />
                 ) : activeView === 'gantt' ? (
@@ -529,7 +581,7 @@ function ProjectsContent() {
                 ) : activeView === 'calendar' ? (
                     <ProjectCalendarView projects={filteredProjects} onDetails={openDetails} />
                 ) : (
-                    <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} onViewCost={openCostModal} />
+                    <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} onViewCost={openCostModal} presupuestos={presupuestos} />
                 )}
             </div>
 
@@ -548,11 +600,14 @@ function ProjectsContent() {
                     onDeleteLog={handleDeleteLog}
                     onUpdateChecklist={handleUpdateChecklist}
                     onClose={() => setIsDetailsOpen(false)}
+                    presupuesto={presupuestos[selectedProjectForDetails.id] || null}
+                    onVerReporte={() => openCostModal(selectedProjectForDetails, 'pvr')}
                 />
             )}
             {isCostModalOpen && selectedProjectForCost && (
                 <ProjectCostModal
                     projectId={selectedProjectForCost.id}
+                    tabInicial={costTabInicial}
                     onClose={() => setIsCostModalOpen(false)}
                 />
             )}
@@ -575,7 +630,7 @@ function ProjectsContent() {
             <ConfirmDialog
                 isOpen={isConfirmOpen}
                 title="Eliminar Proyecto"
-                message="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
+                message="Si tiene horas, fichadas, órdenes o materiales, queda desactivado para conservar ese historial. Si no tiene nada, se elimina y no se puede deshacer."
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
             />
@@ -643,7 +698,11 @@ function ProjectDetailsModal({
     onDeleteLog,
     onUpdateChecklist,
     onClose,
+    presupuesto,
+    onVerReporte,
 }: {
+    presupuesto?: { id: string; numero: string } | null;
+    onVerReporte?: () => void;
     project: Project;
     operators: { id: string; nombreCompleto: string; role?: string }[];
     entries: any[];
@@ -725,6 +784,16 @@ function ProjectDetailsModal({
                         </div>
                     ) : (
                         <>
+                            {/* Presupuesto de origen, tareas y equipo (solo si el proyecto los tiene) */}
+                            <ProyectoPresupuestoPanel
+                                projectId={project.id}
+                                presupuesto={presupuesto}
+                                fechaInicio={project.fechaInicio}
+                                fechaFin={project.fechaFin}
+                                operadores={operators}
+                                onVerReporte={onVerReporte}
+                            />
+
                             {/* Summary Cards */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                                 <Link href={`/timesheets?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-indigo-50/50 border border-indigo-100 p-5 rounded-3xl space-y-2 hover:bg-indigo-100 transition-colors shadow-sm block">
@@ -1307,16 +1376,17 @@ function ProjectModal({
                                     onChange={e => set('horasEstimadas', e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Horas Consumidas</label>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    inputMode="decimal"
-                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                    value={formData.horasConsumidas}
-                                    onChange={e => set('horasConsumidas', e.target.value)}
-                                />
+                            {/* Solo lectura: lo mantiene el registro de tiempos (app/api/time-entries) */}
+                            <div>
+                                <span id="horas-consumidas-label" className="field-label">Horas Consumidas</span>
+                                <div
+                                    aria-labelledby="horas-consumidas-label"
+                                    aria-describedby="horas-consumidas-hint"
+                                    className="w-full bg-muted text-foreground border border-border rounded-2xl py-3 px-4 font-medium tabular-nums"
+                                >
+                                    {editingProject ? editingProject.horasConsumidas : 0} h
+                                </div>
+                                <p id="horas-consumidas-hint" className="field-hint">Se calcula desde el registro de tiempos.</p>
                             </div>
                         </div>
 

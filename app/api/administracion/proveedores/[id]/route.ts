@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function DELETE(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['gastos.gestionar'], 'No tenés permiso para gestionar gastos');
+    if (acceso instanceof NextResponse) return acceso;
+
     const id = params.id;
 
     const existing = await prisma.proveedor.findUnique({ where: { id } });
@@ -20,6 +24,8 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
     // Auditoria
     await prisma.auditLog.create({
       data: {
+        userId: acceso.userId,
+        userName: acceso.nombre,
         action: 'DELETE',
         entity: 'PROVEEDOR',
         entityId: id,

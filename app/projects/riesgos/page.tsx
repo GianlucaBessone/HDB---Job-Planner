@@ -52,14 +52,14 @@ export default function RiesgosPage() {
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 space-y-4">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                    <p className="text-slate-500 font-bold uppercase tracking-wider text-xs">Cargando Riesgos...</p>
+                    <p className="text-slate-500 font-bold uppercase tracking-wider text-xs">Cargando bloqueos...</p>
                 </div>
             ) : risks.length === 0 ? (
                 <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm border-dashed">
                     <div className="p-6 bg-background text-foreground rounded-full mb-6">
                         <AlertTriangle className="w-12 h-12 text-emerald-500 opacity-50" />
                     </div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Sin riesgos activos</h2>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Sin bloqueos abiertos</h2>
                     <p className="text-sm text-slate-500 mt-2 text-center max-w-md">
                         ¡Excelente! No hay bloqueantes ni reportes críticos en los proyectos activos.
                     </p>
@@ -72,7 +72,7 @@ export default function RiesgosPage() {
                                 <tr>
                                     <th className="px-6 py-4 font-bold">Proyecto</th>
                                     <th className="px-6 py-4 font-bold">Tipo</th>
-                                    <th className="px-6 py-4 font-bold">Observación / Riesgo</th>
+                                    <th className="px-6 py-4 font-bold">Observación</th>
                                     <th className="px-6 py-4 font-bold">Reportado Por</th>
                                     <th className="px-6 py-4 font-bold">Fecha</th>
                                 </tr>

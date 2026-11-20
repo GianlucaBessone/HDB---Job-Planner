@@ -6,6 +6,8 @@ import { X, Search, User, Check, Building2, Phone, MapPin, Loader2 } from 'lucid
 interface ClienteItem {
   id: string;
   nombre: string;
+  razonSocial?: string | null;
+  cuit?: string | null;
   email?: string | null;
   telefono?: string | null;
   direccion?: string | null;
@@ -155,7 +157,7 @@ export default function SeleccionarClienteModal({
                     onSeleccionar({
                       id: c.id,
                       nombre: c.nombre,
-                      identificacion: c.telefono || c.email || null,
+                      identificacion: c.cuit || null, // CUIT de la ficha del cliente (antes se usaba teléfono o email)
                       telefono: c.telefono || null,
                       email: c.email || null,
                       direccion: c.direccion || null,
@@ -288,7 +290,7 @@ export default function SeleccionarClienteModal({
                       onSeleccionar({
                         id: c.id,
                         nombre: c.nombre,
-                        identificacion: c.telefono || c.email || null,
+                        identificacion: c.cuit || null, // CUIT de la ficha del cliente (antes se usaba teléfono o email)
                         telefono: c.telefono || null,
                         email: c.email || null,
                         direccion: c.direccion || null,
@@ -319,7 +321,7 @@ export default function SeleccionarClienteModal({
                     onSeleccionar({
                       id: c.id,
                       nombre: c.nombre,
-                      identificacion: c.telefono || c.email || null,
+                      identificacion: c.cuit || null, // CUIT de la ficha del cliente (antes se usaba teléfono o email)
                       telefono: c.telefono || null,
                       email: c.email || null,
                       direccion: c.direccion || null,
@@ -352,6 +354,7 @@ export default function SeleccionarClienteModal({
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
+                      {c.cuit && <span className="font-mono">CUIT {c.cuit}</span>}
                       {c.telefono && (
                         <span className="flex items-center gap-1">
                           <Phone className="w-3 h-3 text-slate-400" />

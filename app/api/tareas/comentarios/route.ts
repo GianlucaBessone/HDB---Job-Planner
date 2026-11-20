@@ -2,15 +2,25 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
+import { exigirAcceso } from '@/lib/permisosServer';
+import { participaEnTarea } from '@/lib/tareas/acceso';
 
 // ── GET — List comments for a task ─────────────────────────────────
 export async function GET(req: NextRequest) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const url = new URL(req.url);
         const tareaId = url.searchParams.get('tareaId');
 
         if (!tareaId) {
             return NextResponse.json({ error: 'tareaId requerido' }, { status: 400 });
+        }
+
+        const tarea = await prisma.tarea.findUnique({ where: { id: tareaId }, include: { involucrados: true } });
+        if (!tarea || !participaEnTarea(acceso, tarea)) {
+            return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
         }
 
         const comentarios = await prisma.tareaComentario.findMany({
@@ -31,10 +41,16 @@ export async function GET(req: NextRequest) {
 // ── POST — Create a comment ──────────────────────────────────────
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
-        const { tareaId, operatorId, operatorName, mensaje } = body;
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
 
-        if (!tareaId || !operatorId || !mensaje) {
+        const body = await req.json();
+        const { tareaId, mensaje } = body;
+        // El autor es el usuario de la sesión (se ignoran operatorId / operatorName del cuerpo).
+        const operatorId = acceso.userId;
+        const operatorName = acceso.nombre;
+
+        if (!tareaId || !mensaje) {
             return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
         }
 
@@ -43,7 +59,7 @@ export async function POST(req: NextRequest) {
             include: { involucrados: true }
         });
 
-        if (!tarea) {
+        if (!tarea || !participaEnTarea(acceso, tarea)) {
             return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
         }
 

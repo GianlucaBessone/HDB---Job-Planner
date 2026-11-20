@@ -1,17 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { dataLayer } = require('@/lib/dataLayer');
         await dataLayer.autoUpdateProjectStatuses();
 
         const { searchParams } = new URL(req.url);
         const all = searchParams.get('all') === 'true';
-        const responsableId = searchParams.get('responsableId');
-        const nombreCompleto = searchParams.get('nombre');
+        // "Mis proyectos" son los del usuario de la sesión (se ignoran ?responsableId y ?nombre).
+        const responsableId = acceso.userId;
+        const nombreCompleto = acceso.nombre;
 
         let where: any = {
             estado: { notIn: ['finalizado'] }

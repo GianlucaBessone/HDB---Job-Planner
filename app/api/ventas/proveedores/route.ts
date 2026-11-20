@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { proveedorVentasSchema } from '@/lib/ventas/proveedorVentas';
 import { buscarConflictoProveedor } from '@/lib/ventas/proveedorVentasConflictos';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 /**
  * GET /api/ventas/proveedores?q=&estado=activos|inactivos|todos
@@ -53,6 +54,9 @@ export async function GET(req: NextRequest) {
 /** POST /api/ventas/proveedores — alta de proveedor de ventas. */
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const data = proveedorVentasSchema.parse(await req.json());
 
     const conflicto = await buscarConflictoProveedor(data);

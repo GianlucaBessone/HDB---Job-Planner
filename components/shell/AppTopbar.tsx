@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { LifeBuoy, Menu, Search } from 'lucide-react';
+import { Menu, Search } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import SyncIndicator from '@/components/SyncIndicator';
 import OneSignalInit from '@/components/OneSignalInit';
 import ActivityCenterDropdown from '@/components/ActivityCenterDropdown';
-import { OPEN_TICKET_EVENT } from '@/components/tickets/TicketQuickAction';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { BrandMark } from './BrandMark';
+import { HelpMenu } from './HelpMenu';
 
 interface AppTopbarProps {
     user: any;
@@ -53,14 +53,7 @@ export function AppTopbar({ user, sidebarDocked, onOpenMenu }: AppTopbarProps) {
 
                     <SyncIndicator />
 
-                    <button
-                        onClick={() => window.dispatchEvent(new Event(OPEN_TICKET_EVENT))}
-                        title="Reportar una falla o sugerencia"
-                        aria-label="Reportar una falla o sugerencia"
-                        className="btn btn-ghost btn-icon btn-icon-inline"
-                    >
-                        <LifeBuoy />
-                    </button>
+                    <HelpMenu />
                     <ThemeToggle />
                     <OneSignalInit
                         appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "35ce6a9c-c4c7-4645-98dc-b363dc91642b"}

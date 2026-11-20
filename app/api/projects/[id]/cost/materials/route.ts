@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -12,6 +13,9 @@ function normalizeCode(code: string | null | undefined): string {
 export async function PATCH(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req, ['proyectos.costos'], 'No tenés permiso para ver o ajustar costos de proyecto');
+        if (acceso instanceof NextResponse) return acceso;
+
         const { id } = params; // Project ID
         const body = await req.json();
         const { codigo, id: materialId, nombre, precioUnitario } = body;

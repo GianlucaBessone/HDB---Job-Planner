@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import ModuleHeader from '@/components/ModuleHeader';
+import OTListaGlobal from '@/components/ot/OTListaGlobal';
+import { useViewState } from '@/lib/hooks/useViewState';
 import {
   FileText,
-  Search,
   Plus,
   Settings,
   ChevronRight,
@@ -36,7 +39,12 @@ interface ClientSummary {
   responsablesActivos: number;
 }
 
+type VistaOT = 'ordenes' | 'clientes';
+
 export default function OrdenesTrabajoClientsPage() {
+  const router = useRouter();
+  const [{ vista }, setVistaState] = useViewState<{ vista: VistaOT }>('ordenes-trabajo-vista', { vista: 'ordenes' });
+  const [busquedaOT, setBusquedaOT] = useState('');
   const [clients, setClients] = useState<ClientSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -149,56 +157,31 @@ export default function OrdenesTrabajoClientsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2.5 text-primary font-bold text-xs uppercase tracking-wider mb-1">
-            <FileText className="w-4 h-4" />
-            <span>Módulo de Órdenes de Trabajo</span>
-          </div>
-          <h1 className="text-title text-slate-900 dark:text-slate-100">
-            Clientes Habilitados para OT
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-            Gestiona los clientes habilitados para el ciclo de órdenes de trabajo, mano de obra y portal.
-          </p>
-        </div>
+      <ModuleHeader
+        title="Órdenes de trabajo"
+        description="Órdenes por ciclos con firma del cliente en el portal"
+        icon={<FileText />}
+        tabs={[
+          { id: 'ordenes', label: 'Todas las órdenes' },
+          { id: 'clientes', label: 'Clientes habilitados', count: clients.length },
+        ]}
+        activeTabId={vista}
+        onTabChange={(id) => setVistaState({ vista: id as VistaOT })}
+        searchValue={vista === 'ordenes' ? busquedaOT : search}
+        onSearchChange={vista === 'ordenes' ? setBusquedaOT : setSearch}
+        searchPlaceholder={vista === 'ordenes' ? 'Buscar por número, cliente o proyecto…' : 'Buscar cliente habilitado…'}
+        actions={[
+          ...(vista === 'clientes'
+            ? [{ id: 'agregar-cliente', label: 'Agregar cliente', icon: <Plus />, onClick: openAddClientModal, variant: 'outline' as const }]
+            : []),
+          { id: 'nueva-ot', label: 'Nueva OT', icon: <Plus />, onClick: () => router.push('/ordenes-trabajo/nueva'), variant: 'primary' as const },
+        ]}
+      />
 
-        <div className="flex items-center gap-3">
-          {/* Button: Agregar Cliente */}
-          <button
-            onClick={openAddClientModal}
-            className="px-4 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-colors"
-          >
-            <Plus className="w-4 h-4 text-primary" />
-            Agregar Cliente
-          </button>
-
-          {/* Button: Nueva OT (Fixed: single + icon) */}
-          <Link
-            href="/ordenes-trabajo/nueva"
-            className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Nueva OT
-          </Link>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex items-center gap-3 max-w-md">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Buscar cliente habilitado por nombre..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
-      </div>
-
+      {vista === 'ordenes' ? (
+        <OTListaGlobal busqueda={busquedaOT} />
+      ) : (
+      <>
       {/* Clients Cards Grid */}
       {loading ? (
         <div className="py-24 flex flex-col items-center justify-center gap-3 text-slate-400">
@@ -321,6 +304,9 @@ export default function OrdenesTrabajoClientsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      </>
       )}
 
       {/* Modal Agregar Cliente a OT */}

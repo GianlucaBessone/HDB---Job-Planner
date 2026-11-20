@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar plantillas de checklist';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,11 +39,14 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
         const {
             code, name, description, checklistItems,
             requiresEvidence, requiresPhotos, requiresSignature,
-            riskLevel, tagIds, userId, userName
+            riskLevel, tagIds
         } = data;
 
         if (!name?.trim()) {
@@ -82,8 +88,8 @@ export async function POST(req: Request) {
         }
 
         await logAudit({
-            userId,
-            userName,
+            userId: acceso.userId,
+            userName: acceso.nombre,
             action: 'CREATE',
             entity: 'CHECKLIST_TEMPLATE',
             entityId: template.id,
@@ -98,12 +104,14 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
         const {
             id, name, description, checklistItems,
             requiresEvidence, requiresPhotos, requiresSignature,
-            riskLevel, status, bumpVersion, tagIds,
-            userId, userName
+            riskLevel, status, bumpVersion, tagIds
         } = data;
 
         if (!id) {
@@ -150,8 +158,8 @@ export async function PUT(req: Request) {
         }
 
         await logAudit({
-            userId,
-            userName,
+            userId: acceso.userId,
+            userName: acceso.nombre,
             action: 'UPDATE',
             entity: 'CHECKLIST_TEMPLATE',
             entityId: template.id,
@@ -173,6 +181,9 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['config.administrar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID es obligatorio' }, { status: 400 });
@@ -184,6 +195,8 @@ export async function DELETE(req: Request) {
         await prisma.checklistTemplate.delete({ where: { id } });
 
         await logAudit({
+            userId: acceso.userId,
+            userName: acceso.nombre,
             action: 'DELETE',
             entity: 'CHECKLIST_TEMPLATE',
             entityId: id,

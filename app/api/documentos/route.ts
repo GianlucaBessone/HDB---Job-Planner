@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para gestionar documentos';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +22,9 @@ export async function GET(req: Request) {
 
         if (tipo) where.tipoDocumento = tipo;
         if (area) where.area = area;
+        // Los anulados no aparecen en la biblioteca salvo que se pidan (?estado=anulado).
         if (estado) where.estado = estado;
+        else where.estado = { not: 'anulado' };
         if (criticidad) where.nivelCriticidad = criticidad;
         if (subAccessId) {
             if (subAccessId === 'unassigned') {
@@ -41,7 +46,7 @@ export async function GET(req: Request) {
         // Filtrar documentos con próxima revisión vencida
         if (vencidos === 'true') {
             where.proximaRevision = { lte: new Date() };
-            where.estado = { not: 'obsoleto' };
+            where.estado = { notIn: ['obsoleto', 'anulado'] };
         }
 
         const docs = await prisma.controlledDocument.findMany({
@@ -110,6 +115,12 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+        // Quien actúa es siempre el usuario de la sesión: se ignoran userId / userName del pedido.
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+
         const data = await req.json();
         const {
             titulo, tipoDocumento, area,
@@ -118,7 +129,7 @@ export async function POST(req: Request) {
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
             tags, operatorIds, observaciones, proximaRevision, validezMeses,
-            userId, userName, creatorSignature, subAccessId
+            creatorSignature, subAccessId
         } = data;
 
         if (!titulo?.trim()) {

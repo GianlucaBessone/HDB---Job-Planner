@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.pdv_operar'], 'No tenés permiso para operar el Punto de Venta');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('q')?.trim() || '';
     const estado = searchParams.get('estado') || undefined; // 'CONFIRMADA' | 'ANULADA'

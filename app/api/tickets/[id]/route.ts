@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { sendPushNotification } from '@/lib/onesignal';
 import {
     canTransition,
@@ -17,8 +18,6 @@ import { generateResolutionResponse } from '@/lib/tickets-ai';
 export const dynamic = 'force-dynamic';
 // La resolución puede disparar el redactado de respuesta con Gemini.
 export const maxDuration = 60;
-
-const GESTORES = ['admin', 'qa', 'supervisor'];
 
 const actualizarTicketSchema = z.object({
     estado: z.enum([
@@ -39,10 +38,11 @@ const actualizarTicketSchema = z.object({
     autorNombre: z.string().max(200).optional(),
 });
 
-function getActor(req: NextRequest) {
-    const role = (req.headers.get('x-user-role') || 'operador').toLowerCase();
-    const userId = req.headers.get('x-user-id') || null;
-    return { role, userId, canManage: GESTORES.includes(role) };
+// Usuario de la sesión, leído de la base: rol, si está activo y la función de gestión.
+async function getActor(req: NextRequest) {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+    return { userId: acceso.userId, nombre: acceso.nombre, role: acceso.role, canManage: acceso.puede('tickets.gestionar') };
 }
 
 const fullInclude = {
@@ -56,7 +56,9 @@ const fullInclude = {
 export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
-        const { userId, canManage } = getActor(req);
+        const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
+        const { userId, canManage } = actor;
 
         const ticket = await prisma.ticket.findUnique({
             where: { id: params.id },
@@ -88,7 +90,9 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
 export async function PATCH(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
-        const { userId, canManage, role } = getActor(req);
+        const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
+        const { userId, canManage, role } = actor;
         const body = await req.json();
         const parsed = actualizarTicketSchema.safeParse(body);
 
@@ -142,10 +146,7 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
 
         const updateData: any = {};
         // El nombre sale de la base, no del cliente (autorNombre se ignora).
-        const operadorActual = userId
-            ? await prisma.operator.findUnique({ where: { id: userId }, select: { nombreCompleto: true } })
-            : null;
-        const autor = operadorActual?.nombreCompleto || (canManage ? 'Equipo de soporte' : 'Usuario');
+        const autor = actor.nombre || (canManage ? 'Equipo de soporte' : 'Usuario');
 
         if (data.urgencia !== undefined) updateData.urgencia = data.urgencia;
         if (data.impacto !== undefined) updateData.impacto = data.impacto;

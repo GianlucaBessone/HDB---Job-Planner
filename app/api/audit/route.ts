@@ -1,9 +1,13 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+    const acceso = await exigirAcceso(req, ['auditoria.ver'], 'No tenés permiso para ver la auditoría');
+    if (acceso instanceof NextResponse) return acceso;
+
     const searchParams = req.nextUrl.searchParams;
     const userId = searchParams.get('userId');
     const action = searchParams.get('action');

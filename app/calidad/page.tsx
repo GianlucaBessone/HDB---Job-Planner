@@ -96,7 +96,7 @@ function CalidadPage() {
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             <ModuleHeader
-                title="Gestión Operativa y Calidad"
+                title="Calidad y documentos"
                 description="Plataforma de Cumplimiento, Capacitación Obligatoria (LMS) y Competencias QMS"
                 icon={<FileCheck className="w-5 h-5" />}
                 helpSlug="calidad-documentacion"

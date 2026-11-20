@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FuncionId, PermisoEspecial, claveFuncion, efectoEspecial, normalizarRol, rolTieneFuncion } from '@/lib/permisos';
-import { getPermisosEspeciales } from '@/lib/permisosServer';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export type AccionInventario =
   | 'consultar_stock'
@@ -60,26 +60,18 @@ export async function verificarPermisoInventario(
   req: NextRequest,
   accion: AccionInventario
 ): Promise<{ error?: NextResponse; usuario?: UsuarioSesionInventario }> {
-  const userId = req.headers.get('x-user-id');
-  const userRole = req.headers.get('x-user-role') || 'operador';
+  // Usuario, rol y estado salen de la base (lib/permisosServer.ts), no del token.
+  const acceso = await exigirAcceso(req);
+  if (acceso instanceof NextResponse) return { error: acceso };
 
-  if (!userId) {
-    return {
-      error: NextResponse.json(
-        { error: 'No autorizado. Se requiere sesión activa en el sistema.' },
-        { status: 401 }
-      ),
-    };
-  }
-
-  const permisos = getPermisosRol(userRole, await getPermisosEspeciales(userId));
+  const permisos = getPermisosRol(acceso.role, acceso.permisos);
   if (!permisos.includes(accion)) {
     return {
       error: NextResponse.json(
         {
           error: `Acceso denegado. No tenés permiso para realizar "${accion}".`,
           accionRequerida: accion,
-          rolActual: userRole,
+          rolActual: acceso.role,
         },
         { status: 403 }
       ),
@@ -88,8 +80,9 @@ export async function verificarPermisoInventario(
 
   return {
     usuario: {
-      id: userId,
-      role: userRole,
+      id: acceso.userId,
+      role: acceso.role,
+      nombreCompleto: acceso.nombre,
       permisos,
     },
   };

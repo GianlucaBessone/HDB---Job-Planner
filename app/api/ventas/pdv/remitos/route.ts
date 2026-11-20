@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { adjuntarSaldoPendienteRemitos, crearRemitoEntrega } from '@/lib/ventas/pdvService';
@@ -19,6 +20,9 @@ const crearRemitoSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.pdv_operar'], 'No tenés permiso para operar el Punto de Venta');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { searchParams } = new URL(req.url);
     const ventaId = searchParams.get('ventaId');
     const remitoId = searchParams.get('id');
@@ -61,20 +65,21 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Usuario y nombre salen de la sesión (base de datos), no de headers del navegador.
+  const acceso = await exigirAcceso(req);
+  if (acceso instanceof NextResponse) return acceso;
   try {
     const body = await req.json();
     const parsed = crearRemitoSchema.parse(body);
 
-    const userIdHeader = req.headers.get('x-user-id');
-    const userNameHeader = req.headers.get('x-user-name');
-
+    // Quien emite el remito es el usuario de la sesión.
     const remito = await crearRemitoEntrega(
       {
         ...parsed,
-        vendedorNombre: parsed.vendedorNombre || userNameHeader || undefined,
+        vendedorNombre: acceso.nombre,
       },
-      userIdHeader || undefined,
-      userNameHeader || undefined
+      acceso.userId,
+      acceso.nombre
     );
 
     return NextResponse.json(

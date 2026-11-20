@@ -62,7 +62,7 @@ export default function ProjectFinalizeAuthModal({
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const projectId = notification.relatedId;
+                const projectId = notification.entityId;
                 const [pRes, eRes, cRes, osRes] = await Promise.all([
                     safeApiRequest(`/api/projects/${projectId}`).then(res => res.json()),
                     safeApiRequest(`/api/time-entries?projectId=${projectId}`).then(res => res.json()),
@@ -83,7 +83,26 @@ export default function ProjectFinalizeAuthModal({
         };
 
         fetchData();
-    }, [notification.relatedId]);
+    }, [notification.entityId]);
+
+    // Cierra la solicitud para todos los supervisores y avisa al solicitante (createdBy).
+    const cerrarSolicitud = async (title: string, message: string) => {
+        await safeApiRequest(`/api/activities/${notification.recipientId}?todos=1`, { method: 'DELETE' });
+        if (!notification.createdBy) return;
+        await safeApiRequest('/api/activities', {
+            method: 'POST',
+            body: JSON.stringify({
+                respondeA: notification.id, // el servidor responde a quien creó el aviso
+                title,
+                message,
+                type: 'SYSTEM_MESSAGE',
+                category: 'Projects',
+                entityType: 'project',
+                entityId: notification.entityId
+            }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+    };
 
     const handleAuthorize = async () => {
         if (!project || isActionLoading) return;
@@ -92,25 +111,14 @@ export default function ProjectFinalizeAuthModal({
             const res = await safeApiRequest(`/api/projects/${project.id}/finalize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ force: true, userId: user.id })
+                body: JSON.stringify({ force: true })
             });
 
             if (res.ok) {
-                // Delete the notification
-                await safeApiRequest(`/api/notifications/${notification.id}`, { method: 'DELETE' });
-
-                // Notify the operator
-                await safeApiRequest('/api/notifications', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        operatorId: notification.operatorId,
-                        forSupervisors: false,
-                        title: 'Proyecto Finalizado',
-                        message: `El supervisor ha autorizado el cierre del proyecto "${project.nombre}".`,
-                        type: 'SYSTEM_MESSAGE'
-                    }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
+                await cerrarSolicitud(
+                    'Proyecto Finalizado',
+                    `El supervisor ha autorizado el cierre del proyecto "${project.nombre}".`
+                );
 
                 showToast('Proyecto finalizado y notificado.', 'success');
                 onSuccess();
@@ -132,21 +140,10 @@ export default function ProjectFinalizeAuthModal({
         if (!project || isActionLoading) return;
         setIsActionLoading(true);
         try {
-            // Delete the notification
-            await safeApiRequest(`/api/notifications/${notification.id}`, { method: 'DELETE' });
-
-            // Notify the operator
-            await safeApiRequest('/api/notifications', {
-                method: 'POST',
-                body: JSON.stringify({
-                    operatorId: notification.operatorId,
-                    forSupervisors: false,
-                    title: 'Cierre Rechazado',
-                    message: `El supervisor ha rechazado el cierre del proyecto "${project.nombre}". Por favor, verifique los pendientes.`,
-                    type: 'SYSTEM_MESSAGE'
-                }),
-                headers: { 'Content-Type': 'application/json' }
-            });
+            await cerrarSolicitud(
+                'Cierre Rechazado',
+                `El supervisor ha rechazado el cierre del proyecto "${project.nombre}". Por favor, verifique los pendientes.`
+            );
 
             showToast('Solicitud rechazada y notificada.', 'info');
             onSuccess();

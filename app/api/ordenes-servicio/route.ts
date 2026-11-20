@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateCodigoOS } from '@/lib/codeGenerator';
+import { exigirAcceso } from '@/lib/permisosServer';
+import { puedeGestionarOSDelProyecto, SIN_PERMISO_OS } from '@/lib/os/acceso';
 
 // GET /api/ordenes-servicio  — listado para admin/supervisor
 // GET /api/ordenes-servicio?projectId=xxx  — OS de un proyecto
@@ -9,6 +11,14 @@ export async function GET(req: Request) {
     const projectId = url.searchParams.get('projectId');
 
     try {
+        // Todas las OS: quien gestiona o cobra OS. Las de un proyecto: también su responsable.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const veTodas = acceso.puede('os.gestionar') || acceso.puede('os.cobrar');
+        if (!veTodas && !(projectId && (await puedeGestionarOSDelProyecto(acceso, projectId)))) {
+            return NextResponse.json({ error: 'No tenés permiso para ver estas órdenes de servicio' }, { status: 403 });
+        }
+
         const ordenes = await prisma.ordenServicio.findMany({
             where: projectId ? { projectId } : undefined,
             include: {
@@ -48,11 +58,17 @@ export async function GET(req: Request) {
 // POST /api/ordenes-servicio — crear nueva OS
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { projectId, reporte, materiales, operadores, comentario, listaPrecioId } = body;
 
         if (!projectId || !reporte) {
             return NextResponse.json({ error: 'projectId y reporte son obligatorios' }, { status: 400 });
+        }
+        if (!(await puedeGestionarOSDelProyecto(acceso, projectId))) {
+            return NextResponse.json({ error: SIN_PERMISO_OS }, { status: 403 });
         }
         if (!operadores || operadores.length === 0) {
             return NextResponse.json({ error: 'Debe haber al menos un operador con horas' }, { status: 400 });
@@ -70,7 +86,7 @@ export async function POST(req: Request) {
             }
         }
 
-        // 1) Create OS and update project hours via service
+        // 1) Create OS via service (no toca Project.horasConsumidas: la fuente es el registro de tiempos)
         const { createOrdenServicio } = await import('@/lib/services/osService');
         const os = await createOrdenServicio({ projectId, reporte, materiales, operadores, comentario, listaPrecioId });
 

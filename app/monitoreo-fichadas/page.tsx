@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { AsistenciaNav } from '@/components/asistencia/AsistenciaNav';
 import { 
     Clock, 
     Calendar, 
@@ -331,6 +332,7 @@ export default function FichadasAdminPage() {
 
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-20">
+            <AsistenciaNav />
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
@@ -338,7 +340,7 @@ export default function FichadasAdminPage() {
                         <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg">
                             <Clock className="w-6 h-6" />
                         </div>
-                        Monitoreo de Fichadas
+                        Fichadas en curso
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Control auditado de ingresos y egresos (GPS / Dispositivo)</p>
                 </div>

@@ -4,12 +4,13 @@ import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'reac
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DragDropContext, Draggable, Droppable, type DropResult } from '@hello-pangea/dnd';
-import { ArrowLeft, Briefcase, Columns3, List, Mail, MessageCircle, Pencil, Plus, Sparkles, Trash2, UserPlus } from 'lucide-react';
+import { ArrowLeft, Briefcase, Columns3, List, Mail, MessageCircle, Pencil, Plus, Sparkles, Trash2, UserPlus, UserSearch } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import { showToast } from '@/components/Toast';
 import { Button, ConfirmDialogBase, EmptyState, ErrorState, LoadingState, SegmentedControl } from '@/components/ui';
 import { diasDesde, ETAPAS, linkWhatsapp, nombreCompleto, type EtapaId } from '@/lib/rrhh/reclutamiento';
 import NuevoPostulanteDialog from '@/components/rrhh/reclutamiento/NuevoPostulanteDialog';
+import BuscarEnBaseDialog from '@/components/rrhh/reclutamiento/BuscarEnBaseDialog';
 import VacanteDialog, { type VacanteEditable } from '@/components/rrhh/reclutamiento/VacanteDialog';
 import { API, apiJson, Avatar, useMigasReclutamiento, useTituloRuta, EstadoVacanteBadge, MatchBadge, PrioridadBadge, RecomendacionBadge, VeracidadBadge, type Permisos } from '@/components/rrhh/reclutamiento/shared';
 
@@ -46,6 +47,7 @@ function PipelineView({ id }: { id: string }) {
     const [eliminar, setEliminar] = useState(false);
     const [eliminando, setEliminando] = useState(false);
     const [evaluando, setEvaluando] = useState<string | null>(null);
+    const [buscarEnBase, setBuscarEnBase] = useState(false);
 
     useMigasReclutamiento();
     useTituloRuta(`/rrhh/reclutamiento/vacantes/${id}`, vacante?.title);
@@ -171,27 +173,28 @@ function PipelineView({ id }: { id: string }) {
                 title={vacante ? vacante.title : 'Pipeline'}
                 description={vacante ? [vacante.branch, `${activos} en proceso`, `${total} en total`, `${vacante.positionsCount} ${vacante.positionsCount === 1 ? 'puesto' : 'puestos'}`].filter(Boolean).join(' · ') : 'Cargando…'}
                 icon={<Briefcase />}
-                toolbar={
-                    <div className="flex items-center gap-2">
-                        {vacante && <EstadoVacanteBadge estado={vacante.status} />}
-                        {vacante && <PrioridadBadge prioridad={vacante.priority} />}
-                        <SegmentedControl<Vista>
-                            label="Vista"
-                            value={vista}
-                            onChange={cambiarVista}
-                            options={[{ value: 'tablero', label: 'Tablero', icon: <Columns3 /> }, { value: 'lista', label: 'Lista', icon: <List /> }]}
-                        />
-                    </div>
-                }
                 actions={[
                     { id: 'volver', label: 'Vacantes', icon: <ArrowLeft />, onClick: () => router.push('/rrhh/reclutamiento/vacantes'), variant: 'ghost', hideLabelOnMobile: true },
                     ...(permisos.eliminar ? [{ id: 'eliminar', label: 'Eliminar', icon: <Trash2 />, onClick: () => setEliminar(true), variant: 'danger' as const, hideLabelOnMobile: true }] : []),
+                    { id: 'buscar-base', label: 'Buscar en la base', icon: <UserSearch />, onClick: () => setBuscarEnBase(true), variant: 'outline' as const, hideLabelOnMobile: true },
                     ...(permisos.gestionar ? [
                         { id: 'editar', label: 'Editar', icon: <Pencil />, onClick: () => setEditar(true), variant: 'outline' as const, hideLabelOnMobile: true },
                         { id: 'cargar', label: 'Cargar postulante', icon: <UserPlus />, onClick: () => setCargar({ etapa: 'POSTULADO' }), variant: 'primary' as const },
                     ] : []),
                 ]}
             />
+
+            <div className="flex flex-wrap items-center gap-2">
+                {vacante && <EstadoVacanteBadge estado={vacante.status} />}
+                {vacante && <PrioridadBadge prioridad={vacante.priority} />}
+                <SegmentedControl<Vista>
+                    label="Vista"
+                    value={vista}
+                    onChange={cambiarVista}
+                    className="ml-auto"
+                    options={[{ value: 'tablero', label: 'Tablero', icon: <Columns3 /> }, { value: 'lista', label: 'Lista', icon: <List /> }]}
+                />
+            </div>
 
             {!tarjetas || !vacante ? (
                 <LoadingState label="Cargando pipeline…" />
@@ -200,7 +203,12 @@ function PipelineView({ id }: { id: string }) {
                     icon={<UserPlus />}
                     title="Esta vacante todavía no tiene postulantes"
                     description="Subí CVs en PDF y la IA calcula la compatibilidad con los requisitos, o sumá postulantes de la base de talentos."
-                    action={permisos.gestionar ? <Button icon={<UserPlus />} onClick={() => setCargar({ etapa: 'POSTULADO' })}>Cargar postulante</Button> : undefined}
+                    action={
+                        <div className="flex flex-wrap justify-center gap-2">
+                            <Button variant="secondary" icon={<UserSearch />} onClick={() => setBuscarEnBase(true)}>Buscar en la base</Button>
+                            {permisos.gestionar && <Button icon={<UserPlus />} onClick={() => setCargar({ etapa: 'POSTULADO' })}>Cargar postulante</Button>}
+                        </div>
+                    }
                 />
             ) : vista === 'lista' ? (
                 <div className="surface overflow-hidden">
@@ -325,6 +333,15 @@ function PipelineView({ id }: { id: string }) {
                 onClose={() => { setCargar(null); }}
                 onGuardado={() => recargar()}
             />
+            {vacante && (
+                <BuscarEnBaseDialog
+                    open={buscarEnBase}
+                    onClose={() => setBuscarEnBase(false)}
+                    vacante={{ id: vacante.id, title: vacante.title }}
+                    puedeGestionar={permisos.gestionar}
+                    onSumados={() => recargar()}
+                />
+            )}
             <VacanteDialog open={editar} vacante={vacante} onClose={() => setEditar(false)} onGuardada={() => recargar()} />
             <ConfirmDialogBase
                 open={eliminar}

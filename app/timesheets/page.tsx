@@ -180,9 +180,7 @@ export default function TimesheetsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id,
-                    estadoConfirmado: true,
-                    requestUserId: currentUser?.id,
-                    requestUserRole: currentUser?.role
+                    estadoConfirmado: true
                 })
             });
             loadData();
@@ -319,9 +317,7 @@ export default function TimesheetsPage() {
                     causaRegistro: a.type === 'causa' ? a.targetId : null,
                     isExtra: a.isDevolucion || a.type === 'causa' ? false : a.isExtra,
                     isDevolucion: a.type === 'causa' ? false : a.isDevolucion,
-                    descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null,
-                    requestUserId: currentUser?.id,
-                    requestUserRole: currentUser?.role
+                    descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null
                 };
                 
                 const res = await safeApiRequest('/api/time-entries', {
@@ -360,9 +356,7 @@ export default function TimesheetsPage() {
                         causaRegistro: a.type === 'causa' ? a.targetId : null,
                         isExtra: a.isDevolucion || a.type === 'causa' ? false : a.isExtra,
                         isDevolucion: a.type === 'causa' ? false : a.isDevolucion,
-                        descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null,
-                        requestUserId: currentUser?.id,
-                        requestUserRole: currentUser?.role
+                        descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null
                     };
 
                     return safeApiRequest('/api/time-entries', {
@@ -408,9 +402,7 @@ export default function TimesheetsPage() {
         const id = entryToDelete || pendingAction?.id;
         if (!id) return;
         try {
-            let url = `/api/time-entries?id=${id}`;
-            if (currentUser?.id) url += `&requestUserId=${currentUser.id}`;
-            if (currentUser?.role) url += `&requestUserRole=${currentUser.role}`;
+            const url = `/api/time-entries?id=${id}`;
 
             const res = await safeApiRequest(url, { method: 'DELETE' });
             if (!res.ok) {
@@ -445,23 +437,26 @@ export default function TimesheetsPage() {
                 descripcionDevolucion: a?.isDevolucion ? a?.descripcionDevolucion : null
             };
 
-            const res = await safeApiRequest('/api/notifications', {
+            // El solicitante lo toma la API de la sesión (createdBy). Sin metadata = pedido de eliminación.
+            const res = await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
-                    operatorId: currentUser.id,
                     forSupervisors: true,
                     title: `Solicitud para ${actionText} registro`,
                     message: `El operador ${currentUser.nombreCompleto} solicita ${actionText} su registro de horas del ${formatDate(pendingAction.entry.fecha)} (${pendingAction.entry.causaRegistro ? `Causa: ${pendingAction.entry.causaRegistro}` : (pendingAction.entry.project?.nombre || 'Sin proyecto')}).\nMotivo: ${requestMessage}`,
                     type: 'TIME_MODIFICATION_REQUEST',
-                    relatedId: pendingAction.entry.id,
+                    priority: 'HIGH',
+                    category: 'System',
+                    entityType: 'timeEntry',
+                    entityId: pendingAction.entry.id,
                     metadata
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
             if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.error || 'Error al crear notificación interna');
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.error || 'Error al crear notificación interna');
             }
 
             showToast('Solicitud enviada a los supervisores exitosamente.', 'success');
@@ -634,7 +629,7 @@ export default function TimesheetsPage() {
                 <div className="space-y-1">
                     <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
                         <Clock className="text-indigo-500 w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Registro de Tiempos
+                        Registro de horas
                         <HelpContextual slug="registro-tiempos-ausencias" />
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Gestión de jornadas de los operadores e ingresos por proyecto</p>

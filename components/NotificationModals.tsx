@@ -28,14 +28,12 @@ export default function NotificationModals({ selectedNotification, user, onClose
                         id: notif.entityId,
                         horaIngreso: resData.horaIngreso,
                         horaEgreso: resData.horaEgreso,
-                        isExtra: resData.isExtra,
-                        requestUserId: user.id,
-                        requestUserRole: user.role
+                        isExtra: resData.isExtra
                     })
                 });
                 if (!res.ok) success = false;
             } else {
-                const res = await safeApiRequest(`/api/time-entries?id=${notif.entityId}&requestUserId=${user.id}&requestUserRole=${user.role}`, {
+                const res = await safeApiRequest(`/api/time-entries?id=${notif.entityId}`, {
                     method: 'DELETE'
                 });
                 if (!res.ok) success = false;
@@ -46,7 +44,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
                 return;
             }
 
-            const feedbackRes = await safeApiRequest('/api/activities', {
+            const feedbackRes = notif.createdBy && await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'SYSTEM_MESSAGE',
@@ -54,14 +52,14 @@ export default function NotificationModals({ selectedNotification, user, onClose
                     category: 'System',
                     title: 'Solicitud Aprobada',
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido aprobada.`,
-                    entityType: 'general',
-                    entityId: 'system',
-                    recipients: [{ operatorId: notif.operatorId }]
+                    entityType: 'timeEntry',
+                    entityId: notif.entityId,
+                    respondeA: notif.id // el servidor responde a quien creó el aviso
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            await safeApiRequest(`/api/activities/${notif.recipientId}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/activities/${notif.recipientId}?todos=1`, { method: 'DELETE' });
             onSuccess(notif.id);
             onClose();
             showToast('Modificación aprobada y aplicada.', 'success');
@@ -77,7 +75,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
             const notif = selectedNotification;
             const resData = notif.metadata;
 
-            const feedbackRes = await safeApiRequest('/api/activities', {
+            const feedbackRes = notif.createdBy && await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
                     type: 'SYSTEM_MESSAGE',
@@ -85,14 +83,14 @@ export default function NotificationModals({ selectedNotification, user, onClose
                     category: 'System',
                     title: 'Solicitud Rechazada',
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido rechazada por el supervisor.`,
-                    entityType: 'general',
-                    entityId: 'system',
-                    recipients: [{ operatorId: notif.operatorId }]
+                    entityType: 'timeEntry',
+                    entityId: notif.entityId,
+                    respondeA: notif.id // el servidor responde a quien creó el aviso
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            await safeApiRequest(`/api/activities/${notif.recipientId}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/activities/${notif.recipientId}?todos=1`, { method: 'DELETE' });
             onSuccess(notif.id);
             onClose();
             showToast('Solicitud rechazada.', 'success');

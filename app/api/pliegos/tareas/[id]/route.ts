@@ -11,6 +11,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     try {
         const { id } = await params;
         const actor = await getActor(req);
+        if (actor instanceof NextResponse) return actor;
         if (!actor.puedeVer) return prohibido();
         const parsed = marcaSchema.safeParse(await req.json().catch(() => null));
         if (!parsed.success) return errorValidacion(parsed.error);

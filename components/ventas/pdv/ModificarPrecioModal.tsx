@@ -19,7 +19,8 @@ interface ModificarPrecioModalProps {
   onClose: () => void;
   item: ItemCarritoInfo | null;
   currentUser: any;
-  onPrecioModificado: (nuevoPrecio: number, motivo: string) => void;
+  /** `autorizacion`: autorización firmada del supervisor, si se usó PIN (la valida el servidor al confirmar). */
+  onPrecioModificado: (nuevoPrecio: number, motivo: string, autorizacion?: string | null) => void;
 }
 
 const MOTIVOS_SUGERIDOS = [
@@ -103,7 +104,9 @@ export default function ModificarPrecioModal({
       return;
     }
 
-    // Si no es supervisor ni admin, requiere validar PIN de un supervisor activo
+    // Sin la función "Modificar precios", requiere el PIN de alguien que la tenga.
+    // El servidor devuelve una autorización firmada que viaja con el ítem hasta confirmar la venta.
+    let autorizacion: string | null = null;
     if (!esSupervisorOAdmin) {
       if (!pinSupervisor.trim() || pinSupervisor.trim().length < 3) {
         setError('Ingrese el PIN del Supervisor o Administrador que autoriza.');
@@ -116,7 +119,7 @@ export default function ModificarPrecioModal({
         const res = await fetch('/api/auth/verificar-supervisor', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pin: pinSupervisor.trim() }),
+          body: JSON.stringify({ pin: pinSupervisor.trim(), funcion: 'ventas.modificar_precios' }),
         });
         const supervisor = await res.json();
 
@@ -127,6 +130,7 @@ export default function ModificarPrecioModal({
           return;
         }
 
+        autorizacion = supervisor.autorizacion || null;
         showToast(`Modificación autorizada por ${supervisor.nombreCompleto}`, 'success');
       } catch (err: any) {
         setError('Error al validar autorización: ' + (err.message || 'error de conexión'));
@@ -136,7 +140,7 @@ export default function ModificarPrecioModal({
       setIsValidating(false);
     }
 
-    onPrecioModificado(precioNum, motivo.trim());
+    onPrecioModificado(precioNum, motivo.trim(), autorizacion);
     onClose();
   };
 

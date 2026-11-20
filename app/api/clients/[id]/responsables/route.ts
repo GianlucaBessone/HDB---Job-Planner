@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateInitialPassword, hashPassword } from '@/lib/portalAuth';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,9 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id: clientId } = params;
     const body = await req.json();
     const {
@@ -54,8 +58,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
       passwordHash = await hashPassword(initialPasswordPlain);
     }
 
-    const currentUserId = req.headers.get('x-user-id') || undefined;
-    const currentUserName = req.headers.get('x-user-name') || undefined;
+    const currentUserId = acceso.userId;
+    const currentUserName = acceso.nombre;
 
     let responsable;
 

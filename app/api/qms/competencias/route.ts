@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { searchParams } = new URL(req.url);
-        const operatorId = searchParams.get('operatorId');
+        // Sin "formacion.gestionar", solo la formación propia (se ignora ?operatorId).
+        const operatorId = acceso.puede('formacion.gestionar') ? searchParams.get('operatorId') : acceso.userId;
         
         const where: any = {};
         if (operatorId) {
@@ -28,6 +33,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['formacion.gestionar'], 'No tenés permiso para gestionar la formación del personal');
+        if (acceso instanceof NextResponse) return acceso;
+
         const data = await req.json();
         const {
             id,
@@ -37,10 +45,11 @@ export async function POST(req: Request) {
             estado,
             vencimiento,
             evidencia,
-            evaluacion,
-            aprobadorId,
-            aprobadorNombre
+            evaluacion
         } = data;
+        // El aprobador es el usuario de la sesión (se ignoran aprobadorId / aprobadorNombre del cuerpo).
+        const aprobadorId = acceso.userId;
+        const aprobadorNombre = acceso.nombre;
 
         if (!operatorId || !nombre) {
             return NextResponse.json({ error: 'Operador y nombre son campos obligatorios.' }, { status: 400 });

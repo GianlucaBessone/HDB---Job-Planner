@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PenTool, CheckCircle2, Loader2, AlertTriangle, Fingerprint } from 'lucide-react';
-import { safeApiRequest } from '@/lib/offline';
+import { firmarDocumento } from '@/lib/signatureCliente';
 import { showToast } from '@/components/Toast';
 
 interface SignatureButtonProps {
@@ -68,24 +68,18 @@ export default function SignatureButton({ documentId, documentVersion, onSignCom
         setIsSigning(true);
 
         try {
-            const res = await safeApiRequest('/api/signatures/sign', {
-                method: 'POST',
-                // La identidad del firmante la pone el servidor desde la sesión.
-                body: JSON.stringify({
-                    documentId,
-                    documentVersion,
-                    deviceId
-                })
-            });
+            // Sin cola offline: si no hay red, la firma falla acá y no se reenvía después.
+            // El firmante (id, nombre y DNI) lo resuelve el servidor desde la sesión.
+            const resultado = await firmarDocumento({ documentId, documentVersion, deviceId });
 
-            if (res.ok) {
-                const signature = await res.json();
+            if (resultado.ok) {
                 setIsSigned(true);
                 showToast('Documento firmado electrónicamente con éxito', 'success');
-                if (onSignComplete) onSignComplete(signature);
+                if (onSignComplete) onSignComplete(resultado.firma);
+            } else if (resultado.sinConexion) {
+                showToast(resultado.error, 'error');
             } else {
-                const errorData = await res.json();
-                showToast(`Error al firmar: ${errorData.error || 'Desconocido'}`, 'error');
+                showToast(`Error al firmar: ${resultado.error}`, 'error');
             }
         } catch (error) {
             console.error('Signature error:', error);

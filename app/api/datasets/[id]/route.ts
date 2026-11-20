@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireSGIRole } from '@/lib/sgiAuth';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
 import { validarSQL, calcularProximaEjecucion, construirSQLDesdeVisual, DefinicionVisual } from '@/lib/datasetEngine';
 
@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['datasets.usar', 'datasets.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const dataset = await prisma.dataset.findUnique({
@@ -42,8 +42,8 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
 
 export async function PUT(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['datasets.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const body = await req.json();
@@ -120,7 +120,7 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: { params:
         });
 
         await logAudit({
-            userId: auth.user.id,
+            userId: auth.userId,
             action: 'UPDATE',
             entity: 'DATASET',
             entityId: dataset.id,
@@ -140,8 +140,8 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: { params:
 
 export async function DELETE(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
-    const auth = requireSGIRole(req, ['supervisor', 'admin']);
-    if (auth.error) return auth.error;
+    const auth = await exigirAcceso(req, ['datasets.gestionar']);
+    if (auth instanceof NextResponse) return auth;
 
     try {
         const existing = await prisma.dataset.findUnique({
@@ -168,7 +168,7 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
         await prisma.dataset.delete({ where: { id: params.id } });
 
         await logAudit({
-            userId: auth.user.id,
+            userId: auth.userId,
             action: 'DELETE',
             entity: 'DATASET',
             entityId: params.id,

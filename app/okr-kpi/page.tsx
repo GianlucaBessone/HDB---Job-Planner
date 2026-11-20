@@ -69,7 +69,7 @@ export default function OkrKpiPage() {
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             <ModuleHeader
-                title="Gestión de OKR y KPI"
+                title="Objetivos e indicadores"
                 description="Objetivos Estratégicos, Indicadores y Seguimiento de Cumplimiento — ISO 9001:2015"
                 icon={<Target className="w-5 h-5" />}
                 tabs={allowedTabs}

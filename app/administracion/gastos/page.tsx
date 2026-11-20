@@ -15,7 +15,7 @@ export default function GastosPage() {
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
       <ModuleHeader 
-        title="Gastos y Facturas" 
+        title="Gastos y facturas"
         description="Administración de consumos y proveedores"
       />
 

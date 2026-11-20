@@ -23,6 +23,7 @@ import {
     opcionesConValor,
 } from '@/lib/ventas/cotizacionOpciones';
 import { showToast } from '@/components/Toast';
+import { useAcceso } from '@/lib/store/useAccessStore';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { Badge, Button, EmptyState, Field, SegmentedControl } from '@/components/ui';
 import SeleccionarClienteModal from '@/components/ventas/pdv/SeleccionarClienteModal';
@@ -71,6 +72,12 @@ export default function CotizacionesPage() {
     const router = useRouter();
 
     const [vista, setVista] = useState<Vista>('cotizador');
+    // Sin "ventas.cotizaciones_gestionar" (p. ej. QA) las cotizaciones solo se consultan.
+    const { puede, cargado: accesosCargados } = useAcceso();
+    const gestiona = puede('ventas.cotizaciones_gestionar');
+    useEffect(() => {
+        if (accesosCargados && !gestiona) setVista('historial');
+    }, [accesosCargados, gestiona]);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [cotizacionEditandoId, setCotizacionEditandoId] = useState<string | null>(null);
     const [cotizacionEditandoNumero, setCotizacionEditandoNumero] = useState<string | null>(null);
@@ -562,7 +569,7 @@ export default function CotizacionesPage() {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'F8') {
                 e.preventDefault();
-                setVista((v) => (v === 'historial' ? 'cotizador' : 'historial'));
+                if (gestiona) setVista((v) => (v === 'historial' ? 'cotizador' : 'historial'));
                 return;
             }
             if (vista !== 'cotizador') return;
@@ -599,7 +606,7 @@ export default function CotizacionesPage() {
                         value={vista}
                         onChange={setVista}
                         options={[
-                            { value: 'cotizador', label: 'Cotizador', icon: <FileText /> },
+                            ...(gestiona ? [{ value: 'cotizador' as Vista, label: 'Cotizador', icon: <FileText /> }] : []),
                             { value: 'historial', label: <>Historial <span className="kbd ml-1">F8</span></>, icon: <History /> },
                         ]}
                     />
@@ -629,6 +636,7 @@ export default function CotizacionesPage() {
             {vista === 'historial' ? (
                 <HistorialCotizaciones
                     recargarToken={historialToken}
+                    soloLectura={!gestiona}
                     onVer={(cot) => setDocumento({ cotizacion: cot, recienGuardada: false })}
                     onEditar={(cot) => handleCargarCotizacionEnEditor(cot, false)}
                     onDuplicar={(cot) => handleCargarCotizacionEnEditor(cot, true)}
@@ -1106,7 +1114,8 @@ export default function CotizacionesPage() {
                 onSeleccionar={async (cli) => {
                     setClienteId(cli.id);
                     setClienteNombre(cli.nombre);
-                    setClienteCuit('');
+                    // CUIT de la ficha del cliente; se puede corregir a mano en la cotización.
+                    setClienteCuit(cli.identificacion || '');
                     setClienteTelefono(cli.telefono || '');
                     setClienteEmail(cli.email || '');
                     setClienteDireccion(cli.direccion || '');

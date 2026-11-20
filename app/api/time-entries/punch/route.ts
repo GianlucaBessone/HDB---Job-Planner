@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getDistanceInMeters } from '@/lib/geo';
+import { filterOperatorProjects } from '@/lib/projectSelectHelper';
 import { format, differenceInMinutes, parseISO } from 'date-fns';
 import { sendPushNotification } from '@/lib/onesignal';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 function calculateHours(start: string, end: string, daysElapsed: number = 0): number {
     if (!start || !end) return 0;
@@ -31,8 +33,18 @@ function daysBetween(a: string, b: string): number {
 
 export async function POST(req: Request) {
     try {
+        // Cada uno ficha por sí mismo: el operario es el usuario de la sesión.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
-        const { operatorId, action, entryId, deviceId, latitude, longitude, qrToken, isOfflinePending, timestamp, forceConfirmed } = body;
+        // Una fichada que pide otro operario (p. ej. una pendiente sin conexión que se envía
+        // con otra sesión abierta en el equipo) se rechaza en vez de asignarse a quien está logueado.
+        if (body.operatorId && body.operatorId !== acceso.userId) {
+            return NextResponse.json({ error: 'La fichada pertenece a otro usuario. Iniciá sesión con ese usuario para enviarla.' }, { status: 403 });
+        }
+        const operatorId = acceso.userId;
+        const { action, entryId, deviceId, latitude, longitude, qrToken, isOfflinePending, timestamp, forceConfirmed } = body;
         let projectId: string | null = body.projectId || null;
 
         if (!operatorId || !action || !deviceId) {
@@ -98,7 +110,14 @@ export async function POST(req: Request) {
         if (qrToken) score += 1;
 
         // 2. Geofence & QR Logic
-        let outOfGeofence = false;
+        type Zona = { lat: number; lng: number; radius: number };
+        const toZona = (lat: number | null | undefined, lng: number | null | undefined, radius: number | null | undefined): Zona | null =>
+            lat != null && lng != null && radius != null ? { lat, lng, radius } : null;
+
+        const sys = await prisma.systemSetting.findUnique({ where: { id: 'default' } });
+        const zonaBase = toZona(sys?.companyGeofenceLat, sys?.companyGeofenceLng, sys?.companyGeofenceRadius);
+
+        let zonaDestino: Zona | null = zonaBase;
         if (projectId) {
             const project = await prisma.project.findUnique({ where: { id: projectId }});
             if (!project) return NextResponse.json({ error: 'Proyecto no encontrado' }, { status: 404 });
@@ -110,30 +129,34 @@ export async function POST(req: Request) {
                 isSuspicious = true;
             }
 
-            if (latitude !== undefined && longitude !== undefined) {
-                if (project.geofenceLat !== null && project.geofenceLng !== null && project.geofenceRadius !== null) {
-                    const distance = getDistanceInMeters(latitude, longitude, project.geofenceLat, project.geofenceLng);
-                    if (distance > project.geofenceRadius) {
-                        outOfGeofence = true;
-                    }
-                } else {
-                    const sys = await prisma.systemSetting.findUnique({ where: { id: 'default' }});
-                    if (sys?.companyGeofenceLat !== null && sys?.companyGeofenceLng !== null && sys?.companyGeofenceRadius !== null && sys?.companyGeofenceLat !== undefined) {
-                        const distance = getDistanceInMeters(latitude, longitude, sys.companyGeofenceLat, sys.companyGeofenceLng);
-                        if (distance > sys.companyGeofenceRadius) {
-                            outOfGeofence = true;
-                        }
-                    }
+            // Un proyecto sin geovalla propia se valida contra la de la base.
+            zonaDestino = toZona(project.geofenceLat, project.geofenceLng, project.geofenceRadius) ?? zonaBase;
+        }
+
+        // Zonas válidas para fichar:
+        // - Ingreso: solo la del destino.
+        // - Egreso: la del destino o la base. Si la jornada empezó en la base, también la de cualquier
+        //   proyecto vigente (el operador sale de la base y termina el día en una obra).
+        //   Proyecto A → proyecto B sigue marcando fuera de rango.
+        const zonasValidas: Zona[] = zonaDestino ? [zonaDestino] : [];
+        if (action === 'OUT') {
+            if (zonaBase) zonasValidas.push(zonaBase);
+            if (!projectId) {
+                // Mismos proyectos que el operador ve al fichar (filterOperatorProjects).
+                const proyectos = await prisma.project.findMany({
+                    where: { geofenceLat: { not: null }, geofenceLng: { not: null }, geofenceRadius: { not: null } },
+                    select: { estado: true, updatedAt: true, geofenceLat: true, geofenceLng: true, geofenceRadius: true }
+                });
+                for (const p of filterOperatorProjects(proyectos)) {
+                    const z = toZona(p.geofenceLat, p.geofenceLng, p.geofenceRadius);
+                    if (z) zonasValidas.push(z);
                 }
             }
-        } else {
-            const sys = await prisma.systemSetting.findUnique({ where: { id: 'default' }});
-            if (latitude !== undefined && longitude !== undefined && sys?.companyGeofenceLat !== null && sys?.companyGeofenceLng !== null && sys?.companyGeofenceRadius !== null && sys?.companyGeofenceLat !== undefined) {
-                const distance = getDistanceInMeters(latitude, longitude, sys.companyGeofenceLat, sys.companyGeofenceLng);
-                if (distance > sys.companyGeofenceRadius) {
-                    outOfGeofence = true;
-                }
-            }
+        }
+
+        let outOfGeofence = false;
+        if (typeof latitude === 'number' && typeof longitude === 'number' && zonasValidas.length > 0) {
+            outOfGeofence = !zonasValidas.some(z => getDistanceInMeters(latitude, longitude, z.lat, z.lng) <= z.radius);
         }
 
         if (outOfGeofence) {
@@ -142,7 +165,8 @@ export async function POST(req: Request) {
             score += 2;
         }
 
-        if (latitude === undefined || longitude === undefined) {
+        // El cliente manda null cuando no tiene GPS. Un QR válido ya acredita el lugar.
+        if ((typeof latitude !== 'number' || typeof longitude !== 'number') && !qrValidated) {
             validationFlags.push('NO_LOCATION');
             isSuspicious = true;
         }
@@ -195,10 +219,18 @@ export async function POST(req: Request) {
                 const planning = await prisma.planning.findUnique({ where: { fecha: dateStr } });
                 if (planning) {
                     const blocks = planning.blocks as any[];
-                    const isAssigned = blocks.some((block: any) => {
+                    const enPlanificacion = blocks.some((block: any) => {
                         const opIds = Array.isArray(block.operatorIds) ? block.operatorIds : (block.operatorIds ? JSON.parse(block.operatorIds) : []);
                         return block.projectId === projectId && opIds.includes(operatorId);
                     });
+                    // El equipo asignado al proyecto (asistente de proyectos) también cuenta:
+                    // esa asignación no escribe en Planificación y sin esto la fichada caía en
+                    // Aprobaciones como "no asignado". Fechas YYYY-MM-DD: se comparan como texto.
+                    const enEquipo = enPlanificacion || !!(await prisma.proyectoAsignacion.findFirst({
+                        where: { projectId, operatorId, fechaDesde: { lte: dateStr }, fechaHasta: { gte: dateStr } },
+                        select: { id: true },
+                    }));
+                    const isAssigned = enPlanificacion || enEquipo;
                     if (!isAssigned) {
                         // Check if project is marked as "Fijo" — any operator can punch in
                         const punchProject = await prisma.project.findUnique({ where: { id: projectId }, select: { proyectoFijo: true } });

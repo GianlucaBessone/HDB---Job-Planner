@@ -1,15 +1,16 @@
-'use server';
-
+/**
+ * Lógica de EPP del módulo de Recursos Humanos. Solo se usa desde las APIs de
+ * app/api/rrhh/epp/** (que validan sesión y permisos) y desde la API pública
+ * de la matriz por token. No es un módulo de server actions: no le agregues
+ * esa directiva, o sus funciones quedarían invocables sin pasar por las APIs.
+ *
+ * Las funciones que registran movimientos reciben el usuario de la sesión:
+ * actas, kardex, solicitudes y auditoría quedan a su nombre.
+ */
 import { prisma } from '@/lib/prisma';
-import { revalidatePath } from 'next/cache';
 import { logAudit } from '@/lib/audit';
 import crypto from 'crypto';
-
-function safeRevalidate(path: string) {
-    try {
-        revalidatePath(path);
-    } catch (_) {}
-}
+import type { UsuarioEpp } from '@/lib/rrhh/eppSesion';
 
 // ==========================================
 // 1. MATRIZ DE CONTROL DE EPP GLOBALES
@@ -210,7 +211,7 @@ export async function getEppCatalog() {
     }
 }
 
-export async function createEppItem(data: {
+export async function createEppItem(usuario: UsuarioEpp, data: {
     nombre: string;
     codigo?: string;
     descripcion?: string;
@@ -251,16 +252,30 @@ export async function createEppItem(data: {
                         stockAnterior: 0,
                         stockPosterior: item.stockActual,
                         motivo: 'Carga inicial de inventario',
-                        registradoPor: 'Sistema'
+                        registradoPor: usuario.nombre
                     }
                 });
             }
 
+            await logAudit({
+                action: 'CREATE',
+                entity: 'EPP_ITEM',
+                entityId: item.id,
+                userId: usuario.id,
+                userName: usuario.nombre,
+                newValue: {
+                    nombre: item.nombre,
+                    codigo: item.codigo,
+                    categoria: item.categoria,
+                    esGlobal: item.esGlobal,
+                    diasValidez: item.diasValidez,
+                    stockActual: item.stockActual
+                }
+            });
+
             return item;
         });
 
-        safeRevalidate('/rrhh/personal/epp');
-        safeRevalidate('/mis-epp');
         return { 
             success: true, 
             data: {
@@ -279,7 +294,7 @@ export async function createEppItem(data: {
     }
 }
 
-export async function updateEppItem(id: string, data: {
+export async function updateEppItem(usuario: UsuarioEpp, id: string, data: {
     nombre?: string;
     codigo?: string;
     descripcion?: string;
@@ -294,9 +309,6 @@ export async function updateEppItem(id: string, data: {
     ajusteStock?: {
         nuevoStock: number;
         motivo: string;
-        registradoPor?: string;
-        userId?: string;
-        userName?: string;
     };
 }) {
     try {
@@ -331,7 +343,7 @@ export async function updateEppItem(id: string, data: {
                             stockAnterior: currentItem.stockActual,
                             stockPosterior: nuevoStockNum,
                             motivo: `[Ajuste Manual] ${data.ajusteStock.motivo.trim()} (Diferencia: ${diff > 0 ? '+' : ''}${diff})`,
-                            registradoPor: data.ajusteStock.registradoPor || data.ajusteStock.userName || 'Supervisor'
+                            registradoPor: usuario.nombre
                         }
                     });
 
@@ -340,8 +352,8 @@ export async function updateEppItem(id: string, data: {
                         action: 'UPDATE',
                         entity: 'EPP_STOCK_ADJUSTMENT',
                         entityId: id,
-                        userId: data.ajusteStock.userId,
-                        userName: data.ajusteStock.userName || data.ajusteStock.registradoPor,
+                        userId: usuario.id,
+                        userName: usuario.nombre,
                         oldValue: { stockActual: currentItem.stockActual },
                         newValue: { stockActual: nuevoStockNum, motivo: data.ajusteStock.motivo, diferencia: diff },
                         metadata: { eppNombre: currentItem.nombre, eppCodigo: currentItem.codigo }
@@ -373,8 +385,8 @@ export async function updateEppItem(id: string, data: {
                 action: 'UPDATE',
                 entity: 'EPP_ITEM',
                 entityId: id,
-                userId: data.ajusteStock?.userId,
-                userName: data.ajusteStock?.userName || data.ajusteStock?.registradoPor,
+                userId: usuario.id,
+                userName: usuario.nombre,
                 oldValue: {
                     nombre: currentItem.nombre,
                     codigo: currentItem.codigo,
@@ -394,8 +406,6 @@ export async function updateEppItem(id: string, data: {
             return updated;
         });
 
-        safeRevalidate('/rrhh/personal/epp');
-        safeRevalidate('/mis-epp');
         return { success: true, data: result };
     } catch (error: any) {
         if (error.code === 'P2002' || error.message?.includes('Unique constraint')) {
@@ -405,36 +415,16 @@ export async function updateEppItem(id: string, data: {
     }
 }
 
-export async function adjustEppStockManual(data: {
-    eppItemId: string;
-    nuevoStock: number;
-    motivo: string;
-    registradoPor?: string;
-    userId?: string;
-    userName?: string;
-}) {
-    return updateEppItem(data.eppItemId, {
-        ajusteStock: {
-            nuevoStock: data.nuevoStock,
-            motivo: data.motivo,
-            registradoPor: data.registradoPor,
-            userId: data.userId,
-            userName: data.userName
-        }
-    });
-}
-
 // ==========================================
 // 3. INGRESO DE STOCK Y MOVIMIENTOS (KARDEX)
 // ==========================================
 
-export async function addEppStock(data: {
+export async function addEppStock(usuario: UsuarioEpp, data: {
     eppItemId: string;
     cantidad: number;
     remitoFactura?: string;
     proveedor?: string;
     motivo?: string;
-    registradoPor?: string;
 }) {
     try {
         const qty = Number(data.cantidad);
@@ -449,13 +439,13 @@ export async function addEppStock(data: {
 
             if (!item) throw new Error('Elemento de EPP no encontrado');
 
-            const stockAnterior = item.stockActual;
-            const stockPosterior = stockAnterior + qty;
-
+            // Incremento atómico: dos ingresos simultáneos no se pisan.
             const updatedItem = await tx.eppItem.update({
                 where: { id: data.eppItemId },
-                data: { stockActual: stockPosterior }
+                data: { stockActual: { increment: qty } }
             });
+            const stockPosterior = updatedItem.stockActual;
+            const stockAnterior = stockPosterior - qty;
 
             const movement = await tx.eppStockMovement.create({
                 data: {
@@ -467,14 +457,13 @@ export async function addEppStock(data: {
                     motivo: data.motivo || 'Ingreso de mercadería / Compra',
                     remitoFactura: data.remitoFactura || null,
                     proveedor: data.proveedor || null,
-                    registradoPor: data.registradoPor || 'Supervisor'
+                    registradoPor: usuario.nombre
                 }
             });
 
             return { item: updatedItem, movement };
         });
 
-        safeRevalidate('/rrhh/personal/epp');
         return { success: true, data: result };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -518,18 +507,15 @@ export async function getEppStockMovements(eppItemId?: string) {
 // 4. REGISTRO Y DESPACHO DE ENTREGAS (RRHH)
 // ==========================================
 
-export async function createEppDelivery(data: {
+export async function createEppDelivery(usuario: UsuarioEpp, data: {
     operatorId: string;
     items: Array<{
         eppItemId: string;
         cantidad: number;
         talle?: string;
     }>;
-    entregadoPor?: string;
     observaciones?: string;
     firmaPresencialBase64?: string; // Si se firmó directamente en el puesto de entrega
-    signatureId?: string;
-    signatureHash?: string;
 }) {
     try {
         if (!data.operatorId) return { success: false, error: 'Debe seleccionar un operador' };
@@ -543,11 +529,16 @@ export async function createEppDelivery(data: {
             });
             const dbItemMap = new Map<string, any>(dbItems.map(i => [i.id, i]));
 
+            // Se controla el total por elemento: el mismo EPP puede venir en varias líneas.
+            const pedido = new Map<string, number>();
             for (const reqItem of data.items) {
-                const dbItem = dbItemMap.get(reqItem.eppItemId);
-                if (!dbItem) throw new Error(`Elemento no encontrado en catálogo: ${reqItem.eppItemId}`);
-                if (dbItem.stockActual < reqItem.cantidad) {
-                    throw new Error(`Stock insuficiente para "${dbItem.nombre}". Disponible: ${dbItem.stockActual}, Solicitado: ${reqItem.cantidad}`);
+                pedido.set(reqItem.eppItemId, (pedido.get(reqItem.eppItemId) || 0) + reqItem.cantidad);
+            }
+            for (const [eppItemId, cantidad] of Array.from(pedido.entries())) {
+                const dbItem = dbItemMap.get(eppItemId);
+                if (!dbItem) throw new Error(`Elemento no encontrado en catálogo: ${eppItemId}`);
+                if (dbItem.stockActual < cantidad) {
+                    throw new Error(`Stock insuficiente para "${dbItem.nombre}". Disponible: ${dbItem.stockActual}, Solicitado: ${cantidad}`);
                 }
             }
 
@@ -556,18 +547,16 @@ export async function createEppDelivery(data: {
             const countThisYear = await tx.eppDelivery.count();
             const codigoActa = `EPP-ENT-${todayYear}-${String(countThisYear + 1).padStart(4, '0')}`;
 
-            const isPresencialSigned = Boolean(data.firmaPresencialBase64 || data.signatureHash);
+            const isPresencialSigned = Boolean(data.firmaPresencialBase64);
 
             // 3. Crear acta de entrega
             const delivery = await tx.eppDelivery.create({
                 data: {
                     codigoActa,
                     operatorId: data.operatorId,
-                    entregadoPor: data.entregadoPor || 'Supervisor de Seguridad',
+                    entregadoPor: usuario.nombre,
                     estado: isPresencialSigned ? 'FIRMADA' : 'PENDIENTE_FIRMA',
                     firmaManuscritaUrl: data.firmaPresencialBase64 || null,
-                    signatureId: data.signatureId || null,
-                    signatureHash: data.signatureHash || null,
                     signedAt: isPresencialSigned ? new Date() : null,
                     observaciones: data.observaciones || null
                 }
@@ -595,14 +584,20 @@ export async function createEppDelivery(data: {
                     }
                 });
 
-                // Descontar stock
-                const stockAnterior = dbItem.stockActual;
-                const stockPosterior = stockAnterior - cant;
-
-                await tx.eppItem.update({
-                    where: { id: dbItem.id },
-                    data: { stockActual: stockPosterior }
+                // Descontar stock solo si alcanza: si otra entrega simultánea se lo llevó,
+                // falla toda la transacción en vez de dejar el stock en negativo.
+                const descontado = await tx.eppItem.updateMany({
+                    where: { id: dbItem.id, stockActual: { gte: cant } },
+                    data: { stockActual: { decrement: cant } }
                 });
+                if (descontado.count === 0) {
+                    throw new Error(`Stock insuficiente para "${dbItem.nombre}". Otra entrega lo usó recién; volvé a intentar.`);
+                }
+                const { stockActual: stockPosterior } = await tx.eppItem.findUniqueOrThrow({
+                    where: { id: dbItem.id },
+                    select: { stockActual: true }
+                });
+                const stockAnterior = stockPosterior + cant;
 
                 // Movimiento Kardex
                 await tx.eppStockMovement.create({
@@ -614,7 +609,7 @@ export async function createEppDelivery(data: {
                         stockPosterior,
                         deliveryId: delivery.id,
                         motivo: `Entrega a operador según Acta ${codigoActa}`,
-                        registradoPor: data.entregadoPor || 'Supervisor'
+                        registradoPor: usuario.nombre
                     }
                 });
             }
@@ -622,8 +617,20 @@ export async function createEppDelivery(data: {
             return delivery;
         });
 
-        safeRevalidate('/rrhh/personal/epp');
-        safeRevalidate('/mis-epp');
+        await logAudit({
+            action: 'CREATE',
+            entity: 'EPP_DELIVERY',
+            entityId: result.id,
+            userId: usuario.id,
+            userName: usuario.nombre,
+            newValue: {
+                codigoActa: result.codigoActa,
+                operatorId: result.operatorId,
+                estado: result.estado,
+                items: data.items.map(i => ({ eppItemId: i.eppItemId, cantidad: i.cantidad }))
+            }
+        });
+
         return { success: true, data: result };
     } catch (error: any) {
         console.error('Error al despachar entrega EPP:', error);
@@ -657,24 +664,43 @@ export async function getEppRequests() {
     }
 }
 
-export async function resolveEppRequest(data: {
+export async function resolveEppRequest(usuario: UsuarioEpp, data: {
     requestId: string;
     accion: 'APROBAR' | 'RECHAZAR';
-    resueltoPor: string;
     motivoRechazo?: string;
 }) {
     try {
-        const updated = await prisma.eppRequest.update({
+        const actual = await prisma.eppRequest.findUnique({
             where: { id: data.requestId },
+            select: { id: true, estado: true, operatorId: true, eppItemId: true }
+        });
+        if (!actual) return { success: false, error: 'Solicitud no encontrada' };
+        if (actual.estado !== 'PENDIENTE') return { success: false, error: 'La solicitud ya fue resuelta' };
+
+        // Condicionado al estado: dos resoluciones simultáneas no pasan las dos.
+        const marcada = await prisma.eppRequest.updateMany({
+            where: { id: data.requestId, estado: 'PENDIENTE' },
             data: {
                 estado: data.accion === 'APROBAR' ? 'APROBADA' : 'RECHAZADA',
                 fechaResolucion: new Date(),
-                resueltoPor: data.resueltoPor,
+                resueltoPor: usuario.nombre,
                 motivoRechazo: data.motivoRechazo || null
             }
         });
-        safeRevalidate('/rrhh/personal/epp');
-        safeRevalidate('/mis-epp');
+        if (marcada.count === 0) return { success: false, error: 'La solicitud ya fue resuelta' };
+        const updated = await prisma.eppRequest.findUniqueOrThrow({ where: { id: data.requestId } });
+
+        await logAudit({
+            action: data.accion === 'APROBAR' ? 'APPROVE' : 'REJECT',
+            entity: 'EPP_REQUEST',
+            entityId: updated.id,
+            userId: usuario.id,
+            userName: usuario.nombre,
+            oldValue: { estado: actual.estado },
+            newValue: { estado: updated.estado, motivoRechazo: updated.motivoRechazo },
+            metadata: { operatorId: actual.operatorId, eppItemId: actual.eppItemId }
+        });
+
         return { success: true, data: updated };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -749,11 +775,10 @@ export async function getClientsForEppShare() {
     }
 }
 
-export async function createEppPublicShare(data: {
+export async function createEppPublicShare(usuario: UsuarioEpp, data: {
     tipo: 'GENERAL' | 'CLIENTE';
     clientId?: string;
     titulo?: string;
-    creadoPor?: string;
 }) {
     try {
         let clientNombre: string | null = null;
@@ -778,12 +803,20 @@ export async function createEppPublicShare(data: {
                 tipo: data.tipo,
                 clientId: data.clientId || null,
                 clientNombre,
-                creadoPor: data.creadoPor || 'Administrador',
+                creadoPor: usuario.nombre,
                 activo: true
             }
         });
 
-        safeRevalidate('/rrhh/personal/epp');
+        await logAudit({
+            action: 'CREATE',
+            entity: 'EPP_PUBLIC_SHARE',
+            entityId: share.id,
+            userId: usuario.id,
+            userName: usuario.nombre,
+            newValue: { titulo: share.titulo, tipo: share.tipo, clientNombre: share.clientNombre }
+        });
+
         return { success: true, data: share };
     } catch (error: any) {
         return { success: false, error: error.message };
@@ -806,12 +839,21 @@ export async function getEppPublicShares() {
     }
 }
 
-export async function deleteEppPublicShare(id: string) {
+export async function deleteEppPublicShare(usuario: UsuarioEpp, id: string) {
     try {
-        await prisma.eppPublicShare.delete({
+        const share = await prisma.eppPublicShare.delete({
             where: { id }
         });
-        safeRevalidate('/rrhh/personal/epp');
+
+        await logAudit({
+            action: 'DELETE',
+            entity: 'EPP_PUBLIC_SHARE',
+            entityId: share.id,
+            userId: usuario.id,
+            userName: usuario.nombre,
+            oldValue: { titulo: share.titulo, tipo: share.tipo, clientNombre: share.clientNombre }
+        });
+
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message };

@@ -147,7 +147,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         os.estado === 'firmada' ? '✓ Firmada' :
                         os.estado === 'cobrada' ? 'OC Emitida' :
                         os.estado === 'pagada' ? '✓ Pagada' :
-                        os.estado === 'pendiente' ? 'Pendiente de firma' : 'Cancelada'
+                        os.estado === 'pendiente' ? 'Pendiente de firma' : os.estado === 'anulada' ? 'Anulada' : 'Cancelada'
                     }</div>
                     <p style="font-size:11px;color:#94a3b8;margin-top:8px;text-align:right;">Emitida: ${formatDate(os.fechaCreacion)}</p>
                 </div>
@@ -241,7 +241,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                 {os.estado === 'firmada' ? '✓ Firmada' :
                                  os.estado === 'cobrada' ? 'OC Emitida' :
                                  os.estado === 'pagada' ? '✓ Pagada' :
-                                 os.estado === 'pendiente' ? 'Pendiente de firma' : 'Cancelada'}
+                                 os.estado === 'pendiente' ? 'Pendiente de firma' : os.estado === 'anulada' ? 'Anulada' : 'Cancelada'}
                             </span>
                         </div>
                         <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 flex-wrap">
@@ -633,8 +633,14 @@ function OrdenesServicioContent() {
         try {
             const res = await safeApiRequest(`/api/ordenes-servicio/${osToDelete}`, { method: 'DELETE' });
             if (res.ok) {
-                showToast('Orden de Servicio eliminada', 'success');
-                setOrdenes(prev => prev.filter(o => o.id !== osToDelete));
+                const data = await res.json().catch(() => ({}));
+                if (data.modo === 'anulada') {
+                    showToast('La OS estaba firmada: quedó anulada y se conserva', 'success');
+                    setOrdenes(prev => prev.map(o => o.id === osToDelete ? { ...o, estado: 'anulada' } : o));
+                } else {
+                    showToast('Orden de Servicio eliminada', 'success');
+                    setOrdenes(prev => prev.filter(o => o.id !== osToDelete));
+                }
             } else {
                 const err = await res.json();
                 showToast(err.error || 'Error al eliminar la OS', 'error');
@@ -885,8 +891,8 @@ function OrdenesServicioContent() {
                                                 e.stopPropagation();
                                                 setOsToDelete(os.id);
                                             }}
-                                            title="Eliminar OS"
-                                            disabled={isDeleting === os.id}
+                                            title={['firmada', 'cobrada', 'pagada'].includes(os.estado) ? 'Anular OS' : 'Eliminar OS'}
+                                            disabled={isDeleting === os.id || os.estado === 'anulada'}
                                             className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 hover:border-red-500 hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-50"
                                         >
                                             {isDeleting === os.id ? (
@@ -949,8 +955,8 @@ function OrdenesServicioContent() {
 
             <ConfirmDialog
                 isOpen={!!osToDelete}
-                title="Eliminar Orden de Servicio"
-                message="¿Estás seguro de que quieres eliminar esta Orden de Servicio? Esta acción no se puede deshacer."
+                title="Eliminar o anular Orden de Servicio"
+                message="Si la OS ya fue firmada, cobrada o pagada, queda anulada y se conserva. Si está pendiente de firma, se elimina. En los dos casos queda registrado en Auditoría."
                 onConfirm={confirmDeleteOS}
                 onCancel={() => setOsToDelete(null)}
                 variant="danger"

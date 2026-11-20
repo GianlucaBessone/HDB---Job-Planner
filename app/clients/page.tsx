@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import {
     Plus,
     Search,
@@ -17,13 +18,27 @@ import {
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
+import { showToast } from '@/components/Toast';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { useRef } from 'react';
 
+/** Mensaje de error que devuelve la API (p. ej. un 403 por permisos). */
+async function mensajeError(res: Response, porDefecto: string): Promise<string> {
+    try {
+        const data = await res.json();
+        return data?.error || porDefecto;
+    } catch {
+        return porDefecto;
+    }
+}
+
 interface Client {
     id: string;
     nombre: string;
+    razonSocial?: string | null;
+    cuit?: string | null;
+    condicionIva?: string | null;
     email?: string;
     telefono?: string;
     direccion?: string;
@@ -39,6 +54,7 @@ interface Client {
 
 const EMPTY_FORM = {
     nombre: '',
+    cuit: '',
     email: '',
     telefono: '',
     direccion: '',
@@ -105,6 +121,7 @@ export default function ClientsPage() {
         setEditingClient(client);
         setFormData({
             nombre: client.nombre,
+            cuit: client.cuit || '',
             email: client.email || '',
             telefono: client.telefono || '',
             direccion: client.direccion || '',
@@ -119,7 +136,11 @@ export default function ClientsPage() {
         if (!formData.nombre.trim()) return;
         const method = editingClient ? 'PATCH' : 'POST';
         const url = editingClient ? `/api/clients?id=${editingClient.id}` : '/api/clients';
-        await safeApiRequest(url, { method, body: JSON.stringify(formData) });
+        const res = await safeApiRequest(url, { method, body: JSON.stringify(formData) });
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo guardar el cliente'), 'error');
+            return;
+        }
         setIsModalOpen(false);
         loadClients(true);
     };
@@ -132,18 +153,34 @@ export default function ClientsPage() {
     const confirmDelete = async () => {
         if (!clientToDelete) return;
         const id = clientToDelete;
-        setClients(prev => prev.filter(c => c.id !== id));
-        await safeApiRequest(`/api/clients?id=${id}`, { method: 'DELETE' });
+        const res = await safeApiRequest(`/api/clients?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setClientToDelete(null);
+        if (!res.ok) {
+            showToast(await mensajeError(res, 'No se pudo eliminar el cliente'), 'error');
+            return;
+        }
+        const data = await res.json().catch(() => null);
+        if (data?.modo === 'desactivado') {
+            // Tiene proyectos, ventas u órdenes: queda inactivo para no perder ese historial.
+            setClients(prev => prev.map(c => c.id === id ? { ...c, activo: false } : c));
+            showToast('Tiene historial: quedó desactivado en lugar de eliminarse', 'info');
+            return;
+        }
+        setClients(prev => prev.filter(c => c.id !== id));
+        showToast('Cliente eliminado', 'success');
     };
 
     const toggleStatus = async (id: string, currentStatus: boolean) => {
         setClients(prev => prev.map(c => c.id === id ? { ...c, activo: !currentStatus } : c));
-        await safeApiRequest(`/api/clients?id=${id}`, {
+        const res = await safeApiRequest(`/api/clients?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ activo: !currentStatus })
         });
+        if (!res.ok) {
+            setClients(prev => prev.map(c => c.id === id ? { ...c, activo: currentStatus } : c));
+            showToast(await mensajeError(res, 'No se pudo cambiar el estado'), 'error');
+        }
     };
 
     const filteredClients = useMemo(() => {
@@ -183,7 +220,7 @@ export default function ClientsPage() {
                 <div className="space-y-1">
                     <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
                         <UserCircle2 className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Gestión de Clientes
+                        Clientes
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Administra la base de datos de tus clientes</p>
                 </div>
@@ -250,7 +287,7 @@ export default function ClientsPage() {
             <ConfirmDialog
                 isOpen={isConfirmOpen}
                 title="Eliminar Cliente"
-                message="¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer."
+                message="Si tiene proyectos, ventas u órdenes, queda desactivado para conservar ese historial. Si no tiene nada, se elimina y no se puede deshacer."
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
             />
@@ -273,8 +310,9 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                     </div>
                     <div>
                         <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-1 group-hover:text-primary transition-colors">
-                            {client.nombre}
+                            <Link href={`/clients/${client.id}`} className="hover:underline">{client.nombre}</Link>
                         </h4>
+                        {client.cuit && <p className="text-xs text-muted-foreground font-mono">CUIT {client.cuit}</p>}
                         <div className="flex items-center gap-1.5 mt-0.5">
                             <span className={`w-2 h-2 rounded-full ${client.activo ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                             <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
@@ -375,6 +413,19 @@ function ClientModal({ formData, setFormData, editingClient, listasPrecios = [],
                                 value={formData.nombre}
                                 onChange={e => setField('nombre', e.target.value)}
                             />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">CUIT</label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                placeholder="30-12345678-9"
+                                value={formData.cuit}
+                                onChange={e => setField('cuit', e.target.value)}
+                            />
+                            <p className="field-hint px-1">Razón social y condición de IVA se completan en la ficha del cliente.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

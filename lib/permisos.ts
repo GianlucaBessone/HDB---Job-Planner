@@ -38,18 +38,79 @@ export interface FuncionConfig {
 export const FUNCIONES = [
     // ─ Usuarios ─
     { id: 'usuarios.gestionar', label: 'Gestionar usuarios', description: 'Crear, editar y eliminar usuarios', grupo: 'Usuarios', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'usuarios.asignar_rol', label: 'Asignar roles', description: 'Cambiar el rol de otros usuarios, hasta el rango propio', grupo: 'Usuarios', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'usuarios.accesos', label: 'Administrar accesos', description: 'Otorgar y quitar permisos especiales a otros usuarios', grupo: 'Usuarios', roles: ['admin'] },
+
+    // ─ Configuración ─
+    { id: 'config.administrar', label: 'Administrar configuración', description: 'Ajustes del sistema, fichaje, etiquetas, opciones y plantillas de checklist', grupo: 'Configuración', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'config.vistas', label: 'Configurar vistas por rol', description: 'Definir qué roles ven cada pantalla del menú', grupo: 'Configuración', roles: ['admin'] },
+    { id: 'config.prompts_ia', label: 'Editar prompts de IA', description: 'Modificar las plantillas de prompts que usa la IA', grupo: 'Configuración', roles: ['admin'] },
+    { id: 'sistema.mantenimiento', label: 'Mantenimiento del sistema', description: 'Correr procesos masivos de corrección de datos (sincronizar checklists y proyectos finalizados)', grupo: 'Configuración', roles: ['admin'] },
+
+    // ─ Auditoría ─
+    { id: 'auditoria.ver', label: 'Ver auditoría', description: 'Consultar el registro de auditoría de todo el sistema', grupo: 'Auditoría', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'dashboard.ver', label: 'Ver panel de análisis', description: 'Métricas globales, métricas de servicio, puntajes de operadores y riesgos de proyectos', grupo: 'Auditoría', roles: ['admin', 'supervisor', 'qa'] },
 
     // ─ Registro de tiempos ─
     { id: 'timesheets.control_horario', label: 'Control horario', description: 'Cruce entre registro de tiempos y fichadas, con ajustes', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor'] },
+    { id: 'timesheets.gestionar_horas', label: 'Gestionar horas de otros', description: 'Cargar, editar y borrar horas de otros usuarios y de días ya confirmados', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'fichadas.aprobar', label: 'Aprobar fichadas', description: 'Ver, aprobar y rechazar fichadas pendientes de aprobación', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'fichadas.monitorear', label: 'Monitorear fichadas', description: 'Ver las fichadas de todo el personal y el cruce con el registro de tiempos', grupo: 'Registro de tiempos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Planificación ─
+    { id: 'planificacion.gestionar', label: 'Gestionar planificación', description: 'Armar la agenda diaria y avisar al equipo asignado', grupo: 'Planificación', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Herramientas ─
+    { id: 'herramientas.gestionar', label: 'Gestionar herramientas y carros', description: 'Crear, editar y eliminar herramientas y carros, armar carros y ver el historial de movimientos', grupo: 'Herramientas', roles: ['admin', 'supervisor'] },
+
+    // ─ Gastos ─
+    { id: 'gastos.ver', label: 'Ver gastos y facturas', description: 'Consultar facturas de gastos, proveedores y códigos de gasto', grupo: 'Gastos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'gastos.gestionar', label: 'Gestionar gastos y facturas', description: 'Cargar, escanear, importar y eliminar facturas; administrar proveedores y códigos de gasto', grupo: 'Gastos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Formación ─
+    { id: 'formacion.gestionar', label: 'Gestionar formación', description: 'Ver la formación de todo el personal, validar certificados y administrar competencias', grupo: 'Formación', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Tareas ─
+    { id: 'tareas.ver_todas', label: 'Ver y gestionar todas las tareas', description: 'Ver, editar y eliminar tareas aunque no sea creador ni involucrado', grupo: 'Tareas', roles: ['admin'] },
+
+    // ─ Clientes ─
+    { id: 'clientes.gestionar', label: 'Gestionar clientes', description: 'Crear y editar clientes, sectores, tarifas y responsables del portal', grupo: 'Clientes', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'clientes.eliminar', label: 'Eliminar clientes', description: 'Eliminar clientes', grupo: 'Clientes', roles: ['admin', 'supervisor'] },
+
+    // ─ Calidad y documentación ─
+    { id: 'documentos.gestionar', label: 'Gestionar documentos', description: 'Crear y editar documentos controlados, versiones, archivos, reglas, cuestionarios y subaccesos', grupo: 'Calidad y documentación', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'documentos.eliminar', label: 'Eliminar documentos', description: 'Eliminar un documento controlado con todas sus versiones', grupo: 'Calidad y documentación', roles: ['admin', 'qa'] },
 
     // ─ Ventas ─
     { id: 'ventas.anular_venta', label: 'Anular ventas', description: 'Anular ventas del Punto de Venta sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.modificar_precios', label: 'Modificar precios', description: 'Cambiar el precio unitario en una venta sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
     { id: 'ventas.anular_comprobante_cc', label: 'Anular comprobantes de cuenta corriente', description: 'Anular recibos y movimientos sin PIN de supervisor', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+    { id: 'ventas.mano_obra_gestionar', label: 'Gestionar mano de obra', description: 'Editar categorías de mano de obra y su valor hora', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+    { id: 'ventas.cotizaciones_ver', label: 'Ver cotizaciones', description: 'Consultar cotizaciones y descargar su PDF', grupo: 'Ventas', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'ventas.cotizaciones_gestionar', label: 'Crear y editar cotizaciones', description: 'Crear cotizaciones, editarlas y cambiar su estado', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
+    { id: 'ventas.cc_ver', label: 'Ver cuentas corrientes', description: 'Consultar saldos, movimientos y estados de cuenta de los clientes', grupo: 'Ventas', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'ventas.cc_cobrar', label: 'Registrar cobranzas', description: 'Registrar cobranzas en la cuenta corriente de un cliente', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
+    { id: 'ventas.cc_ajustar', label: 'Ajustes de cuenta corriente', description: 'Registrar ajustes manuales (débitos y créditos) en la cuenta corriente', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
+    { id: 'ventas.cc_configurar', label: 'Configurar crédito y actualizar deuda', description: 'Cambiar el límite y las condiciones de crédito y actualizar la deuda a precios vigentes', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+    { id: 'ventas.catalogo_gestionar', label: 'Gestionar catálogo comercial', description: 'Crear, editar e importar productos, listas de precios y proveedores, y ajustar precios', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
+    { id: 'ventas.pdv_operar', label: 'Operar el Punto de Venta', description: 'Confirmar ventas, ver el historial de ventas, entregar pendientes y emitir remitos', grupo: 'Ventas', roles: ['admin', 'supervisor', 'vendedor'] },
 
-    // ─ Calidad ─
-    { id: 'firmas.ver_registro', label: 'Ver registro de firmas', description: 'Consultar todas las firmas digitales, con nombre y DNI del firmante', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa'] },
+    // ─ Proyectos ─
+    { id: 'proyectos.crear', label: 'Crear y planificar proyectos', description: 'Crear y editar proyectos, asignar el equipo y marcar tareas', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'provision.gestionar', label: 'Gestionar provisión de materiales', description: 'Cargar y editar materiales de proyecto, importar, avisar faltantes y corregir estados', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'proyectos.eliminar', label: 'Eliminar proyectos', description: 'Eliminar un proyecto con sus órdenes de servicio, horas y fichadas', grupo: 'Proyectos', roles: ['admin', 'supervisor'] },
+    { id: 'proyectos.finalizar', label: 'Finalizar proyectos', description: 'Finalizar un proyecto (el responsable lo pide por aviso)', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'proyectos.costos', label: 'Ver y ajustar costos de proyecto', description: 'Costo del proyecto, materiales cargados y sincronización de precios', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'demoras.gestionar', label: 'Gestionar demoras del cliente', description: 'Editar y eliminar demoras registradas (cargarlas está abierto a todos)', grupo: 'Proyectos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'os.gestionar', label: 'Gestionar órdenes de servicio', description: 'Crear y editar órdenes de servicio de cualquier proyecto (el responsable del proyecto gestiona las suyas)', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'os.eliminar', label: 'Eliminar órdenes de servicio', description: 'Eliminar una orden de servicio con sus materiales, operadores y firma', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor'] },
+    { id: 'os.cobrar', label: 'Cobrar órdenes de servicio', description: 'Cargar el cobro de una orden de servicio', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor'] },
+
+    // ─ Presupuestos de servicio ─
+    { id: 'presupuestos.ver', label: 'Ver presupuestos de servicio', description: 'Consultar presupuestos, sus revisiones y el reporte presupuestado vs. real', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'presupuestos.gestionar', label: 'Crear y editar presupuestos', description: 'Crear presupuestos, editarlos, abrir revisiones y enviarlos', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor'] },
+    { id: 'presupuestos.aprobar', label: 'Registrar aceptación o rechazo', description: 'Registrar la aceptación o el rechazo del cliente', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor'] },
+    { id: 'presupuestos.convertir', label: 'Convertir en proyecto', description: 'Crear el proyecto desde un presupuesto aceptado', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor'] },
 
     // ─ Recursos Humanos ─
     { id: 'rrhh.reclutamiento_ver', label: 'Ver reclutamiento', description: 'Consultar vacantes, postulantes, CV y análisis de IA', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
@@ -67,6 +128,53 @@ export const FUNCIONES = [
     { id: 'inventario.almacenes_admin', label: 'Administrar almacenes', description: 'Crear y editar almacenes y ubicaciones', grupo: 'Almacén y stock', roles: ['admin', 'supervisor'] },
     { id: 'inventario.exportar_inventario', label: 'Exportar inventario', description: 'Descargar existencias y movimientos', grupo: 'Almacén y stock', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
     { id: 'inventario.permitir_stock_negativo', label: 'Permitir stock negativo', description: 'Confirmar operaciones que dejan el stock en negativo', grupo: 'Almacén y stock', roles: ['admin'] },
+
+    // ─ Recursos Humanos: EPP ─
+    { id: 'rrhh.epp_ver', label: 'Ver EPP del personal', description: 'Consultar matriz, catálogo, kardex, solicitudes y legajo de EPP', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.epp_gestionar', label: 'Gestionar EPP', description: 'Editar catálogo y stock, resolver solicitudes y administrar enlaces públicos de la matriz', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.epp_entregar', label: 'Entregar EPP', description: 'Registrar actas de entrega de EPP y descontar stock', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Avisos ─
+    { id: 'avisos.enviar', label: 'Enviar avisos', description: 'Enviar un aviso a cualquier usuario (responder una solicitud recibida no lo necesita)', grupo: 'Avisos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Ventas: cuenta corriente ─
+    { id: 'ventas.exceder_limite_credito', label: 'Superar el límite de crédito', description: 'Confirmar ventas a cuenta corriente que superan el límite de crédito del cliente', grupo: 'Ventas', roles: ['admin', 'supervisor'] },
+
+    // ─ Calidad (SGI) ─
+    { id: 'calidad.ver', label: 'Ver SGI de calidad', description: 'Consultar no conformidades, CAPA, riesgos, oportunidades y objetivos de calidad', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'calidad.gestionar', label: 'Gestionar SGI de calidad', description: 'Crear, editar y eliminar NC, CAPA, riesgos, oportunidades y objetivos; análisis de causa y verificación de eficacia', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'calidad.indicadores_capa', label: 'Ver indicadores de CAPA', description: 'Resumen de acciones correctivas en el tablero', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa', 'operador'] },
+
+    // ─ Sugerencias ─
+    { id: 'sugerencias.gestionar', label: 'Gestionar sugerencias', description: 'Cambiar estado, asignar responsable, comentar, cargar acciones de mejora y analizar con IA', grupo: 'Calidad', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Tickets de soporte ─
+    { id: 'tickets.gestionar', label: 'Gestionar tickets', description: 'Ver todos los tickets, clasificar, asignar, cambiar estados, notas internas y volver a analizar con IA', grupo: 'Tickets de soporte', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'tickets.delegar_agente', label: 'Delegar tickets a un agente', description: 'Generar y revocar el acceso de un agente externo a un ticket', grupo: 'Tickets de soporte', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ OKR y KPI ─
+    { id: 'okr.ver', label: 'Ver OKR y KPI', description: 'Consultar OKR, KPI, mediciones, gráficos, planes de acción y tablero', grupo: 'OKR y KPI', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'okr.gestionar', label: 'Gestionar OKR y KPI', description: 'Crear y editar OKR, KPI, gráficos y planes de acción; cargar y sincronizar mediciones', grupo: 'OKR y KPI', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Datos ─
+    { id: 'datasets.usar', label: 'Usar datasets', description: 'Consultar, previsualizar, probar y ejecutar datasets', grupo: 'Datos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'datasets.gestionar', label: 'Gestionar datasets', description: 'Crear, editar y eliminar datasets', grupo: 'Datos', roles: ['admin', 'supervisor'] },
+    { id: 'diccionario.ver', label: 'Ver diccionario de datos', description: 'Consultar tablas y campos del diccionario de datos', grupo: 'Datos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'diccionario.editar', label: 'Editar diccionario de datos', description: 'Cargar y editar tablas y campos del diccionario de datos', grupo: 'Datos', roles: ['admin', 'supervisor'] },
+
+    // ─ Viajes y viáticos ─
+    { id: 'viajes.gestionar', label: 'Gestionar viajes', description: 'Crear, editar, eliminar y rendir viajes; ver todos los viajes y comprobantes; valores de referencia', grupo: 'Viajes y viáticos', roles: ['admin', 'supervisor', 'qa'] },
+
+    // ─ Análisis de pliegos ─
+    { id: 'pliegos.ver', label: 'Ver pliegos', description: 'Consultar análisis de pliegos y marcar tareas dentro o fuera del pliego', grupo: 'Análisis de pliegos', roles: ['admin', 'supervisor', 'qa', 'operador'] },
+    { id: 'pliegos.gestionar', label: 'Gestionar pliegos', description: 'Subir, analizar y borrar pliegos', grupo: 'Análisis de pliegos', roles: ['admin', 'supervisor'] },
+
+    // ─ Informes técnicos ─
+    { id: 'informes.eliminar_finalizados', label: 'Eliminar informes finalizados', description: 'Eliminar informes técnicos finalizados, con DNI, firma y justificación', grupo: 'Informes técnicos', roles: ['admin', 'supervisor'] },
+
+    // ─ Inteligencia artificial ─
+    { id: 'ia.generar_documentos', label: 'Generar documentos con IA', description: 'Generar documentación controlada con IA', grupo: 'Inteligencia artificial', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'ia.consumo_ver', label: 'Ver consumo de IA', description: 'Auditoría de consumo y costo de la IA por usuario', grupo: 'Inteligencia artificial', roles: ['admin', 'supervisor', 'qa'] },
 ] as const satisfies readonly FuncionConfig[];
 
 export type FuncionId = (typeof FUNCIONES)[number]['id'];
@@ -116,6 +224,28 @@ export function parseClave(clave: string): { tipo: 'vista' | 'funcion'; id: stri
 export function normalizarRol(role: string | null | undefined): string {
     const r = (role || '').trim().toLowerCase();
     return r === 'administrador' ? 'admin' : r;
+}
+
+// ── Roles y rango ──────────────────────────────────────────────────
+
+/** Roles válidos de un usuario. */
+export const ROLES = ['admin', 'supervisor', 'qa', 'vendedor', 'operador'] as const;
+export type Rol = (typeof ROLES)[number];
+
+/**
+ * Rango de cada rol. Nadie asigna un rol de rango mayor al propio ni edita
+ * a un usuario de rango mayor (ver lib/operators/reglasRol.ts).
+ */
+const RANGO_ROL: Record<Rol, number> = { admin: 3, supervisor: 2, qa: 2, vendedor: 1, operador: 1 };
+
+export function esRolValido(role: string | null | undefined): role is Rol {
+    return (ROLES as readonly string[]).includes(normalizarRol(role));
+}
+
+/** Rango del rol; 0 si el rol no existe. */
+export function rangoRol(role: string | null | undefined): number {
+    const r = normalizarRol(role);
+    return esRolValido(r) ? RANGO_ROL[r] : 0;
 }
 
 /** Permiso especial del usuario para una clave, o null si rige el rol. */

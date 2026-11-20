@@ -35,6 +35,7 @@ import Link from 'next/link';
 import { useModalScroll } from '@/lib/useModalScroll';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
+import { useAcceso } from '@/lib/store/useAccessStore';
 import { formatDateTime } from '@/lib/formatDate';
 import SignatureButton from '@/components/SignatureButton';
 import SignatureDetailModal from '@/components/SignatureDetailModal';
@@ -69,6 +70,8 @@ interface Project {
 
 export default function MyProjectsPage() {
     const [user, setUser] = useState<any>(null);
+    const { puede } = useAcceso();
+    const puedeFinalizar = puede('proyectos.finalizar');
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     
@@ -709,7 +712,7 @@ export default function MyProjectsPage() {
 
                 // Notify supervisors — urgency depends on category
                 const isBlocker = newLogCategoria === 'Bloqueante';
-                await safeApiRequest('/api/notifications', {
+                const notifRes = await safeApiRequest('/api/activities', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -719,9 +722,15 @@ export default function MyProjectsPage() {
                             : `Nuevo comentario en proyecto`,
                         message: `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\n[${newLogCategoria}] "${newLog}"`,
                         type: isBlocker ? 'BLOCKER_COMMENT' : 'NEW_COMMENT',
-                        relatedId: selectedProject.id
+                        priority: isBlocker ? 'HIGH' : 'NORMAL',
+                        category: 'Projects',
+                        entityType: 'project',
+                        entityId: selectedProject.id
                     })
                 });
+                if (isBlocker && !notifRes.ok) {
+                    showToast('El comentario se guardó, pero no se pudo avisar a los supervisores', 'error');
+                }
             } else {
                 showToast('Error al añadir comentario', 'error');
             }
@@ -736,16 +745,19 @@ export default function MyProjectsPage() {
         if (!selectedProject || !user) return;
         setIsFinalizing(true);
         try {
-            const res = await safeApiRequest('/api/notifications', {
+            // El solicitante lo toma la API de la sesión (createdBy)
+            const res = await safeApiRequest('/api/activities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    operatorId: user.id,
                     forSupervisors: true,
                     title: 'Solicitud de Finalización de Proyecto',
                     message: `El responsable ${user.nombreCompleto} solicita finalizar el proyecto "${selectedProject.nombre}".\nPor favor, revise el avance técnico para autorizar el cierre.`,
                     type: 'PROJECT_FINALIZE_REQUEST',
-                    relatedId: selectedProject.id
+                    priority: 'HIGH',
+                    category: 'Projects',
+                    entityType: 'project',
+                    entityId: selectedProject.id
                 })
             });
 
@@ -753,7 +765,8 @@ export default function MyProjectsPage() {
                 showToast('Solicitud enviada a los supervisores', 'success');
                 setSelectedProject(null);
             } else {
-                showToast('Error al enviar solicitud', 'error');
+                const data = await res.json().catch(() => null);
+                showToast(data?.error || 'Error al enviar solicitud', 'error');
             }
         } catch (error) {
             showToast('Error de conexión', 'error');
@@ -765,8 +778,8 @@ export default function MyProjectsPage() {
     const handleFinalizeProject = async (force = false) => {
         if (!selectedProject) return;
 
-        const isSupervisorOrAdmin = user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa';
-        if (!isSupervisorOrAdmin && !force) {
+        // Sin la función se pide el cierre a un supervisor (también con "finalizar de todos modos")
+        if (!puedeFinalizar) {
             handleRequestFinalization();
             return;
         }
@@ -776,7 +789,7 @@ export default function MyProjectsPage() {
             const res = await safeApiRequest(`/api/projects/${selectedProject.id}/finalize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ force, userId: user?.id })
+                body: JSON.stringify({ force })
             });
 
             if (res.ok) {
@@ -1400,13 +1413,13 @@ export default function MyProjectsPage() {
                             <button
                                 onClick={() => handleFinalizeProject()}
                                 disabled={isFinalizing}
-                                className={`w-full text-white py-4 rounded-2xl font-bold text-base shadow-xl transition-all flex items-center justify-center gap-2 ${(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa')
+                                className={`w-full text-white py-4 rounded-2xl font-bold text-base shadow-xl transition-all flex items-center justify-center gap-2 ${puedeFinalizar
                                     ? 'bg-primary hover:bg-primary/90'
                                     : 'bg-indigo-600 hover:bg-indigo-700'
                                     }`}
                             >
                                 {isFinalizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ClipboardCheck className="w-6 h-6" />}
-                                {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa')
+                                {puedeFinalizar
                                     ? 'FINALIZAR PROYECTO'
                                     : 'SOLICITAR FINALIZACIÓN'}
                             </button>

@@ -3,8 +3,12 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 import { dataLayer } from '@/lib/dataLayer';
+import { exigirAcceso } from '@/lib/permisosServer';
 
-export async function GET() {
+export async function GET(req: Request) {
+    const acceso = await exigirAcceso(req, ['dashboard.ver'], 'No tenés permiso para ver el panel de análisis');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         // Run the auto-update asynchronously so it doesn't block the dashboard load
         dataLayer.autoUpdateProjectStatuses().catch(e => console.error('Error auto-updating project statuses in dashboard raw api:', e));
@@ -14,7 +18,9 @@ export async function GET() {
             prisma.operator.findMany(),
             prisma.planning.findMany(),
             prisma.clientDelay.findMany(),
+            // Las OS anuladas no cuentan en las métricas.
             prisma.ordenServicio.findMany({
+                where: { estado: { not: 'anulada' } },
                 include: {
                     materiales: true,
                     operadores: true,

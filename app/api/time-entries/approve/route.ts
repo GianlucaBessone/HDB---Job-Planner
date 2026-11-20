@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
+
+const SIN_PERMISO = 'No tenés permiso para aprobar fichadas';
 
 export async function GET(req: Request) {
+    const acceso = await exigirAcceso(req, ['fichadas.aprobar'], SIN_PERMISO);
+    if (acceso instanceof NextResponse) return acceso;
+
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') || 'PENDING_APPROVAL';
 
@@ -28,8 +34,12 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['fichadas.aprobar'], SIN_PERMISO);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
-        const { id, action, approvedById } = body; // action: 'APPROVED' | 'REJECTED'
+        // Quien aprueba es siempre el usuario de la sesión (se ignora approvedById del cuerpo).
+        const { id, action } = body; // action: 'APPROVED' | 'REJECTED'
 
         if (!['APPROVED', 'REJECTED'].includes(action)) {
             return NextResponse.json({ error: 'Acción no permitida' }, { status: 400 });
@@ -55,10 +65,9 @@ export async function PATCH(req: Request) {
         }
 
         // Audit Log
-        const approver = approvedById ? await prisma.operator.findUnique({ where: { id: approvedById }, select: { nombreCompleto: true } }) : null;
         await logAudit({
-            userId: approvedById,
-            userName: approver?.nombreCompleto,
+            userId: acceso.userId,
+            userName: acceso.nombre,
             action: action === 'APPROVED' ? 'APPROVE' : 'REJECT',
             entity: 'FICHADA',
             entityId: id,

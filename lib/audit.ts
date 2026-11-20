@@ -7,7 +7,7 @@ export async function logAudit(params: {
     userId?: string;
     userName?: string;
     userEmail?: string;
-    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'APPROVE' | 'REJECT' | 'RESPONSE_CREATE';
+    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'APPROVE' | 'REJECT' | 'RESPONSE_CREATE' | 'CONVERT';
     entity: string;
     entityId?: string;
     oldValue?: any;
