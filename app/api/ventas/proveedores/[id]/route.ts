@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { proveedorVentasSchema } from '@/lib/ventas/proveedorVentas';
 import { buscarConflictoProveedor } from '@/lib/ventas/proveedorVentasConflictos';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -33,6 +34,9 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 export async function PUT(req: NextRequest, { params }: Ctx) {
   const { id } = await params;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const existing = await prisma.proveedorVentas.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: 'Proveedor no encontrado' }, { status: 404 });
 
@@ -71,6 +75,9 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 export async function PATCH(req: NextRequest, { params }: Ctx) {
   const { id } = await params;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { activo } = estadoSchema.parse(await req.json());
     const existing = await prisma.proveedorVentas.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: 'Proveedor no encontrado' }, { status: 404 });
@@ -105,6 +112,9 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 export async function DELETE(req: NextRequest, { params }: Ctx) {
   const { id } = await params;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const existing = await findWithCount(id);
     if (!existing) return NextResponse.json({ error: 'Proveedor no encontrado' }, { status: 404 });
 

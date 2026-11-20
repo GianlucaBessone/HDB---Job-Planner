@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { renderToStream } from '@react-pdf/renderer';
 import { CobroPdf } from '@/components/CobroPdf';
 import { createElement } from 'react';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 // Helper: read a Node.js ReadableStream into a Buffer
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
@@ -38,6 +39,9 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
     const { id } = params;
 
     try {
+        const acceso = await exigirAcceso(req, ['os.cobrar', 'os.gestionar'], 'No tenés permiso para ver el cobro de la orden de servicio');
+        if (acceso instanceof NextResponse) return acceso;
+
         const os = await prisma.ordenServicio.findUnique({
             where: { id },
             include

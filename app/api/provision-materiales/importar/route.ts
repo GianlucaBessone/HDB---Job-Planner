@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request) {
+    const acceso = await exigirAcceso(req, ['provision.gestionar'], 'No tenés permiso para gestionar la provisión de materiales');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const body = await req.json();
         const { sheets, mode = 'reemplazar' } = body;

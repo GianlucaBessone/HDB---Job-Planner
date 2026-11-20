@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
 import { recalcularPreciosParaLista } from '@/lib/ventas/listaPrecioService';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 const listaPrecioCreateSchema = z.object({
   nombre: z.string().min(1, 'El nombre de la lista es obligatorio'),
@@ -41,6 +42,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const data = listaPrecioCreateSchema.parse(body);
     const userId = req.headers.get('x-user-id') || undefined;

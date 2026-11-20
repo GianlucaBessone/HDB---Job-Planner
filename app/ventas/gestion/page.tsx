@@ -43,6 +43,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { formatARS } from '@/lib/formatCurrency';
 import { getColumnConfig, setColumnConfig, getColumnWidths, setColumnWidths, ColumnConfigItem } from '@/lib/viewPreferences';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 interface ProductoItem {
   id: string;
@@ -175,6 +176,9 @@ function getUserId(): string {
 
 export default function VentasGestionPage() {
   const router = useRouter();
+  // Sin "ventas.catalogo_gestionar" (p. ej. QA) el catálogo se consulta pero no se modifica.
+  const { puede } = useAcceso();
+  const gestionaCatalogo = puede('ventas.catalogo_gestionar');
 
   // Data state
   const [productos, setProductos] = useState<ProductoItem[]>([]);
@@ -590,7 +594,8 @@ export default function VentasGestionPage() {
 
           {/* Right: Actions Dropdowns & CTA */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Precios Dropdown */}
+            {/* Precios Dropdown (solo con "ventas.catalogo_gestionar") */}
+            {gestionaCatalogo && (
             <div className="relative" data-dropdown>
               <button
                 onClick={() => {
@@ -649,6 +654,7 @@ export default function VentasGestionPage() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Stock Dropdown */}
             <div className="relative" data-dropdown>
@@ -785,6 +791,7 @@ export default function VentasGestionPage() {
               <span>Proveedores</span>
             </button>
 
+            {gestionaCatalogo && (<>
             {/* Importar Productos (Pantalla Completa) */}
             <button
               onClick={() => router.push('/ventas/gestion/productos/importar')}
@@ -803,6 +810,7 @@ export default function VentasGestionPage() {
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Nuevo Producto</span>
             </button>
+            </>)}
           </div>
         </div>
 
@@ -1260,6 +1268,7 @@ export default function VentasGestionPage() {
                           >
                             <History className="w-3.5 h-3.5" />
                           </button>
+                          {gestionaCatalogo && (<>
                           <button
                             onClick={() => router.push(`/ventas/gestion/productos/nuevo?plantillaId=${prod.id}`)}
                             className="p-1 rounded-md text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
@@ -1281,6 +1290,7 @@ export default function VentasGestionPage() {
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
+                          </>)}
                         </div>
                       </td>
                     </tr>

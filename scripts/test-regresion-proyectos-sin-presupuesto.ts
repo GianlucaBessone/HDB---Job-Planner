@@ -28,11 +28,13 @@ function estable(x: any): any {
     return JSON.parse(JSON.stringify(x, (k, v) => (k === 'updatedAt' ? undefined : v)));
 }
 
-async function foto(legadoId: string) {
+/** Las APIs exigen sesión: los pedidos van como el supervisor de prueba (lo que deja el middleware). */
+async function foto(legadoId: string, userId: string) {
+    const headers = { 'x-user-id': userId };
     const [dash, raw, costo, lista, detalle] = await Promise.all([
-        dashboardGET(new Request('http://localhost/api/dashboard')).then((r) => r.json()),
-        dashboardRawGET().then((r) => r.json()),
-        costoGET(new Request(`http://localhost/api/projects/${legadoId}/cost`) as any, { params: Promise.resolve({ id: legadoId }) }).then((r) => r.json()),
+        dashboardGET(new Request('http://localhost/api/dashboard', { headers })).then((r) => r.json()),
+        dashboardRawGET(new Request('http://localhost/api/dashboard/raw', { headers })).then((r) => r.json()),
+        costoGET(new Request(`http://localhost/api/projects/${legadoId}/cost`, { headers }) as any, { params: Promise.resolve({ id: legadoId }) }).then((r) => r.json()),
         dataLayer.getProjects(),
         dataLayer.getProjectById(legadoId),
     ]);
@@ -58,7 +60,7 @@ async function main() {
     const mat = await prisma.materialProyecto.create({ data: { proyectoId: legado.id, nombre: 'Caño', codigo: `R${sx}`, unidad: 'M', cantidadEntregada: 10, precioVenta: 500 } });
     await prisma.materialUso.create({ data: { materialId: mat.id, cantidadUtilizada: 7, operadorNombre: 'test' } });
 
-    const antes = await foto(legado.id);
+    const antes = await foto(legado.id, op.id);
     assert.ok(antes.listado, 'el proyecto aparece en el listado');
     for (const k of ['presupuestoServicio', 'proyectoTareas', 'asignacionesOperadores']) {
         assert.ok(!(k in antes.listado), `el listado no suma el campo ${k}`);
@@ -90,7 +92,7 @@ async function main() {
     creados.borradores.push(br!.id);
     await calcularDisponibilidad({ desde: hoyArgentina(), hasta: sumarDias(hoyArgentina(), 13) });
 
-    const faseA = await foto(legado.id);
+    const faseA = await foto(legado.id, op.id);
     assert.deepEqual(faseA.dash, antes.dash, 'dashboard idéntico');
     assert.deepEqual(faseA.raw, antes.raw, 'dashboard crudo idéntico');
     assert.deepEqual(faseA.costo, antes.costo, 'costo del proyecto idéntico');
@@ -105,7 +107,7 @@ async function main() {
         { puedeConvertir: true }
     );
     creados.proyectos.push(nuevo.id);
-    const faseB = await foto(legado.id);
+    const faseB = await foto(legado.id, op.id);
     assert.deepEqual(faseB.costo, antes.costo, 'costo del proyecto viejo idéntico');
     assert.deepEqual(faseB.listado, antes.listado, 'el proyecto viejo se lista igual');
     assert.deepEqual(faseB.detalle, antes.detalle, 'detalle del proyecto viejo idéntico');

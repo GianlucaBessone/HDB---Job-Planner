@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
-        const acceso = await exigirAcceso(req);
+        const acceso = await exigirAcceso(req, ['documentos.gestionar'], 'No tenés permiso para generar evaluaciones de documentos');
         if (acceso instanceof NextResponse) return acceso;
 
         const body = await req.json();

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { buildProductSearchWhere, getWordVariants } from '@/lib/ventas/skuUtils';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 import { stripAccents } from '@/lib/ventas/pdvSearchEngine';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -345,6 +346,9 @@ export async function GET(req: Request) {
 
 // POST /api/materiales-proyecto — crear material
 export async function POST(req: Request) {
+    const acceso = await exigirAcceso(req, ['provision.gestionar'], 'No tenés permiso para gestionar la provisión de materiales');
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const { proyectoId, nombre, unidad, codigo, cantidadSolicitada, cantidadDisponible, cantidadEntregada, precioVenta } = body;
     if (!proyectoId || !nombre) return NextResponse.json({ error: 'proyectoId y nombre son requeridos' }, { status: 400 });

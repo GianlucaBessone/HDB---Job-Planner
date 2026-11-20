@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import * as xlsx from 'xlsx';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+        if (acceso instanceof NextResponse) return acceso;
+
         const formData = await req.formData();
         const file = formData.get('file') as File | null;
 

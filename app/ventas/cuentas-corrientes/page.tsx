@@ -233,15 +233,12 @@ export default function CuentasCorrientesPage() {
         if (!movimientoAnular || !motivoAnulacion.trim()) return;
         setAnulando(true);
         try {
-            const operadorNombre =
-                currentUser?.nombreCompleto || currentUser?.name || currentUser?.nombre || '';
             const res = await fetch(
                 `/api/ventas/cuentas-corrientes/movimientos/${movimientoAnular.id}/anular`,
                 {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'x-user-name': operadorNombre,
                     },
                     body: JSON.stringify({
                         motivo: motivoAnulacion.trim(),

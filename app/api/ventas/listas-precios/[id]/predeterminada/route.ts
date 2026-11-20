@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(
   req: NextRequest,
@@ -8,6 +9,9 @@ export async function POST(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req, ['ventas.catalogo_gestionar'], 'No tenés permiso para modificar el catálogo comercial');
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const userId = req.headers.get('x-user-id') || undefined;
 

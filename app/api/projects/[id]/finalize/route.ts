@@ -5,7 +5,8 @@ import { exigirAcceso } from '@/lib/permisosServer';
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
-        const acceso = await exigirAcceso(req);
+        // Finaliza quien tiene la función; el responsable lo pide por aviso desde "Mis proyectos".
+        const acceso = await exigirAcceso(req, ['proyectos.finalizar'], 'No tenés permiso para finalizar proyectos. Pedí la finalización a un supervisor.');
         if (acceso instanceof NextResponse) return acceso;
 
         const { id } = params;

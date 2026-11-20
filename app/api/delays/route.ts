@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
 import { withIdempotency } from '@/lib/idempotency';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +32,9 @@ export async function POST(req: Request) {
 
 
 export async function PATCH(req: Request) {
+    const acceso = await exigirAcceso(req, ['demoras.gestionar'], 'No tenés permiso para modificar demoras');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const url = new URL(req.url);
         const id = url.searchParams.get('id');
@@ -45,6 +49,9 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+    const acceso = await exigirAcceso(req, ['demoras.gestionar'], 'No tenés permiso para modificar demoras');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const url = new URL(req.url);
         const id = url.searchParams.get('id');

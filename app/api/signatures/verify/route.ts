@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
+    const acceso = await exigirAcceso(req, ['auditoria.ver'], 'No tenés permiso para ver el registro de firmas');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const signatures = await prisma.documentSignatureAudit.findMany({
             orderBy: { SignedAtUTC: 'desc' }

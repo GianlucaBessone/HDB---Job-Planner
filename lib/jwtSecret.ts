@@ -5,10 +5,11 @@
 const SOLO_DESARROLLO = 'clave-solo-para-desarrollo-local-no-usar-en-produccion';
 
 /**
- * @param uso Separa las claves de cada tipo de sesión, para que un token del
- *            portal de clientes no sirva como sesión interna y viceversa.
+ * @param uso Separa las claves de cada tipo de token, para que un token del portal
+ *            de clientes o una autorización de supervisor no sirvan como sesión
+ *            interna, ni al revés.
  */
-export function jwtKey(uso: 'interno' | 'portal'): Uint8Array {
+export function jwtKey(uso: 'interno' | 'portal' | 'autorizacion'): Uint8Array {
     let secreto = process.env.JWT_SECRET;
     if (!secreto) {
         if (process.env.NODE_ENV === 'production') {

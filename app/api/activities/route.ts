@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { exigirAcceso, getAcceso } from '@/lib/permisosServer';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { sendPushNotification } from '@/lib/onesignal';
 import { withIdempotency } from '@/lib/idempotency';
 
@@ -86,21 +86,29 @@ const postSchema = z
         entityType: z.string().trim().max(64).nullish(),
         entityId: z.string().trim().max(128).nullish(),
         metadata: z.record(z.string(), z.unknown()).nullish(),
-        /** Destinatario puntual. */
+        /** Destinatario puntual. Pide la función "avisos.enviar". */
         operatorId: z.string().trim().min(1).max(64).optional(),
+        /** Responder a quien creó un aviso que recibió el usuario de la sesión (id del aviso). */
+        respondeA: z.string().trim().min(1).max(64).optional(),
         /** Avisar a supervisores, administradores y QA activos (sin incluir al emisor). */
         forSupervisors: z.boolean().optional(),
     })
-    .refine((d) => !!d.operatorId || d.forSupervisors === true, { message: 'Indicá un destinatario o forSupervisors' });
+    .refine((d) => !!d.operatorId || !!d.respondeA || d.forSupervisors === true, {
+        message: 'Indicá un destinatario, el aviso al que respondés o forSupervisors',
+    });
 
 /**
  * Crea un aviso en la campana. El emisor (`createdBy`) sale de la sesión, nunca del cuerpo.
- * Destinatarios: `operatorId` y/o, con `forSupervisors`, los supervisores/admin/QA activos.
+ * Destinatarios:
+ *  - `respondeA`: quien creó un aviso que recibió el usuario de la sesión (respuesta a una solicitud).
+ *  - `operatorId`: cualquier usuario; pide la función "avisos.enviar".
+ *  - `forSupervisors`: supervisores, administradores y QA activos (el canal de pedidos, abierto a todos).
  */
 export async function POST(req: Request) {
     return withIdempotency(req, async () => {
-        const { userId } = await getAcceso(req);
-        if (!userId) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const { userId } = acceso;
 
         const parsed = postSchema.safeParse(await req.json().catch(() => null));
         if (!parsed.success) {
@@ -111,7 +119,22 @@ export async function POST(req: Request) {
         try {
             const recipientIds = new Set<string>();
 
+            if (data.respondeA) {
+                // Solo se responde un aviso propio, y la respuesta va a quien lo creó.
+                const original = await prisma.activity.findFirst({
+                    where: { id: data.respondeA, recipients: { some: { operatorId: userId } } },
+                    select: { createdBy: true },
+                });
+                if (!original || !original.createdBy) {
+                    return NextResponse.json({ error: 'No se encontró el aviso al que respondés' }, { status: 404 });
+                }
+                recipientIds.add(original.createdBy);
+            }
+
             if (data.operatorId) {
+                if (!acceso.puede('avisos.enviar')) {
+                    return NextResponse.json({ error: 'No tenés permiso para enviar avisos a otros usuarios' }, { status: 403 });
+                }
                 const destinatario = await prisma.operator.findUnique({ where: { id: data.operatorId }, select: { id: true } });
                 if (!destinatario) return NextResponse.json({ error: 'Destinatario no encontrado' }, { status: 404 });
                 recipientIds.add(destinatario.id);

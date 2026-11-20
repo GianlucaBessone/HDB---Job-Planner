@@ -92,7 +92,7 @@ export default function ProjectFinalizeAuthModal({
         await safeApiRequest('/api/activities', {
             method: 'POST',
             body: JSON.stringify({
-                operatorId: notification.createdBy,
+                respondeA: notification.id, // el servidor responde a quien creó el aviso
                 title,
                 message,
                 type: 'SYSTEM_MESSAGE',

@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
+import { exigirAcceso } from '@/lib/permisosServer';
 
-export async function POST() {
+export async function POST(req: Request) {
+    const acceso = await exigirAcceso(req, ['sistema.mantenimiento'], 'Solo un administrador puede correr procesos de mantenimiento');
+    if (acceso instanceof NextResponse) return acceso;
+
     try {
         const projects = await prisma.project.findMany({
             select: { id: true, nombre: true, tags: true }
