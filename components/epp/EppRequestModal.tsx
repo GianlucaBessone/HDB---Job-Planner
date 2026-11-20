@@ -3,12 +3,12 @@
 import React, { useState } from 'react';
 import { X, Package, Send, Loader2 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
-import { createOperatorEppRequest } from '@/app/mis-epp/actions';
+import { createOperatorEppRequest } from '@/lib/rrhh/eppCliente';
+import type { EppSolicitud } from '@/lib/rrhh/epp';
 
 interface EppRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
-    operatorId: string;
     catalog: any[];
     preselectedEppId?: string;
     onRequestCreated: () => void;
@@ -17,14 +17,13 @@ interface EppRequestModalProps {
 export default function EppRequestModal({
     isOpen,
     onClose,
-    operatorId,
     catalog,
     preselectedEppId,
     onRequestCreated
 }: EppRequestModalProps) {
     const [eppItemId, setEppItemId] = useState(preselectedEppId || '');
     const [talle, setTalle] = useState('');
-    const [motivo, setMotivo] = useState('DETERIORO');
+    const [motivo, setMotivo] = useState<EppSolicitud['motivo']>('DETERIORO');
     const [comentario, setComentario] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -40,7 +39,6 @@ export default function EppRequestModal({
         setSubmitting(true);
         try {
             const res = await createOperatorEppRequest({
-                operatorId,
                 eppItemId,
                 talle,
                 motivo,
@@ -115,7 +113,7 @@ export default function EppRequestModal({
                             </label>
                             <select
                                 value={motivo}
-                                onChange={(e) => setMotivo(e.target.value)}
+                                onChange={(e) => setMotivo(e.target.value as EppSolicitud['motivo'])}
                                 className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100"
                             >
                                 <option value="DETERIORO">Rotura / Desgaste</option>

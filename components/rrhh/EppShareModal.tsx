@@ -27,7 +27,7 @@ import {
     createEppPublicShare, 
     getEppPublicShares, 
     deleteEppPublicShare 
-} from '@/app/rrhh/personal/epp/actions';
+} from '@/lib/rrhh/eppCliente';
 
 interface EppShareModalProps {
     isOpen: boolean;
@@ -96,22 +96,12 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
             return;
         }
 
-        let supervisorName = 'Administrador de RRHH';
-        try {
-            const stored = localStorage.getItem('currentUser');
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                if (parsed.nombreCompleto) supervisorName = parsed.nombreCompleto;
-            }
-        } catch (_) {}
-
         setCreating(true);
         try {
             const res = await createEppPublicShare({
                 tipo: shareType,
                 clientId: shareType === 'CLIENTE' ? selectedClientId : undefined,
-                titulo: customTitle.trim() || undefined,
-                creadoPor: supervisorName
+                titulo: customTitle.trim() || undefined
             });
 
             if (res.success && res.data) {

@@ -52,6 +52,9 @@ export const FUNCIONES = [
     { id: 'rrhh.reclutamiento_ver', label: 'Ver reclutamiento', description: 'Consultar vacantes, postulantes, CV y análisis de IA', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'rrhh.reclutamiento_gestionar', label: 'Gestionar reclutamiento', description: 'Crear y editar vacantes y postulantes, mover etapas y analizar CV con IA', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'rrhh.reclutamiento_eliminar', label: 'Eliminar en reclutamiento', description: 'Eliminar vacantes y postulantes con su CV', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor'] },
+    { id: 'rrhh.epp_ver', label: 'Ver EPP', description: 'Consultar la matriz de EPP, catálogo, stock, solicitudes, fichas de operarios y enlaces públicos', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.epp_gestionar', label: 'Gestionar EPP', description: 'Editar el catálogo, ingresar y ajustar stock, registrar entregas, resolver solicitudes y compartir la matriz', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.mis_epp', label: 'Mis EPP', description: 'Ver los EPP propios, firmar entregas y pedir recambios', grupo: 'Recursos Humanos', roles: ['operador', 'supervisor', 'admin', 'qa'] },
 
     // ─ Almacén y stock ─
     { id: 'inventario.consultar_stock', label: 'Consultar stock', description: 'Ver existencias por almacén', grupo: 'Almacén y stock', roles: ['admin', 'supervisor', 'qa', 'vendedor', 'operador'] },

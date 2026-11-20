@@ -18,8 +18,7 @@ import {
     Square
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
-import { safeApiRequest } from '@/lib/offline';
-import { getMyEppData, signEppDelivery } from './actions';
+import { getMyEppData, signEppDelivery } from '@/lib/rrhh/eppCliente';
 import EppRequestModal from '@/components/epp/EppRequestModal';
 import SignatureDetailModal from '@/components/SignatureDetailModal';
 
@@ -45,11 +44,7 @@ export default function MisEppPage() {
     // Modal de firma
     const [selectedSignatureId, setSelectedSignatureId] = useState<string | null>(null);
 
-    // Lista de operadores para cambio rápido si se está probando como admin
-    const [availableOperators, setAvailableOperators] = useState<any[]>([]);
-
     useEffect(() => {
-        // Cargar dispositivo y usuario de sesión
         const storedDevice = localStorage.getItem('deviceId');
         if (storedDevice) {
             setDeviceId(storedDevice);
@@ -58,43 +53,16 @@ export default function MisEppPage() {
             localStorage.setItem('deviceId', newDev);
             setDeviceId(newDev);
         }
-
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-            try {
-                const parsed = JSON.parse(storedUser);
-                setCurrentUser(parsed);
-                loadData(parsed.id);
-            } catch (e) {
-                setLoading(false);
-            }
-        } else {
-            // Cargar lista de operadores para que el usuario pueda seleccionar su perfil si no está logueado
-            fetchOperators();
-        }
+        loadData();
     }, []);
 
-    const fetchOperators = async () => {
-        try {
-            const res = await fetch('/api/operators');
-            const ops = await res.json();
-            if (Array.isArray(ops) && ops.length > 0) {
-                setAvailableOperators(ops);
-                // Si no hay usuario, preseleccionar el primero
-                setCurrentUser(ops[0]);
-                localStorage.setItem('currentUser', JSON.stringify(ops[0]));
-                loadData(ops[0].id);
-            }
-        } catch (e) {
-            setLoading(false);
-        }
-    };
-
-    const loadData = async (operatorId: string) => {
+    // Los datos son siempre del usuario de la sesión: el servidor lo toma de la cookie.
+    const loadData = async () => {
         setLoading(true);
         try {
-            const res = await getMyEppData(operatorId);
-            if (res.success && res.data) {
+            const res = await getMyEppData();
+            if (res.success) {
+                setCurrentUser(res.data.operador);
                 setPendingDeliveries(res.data.pendingDeliveries || []);
                 setAssignedItems(res.data.assignedItems || []);
                 setSignedDeliveries(res.data.signedDeliveries || []);
@@ -107,9 +75,9 @@ export default function MisEppPage() {
                     initMap[del.id] = (del.items || []).map((it: any) => it.id);
                 });
                 setSelectedItemsByDelivery(initMap);
+            } else {
+                showToast(res.error, 'error');
             }
-        } catch (err) {
-            console.error('Error cargando Mis EPP:', err);
         } finally {
             setLoading(false);
         }
@@ -138,59 +106,23 @@ export default function MisEppPage() {
             return;
         }
 
-        const userDni = currentUser.dni || '00000000';
-
         setSigningDeliveryId(delivery.id);
         try {
-            // 1. Invocar el endpoint estándar de firma digital con checksum
-            const signRes = await safeApiRequest('/api/signatures/sign', {
-                method: 'POST',
-                body: JSON.stringify({
-                    documentId: delivery.id,
-                    documentVersion: '1.0',
-                    userId: currentUser.id,
-                    userName: currentUser.nombreCompleto,
-                    dni: userDni,
-                    deviceId: deviceId
-                })
-            });
-
-            if (!signRes.ok) {
-                const errData = await signRes.json();
-                throw new Error(errData.error || 'Error al generar firma criptográfica');
-            }
-
-            const signatureAudit = await signRes.json();
-
-            // 2. Confirmar entrega y actualizar items
+            // El servidor genera la firma con checksum con los datos de la sesión y confirma el acta.
             const result = await signEppDelivery({
                 deliveryId: delivery.id,
-                operatorId: currentUser.id,
                 itemIdsConfirmed: confirmedItems,
-                signatureId: signatureAudit.SignatureID,
-                signatureHash: signatureAudit.HashSignature
+                deviceId
             });
 
             if (result.success) {
                 showToast('¡Entrega firmada electrónicamente con checksum oficial!', 'success');
-                loadData(currentUser.id);
+                loadData();
             } else {
                 showToast(result.error || 'Error al actualizar acta de entrega', 'error');
             }
-        } catch (err: any) {
-            showToast(err.message || 'Error durante la firma', 'error');
         } finally {
             setSigningDeliveryId(null);
-        }
-    };
-
-    const handleSwitchOperator = (opId: string) => {
-        const found = availableOperators.find(o => o.id === opId);
-        if (found) {
-            setCurrentUser(found);
-            localStorage.setItem('currentUser', JSON.stringify(found));
-            loadData(found.id);
-            showToast(`Viendo como: ${found.nombreCompleto}`, 'info');
         }
     };
 
@@ -207,7 +139,7 @@ export default function MisEppPage() {
                         label: 'Actualizar',
                         icon: <RefreshCw className="w-4 h-4" />,
                         variant: 'outline',
-                        onClick: () => currentUser && loadData(currentUser.id)
+                        onClick: () => loadData()
                     },
                     {
                         id: 'request',
@@ -221,27 +153,6 @@ export default function MisEppPage() {
                     }
                 ]}
             />
-
-            {/* Selector de perfil si hay varios operadores (útil en dev / pruebas) */}
-            {availableOperators.length > 1 && (
-                <div className="p-3 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
-                    <span className="text-slate-500 font-medium">
-                        Operador activo: <strong className="text-slate-800 dark:text-slate-200">{currentUser?.nombreCompleto}</strong> (DNI: {currentUser?.dni || 'S/D'})
-                    </span>
-
-                    <select
-                        value={currentUser?.id || ''}
-                        onChange={(e) => handleSwitchOperator(e.target.value)}
-                        className="w-full sm:w-auto px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200"
-                    >
-                        {availableOperators.map(op => (
-                            <option key={op.id} value={op.id}>
-                                {op.nombreCompleto}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
 
             {/* SECCIÓN 1: ENTREGAS PENDIENTES DE FIRMA (ATENCIÓN INMEDIATA) */}
             {pendingDeliveries.length > 0 && (
@@ -536,10 +447,9 @@ export default function MisEppPage() {
                 <EppRequestModal
                     isOpen={requestModalOpen}
                     onClose={() => setRequestModalOpen(false)}
-                    operatorId={currentUser.id}
                     catalog={catalog}
                     preselectedEppId={preselectedEppId}
-                    onRequestCreated={() => loadData(currentUser.id)}
+                    onRequestCreated={() => loadData()}
                 />
             )}
 

@@ -17,7 +17,7 @@ import {
     Sparkles
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
-import { createEppDelivery, getEppCatalog } from '@/app/rrhh/personal/epp/actions';
+import { createEppDelivery, getEppCatalog } from '@/lib/rrhh/eppCliente';
 import EppScannerModal from './EppScannerModal';
 
 interface EppDeliveryModalProps {

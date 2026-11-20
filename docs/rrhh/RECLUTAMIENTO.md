@@ -57,4 +57,3 @@ El análisis viaja al navegador para que el usuario revise los datos. Para que e
 - Columna propia para el titular/perfil del postulante y la veracidad, si se quiere filtrar por ellos en la base (requiere migración).
 - Entrevistas y evaluaciones técnicas: el esquema existe (`Interview`, `InterviewEvaluation`, `TechnicalEvaluation`) pero no tienen pantalla.
 - Plantillas de mensajes (`MessageTemplate`) para WhatsApp/email.
-- Personal y EPP (`app/rrhh/personal/epp`) sigue con server actions sin control de sesión; conviene migrarlo a API con permisos como se hizo acá.

@@ -25,7 +25,7 @@ import {
     updateEppItem,
     addEppStock, 
     getEppStockMovements 
-} from '@/app/rrhh/personal/epp/actions';
+} from '@/lib/rrhh/eppCliente';
 
 interface EppStockManagerProps {
     items: any[];
@@ -233,8 +233,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                 cantidad: qtyToAdd,
                 remitoFactura: stockData.remitoFactura,
                 proveedor: stockData.proveedor,
-                motivo: stockData.motivo,
-                registradoPor: stockData.registradoPor
+                motivo: stockData.motivo
             });
 
             if (res.success && res.data) {
@@ -334,8 +333,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
             if (editFormData.enableStockAdjustment && stockManualNum !== editFormData.stockActualOriginal) {
                 payload.ajusteStock = {
                     nuevoStock: stockManualNum,
-                    motivo: editFormData.motivoAjuste.trim(),
-                    registradoPor: editFormData.supervisorAjuste
+                    motivo: editFormData.motivoAjuste.trim()
                 };
             }
 
@@ -1059,7 +1057,8 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                             <input
                                                 type="text"
                                                 value={editFormData.supervisorAjuste}
-                                                onChange={(e) => setEditFormData({ ...editFormData, supervisorAjuste: e.target.value })}
+                                                readOnly
+                                                title="El ajuste se registra con el usuario de la sesión"
                                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-700 dark:text-slate-200"
                                             />
                                         </div>
