@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { renderToString } from 'react-dom/server';
+import { FIRMA_IMAGEN_RE } from '@/lib/rrhh/eppFirma';
 
 interface EppResolution299ModalProps {
     isOpen: boolean;
@@ -306,7 +307,7 @@ export default function EppResolution299Modal({
                     // Firma digital o manuscrita
                     let signatureHtml = '';
                     if (isSigned) {
-                        if (del.firmaManuscritaUrl) {
+                        if (typeof del.firmaManuscritaUrl === 'string' && FIRMA_IMAGEN_RE.test(del.firmaManuscritaUrl)) {
                             signatureHtml = `<img src="${del.firmaManuscritaUrl}" style="max-height: 16px; object-fit: contain;" />`;
                         } else {
                             signatureHtml = `

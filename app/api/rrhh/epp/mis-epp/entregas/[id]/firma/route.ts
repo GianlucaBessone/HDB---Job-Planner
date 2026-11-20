@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { signEppDelivery } from '@/lib/rrhh/misEppServer';
 import { idSchema, leerBody, responder, sesionEpp } from '@/lib/rrhh/eppSesion';
+import { firmaImagenSchema } from '@/lib/rrhh/eppFirma';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ const firmaSchema = z.object({
     itemIdsConfirmed: z.array(idSchema).min(1, 'Debe seleccionar y confirmar al menos un ítem entregado').max(200),
     signatureId: z.string().trim().min(1, 'Firma digital con checksum requerida').max(200),
     signatureHash: z.string().trim().min(1, 'Firma digital con checksum requerida').max(500),
-    firmaManuscritaUrl: z.string().max(5_000_000).optional(),
+    firmaManuscritaUrl: firmaImagenSchema.optional(),
 });
 
 /** El operador de la sesión firma una entrega propia. */

@@ -151,13 +151,32 @@ export async function signEppDelivery(operador: UsuarioEpp, data: {
 
             if (!delivery) throw new Error('Acta de entrega no encontrada');
             if (delivery.operatorId !== operatorId) throw new Error('No autorizado para firmar esta entrega');
-            if (delivery.estado === 'FIRMADA') throw new Error('Esta entrega ya fue firmada previamente');
+            if (delivery.estado !== 'PENDIENTE_FIRMA') throw new Error('Esta entrega ya fue firmada previamente');
+
+            const confirmados = itemIdsConfirmed.filter(id => delivery.items.some(i => i.id === id));
+            if (confirmados.length === 0) throw new Error('Debe seleccionar y confirmar al menos un ítem entregado');
+
+            // La firma con checksum la genera /api/signatures/sign con la sesión. Acá se
+            // comprueba que exista, que sea de este operador y de esta acta, y que no se
+            // haya usado ya en otra: el cliente no puede inventar ni reutilizar una firma.
+            const firma = await tx.documentSignatureAudit.findUnique({ where: { SignatureID: signatureId } });
+            if (
+                !firma ||
+                firma.DocumentID !== deliveryId ||
+                firma.UserID !== operatorId ||
+                firma.HashSignature !== signatureHash ||
+                firma.VerificationStatus !== 'VALIDA'
+            ) {
+                throw new Error('La firma digital no corresponde a esta entrega');
+            }
+            const usada = await tx.eppDelivery.findFirst({ where: { signatureId, NOT: { id: deliveryId } }, select: { id: true } });
+            if (usada) throw new Error('La firma digital ya se usó en otra entrega');
 
             const now = new Date();
 
-            // 1. Actualizar acta de entrega
-            const updatedDelivery = await tx.eppDelivery.update({
-                where: { id: deliveryId },
+            // 1. Marcar el acta solo si sigue pendiente: dos firmas simultáneas no pasan las dos.
+            const marcada = await tx.eppDelivery.updateMany({
+                where: { id: deliveryId, operatorId, estado: 'PENDIENTE_FIRMA' },
                 data: {
                     estado: 'FIRMADA',
                     signatureId,
@@ -166,10 +185,12 @@ export async function signEppDelivery(operador: UsuarioEpp, data: {
                     signedAt: now
                 }
             });
+            if (marcada.count === 0) throw new Error('Esta entrega ya fue firmada previamente');
+            const updatedDelivery = await tx.eppDelivery.findUniqueOrThrow({ where: { id: deliveryId } });
 
             // 2. Actualizar cada ítem de la entrega
             for (const item of delivery.items) {
-                const isConfirmed = itemIdsConfirmed.includes(item.id);
+                const isConfirmed = confirmados.includes(item.id);
 
                 if (isConfirmed) {
                     const dias = item.diasValidez || item.eppItem.diasValidez || 365;
@@ -194,8 +215,8 @@ export async function signEppDelivery(operador: UsuarioEpp, data: {
                         }
                     });
 
-                    // Devolver al stock
-                    await tx.eppItem.update({
+                    // Devolver al stock (el kardex usa el valor real después del incremento)
+                    const devuelto = await tx.eppItem.update({
                         where: { id: item.eppItemId },
                         data: { stockActual: { increment: item.cantidad } }
                     });
@@ -205,8 +226,8 @@ export async function signEppDelivery(operador: UsuarioEpp, data: {
                             eppItemId: item.eppItemId,
                             tipo: 'AJUSTE',
                             cantidad: item.cantidad,
-                            stockAnterior: item.eppItem.stockActual,
-                            stockPosterior: item.eppItem.stockActual + item.cantidad,
+                            stockAnterior: devuelto.stockActual - item.cantidad,
+                            stockPosterior: devuelto.stockActual,
                             deliveryId: delivery.id,
                             motivo: `Devolución al pañol: no recibido por operario en Acta ${delivery.codigoActa}`,
                             registradoPor: operador.nombre
@@ -224,7 +245,7 @@ export async function signEppDelivery(operador: UsuarioEpp, data: {
             entityId: result.id,
             userId: operador.id,
             userName: operador.nombre,
-            newValue: { estado: result.estado, signatureId, itemIdsConfirmed },
+            newValue: { estado: result.estado, signatureId, itemIdsConfirmed: data.itemIdsConfirmed.filter(id => id) },
             metadata: { codigoActa: result.codigoActa }
         });
 

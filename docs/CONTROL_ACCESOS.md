@@ -167,6 +167,11 @@ Pasan por el control de accesos:
   usuario de la sesión. "Mis EPP" (`/api/rrhh/epp/mis-epp/**`) solo pide sesión y
   trabaja siempre sobre el operador de la sesión. La matriz pública por enlace
   (`/api/public/epp-matriz/[token]`) no pide sesión: solo valida el token.
+  Integridad: al firmar desde Mis EPP, el servidor comprueba que la firma de
+  `DocumentSignatureAudit` sea de esa acta y de ese operador y que no se haya usado en
+  otra; una entrega no acepta firma con checksum del cliente (solo la imagen presencial).
+  La firma dibujada tiene que ser una imagen (`lib/rrhh/eppFirma.ts`). El stock se
+  descuenta y se ingresa de forma atómica, y una solicitud se resuelve una sola vez.
 - Presupuestos de servicio y asistente de proyectos (ver `docs/presupuestos-servicio/README.md`):
   `presupuestos.ver` (admin, supervisor, qa), `presupuestos.gestionar`, `presupuestos.aprobar`,
   `presupuestos.convertir` y `ventas.mano_obra_gestionar` (admin y supervisor), y
