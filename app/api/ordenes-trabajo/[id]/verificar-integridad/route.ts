@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { verifyCycleIntegrity } from '@/lib/ot/canonicalHash';
 import { logAudit } from '@/lib/audit';
@@ -6,6 +7,9 @@ import { logAudit } from '@/lib/audit';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  // Usuario y nombre salen de la sesión (base de datos), no de headers del navegador.
+  const acceso = await exigirAcceso(req);
+  if (acceso instanceof NextResponse) return acceso;
   const params = await paramsPromise;
   try {
     const { id } = params;
@@ -54,8 +58,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
     const allValid = verificationResults.every((r) => r.valido);
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'APPROVE',
       entity: 'OT_VERIFICACION_INTEGRIDAD',
       entityId: id,

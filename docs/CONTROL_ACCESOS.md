@@ -40,8 +40,26 @@ Nadie puede cambiar su propio permiso de administrar accesos.
 - Ninguna API decide permisos con el rol o el usuario que manda el navegador (cuerpo,
   query o headers propios como `requestUserRole`, `role`, `userRole`, `approvedById`).
   Quien actúa, y quien queda en Auditoría, es siempre el usuario de la sesión.
-- El middleware borra los `x-user-id` / `x-user-role` que manda el navegador, también en
-  las rutas públicas: solo los pone él, después de validar la cookie.
+- El middleware borra los `x-user-id` / `x-user-role` / `x-user-name` que manda el navegador,
+  también en las rutas públicas. Los dos primeros solo los pone él, después de validar la
+  cookie; el nombre nadie lo manda en un header: sale de la base (`acceso.nombre`).
+
+## Autorización con PIN
+
+Cuando quien opera no tiene la función, otra persona puede autorizar la acción con su PIN
+(`lib/autorizacionSupervisor.ts`). Funciones que se autorizan así: `ventas.modificar_precios`,
+`ventas.anular_venta` y `ventas.anular_comprobante_cc`.
+
+- El PIN vale si es de un usuario activo que tiene esa función (por rol o permiso especial).
+- Los intentos fallidos se limitan por usuario que pide (5 en 15 minutos), igual en las tres APIs.
+- Las anulaciones (`/api/ventas/pdv/ventas/[id]/anular`,
+  `/api/ventas/cuentas-corrientes/movimientos/[id]/anular`) reciben el PIN en el mismo pedido
+  y quedan a nombre de quien autorizó.
+- Cambiar un precio en el PDV se autoriza antes de cobrar: `POST /api/auth/verificar-supervisor`
+  valida el PIN y devuelve una autorización firmada que vence a los 30 minutos, atada al
+  usuario que la pidió y a la función, y firmada con una clave propia (no sirve como sesión).
+  El ítem la lleva hasta `POST /api/ventas/pdv/confirmar`, que la valida por cada precio
+  modificado y agrega "Autorizó: Nombre" al motivo.
 
 ## Roles y rango (Gestión de Usuarios)
 
@@ -89,7 +107,10 @@ y el editor avisa que no puede guardar.
 Pasan por el control de accesos:
 
 - Menú lateral, inicio y buscador global (vistas).
-- Bloqueo de una vista denegada puntualmente, también si se entra por enlace directo.
+- Bloqueo de una vista si se entra por enlace directo: la denegada puntualmente y la que el
+  rol no tiene (`app/layout.tsx`). Lo segundo se decide cuando ya llegaron del servidor el rol,
+  los permisos especiales y la configuración de vistas. Las rutas que no son una vista del
+  menú no se bloquean.
 - Acceso a Punto de Venta y Auditoría de IA.
 - Funciones: gestionar usuarios, administrar accesos, control horario, anular ventas,
   modificar precios, anular comprobantes de cuenta corriente, las diez acciones de
@@ -201,25 +222,30 @@ que alcanza con una de las dos.
 | `/api/pliegos`, `[id]`, `[id]/analizar`, `[id]/archivo`, `[id]/archivo/confirmar`, `opciones` | POST, DELETE, GET de opciones | `pliegos.gestionar` |
 | `/api/informes-tecnicos/[id]` | DELETE de un informe finalizado | `informes.eliminar_finalizados`, más DNI y firma (el resto: usuario activo) |
 | `/api/ordenes-trabajo/[id]/comentarios` | GET, POST | usuario activo; el autor sale de la sesión |
-| `/api/ventas/pdv/confirmar` | POST | `ventas.modificar_precios` si hay precios modificados (o autorización / cotización); `ventas.exceder_limite_credito` para superar el límite de cuenta corriente; el vendedor es el usuario de la sesión |
+| `/api/ventas/pdv/confirmar` | POST | `ventas.modificar_precios` si hay precios modificados; si no, cada ítem modificado necesita la autorización firmada de un supervisor (ver "Autorización con PIN"), salvo que la venta venga de una cotización; `ventas.exceder_limite_credito` para superar el límite de cuenta corriente; el vendedor es el usuario de la sesión |
+| `/api/auth/verificar-supervisor` | POST | usuario activo; el PIN tiene que ser de alguien con la función pedida |
+| `/api/ventas/pdv/ventas/[id]/anular` | POST | `ventas.anular_venta`, o PIN de alguien que la tenga |
+| `/api/ventas/cuentas-corrientes/movimientos/[id]/anular` | POST | `ventas.anular_comprobante_cc`, o PIN de alguien que la tenga |
+| `/api/sgi/nc/[id]/similares` | GET | `calidad.ver` ∨ `calidad.gestionar` |
+| `/api/sgi/reunion/[id]`, `nc/[id]/reunion`, `nc/[id]/chat`, `nc/[id]/ia-docs` | todos | `calidad.gestionar` |
+| `/api/activities` | POST | usuario activo. `respondeA` (responder un aviso recibido, va a quien lo creó) y `forSupervisors` (pedidos a supervisión) están abiertos; `operatorId` (aviso directo a cualquiera) pide `avisos.enviar` |
+| `/api/cron/reminders?manual=true` | GET | `config.administrar` (rol y estado de la base) |
+| `/api/ai/{semantic-search,training,ocr,generate-checklist}` | POST | usuario activo; usuario, nombre y rol del registro de IA salen de la sesión |
 | `/api/ai/generate-doc` | POST | `ia.generar_documentos` |
 
 Todavía dependen solo del rol, o de datos que manda el navegador, y hay que migrarlos:
 
-- `POST /api/activities` toma el emisor de la sesión, pero cualquier usuario con sesión puede
-  enviar un aviso a cualquier otro (`operatorId`) o a todos los supervisores (`forSupervisors`).
 - Chequeos de rol sueltos dentro de las pantallas (botones y acciones que se muestran
-  según `role`; por ejemplo, Viajes usa `esGestorViajes`).
-- El PIN de supervisor (`/api/auth/verificar-supervisor` y las anulaciones de ventas y
-  cuenta corriente) compara el rol de quien lo ingresa a mano.
-- El PDV manda siempre `autorizadoPorSupervisor: true`: el servidor no comprueba esa
-  autorización.
-- `x-user-name` lo manda el navegador y varias APIs lo usan como nombre en la auditoría.
-- Las APIs de IA `semantic-search`, `training`, `ocr` y `generate-checklist` toman usuario,
-  nombre y rol del cuerpo, solo para registrar el uso.
-- `/api/cron/reminders?manual=true` usa el rol del token.
-- En `/api/time-entries` cada usuario puede marcar como confirmado un día propio.
-- `/api/sgi/reunion/[id]`, `nc/[id]/chat`, `nc/[id]/reunion`, `nc/[id]/similares` y
-  `nc/[id]/ia-docs` solo piden sesión.
-- Una vista que el rol no tiene, sin denegación puntual, solo se oculta del menú: no se
-  bloquea la URL directa (igual que antes de este módulo).
+  según `role`; por ejemplo, Viajes usa `esGestorViajes`). Las APIs ya controlan con
+  funciones; falta que las pantallas usen `useAcceso().puede(...)`.
+- `POST /api/ordenes-trabajo` toma el creador del cuerpo (`creadorId`).
+- `POST /api/ai/training` asigna la capacitación al `operatorId` del cuerpo, sin función que
+  lo controle.
+
+Decisiones tomadas (no son pendientes):
+
+- En `/api/time-entries` cada usuario confirma su propio día; después no lo puede editar ni
+  borrar sin `timesheets.gestionar_horas`. El campo `confirmadoPorSupervisor` guarda quién
+  confirmó, aunque sea el mismo usuario.
+- Una venta que viene de una cotización acepta sus precios modificados sin autorización
+  aparte: la cotización ya los fijó.

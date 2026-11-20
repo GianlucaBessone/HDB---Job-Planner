@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { getEmbedding, cosineSimilarity } from '@/lib/ai/embeddings';
 
@@ -6,6 +7,8 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
+    const acceso = await exigirAcceso(req, ['calidad.ver', 'calidad.gestionar']);
+    if (acceso instanceof NextResponse) return acceso;
     try {
         // 1. Fetch current NC
         const targetNc = await prisma.noConformidad.findUnique({

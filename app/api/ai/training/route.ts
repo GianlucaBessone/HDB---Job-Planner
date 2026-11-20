@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { generateObject } from '@/lib/ai';
 import { TrainingQuizOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
@@ -8,8 +9,15 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        // Usuario, nombre y rol salen de la sesión: los del cuerpo se ignoran.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
+
         const body = await req.json();
-        const { documentId, cantidadPreguntas, nivelDificultad, userId, userName, userRole, saveAsTraining, operatorId } = body;
+        const { documentId, cantidadPreguntas, nivelDificultad, saveAsTraining, operatorId } = body;
 
         if (!documentId) {
             return NextResponse.json({ error: 'Falta parámetro obligatorio: documentId.' }, { status: 400 });

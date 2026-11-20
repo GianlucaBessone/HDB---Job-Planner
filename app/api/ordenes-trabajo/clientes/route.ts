@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 
@@ -73,6 +74,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // Usuario y nombre salen de la sesión (base de datos), no de headers del navegador.
+  const acceso = await exigirAcceso(req);
+  if (acceso instanceof NextResponse) return acceso;
   try {
     const body = await req.json();
     const { clientId } = body;
@@ -102,8 +106,8 @@ export async function POST(req: NextRequest) {
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'UPDATE',
       entity: 'CLIENT_CONFIG',
       entityId: clientId,
@@ -122,6 +126,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // Usuario y nombre salen de la sesión (base de datos), no de headers del navegador.
+  const acceso = await exigirAcceso(req);
+  if (acceso instanceof NextResponse) return acceso;
   try {
     const { searchParams } = new URL(req.url);
     const clientId = searchParams.get('clientId');
@@ -142,8 +149,8 @@ export async function DELETE(req: NextRequest) {
     });
 
     await logAudit({
-      userId: req.headers.get('x-user-id') || undefined,
-      userName: req.headers.get('x-user-name') || undefined,
+      userId: acceso.userId,
+      userName: acceso.nombre,
       action: 'UPDATE',
       entity: 'CLIENT_CONFIG',
       entityId: clientId,

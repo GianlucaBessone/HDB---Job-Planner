@@ -20,9 +20,10 @@ const PUBLIC_DYNAMIC_ROUTES = [
   /^\/api\/signatures\/verify\/[^\/]+$/, // POST verificacion publica
 ];
 
-// Headers de identidad: solo los pone este middleware después de validar la cookie.
-// Si llegan desde el navegador se descartan, también en las rutas públicas.
-const HEADERS_SESION = ['x-user-id', 'x-user-role'];
+// Headers de identidad: x-user-id y x-user-role solo los pone este middleware después de
+// validar la cookie. Si llegan desde el navegador se descartan, también en las rutas
+// públicas. x-user-name no lo pone nadie: el nombre se lee de la base (getAcceso).
+const HEADERS_SESION = ['x-user-id', 'x-user-role', 'x-user-name'];
 
 function sinHeadersDeSesion(request: NextRequest): Headers {
   const headers = new Headers(request.headers);

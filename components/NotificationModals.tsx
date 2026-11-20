@@ -54,7 +54,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido aprobada.`,
                     entityType: 'timeEntry',
                     entityId: notif.entityId,
-                    operatorId: notif.createdBy
+                    respondeA: notif.id // el servidor responde a quien creó el aviso
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -85,7 +85,7 @@ export default function NotificationModals({ selectedNotification, user, onClose
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido rechazada por el supervisor.`,
                     entityType: 'timeEntry',
                     entityId: notif.entityId,
-                    operatorId: notif.createdBy
+                    respondeA: notif.id // el servidor responde a quien creó el aviso
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });

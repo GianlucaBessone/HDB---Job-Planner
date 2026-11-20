@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  // Usuario y nombre salen de la sesión (base de datos), no de headers del navegador.
+  const acceso = await exigirAcceso(req);
+  if (acceso instanceof NextResponse) return acceso;
   const params = await paramsPromise;
   try {
     const { id } = params;
     const body = await req.json();
-    const { nuevoEstado, motivo, usuarioId, usuarioNombre } = body;
+    // usuarioId / usuarioNombre del cuerpo se ignoran: el cambio queda a nombre de la sesión.
+    const { nuevoEstado, motivo } = body;
 
     const validStates = ['ABIERTA', 'PAUSADA', 'PENDIENTE_FIRMA', 'CERRADA'];
     if (!validStates.includes(nuevoEstado)) {
@@ -24,8 +29,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
     }
 
     const estadoAnterior = ot.estado;
-    const effectiveUserId = usuarioId || req.headers.get('x-user-id') || undefined;
-    const effectiveUserName = usuarioNombre || req.headers.get('x-user-name') || 'Usuario SGI';
+    const effectiveUserId = acceso.userId;
+    const effectiveUserName = acceso.nombre;
 
     const result = await prisma.$transaction(async (tx) => {
       const updated = await tx.ordenTrabajo.update({

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { exigirAcceso } from '@/lib/permisosServer';
 import { performOCR } from '@/lib/ai';
 import { OcrAnalysisOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
@@ -7,8 +8,15 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        // Usuario, nombre y rol salen de la sesión: los del cuerpo se ignoran.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
+
         const body = await req.json();
-        const { base64Data, mimeType, documentId, userId, userName, userRole } = body;
+        const { base64Data, mimeType, documentId } = body;
 
         // 1. Validaciones básicas
         if (!base64Data || !mimeType) {
