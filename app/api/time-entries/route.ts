@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { withIdempotency } from '@/lib/idempotency';
 import { logAudit } from '@/lib/audit';
@@ -48,6 +49,44 @@ export async function GET(req: Request) {
     }
 }
 
+// Formatos que mandan Registro de tiempos y la campana (aprobar una modificación).
+const fechaSchema = z.string({ error: 'Falta la fecha' }).regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (AAAA-MM-DD)');
+/** "HH:mm" (o "HH:mm:ss"); vacío o null cuando no hay hora (p. ej. ausencias). */
+const horaSchema = z.union([z.literal(''), z.string().regex(/^\d{1,2}:\d{2}(:\d{2})?$/, 'Hora inválida (HH:mm)')]).nullish();
+const idSchema = z.string().trim().max(64);
+const textoSchema = z.string().max(2000).nullish();
+
+/** Usuario y rol salen de la sesión: requestUserId / requestUserRole del cuerpo se descartan. */
+const postSchema = z.object({
+    operatorId: z.string({ error: 'Falta el operador' }).trim().min(1, 'Falta el operador').max(64),
+    fecha: fechaSchema,
+    projectId: idSchema.nullish(),
+    causaRegistro: z.string().trim().max(200).nullish(),
+    horaIngreso: horaSchema,
+    horaEgreso: horaSchema,
+    isExtra: z.boolean().optional(),
+    isDevolucion: z.boolean().optional(),
+    descripcionDevolucion: textoSchema,
+});
+
+/** Campos ausentes conservan el valor guardado; null lo borra donde el campo lo admite. */
+const putSchema = z.object({
+    id: z.string({ error: 'Falta el id del registro' }).trim().min(1, 'Falta el id del registro').max(64),
+    fecha: fechaSchema.optional(),
+    projectId: idSchema.nullish(),
+    causaRegistro: z.string().trim().max(200).nullish(),
+    horaIngreso: horaSchema,
+    horaEgreso: horaSchema,
+    estadoConfirmado: z.boolean().optional(),
+    isExtra: z.boolean().optional(),
+    isDevolucion: z.boolean().optional(),
+    descripcionDevolucion: textoSchema,
+});
+
+function datosInvalidos(error: z.ZodError) {
+    return NextResponse.json({ error: error.issues[0]?.message || 'Datos inválidos' }, { status: 400 });
+}
+
 export async function POST(req: Request) {
     return withIdempotency(req, async () => {
         try {
@@ -56,9 +95,9 @@ export async function POST(req: Request) {
             if (acceso instanceof NextResponse) return acceso;
             const gestionaHoras = acceso.puede('timesheets.gestionar_horas');
 
-            const data = await req.json();
-
-            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion } = data;
+            const parsed = postSchema.safeParse(await req.json().catch(() => null));
+            if (!parsed.success) return datosInvalidos(parsed.error);
+            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion } = parsed.data;
 
             // DEVOLUCIÓN requires a description
             if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
@@ -145,8 +184,9 @@ export async function PUT(req: Request) {
         if (acceso instanceof NextResponse) return acceso;
         const gestionaHoras = acceso.puede('timesheets.gestionar_horas');
 
-        const data = await req.json();
-        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion } = data;
+        const parsed = putSchema.safeParse(await req.json().catch(() => null));
+        if (!parsed.success) return datosInvalidos(parsed.error);
+        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion } = parsed.data;
 
         // DEVOLUCIÓN requires a description
         if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
@@ -196,7 +236,10 @@ export async function PUT(req: Request) {
                 isDevolucion: newIsDevolucion,
                 descripcionDevolucion: newIsDevolucion ? ((descripcionDevolucion !== undefined ? descripcionDevolucion?.trim() : existing.descripcionDevolucion) || null) : null,
                 estadoConfirmado: estadoConfirmado !== undefined ? estadoConfirmado : existing.estadoConfirmado,
-                confirmadoPorSupervisor: estadoConfirmado ? acceso.userId : null
+                // Solo cambia quién confirmó cuando se confirma o desconfirma; editar no lo borra
+                confirmadoPorSupervisor: estadoConfirmado === undefined
+                    ? existing.confirmadoPorSupervisor
+                    : (estadoConfirmado ? acceso.userId : null)
             }
         });
 

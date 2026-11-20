@@ -29,7 +29,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
         if (!user) return;
         const fetchNotifications = async (isPoll = false) => {
             try {
-                const res = await safeApiRequest(`/api/activities?operatorId=${user.id}`);
+                const res = await safeApiRequest(`/api/activities`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     if (isPoll && knownIdsRef.current.size > 0) {

@@ -192,6 +192,11 @@ export async function POST(req: Request) {
     });
 }
 
+const archivarSchema = z.object({
+    /** activityIds a archivar; sin ids se archivan todos los avisos del usuario. */
+    ids: z.array(z.string().trim().min(1).max(64)).max(500).optional(),
+});
+
 // Clear or delete activities (Archive)
 export async function DELETE(req: Request) {
     try {
@@ -200,23 +205,22 @@ export async function DELETE(req: Request) {
         if (acceso instanceof NextResponse) return acceso;
         const operatorId = acceso.userId;
 
-        let ids: string[] | undefined;
-        try {
-            const body = await req.json();
-            if (body && Array.isArray(body.ids)) {
-                ids = body.ids; // these are activityIds
-            }
-        } catch (e) {
-            // No body or invalid JSON, ignore and delete all
+        // Sin cuerpo (o vacío) se archivan todos los avisos del usuario.
+        const texto = await req.text();
+        let cuerpo: unknown = {};
+        if (texto.trim()) {
+            try { cuerpo = JSON.parse(texto); } catch { cuerpo = null; }
         }
+        const parsed = archivarSchema.safeParse(cuerpo);
+        if (!parsed.success) {
+            return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Datos inválidos' }, { status: 400 });
+        }
+        const ids = parsed.data.ids;
 
-        let whereClause: any = {
-            operatorId: operatorId
+        const whereClause: Prisma.ActivityRecipientWhereInput = {
+            operatorId: operatorId,
+            ...(ids && ids.length > 0 ? { activityId: { in: ids } } : {}),
         };
-
-        if (ids && ids.length > 0) {
-            whereClause.activityId = { in: ids };
-        }
 
         // Archive instead of delete
         await prisma.activityRecipient.updateMany({

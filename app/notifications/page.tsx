@@ -62,7 +62,7 @@ function NotificationsContent() {
         if (!user) return;
 
         try {
-            const res = await safeApiRequest(`/api/activities?operatorId=${user.id}`, {
+            const res = await safeApiRequest(`/api/activities`, {
                 method: 'DELETE',
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -116,7 +116,7 @@ function NotificationsContent() {
     const loadNotifications = async (userId: string, role: string, signal?: AbortSignal) => {
         setLoading(true);
         try {
-            const res = await safeApiRequest(`/api/activities?operatorId=${userId}`, { signal });
+            const res = await safeApiRequest(`/api/activities`, { signal });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             
             const data = await res.json();
