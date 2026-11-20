@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import type { ClienteInput } from './clientes';
 import { generateCodigoProyecto } from '@/lib/codeGenerator';
 import { logAudit } from '@/lib/audit';
 import { hashPin, isPinHashed } from '@/lib/pinAuth';
@@ -595,6 +596,9 @@ export const dataLayer = {
             select: {
                 id: true,
                 nombre: true,
+                razonSocial: true,
+                cuit: true,
+                condicionIva: true,
                 email: true,
                 telefono: true,
                 direccion: true,
@@ -613,15 +617,12 @@ export const dataLayer = {
             orderBy: { nombre: 'asc' }
         });
     },
-    async createClient(data: { nombre: string; email?: string; telefono?: string; direccion?: string; activo?: boolean; listaPrecioId?: string | null }) {
-        const cleanData = { ...data };
-        if (cleanData.listaPrecioId === '') cleanData.listaPrecioId = null;
-        return await prisma.hdbClient.create({ data: cleanData });
+    // Los datos llegan validados por clienteSchema (lib/clientes.ts).
+    async createClient(data: ClienteInput) {
+        return await prisma.hdbClient.create({ data });
     },
-    async updateClient(id: string, data: { nombre?: string; email?: string; telefono?: string; direccion?: string; activo?: boolean; listaPrecioId?: string | null }) {
-        const cleanData = { ...data };
-        if (cleanData.listaPrecioId === '') cleanData.listaPrecioId = null;
-        return await prisma.hdbClient.update({ where: { id }, data: cleanData });
+    async updateClient(id: string, data: Partial<ClienteInput>) {
+        return await prisma.hdbClient.update({ where: { id }, data });
     },
     async deleteClient(id: string, actor?: ActorAuditoria): Promise<ResultadoBaja> {
         const oldClient = await prisma.hdbClient.findUnique({

@@ -45,14 +45,26 @@ Sin cambios de base de datos.
 - P19 · Configuración repartida en los módulos: conviene hacerla junto con las fichas (cliente, persona, proyecto) para no mover los catálogos dos veces.
 - P28 · Demoras del cliente dentro de la bitácora: se hace con la ficha única del proyecto (FU11).
 
-## Fase 3 · Fichas y datos maestros — próxima
+## Fase 3 · Fichas y datos maestros — en curso
 
 Requiere cambios de esquema; las migraciones se aplican solo con autorización.
 
+### Hecho: ficha de cliente (P12, FU6)
+
+Migración `prisma/sql/20261120_clientes_datos_fiscales` (aditiva, probada ida/vuelta/ida en PostgreSQL 16 local). **Aplicarla en producción antes de desplegar este código.**
+
+| Cambio | Detalle |
+|---|---|
+| Datos fiscales | `HdbClient.razonSocial`, `cuit` (normalizado `30-12345678-9`) y `condicionIva` |
+| Ficha `/clients/[id]` | Pestañas Datos, Comercial (lista de precios, % sobre materiales, crédito), Portal y OT (tarifas, responsables, sectores), Proyectos y Cuenta corriente (saldo, vencido, disponible; enlace a sus movimientos) |
+| API de clientes | Alta y edición validadas con Zod (`lib/clientes.ts`); antes el cuerpo pasaba directo a la base. `GET /api/clients/[id]` para la ficha |
+| Ventas | El PDV busca por CUIT o razón social y usa el CUIT como identificación (antes ponía el teléfono o el email, que salían impresos como "CUIT/DNI"). Cotizaciones precarga el CUIT del cliente |
+| Cuentas corrientes | Acepta `?cliente=<id>` para abrir la cuenta de un cliente |
+
+### Pendiente en esta fase
+
 - P19 · Configuración repartida: cada catálogo junto a la ficha o el módulo que lo usa.
 - FU11, P28 · Ficha única del proyecto (Mis proyectos como filtro) con la bitácora que incluye las demoras del cliente.
-
-- P12 · Ficha de cliente con razón social, CUIT y condición de IVA, y su configuración en un solo lugar.
 - P8 · Una sola fuente de precios de materiales (`Producto`); se retira `MaterialMaestro`.
 - P9 · Stock integrado con ventas, entregas a obra y órdenes.
 - P15 · Las órdenes firmadas generan el cargo en cuenta corriente.
