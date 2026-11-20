@@ -111,7 +111,7 @@ export default function ProjectFinalizeAuthModal({
             const res = await safeApiRequest(`/api/projects/${project.id}/finalize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ force: true, userId: user.id })
+                body: JSON.stringify({ force: true })
             });
 
             if (res.ok) {

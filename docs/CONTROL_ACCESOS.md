@@ -254,8 +254,8 @@ Reglas por usuario, sin función:
 - **Materiales de proyecto**: uso, devolución y delegación quedan a nombre de la sesión;
   los permisos de cerrar una devolución se evalúan con el usuario de la sesión.
 - **OT, proyectos e IA**: alta y cambio de estado de OT, "Mis proyectos", recientes,
-  finalizar proyecto, remitos del PDV y las rutas de IA toman usuario, nombre y rol de la
-  sesión. Generar documentación con IA exige `ia.generar_documentos`.
+  finalizar proyecto (además pide `proyectos.finalizar`), remitos del PDV y las rutas de IA
+  toman usuario, nombre y rol de la sesión. Generar documentación con IA exige `ia.generar_documentos`.
 - **Provisión**: `GET /api/provision-proyectos` es solo de lectura. La corrección de estados
   de materiales es `POST /api/provision-proyectos/reparar` (`provision.gestionar`: admin,
   supervisor, qa, vendedor); la pantalla de Provisión la llama al cargar.

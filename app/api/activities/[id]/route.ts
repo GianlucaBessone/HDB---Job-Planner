@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { exigirAcceso } from '@/lib/permisosServer';
 
@@ -17,17 +18,22 @@ async function destinatarioPropio(req: Request, recipientId: string) {
     return recipient;
 }
 
+const marcarSchema = z.object({ read: z.boolean() });
+
 export async function PATCH(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
         const propio = await destinatarioPropio(req, params.id);
         if (propio instanceof NextResponse) return propio;
 
-        const body = await req.json();
+        const parsed = marcarSchema.safeParse(await req.json().catch(() => null));
+        if (!parsed.success) {
+            return NextResponse.json({ error: 'Indicá si el aviso queda leído (read: true o false)' }, { status: 400 });
+        }
 
         const recipient = await prisma.activityRecipient.update({
             where: { id: propio.id },
-            data: { readAt: body.read ? new Date() : null }
+            data: { readAt: parsed.data.read ? new Date() : null }
         });
 
         return NextResponse.json(recipient);
