@@ -11,6 +11,18 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
         const { id } = params;
         const body = await req.json();
 
+        // Una OS ya cargada en la cuenta corriente no cambia su cobro: el cargo quedaría con otro importe (P15)
+        const cargo = await prisma.cuentaCorrienteMovimiento.findFirst({
+            where: { origenTipo: 'OS', origenId: id, estado: 'CONFIRMADO' },
+            select: { numero: true },
+        });
+        if (cargo) {
+            return NextResponse.json(
+                { error: `Esta orden ya está cargada en la cuenta corriente (${cargo.numero}). Anulá ese cargo para cambiar el cobro.` },
+                { status: 409 }
+            );
+        }
+
         const {
             valorManoObra,
             descuentoPorcentaje,

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, Landmark, Save, Settings } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import ClientConfigModal from '@/components/ot/ClientConfigModal';
+import OrdenesPorCargar from '@/components/ventas/cuentas-corrientes/OrdenesPorCargar';
 import { Badge, EmptyState, ErrorState, Input, LoadingState, Panel, Select, Stat } from '@/components/ui';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
@@ -313,13 +314,14 @@ function PestanaComercial({ ficha, puedeEditar, onGuardado }: { ficha: Ficha; pu
 function PestanaCuenta({ clienteId }: { clienteId: string }) {
     const [resumen, setResumen] = useState<any>(null);
     const [error, setError] = useState(false);
+    const [version, setVersion] = useState(0);
 
     useEffect(() => {
         safeApiRequest(`/api/ventas/cuentas-corrientes/${clienteId}`)
             .then(async r => { if (!r.ok) throw new Error(); return r.json(); })
             .then(d => setResumen(d.resumen))
             .catch(() => setError(true));
-    }, [clienteId]);
+    }, [clienteId, version]);
 
     if (error) return <ErrorState description="No se pudo cargar la cuenta corriente." />;
     if (!resumen) return <LoadingState label="Cargando cuenta corriente…" />;
@@ -336,6 +338,8 @@ function PestanaCuenta({ clienteId }: { clienteId: string }) {
                 Ver movimientos y cobrar <ArrowRight aria-hidden="true" />
             </Link>
             {resumen.saldoActual <= 0.01 && <Badge tone="success">Sin deuda</Badge>}
+            {/* Trabajo firmado de este cliente que todavía no está en la cuenta (P15) */}
+            <OrdenesPorCargar clienteId={clienteId} onCargadas={() => setVersion(v => v + 1)} />
         </div>
     );
 }

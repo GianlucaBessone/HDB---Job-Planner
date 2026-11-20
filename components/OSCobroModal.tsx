@@ -212,7 +212,11 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                 body: JSON.stringify(body)
             });
 
-            if (!res.ok) throw new Error('Failed to save');
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                showToast(err?.error || 'Error al procesar cobro', 'error');
+                return;
+            }
             const data = await res.json();
             onSaveSuccess(data);
             showToast('Cobro guardado con éxito', 'success');

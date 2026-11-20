@@ -74,6 +74,8 @@ export default function ImprimirReciboCCModal({
       ? 'NOTA DE CRÉDITO INTERNA EN CUENTA CORRIENTE'
       : movimiento.tipo === 'SALDO_INICIAL'
       ? 'COMPROBANTE DE SALDO INICIAL EN CUENTA CORRIENTE'
+      : movimiento.tipo === 'CARGO_SERVICIO'
+      ? 'CARGO POR SERVICIO EN CUENTA CORRIENTE'
       : 'NOTA DE DÉBITO / CARGO EN CUENTA CORRIENTE';
 
   return (

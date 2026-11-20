@@ -1,7 +1,7 @@
 # Política de Tickets y Auto-fix
 
 **Versión:** 2.0.0
-**Ámbito:** HDB SGI (Next.js 15 + Prisma + PostgreSQL, con escritorio Electron opcional)
+**Ámbito:** HDB SGI (Next.js 15 + Prisma + PostgreSQL)
 **Reglas para agentes:** `GET /api/agente/instrucciones` (`app/api/agente/instrucciones/route.ts`)
 **Última actualización:** 2026-10-30
 
@@ -152,7 +152,7 @@ Ejemplos:
 - **Bajo**: un `if` mal escrito, un texto, un placeholder, un filtro que no refresca, una validación de formulario.
 - **Medio**: cambiar un componente compartido usado en 5 pantallas, refactor de una función de cálculo.
 - **Alto**: tocar `middleware.ts`, cambiar roles, modificar `prisma/schema.prisma`, agregar una librería.
-- **Crítico**: `prisma migrate`, `db push`, borrar registros, rotar secretos, tocar `electron/`.
+- **Crítico**: `prisma migrate`, `db push`, borrar registros, rotar secretos.
 
 ## 9. Reglas para agentes
 

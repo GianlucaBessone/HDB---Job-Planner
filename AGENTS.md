@@ -6,7 +6,6 @@ Guía para agentes que trabajen en este repositorio.
 
 - Next.js 15 (App Router), React 19, TypeScript, TailwindCSS.
 - Prisma 5.22 + PostgreSQL.
-- Electron opcional (`electron/`).
 - API routes en `app/api/**`; la autenticación pasa por `middleware.ts` y deja `x-user-id` / `x-user-role`.
 - Componentes compartidos en `components/`; lógica y catálogos en `lib/`.
 - En este proyecto conviven `Operator` (usuarios), `Sugerencia` (ISO 9001) y `Ticket` (soporte técnico). No los mezcles.

@@ -3426,7 +3426,7 @@ model CuentaCorrienteMovimiento {
   clienteId           String
   cliente             HdbClient @relation(fields: [clienteId], references: [id], onDelete: Restrict)
   fecha               DateTime  @default(now())
-  tipo                String    // "RECIBO_PAGO" | "CARGO_MANUAL" | "SALDO_INICIAL" | "NOTA_CREDITO"
+  tipo                String    // "RECIBO_PAGO" | "CARGO_MANUAL" | "SALDO_INICIAL" | "NOTA_CREDITO" | "CARGO_SERVICIO"
   concepto            String
   debe                Float     @default(0) // Aumenta deuda del cliente (CARGO_MANUAL, SALDO_INICIAL)
   haber               Float     @default(0) // Disminuye deuda del cliente (RECIBO_PAGO, NOTA_CREDITO)
@@ -3442,6 +3442,9 @@ model CuentaCorrienteMovimiento {
   motivoAnulacion     String?
   anuladoEn           DateTime?
   anuladoPorNombre    String?
+  // Orden que originó un CARGO_SERVICIO: "OS" (OrdenServicio.id) | "OT_CICLO" (OtCiclo.id)
+  origenTipo          String?
+  origenId            String?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -3450,6 +3453,7 @@ model CuentaCorrienteMovimiento {
   @@index([tipo])
   @@index([estado])
   @@index([numero])
+  @@index([origenTipo, origenId])
 }
 
 // ==========================================
