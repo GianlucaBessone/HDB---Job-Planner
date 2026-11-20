@@ -266,7 +266,11 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                 body: JSON.stringify(body)
             });
 
-            if (!res.ok) throw new Error('Failed to save');
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                showToast(err?.error || 'Error al procesar cobro', 'error');
+                return;
+            }
             
             showToast('Cobro guardado con éxito', 'success');
 

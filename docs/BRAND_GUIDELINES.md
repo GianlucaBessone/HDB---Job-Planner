@@ -60,7 +60,7 @@ Una **"H" cuyo travesaño es una chispa**: dos verticales firmes unidas por una 
 
 Un azul cobalto, más profundo y menos saturado que el azul "por defecto" de las librerías. Funciona en pantallas de baja calidad y a pleno sol.
 
-**Temas de acento.** Desde Configuración → Tema cada persona puede cambiar el acento (Índigo, Naranja, Verde, Celeste, Rojo, Rosa, Violeta, Grafito). Cada tema es una rampa completa 50–950 generada con la misma curva de luminosidad y verificada para que el tono 600 tenga al menos 4,5:1 con texto blanco. **Los temas cambian solo el acento**: neutros y colores de estado no varían, así la legibilidad no depende del gusto.
+**Temas de acento.** Desde su menú (Color de acento) cada persona puede cambiar el acento (Índigo, Naranja, Verde, Celeste, Rojo, Rosa, Violeta, Grafito). Cada tema es una rampa completa 50–950 generada con la misma curva de luminosidad y verificada para que el tono 600 tenga al menos 4,5:1 con texto blanco. **Los temas cambian solo el acento**: neutros y colores de estado no varían, así la legibilidad no depende del gusto.
 
 ### Neutros — Grafito
 

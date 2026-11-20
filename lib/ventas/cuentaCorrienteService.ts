@@ -7,6 +7,13 @@ let tablesInitializedPromise: Promise<void> | null = null;
  * Garantiza de forma aditiva e idempotente que las tablas de Cuentas Corrientes existan en PostgreSQL
  * sin alterar ni borrar ninguna tabla existente.
  */
+/**
+ * Movimientos que generan deuda con saldo propio (se imputan cobros y notas de crédito).
+ * CARGO_SERVICIO: orden de servicio o ciclo de OT firmado cargado a la cuenta (auditoría, P15).
+ */
+export const TIPOS_CARGO = ['CARGO_MANUAL', 'SALDO_INICIAL', 'CARGO_SERVICIO'] as const;
+export const esTipoCargo = (tipo: string) => (TIPOS_CARGO as readonly string[]).includes(tipo);
+
 export async function ensureCuentaCorrienteTables(): Promise<void> {
   if (!tablesInitializedPromise) {
     tablesInitializedPromise = (async () => {
@@ -64,6 +71,8 @@ export async function ensureCuentaCorrienteTables(): Promise<void> {
             "motivoAnulacion" TEXT,
             "anuladoEn" TIMESTAMP(3),
             "anuladoPorNombre" TEXT,
+            "origenTipo" TEXT,
+            "origenId" TEXT,
             "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
             "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT "CuentaCorrienteMovimiento_pkey" PRIMARY KEY ("id")
@@ -127,8 +136,10 @@ export interface RegistrarCobranzaInput {
 
 export interface RegistrarMovimientoManualInput {
   clienteId: string;
-  tipo: 'SALDO_INICIAL' | 'CARGO_MANUAL' | 'NOTA_CREDITO';
+  tipo: 'SALDO_INICIAL' | 'CARGO_MANUAL' | 'NOTA_CREDITO' | 'CARGO_SERVICIO';
   sentidoSaldoInicial?: 'DEBE' | 'HABER';
+  /** Orden que origina un CARGO_SERVICIO: no se carga dos veces la misma. */
+  origen?: { tipo: 'OS' | 'OT_CICLO'; id: string } | null;
   monto: number;
   concepto: string;
   fechaVencimiento?: string | Date | null;
@@ -350,7 +361,7 @@ export async function listarResumenCuentasCorrientes(filtros?: {
       }
 
       if (
-        (m.tipo === 'CARGO_MANUAL' || m.tipo === 'SALDO_INICIAL') &&
+        esTipoCargo(m.tipo) &&
         m.saldoPendienteCargo > 0.009
       ) {
         comprobantesPendientes++;
@@ -584,7 +595,7 @@ export async function obtenerDetalleCuentaCorrienteCliente(
     totalHaber += m.haber || 0;
 
     if (
-      (m.tipo === 'CARGO_MANUAL' || m.tipo === 'SALDO_INICIAL') &&
+      esTipoCargo(m.tipo) &&
       m.saldoPendienteCargo > 0.009
     ) {
       const fMov = new Date(m.fecha);
@@ -684,7 +695,7 @@ export async function obtenerDetalleCuentaCorrienteCliente(
       debe: round2(m.debe || 0),
       haber: round2(m.haber || 0),
       saldoPendienteComprobante:
-        m.estado === 'CONFIRMADO' && (m.tipo === 'CARGO_MANUAL' || m.tipo === 'SALDO_INICIAL')
+        m.estado === 'CONFIRMADO' && esTipoCargo(m.tipo)
           ? round2(m.saldoPendienteCargo)
           : 0,
       estado: m.estado,
@@ -823,7 +834,7 @@ export async function registrarCobranzaCC(input: RegistrarCobranzaInput) {
           where: {
             clienteId: input.clienteId,
             estado: 'CONFIRMADO',
-            tipo: { in: ['CARGO_MANUAL', 'SALDO_INICIAL'] },
+            tipo: { in: [...TIPOS_CARGO] },
             saldoPendienteCargo: { gt: 0.009 },
           },
           orderBy: { fecha: 'asc' },
@@ -1058,6 +1069,16 @@ export async function registrarMovimientoManualCC(input: RegistrarMovimientoManu
   const serie = esCredito ? 'NC' : 'ND';
 
   const resultado = await prisma.$transaction(async (tx) => {
+    if (input.origen) {
+      // Un solo cargo vigente por orden: el lock serializa dos cargas simultáneas de la misma
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`cc-origen:${input.origen.tipo}:${input.origen.id}`}))`;
+      const previo = await tx.cuentaCorrienteMovimiento.findFirst({
+        where: { origenTipo: input.origen.tipo, origenId: input.origen.id, estado: 'CONFIRMADO' },
+        select: { numero: true },
+      });
+      if (previo) throw new Error(`Esta orden ya está cargada en la cuenta corriente (${previo.numero})`);
+    }
+
     const numero = await generarNumeroCC(tx, serie);
 
     let imputacionesRealizadas: any[] = [];
@@ -1080,7 +1101,7 @@ export async function registrarMovimientoManualCC(input: RegistrarMovimientoManu
           where: {
             clienteId: input.clienteId,
             estado: 'CONFIRMADO',
-            tipo: { in: ['CARGO_MANUAL', 'SALDO_INICIAL'] },
+            tipo: { in: [...TIPOS_CARGO] },
             saldoPendienteCargo: { gt: 0.009 },
           },
           orderBy: { fecha: 'asc' },
@@ -1168,6 +1189,8 @@ export async function registrarMovimientoManualCC(input: RegistrarMovimientoManu
         operadorId: input.operadorId || null,
         operadorNombre,
         observaciones: input.observaciones?.trim() || null,
+        origenTipo: input.origen?.tipo ?? null,
+        origenId: input.origen?.id ?? null,
       },
       include: {
         cliente: true,
@@ -1224,8 +1247,8 @@ export async function anularMovimientoCC(
     throw new Error('Este comprobante ya se encuentra anulado');
   }
 
-  // Si es un CARGO_MANUAL o SALDO_INICIAL, verificar que no tenga cobros aplicados activos
-  if (mov.tipo === 'CARGO_MANUAL' || mov.tipo === 'SALDO_INICIAL') {
+  // Si es un cargo (manual, saldo inicial o de servicio), verificar que no tenga cobros aplicados activos
+  if (esTipoCargo(mov.tipo)) {
     if (mov.saldoPendienteCargo < mov.debe - 0.01) {
       throw new Error(
         'No se puede anular un cargo que ya posee cobros o créditos imputados. Anule primero el recibo correspondiente.'

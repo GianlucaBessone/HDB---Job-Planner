@@ -76,7 +76,7 @@ const ZONAS_SENSIBLES = [
     'factur*', 'pago', 'pagos', 'cobro', 'cobros', 'sueldo', 'sueldos', 'salario', 'salarios',
     'dni', 'cuil', 'cuit', 'cbu', 'datos personales',
     'migracion', 'migraciones', 'esquema', 'prisma', 'base de datos',
-    'middleware', 'electron', 'deploy', '.env', 'token', 'tokens',
+    'middleware', 'deploy', '.env', 'token', 'tokens',
 ];
 
 export function normalizarTexto(texto: string): string {

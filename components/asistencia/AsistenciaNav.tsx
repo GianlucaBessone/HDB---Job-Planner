@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ClipboardCheck, Radio, ShieldCheck } from 'lucide-react';
+import { ClipboardCheck, Radio, Settings, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useAcceso } from '@/lib/store/useAccessStore';
 
@@ -19,6 +19,7 @@ export function AsistenciaNav({ className }: { className?: string }) {
         { href: '/monitoreo-fichadas', label: 'Fichadas en curso', icon: <Radio />, visible: puedeVer('/monitoreo-fichadas') },
         { href: '/aprobaciones', label: 'Fichadas a aprobar', icon: <ShieldCheck />, visible: puedeVer('/aprobaciones') },
         { href: '/timesheets/control-horario', label: 'Control horario', icon: <ClipboardCheck />, visible: puede('timesheets.control_horario') },
+        { href: '/monitoreo-fichadas/ajustes', label: 'Ajustes', icon: <Settings />, visible: puede('config.administrar') },
     ].filter(i => i.visible);
 
     if (items.length < 2) return null;

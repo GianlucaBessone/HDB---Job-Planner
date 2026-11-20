@@ -210,7 +210,7 @@ siembran con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
 | `ventas.cotizaciones_gestionar` | admin, supervisor, vendedor | `POST/PUT/PATCH` de cotizaciones (crear, editar, aprobar, anular, convertir en venta) |
 | `ventas.cc_ver` | admin, supervisor, qa, vendedor | `GET` de `/api/ventas/cuentas-corrientes`, `/[clienteId]` y la vista previa de actualización de precios |
 | `ventas.cc_cobrar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/cobranzas` |
-| `ventas.cc_ajustar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/movimientos` (saldo inicial, cargo manual, nota de crédito) |
+| `ventas.cc_ajustar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/movimientos` (saldo inicial, cargo manual, nota de crédito) y `POST /api/ventas/cuentas-corrientes/ordenes-por-cargar` (cargar OS y ciclos de OT firmados; verlos pide `ventas.cc_ver`) |
 | `ventas.cc_configurar` | admin, supervisor | `PUT /api/ventas/cuentas-corrientes/[clienteId]` (crédito) y `POST .../actualizacion-precios` |
 | `ventas.catalogo_gestionar` | admin, supervisor, vendedor | Escrituras de `/api/ventas/productos/**`, `/listas-precios/**`, `/proveedores/**`, `/precios/**` y del inventario viejo (`/api/inventario/**`). La lectura sigue abierta: la usan presupuestos, OS y proyectos |
 | `ventas.pdv_operar` | admin, supervisor, vendedor | `POST /api/ventas/pdv/confirmar`, `/pdv/ventas` y `/pdv/ventas/[id]` (historial), `/pdv/pendientes`, `/pdv/remitos` |

@@ -76,22 +76,57 @@ Sin cambios de base de datos.
 | Materiales | Un solo cálculo del saldo en poder, igual al de la API (antes la pantalla permitía informar uso por encima de lo devuelto y contaba las delegaciones rechazadas) |
 | Enlaces | `/projects?proyecto=<id>` lleva a la ficha; Bloqueos, la ficha del cliente, presupuestos y el alta de proyecto abren la ficha. `GET /api/projects/[id]` ya no se cachea en la CDN (`private, no-store`) |
 
+### Hecho: configuración repartida (P19, SE1)
+
+Sin cambios de base de datos ni de APIs: mismos endpoints y mismo permiso (`config.administrar`; roles por vista con `config.vistas`).
+
+| Antes, en Configuración | Ahora |
+|---|---|
+| Etiquetas, checklists por etiqueta, categorías y tipos de actividad | Proyectos → Ajustes (`/projects/ajustes`) |
+| Áreas y motivos de demora | Proyectos → Ajustes → Demoras del cliente (lo que usa la bitácora) |
+| Valor de mano de obra ("Órdenes de servicio") | Proyectos → Ajustes → Mano de obra: lo usan el costo del proyecto y el cobro de la OS |
+| Alerta diaria de carga de horas y fichaje en la base | Asistencia y horas → Ajustes (`/monitoreo-fichadas/ajustes`) |
+| Causas de registro de tiempo | Asistencia y horas → Ajustes |
+| Roles por vista | Sigue en Configuración, que además muestra dónde se configura cada módulo |
+
+Las secciones viven en `components/configuracion/secciones.tsx` y cada módulo monta las suyas; la pestaña Ajustes aparece solo con `config.administrar`.
+
+### Hecho: órdenes firmadas a la cuenta corriente (P15)
+
+Migración `prisma/sql/20261121_cc_cargo_por_orden` (aditiva: `origenTipo` y `origenId` en `CuentaCorrienteMovimiento`, probada ida/vuelta/ida en PostgreSQL 16 local). **Aplicada en producción el 20/11/2026.**
+
+| Cambio | Detalle |
+|---|---|
+| Órdenes por cargar | Panel en Cuentas corrientes y en la ficha del cliente: OS con el cobro generado (estado "cobrada") y cada ciclo de OT firmado en el portal que todavía no están en la cuenta |
+| Cargo por servicio | Movimiento nuevo `CARGO_SERVICIO` (serie ND), con el origen de la orden. Cuenta para el saldo, el vencimiento (plazo del cliente) y la imputación de cobranzas y notas de crédito como cualquier débito |
+| Una vez por orden | No se carga dos veces la misma orden (control en una transacción con bloqueo por orden). Si el cargo se anula, la orden vuelve a la lista. El monto y el cliente se leen de la orden, nunca del navegador |
+| Permisos | Ver la lista: `ventas.cc_ver`; cargar: `ventas.cc_ajustar` (la función de los débitos manuales). Sin funciones nuevas |
+| OS | Una OS ya cargada no cambia su cobro (409: hay que anular el cargo). "Marcar pagada" avisa que el cobro se registra en Cuentas corrientes |
+| Por qué con un clic y no automático | Hoy se factura en otro sistema y AFIP llega el próximo sprint (Anexo A). Pasarlo a automático al firmar es cambiar dónde se llama `cargarOrdenesACuenta` |
+
 ### Pendiente en esta fase
 
-- P19 · Configuración repartida: cada catálogo junto a la ficha o el módulo que lo usa.
 - Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
 - P8 · Una sola fuente de precios de materiales (`Producto`); se retira `MaterialMaestro`.
-- P9 · Stock integrado con ventas, entregas a obra y órdenes.
-- P15 · Las órdenes firmadas generan el cargo en cuenta corriente.
+- P9 · Stock integrado con ventas, entregas a obra y órdenes (crítico: el stock se usa para comprar y cobrar; puede quedar negativo).
 - P20 · Tarifas de mano de obra con una sola regla.
 - P24 · Proveedores únicos.
 - P27 · Tipo de proyecto con valores por defecto y estados calculados.
 
+## Respuestas del Anexo A (21/11/2026)
+
+| Pregunta | Respuesta | Qué cambia |
+|---|---|---|
+| OS y OT | Se usan las dos: OS para clientes o tareas ocasionales; OT para dividir tareas en proyectos fijos, con horas y materiales por tarea, y se factura todo a fin de mes | **P26 (fusión OS + OT) queda descartada.** El cargo por ciclo de OT firmado (P15) coincide con la facturación mensual: cada ciclo es un período |
+| Stock | Se usa para comprar y cobrar. Una venta no se bloquea por stock en 0: puede quedar negativo (se asume error de conteo) | **P9 pasa a crítico**: los consumos reales (PDV, entregas a obra, órdenes) tienen que mover el stock, permitiendo negativos |
+| Facturación AFIP | Hoy en otro sistema; se implementa en el próximo sprint | El cargo por servicio queda con un clic (no automático). Con AFIP, el cargo puede pasar a ser la factura |
+| Organigrama | Gerencia (Hernán); Operaciones (Gianluca), Administración (Katy), RRHH/SST (Florencia), Ventas (Facu), QA (Victor); los operadores dependen de Operaciones | Insumo para P16 y P18 (accesos por puesto) |
+| App de escritorio | No se usa | Electron se quitó del repositorio (carpeta, scripts y dependencias) |
+
 ## Fase 4 · Fusiones mayores
 
-Dependen de las respuestas del Anexo A del informe.
+P26 (OS + OT) descartada por las respuestas del Anexo A.
 
-- P26 · Órdenes de servicio + órdenes de trabajo.
 - P35 · Presupuestos unificados.
 - P29–P31 · Calidad reorganizada, objetivos unificados, acciones con origen.
 - P32 · Búsqueda global de registros.

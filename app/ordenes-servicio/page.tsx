@@ -936,7 +936,7 @@ function OrdenesServicioContent() {
             <ConfirmDialog
                 isOpen={!!osToPay}
                 title="Confirmar Pago"
-                message="¿Estás seguro de que quieres marcar esta orden como PAGADA? Se moverá al historial."
+                message="La orden se marca como pagada y pasa al historial. Si ya está cargada en la cuenta corriente del cliente, registrá el cobro en Cuentas corrientes: marcarla pagada acá no descuenta la deuda."
                 onConfirm={() => osToPay && handlePagarOS(osToPay)}
                 onCancel={() => setOsToPay(null)}
                 variant="info"

@@ -12,6 +12,7 @@ import { useAcceso } from '@/lib/store/useAccessStore';
 import { Button, Dialog, Field, Tabs } from '@/components/ui';
 import RegistrarCobranzaModal, { ComprobantePendienteItem } from '@/components/ventas/cuentas-corrientes/RegistrarCobranzaModal';
 import RegistrarAjusteCCModal from '@/components/ventas/cuentas-corrientes/RegistrarAjusteCCModal';
+import OrdenesPorCargar from '@/components/ventas/cuentas-corrientes/OrdenesPorCargar';
 import ActualizarDeudaPreciosModal from '@/components/ventas/cuentas-corrientes/ActualizarDeudaPreciosModal';
 import ConfigCreditoModal from '@/components/ventas/cuentas-corrientes/ConfigCreditoModal';
 import ImprimirReciboCCModal from '@/components/ventas/cuentas-corrientes/ImprimirReciboCCModal';
@@ -541,6 +542,14 @@ export default function CuentasCorrientesPage() {
                     </div>
                 </button>
             </div>
+
+            {/* OS y ciclos de OT firmados que todavía no están en la cuenta (P15) */}
+            <OrdenesPorCargar
+                onCargadas={() => {
+                    cargarCartera(true);
+                    if (selectedClienteId) cargarDetalleCliente(selectedClienteId);
+                }}
+            />
 
             {/* Layout Principal: Cartera de Clientes (Izquierda) + Detalle Cuenta Corriente (Derecha) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
