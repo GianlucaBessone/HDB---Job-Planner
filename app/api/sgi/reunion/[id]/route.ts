@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
-import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,8 +9,6 @@ export async function PATCH(req: Request, { params: paramsPromise }: { params: P
     if (acceso instanceof NextResponse) return acceso;
 
   const params = await paramsPromise;
-    const acceso = await exigirAcceso(req, ['calidad.gestionar']);
-    if (acceso instanceof NextResponse) return acceso;
     try {
         const body = await req.json();
         
@@ -44,8 +41,6 @@ export async function DELETE(req: Request, { params: paramsPromise }: { params: 
     if (acceso instanceof NextResponse) return acceso;
 
   const params = await paramsPromise;
-    const acceso = await exigirAcceso(req, ['calidad.gestionar']);
-    if (acceso instanceof NextResponse) return acceso;
     try {
         await prisma.reunionNC.delete({
             where: { id: params.id }
