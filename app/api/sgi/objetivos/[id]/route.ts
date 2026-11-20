@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { MENSAJE_ANULADO, puedeBorrarseSgi, totalVinculados } from '@/lib/sgi/bajas';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
 
@@ -62,22 +63,42 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
     if (auth instanceof NextResponse) return auth;
 
     try {
-        const obj = await prisma.objetivoCalidad.findUnique({ where: { id: params.id } });
-
-        await prisma.objetivoCalidad.delete({
-            where: { id: params.id }
+        const obj = await prisma.objetivoCalidad.findUnique({
+            where: { id: params.id },
+            include: { _count: { select: { accionesMejora: true } } },
         });
+        if (!obj) return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
+        const motivo = new URL(req.url).searchParams.get('motivo')?.trim() || null;
+        const { _count, ...datos } = obj;
 
-        if (obj) {
+        // Recién creado y sin nada vinculado: se puede borrar (error de carga). Si no, se anula.
+        if (!puedeBorrarseSgi(datos, 'Activo', totalVinculados(_count))) {
+            if (datos.estado === 'Anulado') return NextResponse.json({ error: 'Ya está anulado' }, { status: 409 });
+            await prisma.objetivoCalidad.update({ where: { id: params.id }, data: { estado: 'Anulado' } });
             await logAudit({
                 userId: auth.userId,
-                action: 'DELETE',
+                userName: auth.nombre,
+                action: 'UPDATE',
                 entity: 'OBJETIVO',
-                entityId: obj.id,
-                oldValue: obj
+                entityId: params.id,
+                oldValue: { estado: datos.estado },
+                newValue: { estado: 'Anulado' },
+                metadata: { message: 'Anulado en lugar de eliminado', motivo, vinculados: _count },
             });
+            return NextResponse.json({ success: true, modo: 'anulado', message: MENSAJE_ANULADO });
         }
-        return NextResponse.json({ success: true });
+
+        await prisma.objetivoCalidad.delete({ where: { id: params.id } });
+        await logAudit({
+            userId: auth.userId,
+            userName: auth.nombre,
+            action: 'DELETE',
+            entity: 'OBJETIVO',
+            entityId: params.id,
+            oldValue: datos,
+            metadata: { motivo },
+        });
+        return NextResponse.json({ success: true, modo: 'eliminado' });
     } catch (error) {
         console.error('Error deleting Objetivo:', error);
         return NextResponse.json({ error: 'Error al eliminar Objetivo' }, { status: 500 });

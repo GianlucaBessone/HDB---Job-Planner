@@ -107,7 +107,7 @@ export default function InformesTecnicosContent() {
                     />
                 </div>
                 <div className="flex gap-1.5 bg-card border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-sm shrink-0">
-                    {(['all', 'borrador', 'finalizado'] as const).map(estado => (
+                    {(['all', 'borrador', 'finalizado', 'anulado'] as const).map(estado => (
                         <button
                             key={estado}
                             onClick={() => setFilterEstado(estado)}
@@ -118,7 +118,7 @@ export default function InformesTecnicosContent() {
                                 : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
                                 }`}
                         >
-                            {estado === 'all' ? 'Todos' : estado === 'finalizado' ? 'Finalizados' : 'Borradores'}
+                            {estado === 'all' ? 'Todos' : estado === 'finalizado' ? 'Finalizados' : estado === 'anulado' ? 'Anulados' : 'Borradores'}
                         </button>
                     ))}
                 </div>
@@ -146,7 +146,7 @@ export default function InformesTecnicosContent() {
                                         inf.status === 'borrador' ? 'bg-amber-100 text-amber-700' :
                                         'bg-slate-100 text-slate-700'
                                     }`}>
-                                        {inf.status === 'finalizado' ? '✓ Finalizado' : 'Borrador'}
+                                        {inf.status === 'finalizado' ? '✓ Finalizado' : inf.status === 'anulado' ? 'Anulado' : 'Borrador'}
                                     </span>
                                 </div>
                                 <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 truncate">

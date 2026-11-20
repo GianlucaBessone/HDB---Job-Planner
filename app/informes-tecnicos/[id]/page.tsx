@@ -177,7 +177,8 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                 const err = await res.json();
                 throw new Error(err.error || 'Error al eliminar');
             }
-            showToast('Informe eliminado', 'success');
+            const data = await res.json().catch(() => ({}));
+            showToast(data.modo === 'anulado' ? 'Informe anulado: estaba finalizado y se conserva' : 'Informe eliminado', 'success');
             router.push('/informes-tecnicos');
         } catch (e: any) {
             showToast(e.message, 'error');

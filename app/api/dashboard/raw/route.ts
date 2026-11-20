@@ -18,7 +18,9 @@ export async function GET(req: Request) {
             prisma.operator.findMany(),
             prisma.planning.findMany(),
             prisma.clientDelay.findMany(),
+            // Las OS anuladas no cuentan en las métricas.
             prisma.ordenServicio.findMany({
+                where: { estado: { not: 'anulada' } },
                 include: {
                     materiales: true,
                     operadores: true,
