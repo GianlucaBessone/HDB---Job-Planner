@@ -61,10 +61,25 @@ Migración `prisma/sql/20261120_clientes_datos_fiscales` (aditiva, probada ida/v
 | Ventas | El PDV busca por CUIT o razón social y usa el CUIT como identificación (antes ponía el teléfono o el email, que salían impresos como "CUIT/DNI"). Cotizaciones precarga el CUIT del cliente |
 | Cuentas corrientes | Acepta `?cliente=<id>` para abrir la cuenta de un cliente |
 
+### Hecho: ficha del proyecto (FU11, FU10, P28)
+
+Sin cambios de base de datos.
+
+| Cambio | Detalle |
+|---|---|
+| Ficha `/projects/ficha/[id]` | Pestañas Resumen (horas, checklist, bloqueantes, demoras, datos, horas por persona, presupuesto, tareas y equipo, enlace público), Checklist, Bitácora, Materiales y Órdenes (OS y OT del proyecto). Acciones según permiso: Editar y Costos para quien gestiona; Finalizar con `proyectos.finalizar`, si no "Pedir finalización" |
+| Una sola ficha | Reemplaza el detalle en ventana de Proyectos y la vista del responsable de Mis proyectos (≈1.400 líneas repetidas con reglas distintas). La abren quien gestiona proyectos, el responsable y el equipo asignado; vista oculta `/projects/ficha` en `lib/viewAccess.ts` |
+| Mis proyectos | Es la lista filtrada: donde la persona es responsable o está en el equipo asignado (`ProyectoAsignacion` vigente o futura), con el rol marcado. Quien gestiona puede ver todos. Mantiene las delegaciones de material por aceptar |
+| Bitácora (`lib/bitacora.ts`) | Nota, reporte, consulta, bloqueante y **demora del cliente** en una sola línea de tiempo, con filtros. La demora pide área, horas y motivo y queda en Demoras del cliente. El bloqueante avisa a los supervisores |
+| API | `POST/PATCH /api/delays` y `POST /api/projects/[id]/logs` validan con Zod (antes el cuerpo pasaba directo a la base). Quien carga la demora sale de la sesión; solo quien gestiona demoras la registra a nombre de otro |
+| Checklist | Una regla: quien gestiona marca y excluye; el responsable marca y, si un supervisor ya confirmó el ítem, pide el cambio con justificación |
+| Materiales | Un solo cálculo del saldo en poder, igual al de la API (antes la pantalla permitía informar uso por encima de lo devuelto y contaba las delegaciones rechazadas) |
+| Enlaces | `/projects?proyecto=<id>` lleva a la ficha; Bloqueos, la ficha del cliente, presupuestos y el alta de proyecto abren la ficha. `GET /api/projects/[id]` ya no se cachea en la CDN (`private, no-store`) |
+
 ### Pendiente en esta fase
 
 - P19 · Configuración repartida: cada catálogo junto a la ficha o el módulo que lo usa.
-- FU11, P28 · Ficha única del proyecto (Mis proyectos como filtro) con la bitácora que incluye las demoras del cliente.
+- Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
 - P8 · Una sola fuente de precios de materiales (`Producto`); se retira `MaterialMaestro`.
 - P9 · Stock integrado con ventas, entregas a obra y órdenes.
 - P15 · Las órdenes firmadas generan el cargo en cuenta corriente.

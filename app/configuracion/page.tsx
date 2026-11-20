@@ -1081,7 +1081,7 @@ function ViewsSection() {
                                 <div className="min-w-0 flex-1">
                                     <span className="block text-[13px] font-medium text-foreground">{view.label}</span>
                                     <span className="block text-xs text-muted-foreground">
-                                        {view.description}{view.access === 'oculta' ? ' · se abre desde el encabezado' : ''}
+                                        {view.description}{view.access === 'oculta' ? ' · no aparece en el menú' : ''}
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap gap-1.5" role="group" aria-label={`Roles de ${view.label}`}>

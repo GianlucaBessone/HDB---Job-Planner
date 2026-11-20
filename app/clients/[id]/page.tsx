@@ -126,7 +126,7 @@ export default function FichaClientePage({ params }: { params: Promise<{ id: str
                                 {ficha.projects.map(p => (
                                     <tr key={p.id}>
                                         <td>
-                                            <Link href={`/projects?proyecto=${p.id}`} className="font-medium text-brand-700 dark:text-brand-300 hover:underline">{p.nombre}</Link>
+                                            <Link href={`/projects/ficha/${p.id}`} className="font-medium text-brand-700 dark:text-brand-300 hover:underline">{p.nombre}</Link>
                                             {!p.activo && <span className="ml-2 text-xs text-muted-foreground">(inactivo)</span>}
                                         </td>
                                         <td className="font-mono">{p.codigoProyecto || '—'}</td>

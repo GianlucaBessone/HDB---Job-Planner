@@ -76,7 +76,6 @@ import ProjectGanttView from '@/components/projects/ProjectGanttView';
 import ProjectCalendarView from '@/components/projects/ProjectCalendarView';
 import ProjectsHeader from '@/components/projects/ProjectsHeader';
 import ProjectCostModal from '@/components/projects/ProjectCostModal';
-import ProyectoPresupuestoPanel from '@/components/projects/ProyectoPresupuestoPanel';
 
 /** Mensaje de error que devuelve la API (p. ej. un 403 por permisos). */
 async function mensajeError(res: Response, porDefecto: string): Promise<string> {
@@ -111,7 +110,6 @@ function ProjectsContent() {
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<any>(null);
 
     const [selectedProjectForCost, setSelectedProjectForCost] = useState<Project | null>(null);
     const [isCostModalOpen, setIsCostModalOpen] = useState(false);
@@ -122,25 +120,11 @@ function ProjectsContent() {
         setIsCostModalOpen(true);
     };
 
-    useEffect(() => {
-        const user = localStorage.getItem('currentUser');
-        if (user) setCurrentUser(JSON.parse(user));
-    }, []);
-
-    // Details Modal State
-    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-    const [selectedProjectForDetails, setSelectedProjectForDetails] = useState<Project | null>(null);
-    const [projectEntries, setProjectEntries] = useState<any[]>([]);
-    const [projectChecklist, setProjectChecklist] = useState<any[]>([]);
-    const [projectLogs, setProjectLogs] = useState<any[]>([]);
-    const [projectDelays, setProjectDelays] = useState<any[]>([]);
     const [configOptions, setConfigOptions] = useState<any[]>([]);
     const [systemTags, setSystemTags] = useState<any[]>([]);
 
     const categoryOptions = configOptions.filter((o: any) => o.category === 'CATEGORIA' && o.active).map((o: any) => o.value);
     const activityOptions = configOptions.filter((o: any) => o.category === 'TIPO_ACTIVIDAD' && o.active).map((o: any) => o.value);
-    const [isDetailsLoading, setIsDetailsLoading] = useState(false);
-    const [isSavingLog, setIsSavingLog] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -155,20 +139,25 @@ function ProjectsContent() {
         }
     }, [searchParams]);
 
-    // ?alta=clasica abre el formulario de siempre; ?proyecto=<id> abre el detalle de ese proyecto.
+    // ?alta=clasica abre el formulario de siempre; ?editar=<id> abre la edición (desde la ficha);
+    // ?proyecto=<id> (enlaces viejos) lleva a la ficha del proyecto.
     const enlaceAtendido = useRef('');
     useEffect(() => {
         const alta = searchParams.get('alta');
         const proyectoId = searchParams.get('proyecto');
-        const clave = `${alta}|${proyectoId}`;
+        const editarId = searchParams.get('editar');
+        const clave = `${alta}|${proyectoId}|${editarId}`;
         if (enlaceAtendido.current === clave) return;
         if (alta === 'clasica') {
             enlaceAtendido.current = clave;
             openCreate();
-        } else if (proyectoId && projects.length) {
+        } else if (proyectoId) {
             enlaceAtendido.current = clave;
-            const p = projects.find(x => x.id === proyectoId);
-            if (p) openDetails(p);
+            router.replace(`/projects/ficha/${proyectoId}`);
+        } else if (editarId && projects.length) {
+            enlaceAtendido.current = clave;
+            const p = projects.find(x => x.id === editarId);
+            if (p) openEdit(p);
         }
     }, [searchParams, projects]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -239,80 +228,8 @@ function ProjectsContent() {
         setIsModalOpen(true);
     };
 
-    const openDetails = async (project: Project) => {
-        setSelectedProjectForDetails(project);
-        setIsDetailsOpen(true);
-        setIsDetailsLoading(true);
-        try {
-            const [entries, checklist, logs, delays] = await Promise.all([
-                safeApiRequest(`/api/time-entries?projectId=${project.id}`).then(res => res.json()),
-                safeApiRequest(`/api/projects/${project.id}/checklist`).then(res => res.json()),
-                safeApiRequest(`/api/projects/${project.id}/logs`).then(res => res.json()),
-                safeApiRequest(`/api/delays?projectId=${project.id}`).then(res => res.json())
-            ]);
-            setProjectEntries(Array.isArray(entries) ? entries : []);
-            setProjectChecklist(Array.isArray(checklist) ? checklist : []);
-            setProjectLogs(Array.isArray(logs) ? logs : []);
-            setProjectDelays(Array.isArray(delays) ? delays : []);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsDetailsLoading(false);
-        }
-    };
-
-    const handleSaveLog = async (logData: { fecha: string; responsable: string; observacion: string }) => {
-        if (!selectedProjectForDetails) return;
-        setIsSavingLog(true);
-        try {
-            const res = await safeApiRequest(`/api/projects/${selectedProjectForDetails.id}/logs`, {
-                method: 'POST',
-                body: JSON.stringify(logData),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (res.ok) {
-                const newLog = await res.json();
-                setProjectLogs(prev => [newLog, ...prev]);
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setIsSavingLog(false);
-        }
-    };
-
-    const handleDeleteLog = async (logId: string) => {
-        if (!selectedProjectForDetails) return;
-        try {
-            const res = await safeApiRequest(`/api/projects/${selectedProjectForDetails.id}/logs?logId=${logId}`, { method: 'DELETE' });
-            if (res.ok) {
-                setProjectLogs(prev => prev.filter(l => l.id !== logId));
-                showToast('Comentario eliminado', 'success');
-            } else {
-                showToast('Error al eliminar comentario', 'error');
-            }
-        } catch (e) {
-            showToast('Error de conexión', 'error');
-        }
-    };
-
-    const handleUpdateChecklist = async (itemId: string, updates: any) => {
-        if (!selectedProjectForDetails) return;
-        try {
-            const res = await safeApiRequest(`/api/projects/${selectedProjectForDetails.id}/checklist`, {
-                method: 'PATCH',
-                body: JSON.stringify({ itemId, ...updates }),
-                headers: { 'Content-Type': 'application/json' }
-            });
-            if (res.ok) {
-                const updatedItem = await res.json();
-                setProjectChecklist(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
-                loadData(true); // reload to update main card metrics
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    };
+    /** El detalle del proyecto es su ficha (antes un modal con su propia versión de la bitácora y el checklist). */
+    const openDetails = (project: Project) => router.push(`/projects/ficha/${project.id}`);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -585,25 +502,6 @@ function ProjectsContent() {
                 )}
             </div>
 
-            {isDetailsOpen && selectedProjectForDetails && (
-                <ProjectDetailsModal
-                    project={selectedProjectForDetails!}
-                    operators={operators}
-                    entries={projectEntries}
-                    checklist={projectChecklist}
-                    logs={projectLogs}
-                    delays={projectDelays}
-                    isLoading={isDetailsLoading}
-                    isSavingLog={isSavingLog}
-                    currentUser={currentUser}
-                    onSaveLog={handleSaveLog}
-                    onDeleteLog={handleDeleteLog}
-                    onUpdateChecklist={handleUpdateChecklist}
-                    onClose={() => setIsDetailsOpen(false)}
-                    presupuesto={presupuestos[selectedProjectForDetails.id] || null}
-                    onVerReporte={() => openCostModal(selectedProjectForDetails, 'pvr')}
-                />
-            )}
             {isCostModalOpen && selectedProjectForCost && (
                 <ProjectCostModal
                     projectId={selectedProjectForCost.id}
@@ -684,454 +582,6 @@ function ProjectsSkeleton() {
 }
 
 // ── ProjectDetailsModal ──────────────────────────────────────────────────────
-function ProjectDetailsModal({
-    project,
-    operators,
-    entries,
-    checklist,
-    logs,
-    delays,
-    isLoading,
-    isSavingLog,
-    currentUser,
-    onSaveLog,
-    onDeleteLog,
-    onUpdateChecklist,
-    onClose,
-    presupuesto,
-    onVerReporte,
-}: {
-    presupuesto?: { id: string; numero: string } | null;
-    onVerReporte?: () => void;
-    project: Project;
-    operators: { id: string; nombreCompleto: string; role?: string }[];
-    entries: any[];
-    checklist: any[];
-    logs: any[];
-    delays: any[];
-    isLoading: boolean;
-    isSavingLog: boolean;
-    currentUser: any;
-    onSaveLog: (data: { fecha: string; responsable: string; observacion: string }) => void;
-    onDeleteLog: (logId: string) => void;
-    onUpdateChecklist: (itemId: string, updates: any) => void;
-    onClose: () => void;
-}) {
-    const isSupervisor = currentUser?.role === 'supervisor' || currentUser?.role === 'admin' || currentUser?.role === 'qa';
-    const [newLog, setNewLog] = useState({ fecha: new Date().toISOString().split('T')[0], responsable: '', observacion: '' });
-
-    const visibleItems = checklist.filter(i => !i.excluded || isSupervisor);
-    const completedVisible = checklist.filter(i => i.completed && !i.excluded).length;
-    const totalVisible = checklist.filter(i => !i.excluded).length;
-    const checklistProgress = totalVisible > 0 ? Math.round((completedVisible / totalVisible) * 100) : 0;
-
-    const hoursRemaining = Math.max(0, project.horasEstimadas - project.horasConsumidas);
-    const progress = project.horasEstimadas > 0 ? Math.min(100, Math.round((project.horasConsumidas / project.horasEstimadas) * 100)) : 0;
-    const totalDemoras = delays?.length || 0;
-    const hoursDemoras = delays?.reduce((acc: number, d: any) => acc + (d.duracion || 0), 0) || 0;
-
-    // Group entries by operator
-    const operatorStats = entries.reduce((acc: any, entry: any) => {
-        const opId = entry.operatorId;
-        if (!acc[opId]) {
-            acc[opId] = {
-                name: entry.operator?.nombreCompleto || 'Desconocido',
-                totalHours: 0,
-                lastSeen: entry.fecha
-            };
-        }
-        acc[opId].totalHours += entry.isExtra ? entry.horasTrabajadas * 2 : entry.horasTrabajadas;
-        if (entry.fecha > acc[opId].lastSeen) acc[opId].lastSeen = entry.fecha;
-        return acc;
-    }, {});
-
-    const statsArray = Object.values(operatorStats);
-
-    return (
-        <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200 max-h-[90vh] overflow-hidden flex flex-col">
-                {/* Header */}
-                <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
-                    <div className="space-y-1">
-                            {project.codigoProyecto && (
-                                <CodeBadge code={project.codigoProyecto} variant="project" size="sm" showCopy={true} />
-                            )}
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
-                                {project.codigoProyecto ? (
-                                    <span className="text-primary group-hover:text-primary transition-colors font-mono">{project.codigoProyecto} | </span>
-                                ) : (
-                                    <span className="text-slate-400 dark:text-slate-500 font-mono">#SIN-COD | </span>
-                                )}
-                                {project.nombre}
-                            </h3>
-                        </div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
-                            <Building2 className="w-4 h-4" /> {project.client?.nombre || project.cliente || 'Sin cliente'}
-                        </p>
-                    </div>
-                    <button onClick={onClose} className="btn-icon-inline p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-all">
-                        <X className="w-6 h-6" />
-                    </button>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
-                    {isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                            <Activity className="w-12 h-12 text-primary animate-spin" />
-                            <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-xs">Cargando detalles...</p>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Presupuesto de origen, tareas y equipo (solo si el proyecto los tiene) */}
-                            <ProyectoPresupuestoPanel
-                                projectId={project.id}
-                                presupuesto={presupuesto}
-                                fechaInicio={project.fechaInicio}
-                                fechaFin={project.fechaFin}
-                                operadores={operators}
-                                onVerReporte={onVerReporte}
-                            />
-
-                            {/* Summary Cards */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                                <Link href={`/timesheets?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-indigo-50/50 border border-indigo-100 p-5 rounded-3xl space-y-2 hover:bg-indigo-100 transition-colors shadow-sm block">
-                                    <div className="flex items-center justify-between">
-                                        <Clock className="w-5 h-5 text-indigo-500" />
-                                        <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Horas</span>
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-indigo-900">{project.horasConsumidas}h / {project.horasEstimadas}h</p>
-                                        <p className="text-xs font-bold text-indigo-600/70 uppercase">Consumidas vs Estimadas</p>
-                                    </div>
-                                    <div className="w-full bg-indigo-100 h-1.5 rounded-full overflow-hidden">
-                                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${progress}%` }} />
-                                    </div>
-                                </Link>
-
-                                <Link href={`/timesheets?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-3xl space-y-2 hover:bg-emerald-100 transition-colors shadow-sm block">
-                                    <div className="flex items-center justify-between">
-                                        <Timer className="w-5 h-5 text-emerald-500" />
-                                        <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Restante</span>
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-emerald-900">{hoursRemaining}h</p>
-                                        <p className="text-xs font-bold text-emerald-600/70 uppercase">Tiempo disponible</p>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600/50 uppercase tracking-tight">
-                                        <Activity className="w-3 h-3" /> Eficiencia: {100 - progress > 0 ? 'En rango' : 'Límite'}
-                                    </div>
-                                </Link>
-
-                                <Link href={`/my-projects?search=${encodeURIComponent(project.nombre)}&all=true`} className="bg-amber-50/50 border border-amber-100 p-5 rounded-3xl space-y-2 hover:bg-amber-100 transition-colors shadow-sm block">
-                                    <div className="flex items-center justify-between">
-                                        <CheckSquare className="w-5 h-5 text-amber-500" />
-                                        <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Tareas</span>
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-amber-900">
-                                            {completedVisible} / {totalVisible}
-                                        </p>
-                                        <p className="text-xs font-bold text-amber-600/70 uppercase">Checklist completado</p>
-                                    </div>
-                                    <div className="w-full bg-amber-100 h-1.5 rounded-full overflow-hidden">
-                                        <div className="h-full bg-amber-500 rounded-full transition-all duration-700" style={{ width: `${checklistProgress}%` }} />
-                                    </div>
-                                </Link>
-
-                                <Link href={`/delays?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-red-50/50 border border-red-100 p-5 rounded-3xl space-y-2 hover:bg-red-100 transition-colors shadow-sm block">
-                                    <div className="flex items-center justify-between">
-                                        <AlertCircle className="w-5 h-5 text-red-500" />
-                                        <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">Demoras</span>
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-red-900">{totalDemoras}</p>
-                                        <p className="text-xs font-bold text-red-600/70 uppercase">{hoursDemoras}h en total</p>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-red-600/50 uppercase tracking-tight">
-                                        <MessageSquare className="w-3 h-3" /> {totalDemoras > 0 ? 'Con incidencias' : 'Sin demoras'}
-                                    </div>
-                                </Link>
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                {/* Personnel List */}
-                                <div className="space-y-4">
-                                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
-                                        <Users className="w-4 h-4 text-primary" /> Personal Asignado
-                                    </h4>
-                                    <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-x-auto shadow-sm">
-                                        <table className="w-full text-left">
-                                            <thead>
-                                                <tr className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800">
-                                                    <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operador</th>
-                                                    <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Horas Totales</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-50">
-                                                {statsArray.length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan={2} className="px-4 py-8 text-center text-slate-300 text-xs font-bold uppercase tracking-wider">No hay registros aún</td>
-                                                    </tr>
-                                                ) : (
-                                                    statsArray.map((stat: any) => (
-                                                        <tr key={stat.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
-                                                            <td className="px-4 py-3">
-                                                                <div className="font-bold text-slate-700 dark:text-slate-200 text-sm">{stat.name}</div>
-                                                                <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Carga: {stat.lastSeen}</div>
-                                                            </td>
-                                                            <td className="px-4 py-3 text-right">
-                                                                <span className="inline-block px-3 py-1 rounded-xl bg-primary/5 text-primary font-bold text-sm border border-primary/10">
-                                                                    {stat.totalHours.toLocaleString()}h
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    {/* Recent Activity Table */}
-                                    {entries.length > 0 && (
-                                        <div className="space-y-4 pt-4">
-                                            <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
-                                                <Activity className="w-4 h-4 text-primary" /> Historial Reciente
-                                            </h4>
-                                            <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-x-auto shadow-sm">
-                                                <table className="w-full text-left text-xs">
-                                                    <thead className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800 font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                                                        <tr>
-                                                            <th className="px-4 py-3">Fecha</th>
-                                                            <th className="px-4 py-3">Operador</th>
-                                                            <th className="px-4 py-3 text-right">Horas</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-slate-50">
-                                                        {entries.slice(0, 10).map((entry: any) => (
-                                                            <tr key={entry.id}>
-                                                                <td className="px-4 py-2 text-slate-500 dark:text-slate-400 font-medium">{formatDate(entry.fecha)}</td>
-                                                                <td className="px-4 py-2 font-bold text-slate-700 dark:text-slate-200">
-                                                                    {entry.operator.nombreCompleto}
-                                                                    {entry.isExtra && <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-wider ml-1.5">(Extra)</span>}
-                                                                    {entry.isDevolucion && <span className="text-[11px] font-semibold text-purple-500 uppercase tracking-wider ml-1.5">(Dev)</span>}
-                                                                </td>
-                                                                <td className="px-4 py-2 text-right font-bold text-slate-900 dark:text-slate-50">{entry.horasTrabajadas}h</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Checklist Detail */}
-                                <div className="space-y-4">
-                                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
-                                        <CheckCircle2 className="w-4 h-4 text-primary" /> Avance Técnico (Checklist)
-                                    </h4>
-                                    <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin">
-                                        {visibleItems.length === 0 ? (
-                                            <div className="bg-background text-foreground rounded-3xl p-8 border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider">Sin tareas definidas para este proyecto</div>
-                                        ) : (
-                                            visibleItems.map((item: any) => (
-                                                <div key={item.id} className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${item.excluded ? 'opacity-40 grayscale border-dashed border-slate-300 dark:border-slate-600' : item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-slate-50/50 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}>
-                                                    {!item.excluded ? (
-                                                        <button
-                                                            disabled={item.confirmedBySupervisor}
-                                                            onClick={() => onUpdateChecklist(item.id, { completed: !item.completed })}
-                                                            className={`btn-icon-inline mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' : 'border-slate-200 dark:border-slate-700 bg-card text-card-foreground hover:border-primary/40'}`}
-                                                        >
-                                                            {item.completed && <CheckCircle2 className="w-4 h-4" />}
-                                                        </button>
-                                                    ) : (
-                                                        <div className="mt-0.5 shrink-0 w-6 h-6 flex items-center justify-center">
-                                                            <MinusCircle className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                                                        </div>
-                                                    )}
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className={`text-sm font-bold leading-snug ${item.excluded ? 'text-slate-400 dark:text-slate-500 line-through' : item.completed ? 'text-emerald-900' : 'text-slate-700 dark:text-slate-200'}`}>{item.description}</p>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-muted px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">{item.tag}</span>
-                                                            {item.excluded && <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase italic">(Excluido)</span>}
-                                                        </div>
-                                                    </div>
-                                                    {isSupervisor && (
-                                                        <button
-                                                            onClick={() => onUpdateChecklist(item.id, { excluded: !item.excluded })}
-                                                            className={`btn-icon-inline shrink-0 p-1.5 rounded-lg transition-all ${item.excluded ? 'text-blue-500 hover:bg-blue-50' : 'text-slate-300 hover:text-red-500 hover:bg-red-50'}`}
-                                                            title={item.excluded ? "Incluir en proyecto" : "Excluir de proyecto"}
-                                                        >
-                                                            {item.excluded ? <Plus className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            {/* Public Tracking Link & Logs */}
-                            <div className="space-y-6 lg:col-span-2">
-                                <div className="bg-primary/5 border border-primary/10 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                                    <div className="space-y-1 text-center md:text-left">
-                                        <h4 className="text-sm font-semibold text-primary uppercase tracking-wider flex items-center gap-2 justify-center md:justify-start">
-                                            <TrendingUp className="w-4 h-4" /> Link de Seguimiento Público
-                                        </h4>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Comparte este enlace con el cliente para que vea los avances en tiempo real.</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 w-full md:w-auto overflow-hidden">
-                                        <input
-                                            readOnly
-                                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/projects/${project.id}/report?token=${project.publicToken || ''}`}
-                                            className="bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-[11px] font-medium text-slate-500 dark:text-slate-400 flex-1 md:w-64 outline-none truncate"
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                const url = `${window.location.origin}/projects/${project.id}/report?token=${project.publicToken || ''}`;
-                                                navigator.clipboard.writeText(url);
-                                                showToast('Link copiado al portapapeles', 'success');
-                                            }}
-                                            className="btn-icon-inline bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-800/80 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm shrink-0"
-                                            title="Copiar Link"
-                                        >
-                                            <ClipboardList className="w-5 h-5" />
-                                        </button>
-                                        <Link
-                                            href={`/projects/${project.id}/report?token=${project.publicToken || ''}`}
-                                            target="_blank"
-                                            className="btn-icon-inline bg-primary text-white p-2 rounded-xl shadow-lg hover:bg-primary/90 transition-all shrink-0"
-                                            title="Ver Vista Pública"
-                                        >
-                                            <ChevronRight className="w-5 h-5" />
-                                        </Link>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                    {/* Add Log Form */}
-                                    <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
-                                            <MessageSquare className="w-4 h-4 text-primary" /> Registrar Seguimiento / Observación
-                                        </h4>
-                                        <div className="bg-background text-foreground rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-slate-800">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1.5">
-                                                    <label className="ml-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha</label>
-                                                    <input
-                                                        type="date"
-                                                        value={newLog.fecha}
-                                                        onChange={e => setNewLog(prev => ({ ...prev, fecha: e.target.value }))}
-                                                        className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1.5">
-                                                    <label className="ml-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Responsable</label>
-                                                    <SearchableSelect
-                                                        options={operators
-                                                            .filter(op => op.role !== 'admin')
-                                                            .map(op => ({ id: op.nombreCompleto, label: op.nombreCompleto }))}
-                                                        value={newLog.responsable}
-                                                        onChange={(val) => setNewLog(prev => ({ ...prev, responsable: val }))}
-                                                        placeholder="Cargado por..."
-                                                        className="!space-y-0 h-10"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="ml-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Observación</label>
-                                                <textarea
-                                                    value={newLog.observacion}
-                                                    placeholder="Describe el avance o comentario..."
-                                                    onChange={e => setNewLog(prev => ({ ...prev, observacion: e.target.value }))}
-                                                    className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none min-h-[100px] resize-none"
-                                                />
-                                            </div>
-                                            <button
-                                                disabled={isSavingLog || !newLog.responsable || !newLog.observacion}
-                                                onClick={() => {
-                                                    onSaveLog(newLog);
-                                                    setNewLog({ fecha: new Date().toISOString().split('T')[0], responsable: '', observacion: '' });
-                                                }}
-                                                className="w-full bg-primary text-white py-3 rounded-xl font-semibold text-xs hover:bg-primary-hover transition-all disabled:opacity-50"
-                                            >
-                                                {isSavingLog ? 'Guardando...' : 'Registrar Comentario'}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Logs List */}
-                                    <div className="space-y-4">
-                                        <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
-                                            <Activity className="w-4 h-4 text-primary" /> Historial de Seguimiento
-                                        </h4>
-                                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
-                                            {logs.length === 0 ? (
-                                                <div className="bg-background text-foreground border border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-10 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-wider">No hay registros aún</div>
-                                            ) : (
-                                                logs.map((log: any) => {
-                                                    const cat = log.categoria || 'Nota';
-                                                    const catStyles: Record<string, string> = {
-                                                        Bloqueante: 'bg-red-100 text-red-700 border-red-200',
-                                                        Reporte:    'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                                        Consulta:   'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
-                                                        Nota:       'bg-blue-100 text-blue-700 border-blue-200',
-                                                    };
-                                                    return (
-                                                    <div key={log.id} className={`bg-card text-card-foreground border p-4 rounded-2xl shadow-sm space-y-2 ${cat === 'Bloqueante' ? 'border-red-100' : 'border-slate-100 dark:border-slate-800'}`}>
-                                                        <div className="flex justify-between items-start">
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded-md">{formatDate(log.fecha)}</span>
-                                                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border uppercase tracking-wider ${catStyles[cat] || catStyles['Nota']}`}>
-                                                                    {cat === 'Bloqueante' && '🚨 '}{cat}
-                                                                </span>
-                                                            </div>
-                                                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">Por: {log.responsable}</span>
-                                                        </div>
-                                                        <p className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed italic">"{log.observacion}"</p>
-                                                    </div>
-                                                    );
-                                                })
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            {/* Observations */}
-                            {project.observaciones && (
-                                <div className="space-y-3">
-                                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
-                                        <FileText className="w-4 h-4 text-primary" /> Observaciones y Notas
-                                    </h4>
-                                    <div className="bg-background text-foreground rounded-3xl p-5 border border-slate-100 dark:border-slate-800">
-                                        <p className="text-slate-600 dark:text-slate-300 text-sm italic font-medium leading-relaxed">
-                                            "{project.observaciones}"
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-
-                {/* Footer */}
-                <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end shrink-0">
-                    <button onClick={onClose} className="px-8 py-3 bg-muted hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-semibold text-xs rounded-2xl transition-all">
-                        Cerrar Ventana
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-
 // ── ProjectModal ──────────────────────────────────────────────────────────────
 function ProjectModal({
     formData,

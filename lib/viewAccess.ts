@@ -70,7 +70,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     // ─ Mi trabajo: lo que cada persona usa para su propio día ─
     { key: '/fichado',       label: 'Fichar jornada',    description: 'Iniciar y cerrar la jornada con GPS o QR',  roles: ['operador', 'supervisor'], access: 'ambos', section: 'mi_trabajo', iconName: 'MapPin',        color: 'bg-emerald-500' },
     { key: '/timesheets',    label: 'Registro de horas', description: 'Horas trabajadas por proyecto',             roles: R_PERSONAL,                 access: 'ambos', section: 'mi_trabajo', iconName: 'Clock',         color: 'bg-blue-600' },
-    { key: '/my-projects',   label: 'Mis proyectos',     description: 'Proyectos donde sos responsable',           roles: R_PERSONAL,                 access: 'ambos', section: 'mi_trabajo', iconName: 'ClipboardList', color: 'bg-indigo-500' },
+    { key: '/my-projects',   label: 'Mis proyectos',     description: 'Donde sos responsable o estás en el equipo', roles: R_PERSONAL,                 access: 'ambos', section: 'mi_trabajo', iconName: 'ClipboardList', color: 'bg-indigo-500' },
     { key: '/tareas',        label: 'Tareas',            description: 'Tareas, recordatorios y seguimientos',      roles: R_PERSONAL,                 access: 'ambos', section: 'mi_trabajo', iconName: 'ListTodo',      color: 'bg-purple-600' },
     { key: '/mis-epp',       label: 'Mis EPP',           description: 'Elementos de protección y firmas',          roles: R_PERSONAL,                 access: 'ambos', section: 'mi_trabajo', iconName: 'ShieldCheck',   color: 'bg-emerald-600' },
     { key: '/mis-viajes',    label: 'Mis viajes',        description: 'Gastos y viáticos de tus viajes',           roles: R_TODOS,                    access: 'ambos', section: 'mi_trabajo', iconName: 'Luggage',       color: 'bg-sky-600' },
@@ -78,6 +78,8 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
 
     // ─ Proyectos: obras y servicios de punta a punta ─
     { key: '/projects',          label: 'Proyectos',            description: 'Lista, cronograma y seguimiento',              roles: R_GESTION,  access: 'ambos', section: 'proyectos', iconName: 'LayoutGrid',    color: 'bg-indigo-500' },
+    // La ficha se abre desde Proyectos y desde Mis proyectos: la ve también el responsable o el equipo de la obra
+    { key: '/projects/ficha',    label: 'Ficha del proyecto',   description: 'Resumen, checklist, bitácora, materiales y órdenes', roles: R_PERSONAL, access: 'oculta', section: 'proyectos', iconName: 'LayoutGrid', color: 'bg-indigo-500' },
     { key: '/planning',          label: 'Agenda del equipo',    description: 'Quién trabaja dónde cada día',                 roles: R_GESTION,  access: 'ambos', section: 'proyectos', iconName: 'Calendar',      color: 'bg-violet-600' },
     { key: '/ordenes-servicio',  label: 'Órdenes de servicio',  description: 'Trabajo certificado, firma y cobro',           roles: R_GESTION,  access: 'ambos', section: 'proyectos', iconName: 'FileSignature', color: 'bg-blue-600' },
     { key: '/ordenes-trabajo',   label: 'Órdenes de trabajo',   description: 'Órdenes por ciclos con firma en el portal',    roles: R_TODOS,    access: 'ambos', section: 'proyectos', iconName: 'FileText',      color: 'bg-blue-700' },

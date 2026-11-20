@@ -220,7 +220,7 @@ siembran con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
 | `proyectos.costos` | admin, supervisor, qa | `/api/projects/[id]/cost`, `cost/materials`, `cost/sync-prices` |
 | `proyectos.finalizar` | admin, supervisor, qa | `POST /api/projects/[id]/finalize` (el responsable la pide por aviso) |
 | `provision.gestionar` | admin, supervisor, qa, vendedor | Altas, ediciones y bajas de `/api/materiales-proyecto`, `provision-materiales/importar` y `notificar-faltantes`, `POST /api/provision-proyectos/reparar` |
-| `demoras.gestionar` | admin, supervisor, qa | `PATCH/DELETE /api/delays` (cargar sigue abierto) |
+| `demoras.gestionar` | admin, supervisor, qa | `PATCH/DELETE /api/delays`. Cargar está abierto a cualquier sesión, a nombre propio; con esta función se carga a nombre de otra persona |
 | `dashboard.ver` | admin, supervisor, qa | `/api/dashboard`, `dashboard/raw`, `dashboard/operator-scoreboard`, `metricas-servicio`, `operators/scores`, `riesgos` |
 | `fichadas.monitorear` | admin, supervisor, qa | Fichadas de otros en `GET /api/fichadas` (sin la función, las propias); `GET /api/verificar-cruce` |
 | `ia.consumo_ver` | admin, supervisor, qa | `GET /api/ai/audit` |
@@ -256,6 +256,10 @@ Reglas por usuario, sin función:
 - **Fichado** (`/api/time-entries/punch`): cada uno ficha por sí mismo. Una fichada que
   trae otro `operatorId` (p. ej. una pendiente sin conexión enviada con otra sesión abierta)
   se rechaza con 403.
+- **Ficha del proyecto** (`/projects/ficha/[id]`): la abren quien ve Proyectos o tiene
+  `proyectos.crear`, el responsable y el equipo asignado. Es un control de pantalla; los datos
+  los protege cada API (checklist: responsable o `proyectos.crear`; finalizar: `proyectos.finalizar`).
+  La bitácora y las demoras quedan a nombre de la sesión.
 - **Materiales de proyecto**: uso, devolución y delegación quedan a nombre de la sesión;
   los permisos de cerrar una devolución se evalúan con el usuario de la sesión.
 - **OT, proyectos e IA**: alta y cambio de estado de OT, "Mis proyectos", recientes,

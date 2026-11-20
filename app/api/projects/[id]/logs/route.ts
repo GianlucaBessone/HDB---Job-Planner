@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
 import { withIdempotency } from '@/lib/idempotency';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { entradaBitacoraSchema, primerError } from '@/lib/bitacora';
 
 export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
@@ -20,13 +21,16 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
             const acceso = await exigirAcceso(req);
             if (acceso instanceof NextResponse) return acceso;
 
-            const data = await req.json();
-            // Solo los campos de la entrada; el responsable lo elige la pantalla (si no viene, la sesión).
+            const parsed = entradaBitacoraSchema.safeParse(await req.json().catch(() => null));
+            if (!parsed.success) return NextResponse.json({ error: primerError(parsed.error) }, { status: 400 });
+            const data = parsed.data;
+            // El responsable lo elige la pantalla (si no viene, la sesión).
             const log = await dataLayer.createProjectLog({
                 fecha: data.fecha,
                 observacion: data.observacion,
                 categoria: data.categoria,
                 responsable: data.responsable || acceso.nombre,
+                responsableId: !data.responsable || data.responsable === acceso.nombre ? acceso.userId || undefined : undefined,
                 projectId: params.id
             });
             return NextResponse.json(log);

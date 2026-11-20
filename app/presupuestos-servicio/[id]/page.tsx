@@ -115,7 +115,7 @@ export default function PresupuestoDetallePage() {
         acciones.push({ id: 'duplicar', label: 'Duplicar', icon: <Copy className="w-4 h-4" />, onClick: duplicar, variant: 'outline', disabled: trabajando, hideLabelOnMobile: true });
     }
     if (estado === 'aceptado') {
-        if (p.proyecto) acciones.push({ id: 'proyecto', label: `Ver ${p.proyecto.codigoProyecto || 'proyecto'}`, icon: <FolderOpen className="w-4 h-4" />, onClick: () => router.push(`/projects?proyecto=${p.proyecto.id}`), variant: 'outline' });
+        if (p.proyecto) acciones.push({ id: 'proyecto', label: `Ver ${p.proyecto.codigoProyecto || 'proyecto'}`, icon: <FolderOpen className="w-4 h-4" />, onClick: () => router.push(`/projects/ficha/${p.proyecto.id}`), variant: 'outline' });
         else if (puedeConvertir) acciones.push({ id: 'convertir', label: 'Convertir en proyecto', icon: <FolderPlus className="w-4 h-4" />, onClick: () => router.push(`/projects/nuevo?presupuestoId=${p.id}`), variant: 'primary' });
     }
     // La acción primaria va siempre última.

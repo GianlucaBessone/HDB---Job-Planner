@@ -188,7 +188,7 @@ export default function PresupuestosServicioPage() {
                                         </td>
                                         <td className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                             {p.proyecto ? (
-                                                <Link href={`/projects?proyecto=${p.proyecto.id}`} className="font-mono text-xs text-primary hover:underline">
+                                                <Link href={`/projects/ficha/${p.proyecto.id}`} className="font-mono text-xs text-primary hover:underline">
                                                     {p.proyecto.codigoProyecto || p.proyecto.nombre}
                                                 </Link>
                                             ) : p.estado === 'aceptado' && puedeConvertir ? (
