@@ -19,6 +19,30 @@ export function hashPin(pin: string) {
     return bcrypt.hashSync(pin, 10);
 }
 
+/** PIN que se entrega por defecto al crear un usuario. */
+export const PIN_POR_DEFECTO = '1234';
+
+/**
+ * PIN fácil de adivinar: el de por defecto, todos los dígitos iguales o una
+ * escalera (1234, 4321, 2345…). Quien entra con uno de estos tiene que cambiarlo.
+ */
+export function pinDebil(pin: string): boolean {
+    if (!/^\d+$/.test(pin)) return false;
+    if (pin === PIN_POR_DEFECTO) return true;
+    if (/^(\d)\1+$/.test(pin)) return true;
+    const d = pin.split('').map(Number);
+    const sube = d.every((x, i) => i === 0 || x === d[i - 1] + 1);
+    const baja = d.every((x, i) => i === 0 || x === d[i - 1] - 1);
+    return sube || baja;
+}
+
+/** Formato de un PIN nuevo: de 4 a 8 dígitos y que no sea débil. Devuelve el problema o null. */
+export function problemaPinNuevo(pin: string): string | null {
+    if (!/^\d{4,8}$/.test(pin)) return 'El PIN tiene que tener entre 4 y 8 números.';
+    if (pinDebil(pin)) return 'Ese PIN es muy fácil de adivinar. Evitá 1234, números repetidos o escaleras.';
+    return null;
+}
+
 /** Compara el PIN ingresado con el guardado (hash bcrypt o texto plano heredado). */
 export function verifyPin(input: string, stored: string | null | undefined) {
     if (!input || !stored) return false;

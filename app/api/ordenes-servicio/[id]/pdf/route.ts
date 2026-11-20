@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { renderToStream } from '@react-pdf/renderer';
 import { OSPdf } from '@/components/OSPdf';
 import { createElement } from 'react';
+import { getAccesoDeCookie } from '@/lib/permisosServer';
 
 // Helper: read a Node.js ReadableStream into a Buffer
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
@@ -39,8 +40,9 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
     const { id } = params;
 
     try {
-        // Try by internal id first, fallback to linkPublico (token)
-        let os = await prisma.ordenServicio.findUnique({ where: { id }, include });
+        // Con sesión: por id interno o por linkPublico. Sin sesión (cliente): solo por linkPublico.
+        const conSesion = !!(await getAccesoDeCookie(req)).userId;
+        let os = conSesion ? await prisma.ordenServicio.findUnique({ where: { id }, include }) : null;
         if (!os) {
             os = await prisma.ordenServicio.findUnique({ where: { linkPublico: id }, include });
         }

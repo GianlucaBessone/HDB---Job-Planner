@@ -5,6 +5,7 @@ import { filterOperatorProjects } from '@/lib/projectSelectHelper';
 import { format, differenceInMinutes, parseISO } from 'date-fns';
 import { sendPushNotification } from '@/lib/onesignal';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 function calculateHours(start: string, end: string, daysElapsed: number = 0): number {
     if (!start || !end) return 0;
@@ -32,8 +33,18 @@ function daysBetween(a: string, b: string): number {
 
 export async function POST(req: Request) {
     try {
+        // Cada uno ficha por sí mismo: el operario es el usuario de la sesión.
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
-        const { operatorId, action, entryId, deviceId, latitude, longitude, qrToken, isOfflinePending, timestamp, forceConfirmed } = body;
+        // Una fichada que pide otro operario (p. ej. una pendiente sin conexión que se envía
+        // con otra sesión abierta en el equipo) se rechaza en vez de asignarse a quien está logueado.
+        if (body.operatorId && body.operatorId !== acceso.userId) {
+            return NextResponse.json({ error: 'La fichada pertenece a otro usuario. Iniciá sesión con ese usuario para enviarla.' }, { status: 403 });
+        }
+        const operatorId = acceso.userId;
+        const { action, entryId, deviceId, latitude, longitude, qrToken, isOfflinePending, timestamp, forceConfirmed } = body;
         let projectId: string | null = body.projectId || null;
 
         if (!operatorId || !action || !deviceId) {
@@ -208,10 +219,18 @@ export async function POST(req: Request) {
                 const planning = await prisma.planning.findUnique({ where: { fecha: dateStr } });
                 if (planning) {
                     const blocks = planning.blocks as any[];
-                    const isAssigned = blocks.some((block: any) => {
+                    const enPlanificacion = blocks.some((block: any) => {
                         const opIds = Array.isArray(block.operatorIds) ? block.operatorIds : (block.operatorIds ? JSON.parse(block.operatorIds) : []);
                         return block.projectId === projectId && opIds.includes(operatorId);
                     });
+                    // El equipo asignado al proyecto (asistente de proyectos) también cuenta:
+                    // esa asignación no escribe en Planificación y sin esto la fichada caía en
+                    // Aprobaciones como "no asignado". Fechas YYYY-MM-DD: se comparan como texto.
+                    const enEquipo = enPlanificacion || !!(await prisma.proyectoAsignacion.findFirst({
+                        where: { projectId, operatorId, fechaDesde: { lte: dateStr }, fechaHasta: { gte: dateStr } },
+                        select: { id: true },
+                    }));
+                    const isAssigned = enPlanificacion || enEquipo;
                     if (!isAssigned) {
                         // Check if project is marked as "Fijo" — any operator can punch in
                         const punchProject = await prisma.project.findUnique({ where: { id: projectId }, select: { proyectoFijo: true } });

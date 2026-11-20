@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
+import { verificarFirmaRecordatorio } from '@/lib/tareas/recordatorioToken';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Webhook called by cron-job.org when a reminder fires.
  * Sends push notifications to all involucrados of the tarea.
+ *
+ * Es público en el middleware (cron-job.org no tiene sesión): se autentica con el
+ * token firmado que lleva la URL de cada recordatorio (lib/tareas/recordatorioToken.ts).
  */
 export async function GET(req: NextRequest) {
     try {
@@ -15,6 +19,9 @@ export async function GET(req: NextRequest) {
 
         if (!recordatorioId) {
             return NextResponse.json({ error: 'recordatorioId requerido' }, { status: 400 });
+        }
+        if (!verificarFirmaRecordatorio(recordatorioId, url.searchParams.get('token'))) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
         }
 
         const recordatorio = await prisma.tareaRecordatorio.findUnique({

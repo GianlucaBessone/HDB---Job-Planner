@@ -53,8 +53,9 @@ export async function DELETE(req: Request) {
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
-        await dataLayer.deleteClient(id);
-        return NextResponse.json({ success: true });
+        // Con historial (proyectos, ventas, órdenes…) se desactiva en lugar de borrarse.
+        const resultado = await dataLayer.deleteClient(id, acceso);
+        return NextResponse.json({ success: true, ...resultado });
     } catch (error) {
         return NextResponse.json({ error: 'Error deleting client' }, { status: 500 });
     }

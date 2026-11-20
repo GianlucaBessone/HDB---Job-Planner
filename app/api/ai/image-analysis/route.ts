@@ -2,22 +2,27 @@ import { NextResponse } from 'next/server';
 import { analyzeImage } from '@/lib/ai';
 import { ImageAnomalyOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { 
             base64Image, 
             mimeType, 
             tipoInstalacion, 
             contexto, 
-            userId, 
-            userName, 
-            userRole,
-            evidenceId 
+            evidenceId
         } = body;
+        // Usuario, nombre y rol salen de la sesión (se ignoran los del cuerpo).
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
 
         // 1. Validaciones básicas
         if (!base64Image || !mimeType || !tipoInstalacion) {

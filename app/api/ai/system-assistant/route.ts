@@ -1,19 +1,24 @@
 import { NextResponse } from 'next/server';
 import { generateObject } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const body = await req.json();
         const { 
             consulta,
-            userId, 
-            userName, 
-            userRole,
-            conversationId 
+            conversationId
         } = body;
+        // Usuario, nombre y rol salen de la sesión (se ignoran los del cuerpo).
+        const userId = acceso.userId;
+        const userName = acceso.nombre;
+        const userRole = acceso.role;
 
         if (!consulta || !userId) {
             return NextResponse.json({ error: 'Faltan parámetros obligatorios: consulta o userId.' }, { status: 400 });

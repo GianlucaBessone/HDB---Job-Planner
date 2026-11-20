@@ -349,7 +349,15 @@ function ProjectsContent() {
             showToast(await mensajeError(res, 'No se pudo eliminar el proyecto'), 'error');
             return;
         }
+        const data = await res.json().catch(() => null);
+        if (data?.modo === 'desactivado') {
+            // Tiene horas, fichadas u órdenes: queda inactivo para no perder ese historial.
+            setProjects(prev => prev.map(p => p.id === id ? { ...p, activo: false } : p));
+            showToast('Tiene historial: quedó desactivado en lugar de eliminarse', 'info');
+            return;
+        }
         setProjects(prev => prev.filter(p => p.id !== id));
+        showToast('Proyecto eliminado', 'success');
     };
 
     // ── Filters ───────────────────────────────────────────────────────────────
@@ -622,7 +630,7 @@ function ProjectsContent() {
             <ConfirmDialog
                 isOpen={isConfirmOpen}
                 title="Eliminar Proyecto"
-                message="¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer."
+                message="Si tiene horas, fichadas, órdenes o materiales, queda desactivado para conservar ese historial. Si no tiene nada, se elimina y no se puede deshacer."
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
             />

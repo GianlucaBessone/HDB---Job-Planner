@@ -200,8 +200,15 @@ export default function OperatorsPage() {
             showToast(await mensajeError(res, 'No se pudo eliminar el usuario'), 'error');
             return;
         }
+        const data = await res.json().catch(() => null);
+        if (data?.modo === 'desactivado') {
+            // Tiene horas, fichadas u órdenes: queda inactivo para no perder ese historial.
+            setOperators(prev => prev.map(op => op.id === id ? { ...op, activo: false } : op));
+            showToast('Tiene historial: quedó desactivado en lugar de eliminarse', 'info');
+            return;
+        }
         setOperators(prev => prev.filter(op => op.id !== id));
-        showToast('Operador eliminado', 'success');
+        showToast('Usuario eliminado', 'success');
     };
 
     const handleResetAllClick = () => {
@@ -404,9 +411,10 @@ export default function OperatorsPage() {
                                         className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-wider"
                                         value={formData.pin}
                                         onChange={e => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 8) })}
-                                        placeholder={editingOperator ? 'Dejar vacío para no cambiarlo' : 'Ej: 1234'}
+                                        placeholder={editingOperator ? 'Dejar vacío para no cambiarlo' : 'PIN inicial'}
                                         required={!editingOperator}
                                     />
+                                    <p className="field-hint px-1">Si el PIN es 1234, números repetidos o una escalera, la persona va a tener que elegir uno nuevo al ingresar.</p>
                                 </div>
 
                                 {editingOperator && currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
@@ -666,7 +674,7 @@ export default function OperatorsPage() {
             <ConfirmDialog
                 isOpen={isConfirmOpen}
                 title="Eliminar Operador"
-                message="¿Estás seguro de que deseas eliminar este operador? Esta acción no se puede deshacer."
+                message="Si tiene horas, fichadas u órdenes registradas, queda desactivado para conservar ese historial. Si no tiene nada, se elimina y no se puede deshacer."
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
             />

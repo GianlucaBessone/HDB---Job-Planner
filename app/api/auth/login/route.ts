@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { encrypt } from '@/lib/auth';
-import { getPinLockMinutes, hashPin, isPinHashed, lockedMessage, registerPinAttempt, verifyPin } from '@/lib/pinAuth';
+import { getPinLockMinutes, hashPin, isPinHashed, lockedMessage, pinDebil, registerPinAttempt, verifyPin } from '@/lib/pinAuth';
 
 export async function POST(req: Request) {
     try {
@@ -43,18 +43,22 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'El operador está inactivo.' }, { status: 403 });
         }
 
+        // PIN débil (el 1234 por defecto, repetidos o escaleras): tiene que cambiarlo antes de usar el sistema.
+        const debeCambiarPin = pinDebil(String(pin));
+
         // Issue JWT token
         const sessionPayload = {
             id: operator.id,
             role: operator.role,
-            nombreCompleto: operator.nombreCompleto
+            nombreCompleto: operator.nombreCompleto,
+            ...(debeCambiarPin ? { cambiarPin: true } : {}),
         };
         const sessionToken = await encrypt(sessionPayload);
 
         // Return user info without PIN
         const { pin: _pin, ...userData } = operator;
 
-        const response = NextResponse.json(userData);
+        const response = NextResponse.json({ ...userData, debeCambiarPin });
         
         // Set HTTP-Only Cookie
         response.cookies.set('sgi_session', sessionToken, {

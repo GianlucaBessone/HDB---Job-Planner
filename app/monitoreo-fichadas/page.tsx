@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { AsistenciaNav } from '@/components/asistencia/AsistenciaNav';
 import { 
     Clock, 
     Calendar, 
@@ -331,6 +332,7 @@ export default function FichadasAdminPage() {
 
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-20">
+            <AsistenciaNav />
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateOtNumber } from '@/lib/ot/counter';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,8 +88,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
-    const { clienteId, proyectoId, responsableId, sector, reporteTrabajo, refCliente, creadorId } = body;
+    const { clienteId, proyectoId, responsableId, sector, reporteTrabajo, refCliente } = body;
 
     if (!clienteId || !proyectoId || !responsableId || !reporteTrabajo?.trim()) {
       return NextResponse.json(
@@ -97,7 +101,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const effectiveCreadorId = creadorId || req.headers.get('x-user-id') || responsableId;
+    // El creador es el usuario de la sesión (se ignora creadorId del cuerpo).
+    const effectiveCreadorId = acceso.userId;
 
     // Verificar existencia de entidades
     const [client, project, responsable, creador] = await Promise.all([

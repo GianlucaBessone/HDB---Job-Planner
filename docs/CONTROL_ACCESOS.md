@@ -43,6 +43,30 @@ Nadie puede cambiar su propio permiso de administrar accesos.
 - El middleware borra los `x-user-id` / `x-user-role` / `x-user-name` que manda el navegador,
   también en las rutas públicas. Los dos primeros solo los pone él, después de validar la
   cookie; el nombre nadie lo manda en un header: sale de la base (`acceso.nombre`).
+- Rutas públicas por patrón (`PUBLIC_DYNAMIC_ROUTES` en `middleware.ts`): cada una declara
+  los métodos que acepta sin sesión; cualquier otro método sobre la misma ruta exige sesión.
+  Si una ruta pública necesita saber si hay sesión (p. ej. para mostrar más datos), usa
+  `getAccesoDeCookie(req)`, que valida la cookie y el usuario contra la base.
+- **PIN débil:** si alguien ingresa con un PIN fácil de adivinar (el `1234` por defecto,
+  dígitos repetidos o una escalera; `pinDebil` en `lib/pinAuth.ts`), la sesión lleva la
+  marca `cambiarPin` y el middleware responde 403 (`code: 'CAMBIAR_PIN'`) a todo salvo
+  `POST /api/auth/cambiar-pin`. Esa API verifica el PIN actual, exige uno nuevo de 4 a 8
+  números que no sea débil y emite una sesión sin la marca. La pantalla de ingreso pide
+  el PIN nuevo antes de entrar.
+- **Bajas:** borrar una persona, un cliente o un proyecto con historial (horas, fichadas,
+  órdenes, ventas…) lo desactiva en lugar de borrarlo (`lib/dataLayer.ts`); la API responde
+  `modo: 'desactivado'` y queda en Auditoría. Solo se borra lo que no tiene nada registrado.
+
+### Rutas sin sesión, a propósito
+
+| Ruta | Métodos | Cómo se protege |
+|---|---|---|
+| `/api/ordenes-servicio/[id]` | GET, POST (firma) | Sin sesión solo responde al `linkPublico` del cliente (sin la nota interna). La firma solo entra por `linkPublico`. Por id interno hace falta sesión; PUT y DELETE exigen sesión |
+| `/api/ordenes-servicio/[id]/pdf` | GET | Igual: sin sesión, solo por `linkPublico` |
+| `/api/tareas/reminder-webhook` | GET | Lo llama cron-job.org. Cada recordatorio lleva en la URL un HMAC de su id firmado con `CRON_SECRET` (`lib/tareas/recordatorioToken.ts`). Los recordatorios creados antes de este cambio se re-firman con `scripts/firmar-recordatorios-tareas.ts` |
+| `/api/encuesta-servicio`, `/[osId]` | POST, GET | Encuesta del cliente |
+| `/api/centro-ayuda/articulo/[slug]` | GET | Ayuda contextual |
+| `/api/signatures/verify/[id]` | POST | Verificación pública de firmas |
 
 ## Autorización con PIN
 
@@ -179,6 +203,22 @@ Reglas por usuario, sin función:
 - **Documentos**: firmar (`/api/documentos/[id]/firmar`) solo puede el firmante asignado al
   paso (creador, revisor o aprobador del documento). Confirmar lectura e imprimir una copia
   controlada quedan a nombre del usuario de la sesión.
+- **Tareas, comentarios y recordatorios**: los comentarios los leen y escriben quienes
+  participan de la tarea (creador o involucrado de cualquier rol, o `tareas.ver_todas`), a
+  nombre de la sesión. Programar o quitar recordatorios, quien puede editar la tarea completa.
+- **Fichado** (`/api/time-entries/punch`): cada uno ficha por sí mismo. Una fichada que
+  trae otro `operatorId` (p. ej. una pendiente sin conexión enviada con otra sesión abierta)
+  se rechaza con 403.
+- **Materiales de proyecto**: uso, devolución y delegación quedan a nombre de la sesión;
+  los permisos de cerrar una devolución se evalúan con el usuario de la sesión.
+- **OT, proyectos e IA**: alta y cambio de estado de OT, "Mis proyectos", recientes,
+  finalizar proyecto, remitos del PDV y las rutas de IA toman usuario, nombre y rol de la
+  sesión. Generar documentación con IA exige `ia.generar_documentos`.
+- **Provisión**: `GET /api/provision-proyectos` es solo de lectura. La corrección de estados
+  de materiales es `POST /api/provision-proyectos/reparar` (`provision.gestionar`: admin,
+  supervisor, qa, vendedor); la pantalla de Provisión la llama al cargar.
+- **Competencias del panel**: el `GET` normaliza los nombres viejos en memoria; la migración
+  en la base corre al asignar o aprobar competencias de ese operador.
 - **Herramientas**: retirar un carro y verificar una herramienta quedan a nombre del usuario de
   la sesión. Devolver un carro lo hace quien lo retiró (o quien tiene `herramientas.gestionar`).
   `GET /api/carros/movements/active` devuelve los movimientos propios.

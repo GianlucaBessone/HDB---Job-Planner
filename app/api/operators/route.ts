@@ -153,6 +153,7 @@ export async function DELETE(req: Request) {
     const regla = reglaEliminarUsuario(actorDe(acceso), objetivo);
     if (regla) return responderRegla(regla);
 
-    await dataLayer.deleteOperator(id, acceso);
-    return NextResponse.json({ success: true });
+    // Con historial (horas, fichadas, órdenes…) se desactiva en lugar de borrarse.
+    const resultado = await dataLayer.deleteOperator(id, acceso);
+    return NextResponse.json({ success: true, ...resultado });
 }

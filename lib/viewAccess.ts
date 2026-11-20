@@ -86,8 +86,9 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
 
     // ─ Personas: usuarios, asistencia, RRHH y viajes ─
     { key: '/operators',          label: 'Usuarios y accesos',  description: 'Personas, roles y permisos',            roles: R_GESTION,                   access: 'ambos', section: 'personas', iconName: 'Users',       color: 'bg-slate-700' },
-    { key: '/aprobaciones',       label: 'Fichadas a aprobar',  description: 'Fichadas con alertas para validar',     roles: R_GESTION,                   access: 'ambos', section: 'personas', iconName: 'ShieldCheck', color: 'bg-teal-600' },
-    { key: '/monitoreo-fichadas', label: 'Fichadas en curso',   description: 'Quién está fichado y dónde',            roles: R_GESTION,                   access: 'ambos', section: 'personas', iconName: 'ShieldAlert', color: 'bg-rose-600' },
+    { key: '/monitoreo-fichadas', label: 'Asistencia y horas',  description: 'Fichadas en curso, aprobaciones y control horario', roles: R_GESTION, access: 'ambos',  section: 'personas', iconName: 'ShieldAlert', color: 'bg-rose-600' },
+    // Se abre desde Asistencia y horas y desde los pendientes de Inicio.
+    { key: '/aprobaciones',       label: 'Fichadas a aprobar',  description: 'Fichadas con alertas para validar',     roles: R_GESTION,                   access: 'oculta', section: 'personas', iconName: 'ShieldCheck', color: 'bg-teal-600' },
     { key: '/rrhh',               label: 'Recursos humanos',    description: 'Selección de personal y EPP',           roles: ['admin', 'supervisor', 'qa'], access: 'ambos', section: 'personas', iconName: 'Briefcase',   color: 'bg-indigo-600' },
     { key: '/viajes',             label: 'Viajes y viáticos',   description: 'Planificación y rendición de viajes',   roles: ['admin', 'supervisor', 'qa'], access: 'ambos', section: 'personas', iconName: 'Plane',       color: 'bg-sky-700' },
 

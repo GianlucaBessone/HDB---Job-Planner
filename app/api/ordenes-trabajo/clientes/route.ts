@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,10 +74,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  // Usuario y nombre salen de la sesión (base de datos), no de headers del navegador.
-  const acceso = await exigirAcceso(req);
-  if (acceso instanceof NextResponse) return acceso;
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const body = await req.json();
     const { clientId } = body;
 
@@ -126,10 +126,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  // Usuario y nombre salen de la sesión (base de datos), no de headers del navegador.
-  const acceso = await exigirAcceso(req);
-  if (acceso instanceof NextResponse) return acceso;
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const { searchParams } = new URL(req.url);
     const clientId = searchParams.get('clientId');
 

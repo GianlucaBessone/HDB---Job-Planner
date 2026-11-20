@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
+
         const { id } = params;
-        const { force, userId } = await req.json();
+        const { force } = await req.json();
+        const userId = acceso.userId;
 
         // 1. Get checklist and project
         const [project, checklist] = await Promise.all([

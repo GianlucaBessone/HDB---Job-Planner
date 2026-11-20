@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 // POST /api/materiales-proyecto/uso
 export async function POST(req: Request) {
     try {
-        const body = await req.json();
-        const { materialId, cantidadUtilizada, operadorNombre, ordenServicioId, operatorId } = body;
+        const acceso = await exigirAcceso(req);
+        if (acceso instanceof NextResponse) return acceso;
 
-        if (!operatorId) {
-            return NextResponse.json({ error: 'operatorId es requerido para esta acción' }, { status: 401 });
-        }
+        const body = await req.json();
+        const { materialId, cantidadUtilizada, ordenServicioId } = body;
+        const operadorNombre = acceso.nombre;
+
+        // El actor es el usuario de la sesión (se ignoran operatorId y los nombres del cuerpo).
+        const operatorId = acceso.userId;
 
         const operator = await prisma.operator.findUnique({ where: { id: operatorId, activo: true } });
         if (!operator) {
