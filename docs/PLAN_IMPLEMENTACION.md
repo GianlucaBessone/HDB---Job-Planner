@@ -162,10 +162,22 @@ Migración `prisma/sql/20261121_proveedores_unicos` (mueve datos y borra la tabl
 | Ventas → Proveedores | Solo los de productos | Pestañas "Comerciales" y "De gastos" (los que solo tienen facturas de gastos: peajes, combustible, viajes); no se borra uno con facturas (se da de baja) |
 | Selectores de proveedor (producto, filtros, importaciones) | — | Solo comerciales: los de gastos no se mezclan |
 
+### P27 · Tipo de proyecto y estados calculados
+
+Migración `prisma/sql/20261121_tipo_proyecto` (agrega `Project.tipo`; pasa `en_riesgo`/`atrasado` guardados a `activo`; probada ida/vuelta/ida). **Aplicada en producción el 21/11/2026 (14:46 UTC).**
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Tipo de proyecto | Implícito en los interruptores (OS, provisión, fichaje, fijo, métricas) | Obra, Servicio puntual, Contrato de mantenimiento o Interno (`lib/proyectos/tipos.ts`). Al elegirlo propone los interruptores; se pueden ajustar. Existentes: fijo → contrato, con OS → servicio, resto → obra |
+| "Atrasado" | Lo escribía un proceso al leer proyectos y no volvía atrás aunque se corriera la fecha | Calculado: fecha de fin vencida |
+| "En riesgo" | Manual | Calculado: ≥ 90% de las horas estimadas; o vence en ≤ 7 días con el checklist < 80%; o "Bloqueante" en la bitácora en los últimos 7 días (`lib/proyectos/salud.ts`) |
+| Formulario, planilla y asistente | Se podía elegir "En riesgo" y "Atrasado" | Solo Por hacer, Planificado, Activo y Finalizado; el motivo de la alerta se muestra en la ficha, el formulario y al pasar sobre el estado |
+| Paneles (Panel de análisis, Proyectos → Dashboard, Mis proyectos) | Estado guardado | Estado calculado |
+
 ### Pendiente en esta fase
 
 - Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
-- P27 · Tipo de proyecto con valores por defecto y estados calculados.
+- Un solo estado (E9): el interruptor "Activo" del proyecto sigue aparte del estado.
 
 ## Respuestas del Anexo A (21/11/2026)
 

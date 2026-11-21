@@ -18,6 +18,7 @@ import { safeApiRequest } from '@/lib/offline';
 import { useAcceso } from '@/lib/store/useAccessStore';
 import { useHistoryStore } from '@/lib/store/useHistoryStore';
 import { STATUS_CONFIG } from '@/lib/projectTypes';
+import { TIPO_PROYECTO_INFO, esTipoProyecto } from '@/lib/proyectos/tipos';
 import { formatDate } from '@/lib/formatDate';
 import { unirBitacora, type EntradaBitacora } from '@/lib/bitacora';
 
@@ -28,6 +29,8 @@ interface Proyecto {
     nombre: string;
     codigoProyecto: string | null;
     estado: string;
+    alertaMotivo?: string | null;
+    tipo?: string;
     activo: boolean;
     clientId: string | null;
     cliente: string | null;
@@ -324,7 +327,12 @@ function Resumen({ proyecto, avance, bloqueantes, demoras, horasDemora, presupue
                 <Panel title="Datos del proyecto">
                     <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
                         <dt className="text-muted-foreground">Estado</dt>
-                        <dd><Badge tone={TONO_ESTADO[proyecto.estado] || 'neutral'}>{estado}</Badge>{proyecto.finalizadoConPendientes && <Badge tone="warning" className="ml-2">Con pendientes</Badge>}</dd>
+                        <dd>
+                            <Badge tone={TONO_ESTADO[proyecto.estado] || 'neutral'}>{estado}</Badge>{proyecto.finalizadoConPendientes && <Badge tone="warning" className="ml-2">Con pendientes</Badge>}
+                            {proyecto.alertaMotivo && <p className="mt-1 text-xs text-muted-foreground">{proyecto.alertaMotivo}</p>}
+                        </dd>
+                        <dt className="text-muted-foreground">Tipo</dt>
+                        <dd>{esTipoProyecto(proyecto.tipo) ? TIPO_PROYECTO_INFO[proyecto.tipo].label : '—'}</dd>
                         <dt className="text-muted-foreground">Cliente</dt>
                         <dd>
                             {proyecto.client ? (

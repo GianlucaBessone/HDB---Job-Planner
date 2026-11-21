@@ -11,6 +11,7 @@ import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { generateCodigoProyecto } from '@/lib/codeGenerator';
 import { crearChecklistsPorEtiqueta } from './checklistsPorEtiqueta';
+import { TIPOS_PROYECTO, TIPO_PROYECTO_INFO } from './tipos';
 import { esFecha, hoyArgentina, sugerirFechas, r2 } from '@/lib/presupuestosServicio/calculos';
 import { verificarSnapshot, type DatosSnapshot } from '@/lib/presupuestosServicio/servicio';
 import { ErrorNegocio, type UsuarioSesion } from '@/lib/presupuestosServicio/sesion';
@@ -37,6 +38,7 @@ export const wizardSchema = z
         horasDia: z.coerce.number().min(1, 'Horas por día: mínimo 1').max(24, 'Horas por día: máximo 24').default(8),
         /** Solo para proyectos sin tareas: horas estimadas totales cargadas a mano. */
         horasEstimadas: z.coerce.number().min(0).max(1e6).optional().nullable(),
+        tipo: z.enum(TIPOS_PROYECTO).default('obra'),
         generarOS: z.boolean().default(false),
         aprovisionamiento: z.boolean().default(false),
         cargarMateriales: z.boolean().default(true),
@@ -191,6 +193,10 @@ export async function crearProyectoWizard(input: WizardInput, usuario: UsuarioSe
                         estado,
                         fechaInicio: input.fechaInicio,
                         fechaFin: input.fechaFin,
+                        tipo: input.tipo,
+                        // El asistente no muestra estos dos: salen del tipo de proyecto (P27)
+                        proyectoFijo: TIPO_PROYECTO_INFO[input.tipo].valores.proyectoFijo,
+                        noEnMetricas: TIPO_PROYECTO_INFO[input.tipo].valores.noEnMetricas,
                         generarOS: input.generarOS,
                         aprovisionamiento: input.aprovisionamiento,
                         listaPrecioId: input.listaPrecioId,
