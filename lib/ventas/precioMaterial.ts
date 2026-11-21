@@ -27,9 +27,13 @@ function variantes(codigo: string) {
 /** Producto activo del catálogo para un código de material (SKU, con o sin ceros, o código de barras). */
 export async function productoPorCodigo(db: Db, codigo: string) {
     if (!codigo?.trim()) return null;
+    // Primero el SKU exacto: "665" y "00665" pueden ser productos distintos
+    const exacto = await db.producto.findFirst({ where: { activo: true, sku: codigo.trim() }, include: incluir });
+    if (exacto) return exacto;
     return db.producto.findFirst({
         where: { activo: true, OR: [...variantes(codigo).map(sku => ({ sku })), { codigoBarras: codigo.trim() }] },
         include: incluir,
+        orderBy: { sku: 'asc' },
     });
 }
 

@@ -133,7 +133,7 @@ Sin cambios de base de datos. Lógica en `lib/ventas/precioMaterial.ts`: product
 
 - **Materiales de las OT al stock** (salen del depósito): cargar un material de catálogo en un ciclo lo descuenta; quitarlo lo devuelve (`conciliarStockCicloOT`, referencia `OT` por ciclo). Los de código 999999 son manuales y no mueven stock; los cargados antes de `STOCK_OBRA_DESDE` no se cuentan.
 - Se borran la vista desactivada `/inventario` y su API (`/api/inventario/**`).
-- Migración `prisma/sql/20261121_quitar_material_maestro` (destructiva, probada ida/vuelta/ida): borra la tabla. Se aplica **después** de desplegar P8. En producción quedan 103 códigos que no están en el catálogo (detalle en su README).
+- Migración `prisma/sql/20261121_quitar_material_maestro`: **aplicada en producción el 21/11/2026**, después de desplegar P8 y de dar de alta en el catálogo los códigos que no tenían producto (101; 74 activos). Detalle en su README.
 
 ### Pendiente en esta fase
 
