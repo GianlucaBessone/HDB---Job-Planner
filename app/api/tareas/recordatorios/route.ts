@@ -1,59 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { nivelSobreTarea } from '@/lib/tareas/acceso';
 import { firmarRecordatorio, urlWebhookRecordatorio } from '@/lib/tareas/recordatorioToken';
+import { horarioCronJob, parsearFechaRecordatorio } from '@/lib/tareas/recordatorioHorario';
 
 const CRONJOB_API = 'https://api.cron-job.org/jobs';
 
-function getCronJobApiKey(): string {
+function getCronJobApiKey(): string | null {
     const key = process.env.CRONJOB_ORG_API_KEY;
-    if (!key) throw new Error('CRONJOB_ORG_API_KEY not set');
-    return key.replace(/^"|"$/g, '');
+    return key && key.trim() ? key.trim().replace(/^"|"$/g, '') : null;
 }
 
-/**
- * Build the cron-job.org schedule from tipo and fechaDisparo.
- *  - "unico":  fires once at the exact date/time
- *  - "diario": fires every day at the same hour/minute
- *  - "semanal": fires every week on the same weekday at the same hour/minute
- */
-function buildSchedule(tipo: string, fecha: Date) {
-    const minutes = [fecha.getUTCMinutes()];
-    const hours = [fecha.getUTCHours()];
+const crearSchema = z.object({
+    tareaId: z.string().min(1, 'tareaId es obligatorio'),
+    tipo: z.enum(['unico', 'diario', 'semanal']).default('unico'),
+    // ISO con zona (lo que manda la pantalla) o fecha sin zona, que se toma como hora de Argentina.
+    fechaDisparo: z.string().min(1, 'fechaDisparo es obligatoria'),
+    mensaje: z.string().nullish(),
+});
 
-    switch (tipo) {
-        case 'diario':
-            return {
-                timezone: 'America/Argentina/Buenos_Aires',
-                expiresAt: 0,
-                hours,
-                minutes,
-                mdays: [-1],
-                months: [-1],
-                wdays: [-1],
-            };
-        case 'semanal':
-            return {
-                timezone: 'America/Argentina/Buenos_Aires',
-                expiresAt: 0,
-                hours,
-                minutes,
-                mdays: [-1],
-                months: [-1],
-                wdays: [fecha.getUTCDay()],
-            };
-        case 'unico':
-        default:
-            return {
-                timezone: 'America/Argentina/Buenos_Aires',
-                expiresAt: Math.floor(fecha.getTime() / 1000) + 120, // expire 2 min after
-                hours,
-                minutes,
-                mdays: [fecha.getUTCDate()],
-                months: [fecha.getUTCMonth() + 1],
-                wdays: [-1],
-            };
+/** Crea el trabajo en cron-job.org. Devuelve su id o el motivo por el que no se pudo. */
+async function programarEnCronJob(params: {
+    baseUrl: string; recordatorioId: string; titulo: string; tipo: string; fecha: Date;
+}): Promise<{ jobId: number } | { error: string }> {
+    const token = firmarRecordatorio(params.recordatorioId);
+    if (!token) return { error: 'CRON_SECRET no está configurado' };
+    const apiKey = getCronJobApiKey();
+    if (!apiKey) return { error: 'CRONJOB_ORG_API_KEY no está configurada' };
+    try {
+        const res = await fetch(CRONJOB_API, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                job: {
+                    url: urlWebhookRecordatorio(params.baseUrl, params.recordatorioId, token),
+                    enabled: true,
+                    saveResponses: true,
+                    title: `SGI Recordatorio: ${params.titulo.substring(0, 50)}`,
+                    schedule: horarioCronJob(params.tipo, params.fecha),
+                    requestMethod: 0, // GET
+                },
+            }),
+        });
+        const texto = await res.text();
+        let jobId: unknown;
+        try { jobId = JSON.parse(texto)?.jobId; } catch { /* respuesta no JSON */ }
+        if (res.ok && typeof jobId === 'number') return { jobId };
+        return { error: `cron-job.org respondió HTTP ${res.status}: ${texto.slice(0, 200)}` };
+    } catch (e) {
+        return { error: `No se pudo contactar a cron-job.org: ${e instanceof Error ? e.message : String(e)}` };
     }
 }
 
@@ -63,11 +60,17 @@ export async function POST(req: NextRequest) {
         const acceso = await exigirAcceso(req);
         if (acceso instanceof NextResponse) return acceso;
 
-        const body = await req.json();
-        const { tareaId, tipo = 'unico', fechaDisparo, mensaje } = body;
-
-        if (!tareaId || !fechaDisparo) {
-            return NextResponse.json({ error: 'tareaId y fechaDisparo son obligatorios' }, { status: 400 });
+        const parsed = crearSchema.safeParse(await req.json().catch(() => null));
+        if (!parsed.success) {
+            return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Datos inválidos' }, { status: 400 });
+        }
+        const { tareaId, tipo, mensaje } = parsed.data;
+        const fecha = parsearFechaRecordatorio(parsed.data.fechaDisparo);
+        if (!fecha) {
+            return NextResponse.json({ error: 'La fecha del recordatorio no es válida' }, { status: 400 });
+        }
+        if (tipo === 'unico' && fecha.getTime() <= Date.now()) {
+            return NextResponse.json({ error: 'La fecha del recordatorio ya pasó' }, { status: 400 });
         }
 
         // Verify tarea exists
@@ -80,14 +83,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No tenés permiso para programar recordatorios en esta tarea' }, { status: 403 });
         }
 
-        // Create DB record first
         const recordatorio = await prisma.tareaRecordatorio.create({
-            data: {
-                tareaId,
-                tipo,
-                fechaDisparo: new Date(fechaDisparo),
-                mensaje: mensaje || null,
-            },
+            data: { tareaId, tipo, fechaDisparo: fecha, mensaje: mensaje || null },
         });
 
         // Build the webhook URL — use the app's base URL
@@ -95,48 +92,23 @@ export async function POST(req: NextRequest) {
             ? `https://${req.headers.get('x-forwarded-host')}`
             : req.headers.get('origin') || 'https://hdb-sgi.vercel.app';
 
-        // Sin CRON_SECRET no hay cómo firmar la URL: el webhook rechazaría la llamada.
-        const token = firmarRecordatorio(recordatorio.id);
-        if (!token) console.error('[RECORDATORIOS_POST] CRON_SECRET no está configurado: el recordatorio no se programa en cron-job.org');
+        const programado = await programarEnCronJob({
+            baseUrl, recordatorioId: recordatorio.id, titulo: tarea.titulo, tipo, fecha,
+        });
 
-        // Create cron job on cron-job.org
-        let cronJobId: number | null = null;
-        if (token) try {
-            const webhookUrl = urlWebhookRecordatorio(baseUrl, recordatorio.id, token);
-            const schedule = buildSchedule(tipo, new Date(fechaDisparo));
-            const cronResponse = await fetch(CRONJOB_API, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${getCronJobApiKey()}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    job: {
-                        url: webhookUrl,
-                        enabled: true,
-                        saveResponses: true,
-                        title: `SGI Recordatorio: ${tarea.titulo.substring(0, 50)}`,
-                        schedule,
-                        requestMethod: 0, // GET
-                    },
-                }),
-            });
-
-            const cronResult = await cronResponse.json();
-            console.log('[CRONJOB_CREATE]', cronResult);
-
-            if (cronResult.jobId) {
-                cronJobId = cronResult.jobId;
-            }
-        } catch (cronError) {
-            console.error('[CRONJOB_CREATE_ERROR]', cronError);
-            // Don't fail the whole operation, just log it
+        // Un recordatorio sin trabajo en cron-job.org nunca se dispara: no se guarda.
+        if ('error' in programado) {
+            console.error('[CRONJOB_CREATE_ERROR]', programado.error);
+            await prisma.tareaRecordatorio.delete({ where: { id: recordatorio.id } });
+            return NextResponse.json(
+                { error: 'No se pudo programar el recordatorio en cron-job.org. Revisá la configuración del servidor.' },
+                { status: 502 },
+            );
         }
 
-        // Update record with cronJobId
         const updated = await prisma.tareaRecordatorio.update({
             where: { id: recordatorio.id },
-            data: { cronJobId },
+            data: { cronJobId: programado.jobId },
         });
 
         return NextResponse.json(updated);
@@ -176,7 +148,7 @@ export async function DELETE(req: NextRequest) {
                 await fetch(`${CRONJOB_API}/${recordatorio.cronJobId}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${getCronJobApiKey()}`,
+                        'Authorization': `Bearer ${getCronJobApiKey() ?? ''}`,
                         'Content-Type': 'application/json',
                     },
                 });
