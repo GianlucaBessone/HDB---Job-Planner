@@ -30,7 +30,22 @@ Base local PostgreSQL 16 con el esquema de `main`: ida, vuelta e ida otra vez. E
 
 ## Despliegue
 
-> **Estado: pendiente.** Aplicar después de que P8 esté desplegado en producción.
+> **Estado: aplicada en producción el 21/11/2026 (13:17 UTC)**, con P8 ya desplegado (13:14 UTC). Antes de
+> borrarla se dieron de alta en el catálogo los códigos que no tenían producto (ver abajo). Se puede volver
+> con la restauración puntual de Neon (6 horas de historial) a las 13:17 UTC. **No volver a ejecutar `up.sql`.**
+
+### Importación previa al catálogo (21/11/2026 13:15 UTC)
+
+- Se crearon 101 productos (`Producto.id` = `mm_` + md5 del código) con los códigos de `MaterialMaestro` que no
+  tenían producto, salvo `VIAT` (viáticos) y `99` (certificación), que no son materiales. Unidad "Unidad".
+  `precioBase` = precio de `MaterialMaestro` / 1,10: en el catálogo ese precio era el base más 10% (lista
+  ARCOR_10) en 850 de los materiales que estaban en las dos tablas, así cada uno conserva su precio en esa lista.
+- Ningún producto existente se modificó: se saltó todo código que ya estuviera en el catálogo (con o sin ceros a
+  la izquierda o como código de barras).
+- Quedaron **inactivos** 27 de los importados: 20 "ARTICULO GENERICO" (`99980`–`99999`), 3 "Contactor Modular
+  Schneider Test" y 4 repetidos sin ceros del mismo material (`657`, `672`, `673`, `8002`; quedan activos
+  `00657`, `00672`, `00673`, `08002`). `00672` tomó el precio de `672` ($41.045,45; el de `00672` era $77).
+- `665` (farol LED) y `00665` (ficha RJ45) son productos distintos: la búsqueda por código prefiere el SKU exacto.
 
 1. **Respaldo**: anotar la hora para la restauración puntual (o rama de Neon desde `production`).
 2. **Ida**, con `DATABASE_URL` apuntando a producción por la URL directa (sin `-pooler`):
