@@ -5,6 +5,7 @@ import {
     AlertTriangle,
     XCircle,
     MinusCircle,
+    Archive,
 } from 'lucide-react';
 import type { TipoProyecto } from '@/lib/proyectos/tipos';
 import { TIPO_PROYECTO_INFO } from '@/lib/proyectos/tipos';
@@ -14,7 +15,7 @@ import type { EstadoManual } from '@/lib/proyectos/salud';
 export type ViewType = 'card' | 'spreadsheet' | 'gantt' | 'calendar';
 
 // ── Project Status ────────────────────────────────────────────────────────────
-export type ProjectStatus = 'por_hacer' | 'planificado' | 'activo' | 'en_riesgo' | 'atrasado' | 'finalizado';
+export type ProjectStatus = 'por_hacer' | 'planificado' | 'activo' | 'en_riesgo' | 'atrasado' | 'finalizado' | 'archivado';
 
 export interface Project {
     id: string;
@@ -106,6 +107,8 @@ export const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string
     en_riesgo: { label: 'En Riesgo', color: 'text-amber-700', bg: 'bg-amber-50', ring: 'ring-amber-200', dot: 'bg-amber-400', Icon: AlertTriangle },
     atrasado: { label: 'Atrasado', color: 'text-red-700', bg: 'bg-red-50', ring: 'ring-red-200', dot: 'bg-red-500', Icon: XCircle },
     finalizado: { label: 'Finalizado', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-slate-800/50', ring: 'ring-slate-200', dot: 'bg-slate-400', Icon: MinusCircle },
+    // Reemplaza al interruptor "Activo = no" (E9): fuera de uso, se conserva por su historial
+    archivado: { label: 'Archivado', color: 'text-slate-400 dark:text-slate-500', bg: 'bg-slate-50 dark:bg-slate-900/50', ring: 'ring-slate-200', dot: 'bg-slate-300', Icon: Archive },
 };
 
 export const getProgressColor = (progress: number): string => {
@@ -114,9 +117,9 @@ export const getProgressColor = (progress: number): string => {
     return 'bg-emerald-500';
 };
 
-export const ALL_STATUSES: ProjectStatus[] = ['por_hacer', 'planificado', 'activo', 'en_riesgo', 'atrasado', 'finalizado'];
+export const ALL_STATUSES: ProjectStatus[] = ['por_hacer', 'planificado', 'activo', 'en_riesgo', 'atrasado', 'finalizado', 'archivado'];
 /** Estados que se eligen a mano (el resto se calcula). */
-export const MANUAL_STATUSES: EstadoManual[] = ['por_hacer', 'planificado', 'activo', 'finalizado'];
+export const MANUAL_STATUSES: EstadoManual[] = ['por_hacer', 'planificado', 'activo', 'finalizado', 'archivado'];
 
 export const EMPTY_FORM: FormData = {
     nombre: '',

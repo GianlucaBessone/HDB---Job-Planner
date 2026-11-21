@@ -3,9 +3,12 @@
  * la base y nunca se volvía atrás (aunque se corriera la fecha de fin), y "en riesgo" se marcaba a mano.
  * Ahora en la base queda solo el estado que elige una persona (por hacer, planificado, activo, finalizado) y
  * la alerta se calcula cada vez que se lee el proyecto.
+ *
+ * "Archivado" (E9) reemplaza al interruptor "Activo = no": un solo estado. La columna `activo` sigue en la base,
+ * sincronizada desde el estado (`activo = estado !== 'archivado'`), porque muchas pantallas la leen.
  */
 
-export const ESTADOS_MANUALES = ['por_hacer', 'planificado', 'activo', 'finalizado'] as const;
+export const ESTADOS_MANUALES = ['por_hacer', 'planificado', 'activo', 'finalizado', 'archivado'] as const;
 export type EstadoManual = (typeof ESTADOS_MANUALES)[number];
 export type EstadoEfectivo = EstadoManual | 'en_riesgo' | 'atrasado';
 

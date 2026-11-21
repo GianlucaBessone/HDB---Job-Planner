@@ -33,7 +33,7 @@ interface Delegacion {
 }
 
 const TONO_ESTADO: Record<string, BadgeTone> = {
-    por_hacer: 'neutral', planificado: 'info', activo: 'success', en_riesgo: 'warning', atrasado: 'danger', finalizado: 'neutral',
+    por_hacer: 'neutral', planificado: 'info', activo: 'success', en_riesgo: 'warning', atrasado: 'danger', finalizado: 'neutral', archivado: 'neutral',
 };
 
 const normalizar = (s: string) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();

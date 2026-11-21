@@ -17,7 +17,7 @@ export async function GET(req: Request) {
         const nombreCompleto = acceso.nombre;
 
         let where: any = {
-            estado: { notIn: ['finalizado'] }
+            estado: { notIn: ['finalizado', 'archivado'] }
         };
 
         // "Mis proyectos": donde la persona es responsable (por id o, en los viejos, por nombre)

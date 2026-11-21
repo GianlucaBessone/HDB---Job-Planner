@@ -273,9 +273,9 @@ function ProjectsContent() {
         }
         const data = await res.json().catch(() => null);
         if (data?.modo === 'desactivado') {
-            // Tiene horas, fichadas u órdenes: queda inactivo para no perder ese historial.
-            setProjects(prev => prev.map(p => p.id === id ? { ...p, activo: false } : p));
-            showToast('Tiene historial: quedó desactivado en lugar de eliminarse', 'info');
+            // Tiene horas, fichadas u órdenes: queda archivado para no perder ese historial.
+            setProjects(prev => prev.map(p => p.id === id ? { ...p, activo: false, estado: 'archivado' } : p));
+            showToast('Tiene historial: quedó archivado en lugar de eliminarse', 'info');
             return;
         }
         setProjects(prev => prev.filter(p => p.id !== id));
@@ -321,6 +321,8 @@ function ProjectsContent() {
                 if (!matchName && !matchCode && !matchClient && !matchResponsable) return false;
             }
             if (appliedFilters.estados.length > 0 && !appliedFilters.estados.includes(p.estado)) return false;
+            // "Todos" no muestra los archivados (E9): se ven con su filtro
+            if (appliedFilters.estados.length === 0 && p.estado === 'archivado') return false;
             if (appliedFilters.fechaInicio && p.fechaInicio && p.fechaInicio < appliedFilters.fechaInicio) return false;
             if (appliedFilters.fechaFin && p.fechaFin && p.fechaFin > appliedFilters.fechaFin) return false;
             return true;
@@ -431,7 +433,7 @@ function ProjectsContent() {
                     >
                         Todos
                         <span className={`px-2 py-0.5 rounded-md text-[11px] ${appliedFilters.estados.length === 0 ? 'bg-white/20 text-white' : 'bg-muted text-slate-500 dark:text-slate-400'}`}>
-                            {projects.length}
+                            {projects.filter(p => p.estado !== 'archivado').length}
                         </span>
                     </button>
 
@@ -665,19 +667,6 @@ function ProjectModal({
                                 />
                             </div>
                             <div className="flex flex-col space-y-2 pb-1">
-                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Activo</label>
-                                <button
-                                    type="button"
-                                    onClick={() => set('activo', !formData.activo)}
-                                    className={`relative inline-flex h-10 w-20 items-center rounded-xl transition-all duration-300 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20 ${formData.activo ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}
-                                >
-                                    <span className={`inline-block h-6 w-6 transform rounded-lg bg-card text-card-foreground shadow-md transition-transform duration-300 ${formData.activo ? 'translate-x-11' : 'translate-x-3'}`} />
-                                    <span className={`absolute text-[11px] font-semibold uppercase tracking-tight transition-opacity duration-300 ${formData.activo ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500 dark:text-slate-400'}`}>
-                                        {formData.activo ? 'SÍ' : 'NO'}
-                                    </span>
-                                </button>
-                            </div>
-                            <div className="flex flex-col space-y-2 pb-1">
                                 <label className="flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                     En Métricas <MetricTooltip def="Define si el proyecto se incluye en los cálculos del Panel de Análisis." />
                                 </label>
@@ -829,7 +818,7 @@ function ProjectModal({
                                     {STATUS_CONFIG[editingProject.estado].label}: {editingProject.alertaMotivo}
                                 </p>
                             )}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                                 {MANUAL_STATUSES.map(s => {
                                     const cfg = STATUS_CONFIG[s];
                                     const active = formData.estado === s;
