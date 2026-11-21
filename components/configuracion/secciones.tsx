@@ -83,9 +83,9 @@ export function OSSection() {
 
             <div className="space-y-4 bg-background text-foreground p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div>
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100">Valor de Mano de Obra (por hora)</h4>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100">Valor hora por defecto</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Se usa para calcular el costo de las horas del proyecto y como valor por defecto al cobrar una orden de servicio.
+                        Se usa cuando la persona no tiene categoría de mano de obra (o su categoría no tiene valor) y el cliente no tiene un valor propio. También es el valor inicial al cobrar una orden de servicio.
                     </p>
                 </div>
                 <div className="relative">

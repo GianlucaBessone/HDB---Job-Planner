@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { tarifasHora, valorPorDefecto } from '@/lib/manoObra/tarifa';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -22,11 +23,8 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
             return NextResponse.json({ error: 'Proyecto no encontrado' }, { status: 404 });
         }
 
-        // Fetch hourly rate
-        const settings = await prisma.systemSetting.findUnique({
-            where: { id: 'default' }
-        });
-        const valorManoObra = settings?.valorManoObra || 0;
+        // Valor hora de cada persona con la regla única de tarifas (P20), para el cliente del proyecto
+        const valorManoObra = await valorPorDefecto();
 
         // Fetch time entries
         const timeEntries = await prisma.timeEntry.findMany({
@@ -51,13 +49,14 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
             totalHours += hours;
         }
 
-        const operators = Array.from(operatorHoursMap.values()).map(o => ({
-            name: o.name,
-            hours: o.hours,
-            cost: o.hours * valorManoObra
-        }));
+        const tarifas = await tarifasHora(Array.from(operatorHoursMap.keys()), project.clientId);
+        const operators = Array.from(operatorHoursMap.entries()).map(([opId, o]) => {
+            const t = tarifas.get(opId);
+            const valorHora = t?.valorHora ?? valorManoObra;
+            return { name: o.name, hours: o.hours, valorHora, origenTarifa: t?.origen ?? 'por_defecto', categoria: t?.categoria ?? null, cost: o.hours * valorHora };
+        });
 
-        const totalHoursCost = totalHours * valorManoObra;
+        const totalHoursCost = operators.reduce((a, o) => a + o.cost, 0);
 
         // Fetch materials
         const materialesProyecto = await prisma.materialProyecto.findMany({

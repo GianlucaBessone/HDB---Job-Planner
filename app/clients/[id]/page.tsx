@@ -6,6 +6,7 @@ import { ArrowRight, Landmark, Save, Settings } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import ClientConfigModal from '@/components/ot/ClientConfigModal';
 import OrdenesPorCargar from '@/components/ventas/cuentas-corrientes/OrdenesPorCargar';
+import TarifasManoObraCliente from '@/components/clientes/TarifasManoObraCliente';
 import { Badge, EmptyState, ErrorState, Input, LoadingState, Panel, Select, Stat } from '@/components/ui';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
@@ -98,7 +99,12 @@ export default function FichaClientePage({ params }: { params: Promise<{ id: str
             />
 
             {pestana === 'datos' && <PestanaDatos ficha={ficha} puedeEditar={puedeEditar} onGuardado={cargar} />}
-            {pestana === 'comercial' && <PestanaComercial ficha={ficha} puedeEditar={puedeEditar} onGuardado={cargar} />}
+            {pestana === 'comercial' && (
+                <div className="space-y-6">
+                    <PestanaComercial ficha={ficha} puedeEditar={puedeEditar} onGuardado={cargar} />
+                    {puedeEditar && <TarifasManoObraCliente clienteId={ficha.id} puedeEditar={puedeEditar} />}
+                </div>
+            )}
             {pestana === 'portal' && (
                 <div className="grid gap-4 md:grid-cols-3">
                     <Stat label="Órdenes de trabajo" value={ficha._count.ordenesTrabajo} hint={ficha.configuracion?.habilitadoOT ? 'Habilitado para OT' : 'No habilitado para OT'} />

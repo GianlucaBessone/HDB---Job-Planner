@@ -5,6 +5,7 @@ import { X, Clock, Package, Activity, DollarSign, Building2, Calculator, AlertTr
 import { safeApiRequest } from '@/lib/offline';
 import { Tabs } from '@/components/ui';
 import PresupuestoVsReal from '@/components/projects/PresupuestoVsReal';
+import { ETIQUETA_ORIGEN_TARIFA, type OrigenTarifa } from '@/lib/manoObra/etiquetas';
 
 interface CostData {
     project: {
@@ -16,6 +17,9 @@ interface CostData {
         name: string;
         hours: number;
         cost: number;
+        valorHora?: number;
+        origenTarifa?: OrigenTarifa;
+        categoria?: string | null;
     }[];
     materials: {
         id: string;
@@ -187,7 +191,7 @@ export default function ProjectCostModal({
                                         {formatCurrency(conIva ? data.summary.totalHoursCost * 1.21 : data.summary.totalHoursCost)}
                                     </p>
                                     <p className="text-xs font-bold text-slate-400 mt-1">
-                                        {data.summary.totalHours} horas x {formatCurrency(data.summary.valorManoObra)}/h {conIva && '(IVA incluido)'}
+                                        {data.summary.totalHours} horas · valor hora según la tarifa de cada persona {conIva && '(IVA incluido)'}
                                     </p>
                                 </div>
                                 <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
@@ -228,13 +232,14 @@ export default function ProjectCostModal({
                                             <tr className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800">
                                                 <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operador</th>
                                                 <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Horas</th>
+                                                <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Valor hora</th>
                                                 <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Costo</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
                                             {data.operators.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={3} className="px-6 py-8 text-center text-slate-400 text-xs font-bold uppercase tracking-wider">Sin horas registradas</td>
+                                                    <td colSpan={4} className="px-6 py-8 text-center text-slate-400 text-xs font-bold uppercase tracking-wider">Sin horas registradas</td>
                                                 </tr>
                                             ) : data.operators.map((op, idx) => (
                                                 <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
@@ -243,6 +248,10 @@ export default function ProjectCostModal({
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
                                                         <span className="font-bold text-slate-600 dark:text-slate-300">{op.hours}h</span>
+                                                    </td>
+                                                    <td className="px-6 py-3 text-right">
+                                                        <span className="text-sm text-slate-600 dark:text-slate-300 tabular-nums">{formatCurrency(op.valorHora ?? data.summary.valorManoObra)}</span>
+                                                        {op.origenTarifa && <span className="block text-[11px] text-muted-foreground">{ETIQUETA_ORIGEN_TARIFA[op.origenTarifa] || ''}{op.categoria ? ` · ${op.categoria}` : ''}</span>}
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
                                                         <span className="font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(op.cost)}</span>

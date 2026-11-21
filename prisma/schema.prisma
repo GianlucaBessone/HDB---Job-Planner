@@ -196,6 +196,9 @@ model Operator {
   ordenesTrabajoResponsable OrdenTrabajo[]      @relation("OtResponsable")
   otCicloOperadores         OtCicloOperador[]
   clientRates               ClientOperatorRate[]
+  // Categoría de mano de obra (Oficial, Ayudante…): define su valor hora por defecto (P20)
+  manoObraCategoriaId       String?
+  manoObraCategoria         ManoObraCategoria?          @relation(fields: [manoObraCategoriaId], references: [id], onDelete: SetNull)
 
   // Ventas (PDV), Cuentas Corrientes y Cotizaciones
   ventasRealizadas          Venta[]                     @relation("VentaVendedor")
@@ -262,6 +265,7 @@ model HdbClient {
   configuracion             HdbClientConfig?
   responsables              ClientResponsable[]
   operatorRates             ClientOperatorRate[]
+  tarifasCategoria          ClienteTarifaCategoria[]
   sectores                  ClientSector[]
 
   // Ventas (PDV), Cuentas Corrientes y Cotizaciones
@@ -4019,6 +4023,23 @@ model ManoObraCategoria {
   createdAt     DateTime                      @default(now())
   updatedAt     DateTime                      @updatedAt
   lineas        PresupuestoServicioManoObra[]
+  operadores    Operator[]
+  tarifasCliente ClienteTarifaCategoria[]
+}
+
+/// Valor hora de una categoría de mano de obra para un cliente (P20). Si no hay, vale el de la categoría.
+model ClienteTarifaCategoria {
+  id          String            @id @default(cuid())
+  clientId    String
+  client      HdbClient         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  categoriaId String
+  categoria   ManoObraCategoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  valorHora   Float
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([clientId, categoriaId])
+  @@index([categoriaId])
 }
 
 model PresupuestoServicioCounter {
