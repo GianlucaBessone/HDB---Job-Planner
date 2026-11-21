@@ -6,20 +6,31 @@ import { logAudit } from '@/lib/audit';
 import { proveedorVentasSchema } from '@/lib/ventas/proveedorVentas';
 import { buscarConflictoProveedor } from '@/lib/ventas/proveedorVentasConflictos';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { PROVEEDORES_COMERCIALES, PROVEEDORES_DE_GASTOS } from '@/lib/proveedores';
 
 /**
- * GET /api/ventas/proveedores?q=&estado=activos|inactivos|todos
- * Maestro de proveedores de ventas con la cantidad de productos vinculados.
+ * GET /api/ventas/proveedores?q=&estado=activos|inactivos|todos&tipo=comerciales|gastos|todos
+ * Maestro único de proveedores (P24) con la cantidad de productos y de facturas de gastos.
+ * `tipo` separa los proveedores comerciales de los que solo tienen facturas de gastos (peajes, combustible,
+ * comidas de viaje…): un proveedor es "de gastos" mientras no tenga productos vinculados y sí facturas.
+ * Sin `tipo` se devuelven todos.
  */
+const DE_GASTOS = PROVEEDORES_DE_GASTOS;
+const COMERCIALES = PROVEEDORES_COMERCIALES;
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const q = searchParams.get('q')?.trim() || '';
     const estado = searchParams.get('estado') || 'activos';
+    const tipo = searchParams.get('tipo') || 'todos';
 
-    const where: Prisma.ProveedorVentasWhereInput = {};
-    if (estado === 'activos') where.activo = true;
-    if (estado === 'inactivos') where.activo = false;
+    const porEstado: Prisma.ProveedorVentasWhereInput =
+      estado === 'activos' ? { activo: true } : estado === 'inactivos' ? { activo: false } : {};
+    const porTipo: Prisma.ProveedorVentasWhereInput =
+      tipo === 'gastos' ? DE_GASTOS : tipo === 'comerciales' ? COMERCIALES : {};
+
+    const where: Prisma.ProveedorVentasWhereInput = { AND: [porEstado, porTipo] };
     if (q) {
       where.OR = [
         { razonSocial: { contains: q, mode: 'insensitive' } },
@@ -31,19 +42,21 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const [proveedores, totalActivos, totalInactivos] = await Promise.all([
+    const [proveedores, totalActivos, totalInactivos, comerciales, deGastos] = await Promise.all([
       prisma.proveedorVentas.findMany({
         where,
-        include: { _count: { select: { productos: true } } },
+        include: { _count: { select: { productos: true, facturas: true } } },
         orderBy: [{ activo: 'desc' }, { razonSocial: 'asc' }],
       }),
-      prisma.proveedorVentas.count({ where: { activo: true } }),
-      prisma.proveedorVentas.count({ where: { activo: false } }),
+      prisma.proveedorVentas.count({ where: { AND: [porTipo, { activo: true }] } }),
+      prisma.proveedorVentas.count({ where: { AND: [porTipo, { activo: false }] } }),
+      prisma.proveedorVentas.count({ where: { AND: [porEstado, COMERCIALES] } }),
+      prisma.proveedorVentas.count({ where: { AND: [porEstado, DE_GASTOS] } }),
     ]);
 
     return NextResponse.json({
-      proveedores: proveedores.map(({ _count, ...p }) => ({ ...p, productosCount: _count.productos })),
-      totales: { activos: totalActivos, inactivos: totalInactivos },
+      proveedores: proveedores.map(({ _count, ...p }) => ({ ...p, productosCount: _count.productos, facturasCount: _count.facturas })),
+      totales: { activos: totalActivos, inactivos: totalInactivos, comerciales, deGastos },
     });
   } catch (error: any) {
     console.error('Error fetching proveedores de ventas:', error);

@@ -1,13 +1,14 @@
 // Force recompile after schema updates
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PROVEEDORES_COMERCIALES } from '@/lib/proveedores';
 
 export async function GET(req: NextRequest) {
   try {
     const [proveedores, marcas, familias, almacenes, alicuotasIva, listasPrecios, categorias, unidades] = await Promise.all([
-      // Proveedores de Ventas
+      // Proveedores comerciales (sin los que solo tienen facturas de gastos, P24)
       prisma.proveedorVentas.findMany({
-        where: { activo: true },
+        where: { activo: true, ...PROVEEDORES_COMERCIALES },
         select: {
           id: true,
           razonSocial: true,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PROVEEDORES_COMERCIALES } from '@/lib/proveedores';
 import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
 import { exigirAcceso } from '@/lib/permisosServer';
@@ -425,7 +426,7 @@ export async function POST(req: NextRequest) {
     // Find fallback provider once if needed
     let defaultProvId: string | null = null;
     const defaultProv = await prisma.proveedorVentas.findFirst({
-      where: { activo: true },
+      where: { activo: true, ...PROVEEDORES_COMERCIALES },
       orderBy: { createdAt: 'asc' },
     });
     defaultProvId = defaultProv?.id || null;

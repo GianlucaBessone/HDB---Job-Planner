@@ -63,3 +63,11 @@ export async function proveedorPorCuitOCrear(db: Db, datos: { cuit: string; razo
 export function comoProveedorGastos<T extends { direccion: string | null }>(p: T): T & { domicilio: string | null } {
     return { ...p, domicilio: p.direccion };
 }
+
+/**
+ * Proveedores "de gastos": solo tienen facturas de gastos (peajes, combustible, comidas de viaje…) y ningún
+ * producto. No aparecen en los selectores de productos ni de materiales; pasan a comerciales al vincularles
+ * un producto.
+ */
+export const PROVEEDORES_DE_GASTOS: Prisma.ProveedorVentasWhereInput = { productos: { none: {} }, facturas: { some: {} } };
+export const PROVEEDORES_COMERCIALES: Prisma.ProveedorVentasWhereInput = { OR: [{ productos: { some: {} } }, { facturas: { none: {} } }] };

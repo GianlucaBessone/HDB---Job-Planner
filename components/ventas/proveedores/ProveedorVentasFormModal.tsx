@@ -20,6 +20,7 @@ export interface ProveedorVentas {
   provincia: string | null;
   activo: boolean;
   productosCount?: number;
+  facturasCount?: number;
 }
 
 type FormState = Record<

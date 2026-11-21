@@ -82,7 +82,7 @@ export default function ProductoFormView({
   // Al volver a esta pestaña (p. ej., desde "Administrar proveedores") se refresca la lista
   useEffect(() => {
     const refresh = () => {
-      fetch('/api/ventas/proveedores?estado=activos')
+      fetch('/api/ventas/proveedores?estado=activos&tipo=comerciales')
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data?.proveedores) setProveedores(data.proveedores);

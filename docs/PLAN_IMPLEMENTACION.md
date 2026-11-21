@@ -159,7 +159,8 @@ Migración `prisma/sql/20261121_proveedores_unicos` (mueve datos y borra la tabl
 | Maestro | `Proveedor` (Gastos) y `ProveedorVentas` (productos), el mismo proveedor cargado dos veces | Uno solo, `ProveedorVentas`, con CUIT único y siempre `30-12345678-9` (`lib/proveedores.ts`) |
 | Duplicados de producción | STRUMIA ×2, CORREDORES VIALES ×4 (dos con el CUIT mal escaneado) | Fusionados: 28 + 2 → 26 proveedores, las 63 facturas conservadas |
 | Gastos: alta, búsqueda, importación y escaneo | CUIT comparado tal cual (con y sin guiones = dos proveedores) | CUIT normalizado; si ya existe se usa ese; CUIT de menos de 11 dígitos se rechaza |
-| Ventas → Proveedores | Solo los de productos | Todos; no se borra uno con facturas de gastos (se da de baja) |
+| Ventas → Proveedores | Solo los de productos | Pestañas "Comerciales" y "De gastos" (los que solo tienen facturas de gastos: peajes, combustible, viajes); no se borra uno con facturas (se da de baja) |
+| Selectores de proveedor (producto, filtros, importaciones) | — | Solo comerciales: los de gastos no se mezclan |
 
 ### Pendiente en esta fase
 
