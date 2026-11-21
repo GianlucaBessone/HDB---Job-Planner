@@ -4,6 +4,7 @@
  * Estado, validaciones por paso y piezas compartidas del wizard de nuevo proyecto.
  */
 import { FileText, RotateCcw } from 'lucide-react';
+import { TIPO_PROYECTO_INFO, type TipoProyecto } from '@/lib/proyectos/tipos';
 import { Badge } from '@/components/ui';
 import { numCampo } from '@/components/presupuestosServicio/cliente';
 import { contarDiasHabiles, diasHabilesEstimados, esFecha, finSegunDiasHabiles, hoyArgentina, siguienteDiaHabil } from '@/lib/presupuestosServicio/calculos';
@@ -68,6 +69,7 @@ export interface WizardState {
     tipoActividad: string;
     tags: string[];
     observaciones: string;
+    tipo: TipoProyecto;
     generarOS: boolean;
     aprovisionamiento: boolean;
     listaPrecioId: string;
@@ -107,10 +109,9 @@ export function estadoInicial(): WizardState {
         tipoActividad: '',
         tags: [],
         observaciones: '',
-        generarOS: false,
-        aprovisionamiento: false,
+        tipo: 'obra',
+        ...TIPO_PROYECTO_INFO.obra.valores,
         listaPrecioId: '',
-        fichajeHabilitado: false,
         geofenceLat: null,
         geofenceLng: null,
         geofenceRadius: null,
@@ -224,6 +225,7 @@ export function payload(s: WizardState, borradorId: string | null) {
         tipoActividad: s.tipoActividad || null,
         tags: s.tags,
         observaciones: s.observaciones || null,
+        tipo: s.tipo,
         fechaInicio: s.fechaInicio,
         fechaFin: s.fechaFin,
         horasDia: num(s.horasDia) || 8,

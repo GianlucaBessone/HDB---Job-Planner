@@ -6,6 +6,9 @@ import {
     XCircle,
     MinusCircle,
 } from 'lucide-react';
+import type { TipoProyecto } from '@/lib/proyectos/tipos';
+import { TIPO_PROYECTO_INFO } from '@/lib/proyectos/tipos';
+import type { EstadoManual } from '@/lib/proyectos/salud';
 
 // ── View Types ────────────────────────────────────────────────────────────────
 export type ViewType = 'card' | 'spreadsheet' | 'gantt' | 'calendar';
@@ -41,7 +44,13 @@ export interface Project {
     geofenceLng?: number | null;
     geofenceRadius?: number | null;
     qrToken?: string | null;
+    /** Estado calculado: "en riesgo" y "atrasado" salen de fechas, horas, checklist y bitácora (P27). */
     estado: ProjectStatus;
+    /** Estado guardado (el que elige una persona). */
+    estadoBase?: EstadoManual;
+    /** Por qué está en riesgo o atrasado. */
+    alertaMotivo?: string | null;
+    tipo?: TipoProyecto;
 
     fechaInicio?: string;
     fechaFin?: string;
@@ -66,7 +75,8 @@ export interface FormData {
     tags: string[];
     categoria: string;
     tipoActividad: string;
-    estado: ProjectStatus;
+    tipo: TipoProyecto;
+    estado: EstadoManual;
     fechaInicio: string;
     fechaFin: string;
     generarOS: boolean;
@@ -105,6 +115,8 @@ export const getProgressColor = (progress: number): string => {
 };
 
 export const ALL_STATUSES: ProjectStatus[] = ['por_hacer', 'planificado', 'activo', 'en_riesgo', 'atrasado', 'finalizado'];
+/** Estados que se eligen a mano (el resto se calcula). */
+export const MANUAL_STATUSES: EstadoManual[] = ['por_hacer', 'planificado', 'activo', 'finalizado'];
 
 export const EMPTY_FORM: FormData = {
     nombre: '',
@@ -119,18 +131,19 @@ export const EMPTY_FORM: FormData = {
     tags: [],
     categoria: '',
     tipoActividad: '',
+    tipo: 'obra',
     estado: 'activo',
     fechaInicio: '',
     fechaFin: '',
-    generarOS: false,
-    aprovisionamiento: false,
+    generarOS: TIPO_PROYECTO_INFO.obra.valores.generarOS,
+    aprovisionamiento: TIPO_PROYECTO_INFO.obra.valores.aprovisionamiento,
     listaPrecioId: '',
     geofenceLat: null,
     geofenceLng: null,
     geofenceRadius: null,
     qrToken: null,
-    fichajeHabilitado: false,
-    proyectoFijo: false,
+    fichajeHabilitado: TIPO_PROYECTO_INFO.obra.valores.fichajeHabilitado,
+    proyectoFijo: TIPO_PROYECTO_INFO.obra.valores.proyectoFijo,
 };
 
 export const EMPTY_FILTERS: Filters = {

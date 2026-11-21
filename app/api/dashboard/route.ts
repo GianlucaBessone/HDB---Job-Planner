@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
-import { dataLayer } from '@/lib/dataLayer';
+import { ULTIMO_BLOQUEANTE, proyectoConSalud } from '@/lib/proyectos/salud';
 import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(request: Request) {
@@ -10,20 +10,21 @@ export async function GET(request: Request) {
     if (acceso instanceof NextResponse) return acceso;
 
     try {
-        await dataLayer.autoUpdateProjectStatuses();
-
         const { searchParams } = new URL(request.url);
         const from = searchParams.get('from');
         const to = searchParams.get('to');
         const clientId = searchParams.get('clientId');
         const status = searchParams.get('status'); // all | finished | active
 
-        let [projects, operators, plannings, clientDelays] = await Promise.all([
-            prisma.project.findMany(),
+        let [proyectos, operators, plannings, clientDelays] = await Promise.all([
+            // Estado con "en riesgo" y "atrasado" calculados (P27)
+            prisma.project.findMany({ include: { checklistItems: { select: { completed: true, excluded: true } }, logs: ULTIMO_BLOQUEANTE } }),
             prisma.operator.findMany(),
             prisma.planning.findMany(),
             prisma.clientDelay.findMany()
         ]);
+
+        let projects = proyectos.map((p) => proyectoConSalud(p));
 
         // 1. Exclude projects marked as "NO en métricas" (Requirement 1)
         // And filter by activity status. We only show projects where active is not explicitly false

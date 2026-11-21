@@ -7,6 +7,7 @@ import { Badge, Button, EmptyState, Panel, SegmentedControl } from '@/components
 import SearchableSelect from '@/components/SearchableSelect';
 import MapPicker from '@/components/MapPicker';
 import { cn } from '@/lib/cn';
+import { TIPOS_PROYECTO, TIPO_PROYECTO_INFO, type TipoProyecto } from '@/lib/proyectos/tipos';
 import { api, pesos, horasTxt, fechaCorta, fechaHora, reemplazarAlEditar } from '@/components/presupuestosServicio/cliente';
 import BuscadorMateriales, { type ProductoBuscado } from '@/components/presupuestosServicio/BuscadorMateriales';
 import {
@@ -129,6 +130,7 @@ export function PasoDatos({ s, set, errores, cat }: { s: WizardState; set: Set; 
     };
     const tagsSug = sug ? [...sug.tags].sort().join('|') : '';
     const resumenAvanzada = [
+        `Tipo: ${TIPO_PROYECTO_INFO[s.tipo].label}`,
         `Orden de Servicio: ${s.generarOS ? 'sí' : 'no'}`,
         `Aprovisionamiento: ${s.aprovisionamiento ? `sí${s.listaPrecioId ? `, ${cat.listas.find((l) => l.id === s.listaPrecioId)?.nombre || ''}` : ''}` : 'no'}`,
         `Fichaje GPS/QR: ${s.fichajeHabilitado ? 'sí' : 'no'}`,
@@ -201,6 +203,20 @@ export function PasoDatos({ s, set, errores, cat }: { s: WizardState; set: Set; 
                 </button>
                 {avanzada && (
                     <div className="border-t border-border p-4 space-y-4">
+                        {/* Tipo de proyecto: propone OS, aprovisionamiento y fichaje (P27) */}
+                        <div className="space-y-2">
+                            <span className="block font-medium">Tipo de proyecto</span>
+                            <SegmentedControl<TipoProyecto>
+                                label="Tipo de proyecto"
+                                options={TIPOS_PROYECTO.map((t) => ({ value: t, label: TIPO_PROYECTO_INFO[t].label }))}
+                                value={s.tipo}
+                                onChange={(t) => {
+                                    const v = TIPO_PROYECTO_INFO[t].valores;
+                                    set({ tipo: t, generarOS: v.generarOS, aprovisionamiento: v.aprovisionamiento || s.cargarMateriales && s.materiales.length > 0, fichajeHabilitado: v.fichajeHabilitado, listaPrecioId: v.aprovisionamiento ? s.listaPrecioId || listaCliente : s.listaPrecioId });
+                                }}
+                            />
+                            <span className="block text-xs text-slate-500 dark:text-slate-400">{TIPO_PROYECTO_INFO[s.tipo].descripcion}</span>
+                        </div>
                         <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" className="mt-1 w-4 h-4" checked={s.generarOS} onChange={(e) => set({ generarOS: e.target.checked })} /><span><span className="font-medium">Generar Orden de Servicio</span><span className="block text-xs text-slate-500 dark:text-slate-400">Habilita el flujo de Orden de Servicio para este proyecto.</span></span></label>
                         <div className="space-y-2">
                             <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" className="mt-1 w-4 h-4" checked={s.aprovisionamiento} onChange={(e) => set({ aprovisionamiento: e.target.checked, listaPrecioId: s.listaPrecioId || listaCliente })} /><span><span className="font-medium">Aprovisionamiento de materiales</span><span className="block text-xs text-slate-500 dark:text-slate-400">Gestión y trazabilidad de materiales vinculados a Gestión Comercial.</span></span></label>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Project, ProjectStatus, ALL_STATUSES, STATUS_CONFIG, getProgressColor } from '@/lib/projectTypes';
+import { Project, ProjectStatus, MANUAL_STATUSES, STATUS_CONFIG, getProgressColor } from '@/lib/projectTypes';
 import { safeApiRequest } from '@/lib/offline';
 import { Loader2, Check, DollarSign } from 'lucide-react';
 import { showToast } from '@/components/Toast';
@@ -27,7 +27,7 @@ export default function ProjectSpreadsheetView({
         try {
             const res = await safeApiRequest(`/api/projects?id=${project.id}`, {
                 method: 'PATCH',
-                body: JSON.stringify({ [field]: value }),
+                body: JSON.stringify({ [field === 'estadoBase' ? 'estado' : field]: value }),
                 headers: { 'Content-Type': 'application/json' }
             });
             if (res.ok) {
@@ -89,13 +89,15 @@ export default function ProjectSpreadsheetView({
                                         {p.responsableUser?.nombreCompleto || p.responsable || '—'}
                                     </td>
                                     <td className="px-4 py-2 align-middle">
+                                        {/* Se edita el estado elegido a mano; "en riesgo" y "atrasado" se calculan (P27) */}
                                         <select 
-                                            value={p.estado} 
-                                            onChange={(e) => handleUpdate(p, 'estado', e.target.value)}
+                                            value={p.estadoBase || p.estado} 
+                                            onChange={(e) => handleUpdate(p, 'estadoBase', e.target.value)}
+                                            title={p.alertaMotivo ? `${STATUS_CONFIG[p.estado].label}: ${p.alertaMotivo}` : undefined}
                                             className={`text-[11px] font-bold rounded-lg px-2 py-1 outline-none border border-transparent cursor-pointer bg-muted text-muted-foreground transition-all shadow-sm ${STATUS_CONFIG[p.estado]?.color}`}
                                         >
-                                            {ALL_STATUSES.map(s => (
-                                                <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                                            {MANUAL_STATUSES.map(s => (
+                                                <option key={s} value={s}>{s === p.estadoBase && p.alertaMotivo ? `${STATUS_CONFIG[s].label} · ${STATUS_CONFIG[p.estado].label}` : STATUS_CONFIG[s].label}</option>
                                             ))}
                                         </select>
                                     </td>

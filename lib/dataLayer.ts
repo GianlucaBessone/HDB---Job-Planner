@@ -4,6 +4,8 @@ import { generateCodigoProyecto } from '@/lib/codeGenerator';
 import { logAudit } from '@/lib/audit';
 import { hashPin, isPinHashed } from '@/lib/pinAuth';
 import { crearChecklistsPorEtiqueta } from '@/lib/proyectos/checklistsPorEtiqueta';
+import { CAMPOS_CALCULADOS, ULTIMO_BLOQUEANTE, estadoManual, proyectoConSalud } from '@/lib/proyectos/salud';
+import { esTipoProyecto, tipoPorInterruptores } from '@/lib/proyectos/tipos';
 
 export { prisma };
 
@@ -53,30 +55,22 @@ export function describirHistorial(historial: Record<string, number>, etiquetas:
         .join(', ');
 }
 
+/**
+ * Normaliza el cuerpo de un alta o edición de proyecto (P27): el estado guardado es solo el que elige una
+ * persona ("en riesgo" y "atrasado" se calculan) y el tipo tiene que ser uno de los conocidos.
+ */
+function normalizarProyecto(datos: Record<string, any>, esAlta: boolean) {
+    for (const c of CAMPOS_CALCULADOS) delete datos[c];
+    delete datos.logs;
+    if (datos.estado !== undefined) datos.estado = estadoManual(datos.estado);
+    if (datos.tipo !== undefined && !esTipoProyecto(datos.tipo)) delete datos.tipo;
+    if (esAlta && datos.tipo === undefined) datos.tipo = tipoPorInterruptores(datos);
+}
+
 export const dataLayer = {
     // Projects
-    async autoUpdateProjectStatuses() {
-        const today = new Date().toISOString().split('T')[0];
-        try {
-            await prisma.project.updateMany({
-                where: {
-                    estado: { notIn: ['finalizado', 'atrasado', 'cancelado'] },
-                    fechaFin: {
-                        not: '',
-                        lt: today
-                    }
-                },
-                data: {
-                    estado: 'atrasado'
-                }
-            });
-        } catch (error) {
-            console.error('Error auto-updating project statuses:', error);
-        }
-    },
     async getProjectById(id: string) {
-        await this.autoUpdateProjectStatuses();
-        return await prisma.project.findUnique({
+        const project = await prisma.project.findUnique({
             where: { id },
             include: {
                 client: true,
@@ -89,12 +83,13 @@ export const dataLayer = {
                 materialesProyecto: {
                     include: { usos: true, devoluciones: true }
                 },
+                logs: ULTIMO_BLOQUEANTE,
             }
         });
+        return project ? proyectoConSalud(project) : null;
     },
     async getProjects() {
-        await this.autoUpdateProjectStatuses();
-        return await prisma.project.findMany({
+        const projects = await prisma.project.findMany({
             include: {
                 client: true,
                 listaPrecio: { select: { id: true, codigo: true, nombre: true } },
@@ -105,10 +100,12 @@ export const dataLayer = {
                 },
                 _count: {
                     select: { clientDelays: true }
-                }
+                },
+                logs: ULTIMO_BLOQUEANTE
             },
             orderBy: { createdAt: 'desc' }
         });
+        return projects.map((p) => proyectoConSalud(p));
     },
     async createProject(data: {
         nombre: string;
@@ -127,6 +124,7 @@ export const dataLayer = {
         publicToken?: string;
         categoria?: string;
         tipoActividad?: string;
+        tipo?: string;
         generarOS?: boolean;
         aprovisionamiento?: boolean;
         listaPrecioId?: string | null;
@@ -138,6 +136,7 @@ export const dataLayer = {
         proyectoFijo?: boolean;
     }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
+        normalizarProyecto(sanitizedData, true);
         // Project.horasConsumidas se calcula solo desde el registro de tiempos
         // (app/api/time-entries/route.ts): se ignora si viene en el body.
         delete (sanitizedData as { horasConsumidas?: unknown }).horasConsumidas;
@@ -188,6 +187,7 @@ export const dataLayer = {
         pendientesSnapshot?: any;
         categoria?: string;
         tipoActividad?: string;
+        tipo?: string;
         generarOS?: boolean;
         aprovisionamiento?: boolean;
         listaPrecioId?: string | null;
@@ -199,6 +199,7 @@ export const dataLayer = {
         proyectoFijo?: boolean;
     }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
+        normalizarProyecto(sanitizedData, false);
         // Project.horasConsumidas no se edita a mano: lo mantiene el registro de tiempos.
         delete (sanitizedData as { horasConsumidas?: unknown }).horasConsumidas;
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;

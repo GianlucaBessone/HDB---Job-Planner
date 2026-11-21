@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { ULTIMO_BLOQUEANTE, proyectoConSalud } from '@/lib/proyectos/salud';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,9 +9,6 @@ export async function GET(req: Request) {
     try {
         const acceso = await exigirAcceso(req);
         if (acceso instanceof NextResponse) return acceso;
-
-        const { dataLayer } = require('@/lib/dataLayer');
-        await dataLayer.autoUpdateProjectStatuses();
 
         const { searchParams } = new URL(req.url);
         const all = searchParams.get('all') === 'true';
@@ -51,14 +49,15 @@ export async function GET(req: Request) {
                     select: { checklistItems: true }
                 },
                 checklistItems: {
-                    select: { completed: true }
-                }
+                    select: { completed: true, excluded: true }
+                },
+                logs: ULTIMO_BLOQUEANTE,
             },
             orderBy: { createdAt: 'desc' }
         });
 
         // Cómo participa la persona en cada proyecto, para mostrarlo en la lista
-        const conRol = projects.map(p => ({
+        const conRol = projects.map(proyecto => proyectoConSalud(proyecto)).map(p => ({
             ...p,
             miRol: p.responsableId === responsableId || (!p.responsableId && p.responsable === nombreCompleto)
                 ? 'responsable'

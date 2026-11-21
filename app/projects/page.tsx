@@ -58,6 +58,7 @@ import {
     STATUS_CONFIG, 
     getProgressColor, 
     ALL_STATUSES, 
+    MANUAL_STATUSES,
     EMPTY_FORM, 
     EMPTY_FILTERS, 
     normalize,
@@ -65,6 +66,8 @@ import {
     VIEW_STORAGE_KEY
 } from '@/lib/projectTypes';
 
+import { TIPOS_PROYECTO, TIPO_PROYECTO_INFO, tipoPorInterruptores } from '@/lib/proyectos/tipos';
+import { estadoManual } from '@/lib/proyectos/salud';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { useRef } from 'react';
@@ -211,7 +214,9 @@ function ProjectsContent() {
             tags: project.tags || [],
             categoria: project.categoria || '',
             tipoActividad: project.tipoActividad || '',
-            estado: project.estado,
+            tipo: project.tipo || tipoPorInterruptores(project),
+            // El estado calculado ("en riesgo", "atrasado") no se edita: se edita el que eligió una persona
+            estado: project.estadoBase || estadoManual(project.estado),
             fechaInicio: project.fechaInicio || '',
             fechaFin: project.fechaFin || '',
             generarOS: (project as any).generarOS || false,
@@ -788,11 +793,44 @@ function ProjectModal({
                             </div>
                         </div>
 
-                        {/* Estado */}
+                        {/* Tipo de proyecto: propone los valores de Configuración (P27) */}
+                        <div className="space-y-1.5">
+                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Tipo de proyecto</label>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {TIPOS_PROYECTO.map(t => {
+                                    const info = TIPO_PROYECTO_INFO[t];
+                                    const active = formData.tipo === t;
+                                    return (
+                                        <button
+                                            key={t}
+                                            type="button"
+                                            title={info.descripcion}
+                                            onClick={() => setFormData(prev => ({ ...prev, tipo: t, ...info.valores }))}
+                                            className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-left ${active
+                                                ? 'bg-primary/10 text-primary ring-1 ring-primary/30 border-transparent'
+                                                : 'bg-card text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                }`}
+                                        >
+                                            {info.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">
+                                {TIPO_PROYECTO_INFO[formData.tipo].descripcion} Al elegirlo se ajustan OS, provisión, fichaje, proyecto fijo y métricas (pestaña Configuración); después podés cambiarlos.
+                            </p>
+                        </div>
+
+                        {/* Estado: "en riesgo" y "atrasado" se calculan (P27) */}
                         <div className="space-y-1.5">
                             <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
+                            {editingProject?.alertaMotivo && (
+                                <p className={`text-[11px] font-medium ${editingProject.estado === 'atrasado' ? 'text-danger-700 dark:text-danger-300' : 'text-warning-700 dark:text-warning-300'}`}>
+                                    {STATUS_CONFIG[editingProject.estado].label}: {editingProject.alertaMotivo}
+                                </p>
+                            )}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                {ALL_STATUSES.map(s => {
+                                {MANUAL_STATUSES.map(s => {
                                     const cfg = STATUS_CONFIG[s];
                                     const active = formData.estado === s;
                                     return (

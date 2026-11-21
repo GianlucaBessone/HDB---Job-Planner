@@ -26,7 +26,8 @@ model Project {
   responsableId           String?
   responsableUser         Operator?           @relation("ProjectResponsable", fields: [responsableId], references: [id])
   tags                    Json                @default("[]") // Technical tags: "Montaje", "Tendido", etc.
-  estado                  String              @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
+  estado                  String              @default("activo") // por_hacer | planificado | activo | finalizado ("en riesgo" y "atrasado" se calculan: lib/proyectos/salud.ts)
+  tipo                    String              @default("obra") // obra | servicio | contrato | interno (lib/proyectos/tipos.ts)
   fechaInicio             String?
   fechaFin                String?
   finalizadoConPendientes Boolean             @default(false)

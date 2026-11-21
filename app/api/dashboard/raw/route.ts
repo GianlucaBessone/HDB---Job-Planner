@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
-import { dataLayer } from '@/lib/dataLayer';
+import { ULTIMO_BLOQUEANTE, proyectoConSalud } from '@/lib/proyectos/salud';
 import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(req: Request) {
@@ -10,11 +10,9 @@ export async function GET(req: Request) {
     if (acceso instanceof NextResponse) return acceso;
 
     try {
-        // Run the auto-update asynchronously so it doesn't block the dashboard load
-        dataLayer.autoUpdateProjectStatuses().catch(e => console.error('Error auto-updating project statuses in dashboard raw api:', e));
-
-        const [projects, operators, plannings, clientDelays, ordenesServicio] = await Promise.all([
-            prisma.project.findMany(),
+        const [proyectos, operators, plannings, clientDelays, ordenesServicio] = await Promise.all([
+            // Estado con "en riesgo" y "atrasado" calculados (P27)
+            prisma.project.findMany({ include: { checklistItems: { select: { completed: true, excluded: true } }, logs: ULTIMO_BLOQUEANTE } }),
             prisma.operator.findMany(),
             prisma.planning.findMany(),
             prisma.clientDelay.findMany(),
@@ -39,6 +37,11 @@ export async function GET(req: Request) {
                 }
             })
         ]);
+
+        const projects = proyectos.map(({ checklistItems, ...p }) => {
+            const { ultimoBloqueante, ...conEstado } = proyectoConSalud({ ...p, checklistItems });
+            return conEstado;
+        });
 
         return NextResponse.json({
             projects,

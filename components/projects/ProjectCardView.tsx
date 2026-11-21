@@ -138,7 +138,7 @@ export function ProjectCard({
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-50 overflow-hidden">
                 <div className="flex flex-wrap gap-2">
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${cfg.bg} ring-1 ${cfg.ring}`}>
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${cfg.bg} ring-1 ${cfg.ring}`} title={project.alertaMotivo || undefined}>
                         <StatusIcon className={`w-3.5 h-3.5 ${cfg.color}`} />
                         <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
                     </div>
