@@ -32,6 +32,8 @@ const camposUsuario = {
     dni: textoOpcional(50),
     posicion: textoOpcional(200),
     primaryDeviceId: z.string().max(500).nullable(),
+    // Categoría de mano de obra: define su valor hora por defecto (P20). null = sin categoría
+    manoObraCategoriaId: z.string().trim().max(64).nullable(),
 };
 
 const altaSchema = z.object({
@@ -43,6 +45,7 @@ const altaSchema = z.object({
     role: camposUsuario.role.optional(),
     dni: camposUsuario.dni,
     posicion: camposUsuario.posicion,
+    manoObraCategoriaId: camposUsuario.manoObraCategoriaId.optional(),
 });
 
 const edicionSchema = z.object({
@@ -55,6 +58,7 @@ const edicionSchema = z.object({
     dni: camposUsuario.dni,
     posicion: camposUsuario.posicion,
     primaryDeviceId: camposUsuario.primaryDeviceId.optional(),
+    manoObraCategoriaId: camposUsuario.manoObraCategoriaId.optional(),
 });
 
 function actorDe(acceso: AccesoSesion): ActorUsuarios {

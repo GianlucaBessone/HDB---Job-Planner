@@ -448,7 +448,7 @@ export const dataLayer = {
             orderBy: { nombreCompleto: 'asc' }
         });
     },
-    async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; dni?: string; posicion?: string }, actor?: ActorAuditoria) {
+    async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; dni?: string; posicion?: string; manoObraCategoriaId?: string | null }, actor?: ActorAuditoria) {
         const operator = await prisma.operator.create({
             data: { ...withHashedPin({ ...data, pin: data.pin || '1234' }), etiquetas: data.etiquetas as any }
         });
@@ -471,7 +471,7 @@ export const dataLayer = {
 
         return operator;
     },
-    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; dni?: string; posicion?: string; primaryDeviceId?: string | null }, actor?: ActorAuditoria) {
+    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; dni?: string; posicion?: string; primaryDeviceId?: string | null; manoObraCategoriaId?: string | null }, actor?: ActorAuditoria) {
         const updateData: any = withHashedPin({ ...data });
         if (data.etiquetas) updateData.etiquetas = data.etiquetas as any;
         

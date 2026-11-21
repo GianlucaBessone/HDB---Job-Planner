@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { tarifaHora } from '@/lib/manoObra/tarifa';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,17 +54,9 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
     const operator = await prisma.operator.findUnique({ where: { id: operadorId } });
     if (!operator) return NextResponse.json({ error: 'Operador no encontrado' }, { status: 404 });
 
-    // Look up client rate for this operator
-    const rate = await prisma.clientOperatorRate.findUnique({
-      where: {
-        clientId_operatorId: {
-          clientId: ot.clienteId,
-          operatorId: operadorId,
-        },
-      },
-    });
-
-    const valorHoraSnapshot = rate ? rate.valorHora : 0;
+    // Valor hora con la regla única de tarifas (P20): excepción del cliente para la persona, valor del
+    // cliente para su categoría, valor de la categoría o valor por defecto. Antes, sin tarifa cargada, la hora valía $0.
+    const { valorHora: valorHoraSnapshot } = await tarifaHora(operadorId, ot.clienteId);
     const costoManoObra = numHoras * valorHoraSnapshot;
 
     const result = await prisma.$transaction(async (tx) => {

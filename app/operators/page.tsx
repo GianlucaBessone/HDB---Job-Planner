@@ -53,6 +53,7 @@ export default function OperatorsPage() {
     const setViewMode = (val: typeof viewMode) => setFilters({ viewMode: val });
 
     const [systemTags, setSystemTags] = useState<string[]>([]);
+    const [categoriasMO, setCategoriasMO] = useState<{ id: string; nombre: string }[]>([]);
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [operatorToDelete, setOperatorToDelete] = useState<string | null>(null);
@@ -86,10 +87,15 @@ export default function OperatorsPage() {
         if (!silent) setIsLoading(true);
         try {
             const user = userObj || currentUser;
-            const [opsRes, tagsRes] = await Promise.all([
+            const [opsRes, tagsRes, catRes] = await Promise.all([
                 safeApiRequest('/api/operators'),
-                safeApiRequest('/api/config/tags')
+                safeApiRequest('/api/config/tags'),
+                safeApiRequest('/api/mano-obra/categorias').catch(() => null),
             ]);
+            if (catRes?.ok) {
+                const cats = await catRes.json();
+                if (Array.isArray(cats)) setCategoriasMO(cats);
+            }
             
             if (opsRes.ok) {
                 let data = await opsRes.json();
@@ -127,6 +133,7 @@ export default function OperatorsPage() {
             role: op.role || 'operador',
             dni: op.dni || '',
             posicion: op.posicion || '',
+            manoObraCategoriaId: op.manoObraCategoriaId || '',
             pin: '' // vacío = mantener el PIN actual
         });
         setIsModalOpen(true);
@@ -141,7 +148,7 @@ export default function OperatorsPage() {
 
         const res = await safeApiRequest(url, {
             method,
-            body: JSON.stringify(formData)
+            body: JSON.stringify({ ...formData, manoObraCategoriaId: formData.manoObraCategoriaId || null })
         });
         if (!res.ok) {
             showToast(await mensajeError(res, 'No se pudo guardar el usuario'), 'error');
@@ -400,6 +407,23 @@ export default function OperatorsPage() {
                                         />
                                     </div>
                                 </div>
+
+                                {categoriasMO.length > 0 && (
+                                    <div className="space-y-2">
+                                        <label htmlFor="op-categoria-mo" className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Categoría de mano de obra</label>
+                                        <select
+                                            id="op-categoria-mo"
+                                            className="input"
+                                            value={formData.manoObraCategoriaId || ''}
+                                            onChange={e => setFormData({ ...formData, manoObraCategoriaId: e.target.value })}
+                                            disabled={currentUser?.role === 'operador' || currentUser?.role === 'vendedor'}
+                                        >
+                                            <option value="">Sin categoría (valor por defecto)</option>
+                                            {categoriasMO.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                                        </select>
+                                        <p className="px-1 text-xs text-muted-foreground">Define el valor hora en órdenes y costos. Cada cliente puede tener su propio valor por categoría.</p>
+                                    </div>
+                                )}
 
                                 <div className="space-y-2">
                                     <label className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">PIN / Contraseña</label>

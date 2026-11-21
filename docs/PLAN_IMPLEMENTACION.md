@@ -135,10 +135,24 @@ Sin cambios de base de datos. Lógica en `lib/ventas/precioMaterial.ts`: product
 - Se borran la vista desactivada `/inventario` y su API (`/api/inventario/**`).
 - Migración `prisma/sql/20261121_quitar_material_maestro`: **aplicada en producción el 21/11/2026**, después de desplegar P8 y de dar de alta en el catálogo los códigos que no tenían producto (101; 74 activos). Detalle en su README.
 
+### Hecho: tarifas de mano de obra con una sola regla (P20, FU8)
+
+Migración `prisma/sql/20261121_tarifas_mano_obra` (aditiva: `Operator.manoObraCategoriaId` y tabla `ClienteTarifaCategoria`; probada ida/vuelta/ida). **Aplicada en producción el 21/11/2026.**
+
+Regla única (`lib/manoObra/tarifa.ts`), para una persona y un cliente: excepción del cliente para la persona (`ClientOperatorRate`) → valor del cliente para la categoría de la persona → valor de la categoría (`ManoObraCategoria`) → valor por defecto (Proyectos → Ajustes → Mano de obra).
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Horas de una OT | Solo la tarifa por cliente y persona; sin cargar, la hora valía $0 | La regla completa |
+| Costo del proyecto | Un único valor global para todas las personas | La regla para cada persona con el cliente del proyecto; el desglose muestra valor hora y de dónde sale |
+| Usuarios | — | Campo "Categoría de mano de obra" |
+| Ficha del cliente → Comercial | — | "Valor hora por categoría" (vacío = el de la categoría) |
+| Presupuestos de servicio | Categorías | Sin cambios: siguen siendo la base |
+| Cobro de OS | Valor global | Sin cambios: el valor global es el inicial del cobro (se edita en cada cobro) |
+
 ### Pendiente en esta fase
 
 - Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
-- P20 · Tarifas de mano de obra con una sola regla.
 - P24 · Proveedores únicos.
 - P27 · Tipo de proyecto con valores por defecto y estados calculados.
 
