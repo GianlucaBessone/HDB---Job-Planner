@@ -33,6 +33,13 @@ CORREDORES VIALES con las facturas de los 4 registros bajo `30-71580481-2`.
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 21/11/2026 (14:19 UTC)**, proyecto Neon `HDB-JobPlanner`, rama `production`,
+> en una transacción. Antes: 28 proveedores de Gastos, 2 de Ventas, 63 facturas, 3727 vínculos producto-proveedor.
+> Después: 26 proveedores, 63 facturas (ninguna sin proveedor), 3727 vínculos; STRUMIA con 3 facturas y
+> CORREDORES VIALES (`30-71580481-2`) con 6; tabla `Proveedor` borrada; clave foránea e índice único verificados.
+> Se puede volver con la restauración puntual de Neon a las 14:18 UTC. **No volver a ejecutar `up.sql`**: falta
+> solo desplegar el código (paso 4).
+
 **La base y el código van juntos.** El código actual usa la tabla `Proveedor` (Gastos deja de funcionar apenas se
 aplica `up.sql`) y el nuevo necesita la clave foránea a `ProveedorVentas`. Aplicar `up.sql` y mergear el PR
 uno detrás del otro, en un momento sin carga de gastos.

@@ -152,7 +152,7 @@ Regla única (`lib/manoObra/tarifa.ts`), para una persona y un cliente: excepci�
 
 ### P24 · Proveedores únicos
 
-Migración `prisma/sql/20261121_proveedores_unicos` (mueve datos y borra la tabla `Proveedor`; probada ida/vuelta/ida con los proveedores de producción). Se aplica junto con el merge (ver su README).
+Migración `prisma/sql/20261121_proveedores_unicos` (mueve datos y borra la tabla `Proveedor`; probada ida/vuelta/ida con los proveedores de producción). **Aplicada en producción el 21/11/2026 (14:19 UTC).**
 
 | Dónde | Antes | Ahora |
 |---|---|---|
