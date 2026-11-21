@@ -133,12 +133,11 @@ Sin cambios de base de datos. Lógica en `lib/ventas/precioMaterial.ts`: product
 
 - **Materiales de las OT al stock** (salen del depósito): cargar un material de catálogo en un ciclo lo descuenta; quitarlo lo devuelve (`conciliarStockCicloOT`, referencia `OT` por ciclo). Los de código 999999 son manuales y no mueven stock; los cargados antes de `STOCK_OBRA_DESDE` no se cuentan.
 - Se borran la vista desactivada `/inventario` y su API (`/api/inventario/**`).
-- **Pendiente**: borrar la tabla `MaterialMaestro` con una migración (ningún código la usa). Se hace aparte, con autorización.
+- Migración `prisma/sql/20261121_quitar_material_maestro` (destructiva, probada ida/vuelta/ida): borra la tabla. Se aplica **después** de desplegar P8. En producción quedan 103 códigos que no están en el catálogo (detalle en su README).
 
 ### Pendiente en esta fase
 
 - Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
-- Borrar la tabla `MaterialMaestro` (migración).
 - P20 · Tarifas de mano de obra con una sola regla.
 - P24 · Proveedores únicos.
 - P27 · Tipo de proyecto con valores por defecto y estados calculados.
