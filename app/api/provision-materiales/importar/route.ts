@@ -193,18 +193,6 @@ export async function POST(req: Request) {
                         processedRows++;
                     }
 
-                    // Upsert MaterialMaestro en try/catch para retrocompatibilidad
-                    if (codigoMaterial && nombreMaterial) {
-                        try {
-                            await prisma.materialMaestro.upsert({
-                                where: { codigo: codigoMaterial },
-                                update: { nombre: nombreMaterial, unidad: resolvedUnit },
-                                create: { codigo: codigoMaterial, nombre: nombreMaterial, unidad: resolvedUnit, precioVenta: resolvedPrecio }
-                            });
-                        } catch (e) {
-                            // Ignorar error en tabla legacy
-                        }
-                    }
                 } catch (e) {
                     console.error('Error importing row:', e);
                     ignoredRows++;

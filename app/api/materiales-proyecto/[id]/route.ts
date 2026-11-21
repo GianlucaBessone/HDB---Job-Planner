@@ -89,26 +89,6 @@ export async function PUT(req: Request, { params: paramsPromise }: { params: Pro
         include: { usos: true, devoluciones: true },
     });
 
-    // Actualizar MaterialMaestro si se usó un código en la actualización (en try/catch retrocompatible)
-    if (material.codigo && (nombre || unidad)) {
-        try {
-            await prisma.materialMaestro.upsert({
-                where: { codigo: material.codigo },
-                update: { 
-                    nombre: nombre || material.nombre, 
-                    unidad: unidad || material.unidad 
-                },
-                create: { 
-                    codigo: material.codigo, 
-                    nombre: nombre || material.nombre, 
-                    unidad: unidad || material.unidad 
-                },
-            });
-        } catch (e) {
-            console.warn('Fallback legacy MaterialMaestro update ignored:', e);
-        }
-    }
-
     // Auto-calculate implicit states unless we explicitly set a closed state
     if (!['cerrado_ok', 'cerrado_con_reserva'].includes(material.estado)) {
         const totalUsado = material.usos.reduce((a, u) => a + u.cantidadUtilizada, 0);

@@ -157,17 +157,14 @@ export default function DetalleOrdenTrabajoPage() {
       return;
     }
     try {
-      const res = await fetch(`/api/inventario`);
+      // Catálogo de Productos con el precio de la lista del proyecto o del cliente (P8)
+      const params = new URLSearchParams({ q: q.trim() });
+      if (ot?.proyecto?.id) params.set('proyectoId', ot.proyecto.id);
+      if (ot?.cliente?.id) params.set('clienteId', ot.cliente.id);
+      const res = await fetch(`/api/materiales/catalogo?${params}`);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
-          const lower = q.toLowerCase();
-          const matches = data.filter(
-            (m: any) =>
-              m.codigo.toLowerCase().includes(lower) || m.nombre.toLowerCase().includes(lower)
-          ).slice(0, 10);
-          setInventorySuggestions(matches);
-        }
+        if (Array.isArray(data)) setInventorySuggestions(data.slice(0, 10));
       }
     } catch {}
   };

@@ -45,36 +45,21 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                 })
                 .catch(() => {});
             
-            // Prefill empty material prices from Inventory
-            safeApiRequest('/api/inventario')
-                .then(res => res.json())
-                .then(inventario => {
-                    if (Array.isArray(inventario)) {
-                        setMateriales(prev => prev.map(m => {
-                            // Only prefill if the price is empty
-                            if (m.precioUnitario === '') {
-                                const invItem = inventario.find((i: any) => {
-                                    // Try to match by code first (case-insensitive and ignoring leading zeros)
-                                    if (m.codigo && i.codigo) {
-                                        const c1 = m.codigo.replace(/^0+/, '').toLowerCase().trim();
-                                        const c2 = i.codigo.replace(/^0+/, '').toLowerCase().trim();
-                                        if (c1 && c1 === c2) return true;
-                                    }
-                                    // Fallback: match by name (case-insensitive and trimmed)
-                                    if (m.material && i.nombre) {
-                                        return m.material.toLowerCase().trim() === i.nombre.toLowerCase().trim();
-                                    }
-                                    return false;
-                                });
-                                if (invItem && invItem.precioVenta != null) {
-                                    return { ...m, precioUnitario: invItem.precioVenta };
-                                }
-                            }
-                            return m;
-                        }));
-                    }
-                })
-                .catch(() => {});
+            // Precios vigentes del catálogo de Productos con la lista del proyecto (P8)
+            const codigos = (os.materiales || []).map((m: any) => m.codigo).filter(Boolean);
+            if (codigos.length > 0) {
+                safeApiRequest(`/api/materiales/catalogo?codigos=${encodeURIComponent(codigos.join(','))}&proyectoId=${os.projectId}`)
+                    .then(res => res.json())
+                    .then((precios: Record<string, { precioVenta: number }>) => {
+                        if (!precios || typeof precios !== 'object') return;
+                        setMateriales(prev => prev.map(m => (
+                            m.precioUnitario === '' && m.codigo && precios[m.codigo]
+                                ? { ...m, precioUnitario: precios[m.codigo].precioVenta }
+                                : m
+                        )));
+                    })
+                    .catch(() => {});
+            }
         }
     }, [os.cobroGenerado, defaultMO]);
 

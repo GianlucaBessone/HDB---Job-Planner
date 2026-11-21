@@ -47,18 +47,6 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
                 });
             }
 
-            // Actualizar en el Maestro de Materiales para uso futuro (todos los códigos equivalentes)
-            const allMaestros = await prisma.materialMaestro.findMany();
-            const matchingMaestroCodes = allMaestros
-                .filter(m => normalizeCode(m.codigo) === norm)
-                .map(m => m.codigo);
-
-            if (matchingMaestroCodes.length > 0) {
-                await prisma.materialMaestro.updateMany({
-                    where: { codigo: { in: matchingMaestroCodes } },
-                    data: { precioVenta: precioUnitario }
-                });
-            }
         } else if (materialId) {
             // Buscamos el material por su ID para obtener su nombre y actualizar todos los del mismo nombre sin código en este proyecto
             const mat = await prisma.materialProyecto.findUnique({
