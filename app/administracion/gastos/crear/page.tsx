@@ -86,7 +86,7 @@ export default function CrearFacturaManual() {
       if (res2.ok) allData = [...allData, ...(await res2.json())];
 
       // Find exact match ignoring dashes
-      const match = allData.find((p: any) => p.cuit.replace(/\D/g, '') === rawCuit);
+      const match = allData.find((p: any) => (p.cuit || '').replace(/\D/g, '') === rawCuit);
       
       if (match) {
         setProveedor({ id: match.id, razonSocial: match.razonSocial, cuit: match.cuit });
@@ -123,11 +123,11 @@ export default function CrearFacturaManual() {
           })
         });
         
-        if (!provRes.ok) {
-          const errData = await provRes.json();
-          throw new Error("Error creando proveedor: " + JSON.stringify(errData));
-        }
         const newProv = await provRes.json();
+        // 409: ya existe con ese CUIT (escrito con o sin guiones) → se usa ese
+        if (!provRes.ok && !(provRes.status === 409 && newProv.id)) {
+          throw new Error("Error creando proveedor: " + (newProv.error || JSON.stringify(newProv)));
+        }
         proveedorId = newProv.id;
       }
 

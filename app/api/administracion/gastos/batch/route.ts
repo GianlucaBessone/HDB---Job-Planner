@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { normalizarCuit, proveedorPorCuitOCrear } from '@/lib/proveedores';
 
 const excelRowSchema = z.object({
   fechaEmision: z.string().or(z.date()),
@@ -42,30 +43,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No hay registros para importar' }, { status: 400 });
     }
 
-    // 1. Resolve Providers
-    const uniqueCuits = Array.from(new Set(rows.map(r => r.proveedorCuit.trim())));
-    const existingProveedores = await prisma.proveedor.findMany({
-      where: { cuit: { in: uniqueCuits } }
-    });
-    
+    // 1. Proveedores: maestro único (P24). El CUIT se compara normalizado (con o sin guiones es el mismo).
+    const invalidos = Array.from(new Set(rows.map(r => r.proveedorCuit.trim()).filter(c => !normalizarCuit(c))));
+    if (invalidos.length > 0) {
+      return NextResponse.json({ error: `CUIT inválido (debe tener 11 dígitos): ${invalidos.join(', ')}` }, { status: 400 });
+    }
     const provDict: Record<string, string> = {};
-    existingProveedores.forEach(p => provDict[p.cuit] = p.id);
-
-    // Create missing providers
-    const missingCuits = uniqueCuits.filter(cuit => !provDict[cuit]);
-    for (const cuit of missingCuits) {
-      // Find the first row with this CUIT to get the razonSocial
-      const row = rows.find(r => r.proveedorCuit.trim() === cuit);
-      if (row) {
-        const newProv = await prisma.proveedor.create({
-          data: {
-            cuit: cuit,
-            razonSocial: row.proveedorRazonSocial || 'Proveedor Importado',
-            activo: true
-          }
-        });
-        provDict[cuit] = newProv.id;
-      }
+    for (const row of rows) {
+      const cuit = normalizarCuit(row.proveedorCuit)!;
+      if (provDict[cuit]) continue;
+      const proveedor = await proveedorPorCuitOCrear(prisma, { cuit, razonSocial: row.proveedorRazonSocial || 'Proveedor importado' });
+      provDict[cuit] = proveedor.id;
     }
 
     // 2. Resolve CodigoGasto
@@ -78,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Prepare data for insert
     const insertData = rows.map(row => {
-      const cuit = row.proveedorCuit.trim();
+      const cuit = normalizarCuit(row.proveedorCuit)!;
       const cod = row.codigoGasto?.trim();
 
       return {

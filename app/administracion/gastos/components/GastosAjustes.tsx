@@ -57,7 +57,7 @@ export default function GastosAjustes() {
   };
 
   const confirmDeleteCodigo = (id: string) => setDeleteConfirm({ id, type: 'codigo', title: '¿Seguro que deseas eliminar este Código de Gasto?' });
-  const confirmDeleteProveedor = (id: string) => setDeleteConfirm({ id, type: 'proveedor', title: '¿Seguro que deseas eliminar este Proveedor?' });
+  const confirmDeleteProveedor = (id: string) => setDeleteConfirm({ id, type: 'proveedor', title: '¿Dar de baja este proveedor? Se oculta también en Ventas; las facturas y productos cargados se conservan.' });
 
   const executeDelete = async () => {
     if (!deleteConfirm) return;
@@ -80,7 +80,7 @@ export default function GastosAjustes() {
       try {
         const res = await fetch(`/api/administracion/proveedores/${id}`, { method: 'DELETE' });
         if (res.ok) {
-          setNotification({ type: 'success', message: 'Proveedor eliminado (soft delete)' });
+          setNotification({ type: 'success', message: 'Proveedor dado de baja' });
           fetchProveedores();
         } else {
           setNotification({ type: 'error', message: 'No se pudo eliminar' });

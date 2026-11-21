@@ -13,13 +13,13 @@ const estadoSchema = z.object({ activo: z.boolean() });
 async function findWithCount(id: string) {
   return prisma.proveedorVentas.findUnique({
     where: { id },
-    include: { _count: { select: { productos: true } } },
+    include: { _count: { select: { productos: true, facturas: true } } },
   });
 }
 
 function serialize(p: NonNullable<Awaited<ReturnType<typeof findWithCount>>>) {
   const { _count, ...rest } = p;
-  return { ...rest, productosCount: _count.productos };
+  return { ...rest, productosCount: _count.productos, facturasCount: _count.facturas };
 }
 
 /** GET /api/ventas/proveedores/[id] */
@@ -128,6 +128,14 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
       );
     }
 
+    // Maestro único (P24): también lo usan las facturas de Gastos
+    if (existing._count.facturas > 0) {
+      return NextResponse.json(
+        { error: `No se puede eliminar: tiene ${existing._count.facturas} factura(s) de gastos. Dalo de baja para ocultarlo de los selectores.` },
+        { status: 409 }
+      );
+    }
+
     await prisma.proveedorVentas.delete({ where: { id } });
 
     await logAudit({
@@ -141,7 +149,7 @@ export async function DELETE(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     if (error?.code === 'P2003') {
-      return NextResponse.json({ error: 'No se puede eliminar: el proveedor tiene productos vinculados' }, { status: 409 });
+      return NextResponse.json({ error: 'No se puede eliminar: el proveedor tiene productos o facturas vinculados' }, { status: 409 });
     }
     console.error('Error deleting proveedor de ventas:', error);
     return NextResponse.json({ error: 'Error al eliminar el proveedor' }, { status: 500 });
