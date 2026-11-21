@@ -174,9 +174,12 @@ Migración `prisma/sql/20261121_tipo_proyecto` (agrega `Project.tipo`; pasa `en_
 | Formulario, planilla y asistente | Se podía elegir "En riesgo" y "Atrasado" | Solo Por hacer, Planificado, Activo y Finalizado; el motivo de la alerta se muestra en la ficha, el formulario y al pasar sobre el estado |
 | Paneles (Panel de análisis, Proyectos → Dashboard, Mis proyectos) | Estado guardado | Estado calculado |
 
+### Demoras del cliente fuera del menú
+
+`/delays` queda oculta (`lib/viewAccess.ts`): las demoras se cargan y se ven en la bitácora de la ficha del proyecto. La página sigue funcionando por enlace directo y las demoras siguen contando en el Panel de análisis.
+
 ### Pendiente en esta fase
 
-- Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
 - Un solo estado (E9): el interruptor "Activo" del proyecto sigue aparte del estado.
 
 ## Respuestas del Anexo A (21/11/2026)

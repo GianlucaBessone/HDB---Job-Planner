@@ -84,7 +84,8 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/ordenes-servicio',  label: 'Órdenes de servicio',  description: 'Trabajo certificado, firma y cobro',           roles: R_GESTION,  access: 'ambos', section: 'proyectos', iconName: 'FileSignature', color: 'bg-blue-600' },
     { key: '/ordenes-trabajo',   label: 'Órdenes de trabajo',   description: 'Órdenes por ciclos con firma en el portal',    roles: R_TODOS,    access: 'ambos', section: 'proyectos', iconName: 'FileText',      color: 'bg-blue-700' },
     { key: '/informes-tecnicos', label: 'Informes técnicos',    description: 'Relevamientos y diagnósticos',                 roles: R_PERSONAL, access: 'ambos', section: 'proyectos', iconName: 'FileText',      color: 'bg-indigo-600' },
-    { key: '/delays',            label: 'Demoras del cliente',  description: 'Tiempo perdido por causas del cliente',        roles: R_PERSONAL, access: 'ambos', section: 'proyectos', iconName: 'Timer',         color: 'bg-amber-500' },
+    // Oculta del menú (P27/P28): las demoras se cargan y se ven en la bitácora de la ficha del proyecto
+    { key: '/delays',            label: 'Demoras del cliente',  description: 'Tiempo perdido por causas del cliente',        roles: R_PERSONAL, access: 'oculta', section: 'proyectos', iconName: 'Timer',         color: 'bg-amber-500' },
 
     // ─ Personas: usuarios, asistencia, RRHH y viajes ─
     { key: '/operators',          label: 'Usuarios y accesos',  description: 'Personas, roles y permisos',            roles: R_GESTION,                   access: 'ambos', section: 'personas', iconName: 'Users',       color: 'bg-slate-700' },
