@@ -59,12 +59,19 @@ export function describirHistorial(historial: Record<string, number>, etiquetas:
  * Normaliza el cuerpo de un alta o edición de proyecto (P27): el estado guardado es solo el que elige una
  * persona ("en riesgo" y "atrasado" se calculan) y el tipo tiene que ser uno de los conocidos.
  */
-function normalizarProyecto(datos: Record<string, any>, esAlta: boolean) {
+function normalizarProyecto(datos: Record<string, any>, esAlta: boolean, estadoActual?: string) {
     for (const c of CAMPOS_CALCULADOS) delete datos[c];
     delete datos.logs;
     if (datos.estado !== undefined) datos.estado = estadoManual(datos.estado);
     if (datos.tipo !== undefined && !esTipoProyecto(datos.tipo)) delete datos.tipo;
     if (esAlta && datos.tipo === undefined) datos.tipo = tipoPorInterruptores(datos);
+
+    // Un solo estado (E9): "archivado" reemplaza a "activo = false". Quien todavía mande `activo`
+    // (pantallas viejas) archiva o desarchiva; la columna `activo` siempre sigue al estado.
+    if (datos.estado === undefined && datos.activo === false) datos.estado = 'archivado';
+    if (datos.estado === undefined && datos.activo === true && estadoActual === 'archivado') datos.estado = 'activo';
+    if (datos.estado !== undefined) datos.activo = datos.estado !== 'archivado';
+    else delete datos.activo;
 }
 
 export const dataLayer = {
@@ -199,7 +206,8 @@ export const dataLayer = {
         proyectoFijo?: boolean;
     }, actor?: ActorAuditoria) {
         const sanitizedData = { ...data };
-        normalizarProyecto(sanitizedData, false);
+        const estadoActual = (await prisma.project.findUnique({ where: { id }, select: { estado: true } }))?.estado;
+        normalizarProyecto(sanitizedData, false, estadoActual);
         // Project.horasConsumidas no se edita a mano: lo mantiene el registro de tiempos.
         delete (sanitizedData as { horasConsumidas?: unknown }).horasConsumidas;
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
@@ -419,15 +427,15 @@ export const dataLayer = {
         const historial = conHistorial(_count);
 
         if (Object.keys(historial).length > 0) {
-            await prisma.project.update({ where: { id }, data: { activo: false } });
+            await prisma.project.update({ where: { id }, data: { activo: false, estado: 'archivado' } });
             await logAudit({
                 ...autor(actor),
                 action: 'UPDATE',
                 entity: 'PROJECT',
                 entityId: id,
-                oldValue: { activo: datos.activo },
-                newValue: { activo: false },
-                metadata: { message: 'Desactivado en lugar de eliminado: tiene historial', historial },
+                oldValue: { activo: datos.activo, estado: datos.estado },
+                newValue: { activo: false, estado: 'archivado' },
+                metadata: { message: 'Archivado en lugar de eliminado: tiene historial', historial },
             });
             return { modo: 'desactivado', historial };
         }
