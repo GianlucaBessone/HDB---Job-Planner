@@ -560,15 +560,6 @@ model MaterialProyecto {
   @@index([codigo])
 }
 
-model MaterialMaestro {
-  codigo      String   @id
-  nombre      String
-  unidad      String
-  precioVenta Float?
-  costo       Float?
-  updatedAt   DateTime @updatedAt
-}
-
 model MaterialUso {
   id                String           @id @default(cuid())
   materialId        String

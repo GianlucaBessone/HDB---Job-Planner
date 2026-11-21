@@ -78,31 +78,20 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                                 if (config?.valorManoObra && defaultMO === 0 && mounted) setValorMo(roundTo2(Number(config.valorManoObra)));
                             }).catch(() => {});
                         
-                        safeApiRequest('/api/inventario')
-                            .then(res => res.json())
-                            .then(inventario => {
-                                if (Array.isArray(inventario) && mounted) {
-                                    setMateriales(prev => prev.map(m => {
-                                        if (m.precioUnitario === '') {
-                                            const invItem = inventario.find((i: any) => {
-                                                if (m.codigo && i.codigo) {
-                                                    const c1 = m.codigo.replace(/^0+/, '').toLowerCase().trim();
-                                                    const c2 = i.codigo.replace(/^0+/, '').toLowerCase().trim();
-                                                    if (c1 && c1 === c2) return true;
-                                                }
-                                                if (m.material && i.nombre) {
-                                                    return m.material.toLowerCase().trim() === i.nombre.toLowerCase().trim();
-                                                }
-                                                return false;
-                                            });
-                                            if (invItem && invItem.precioVenta != null) {
-                                                return { ...m, precioUnitario: roundTo2(Number(invItem.precioVenta)) };
-                                            }
-                                        }
-                                        return m;
-                                    }));
-                                }
-                            }).catch(() => {});
+                        // Precios vigentes del catálogo de Productos con la lista del proyecto (P8)
+                        const codigos = (data.materiales || []).map((m: any) => m.codigo).filter(Boolean);
+                        if (codigos.length > 0) {
+                            safeApiRequest(`/api/materiales/catalogo?codigos=${encodeURIComponent(codigos.join(','))}&proyectoId=${data.projectId}`)
+                                .then(res => res.json())
+                                .then((precios: Record<string, { precioVenta: number }>) => {
+                                    if (!precios || typeof precios !== 'object' || !mounted) return;
+                                    setMateriales(prev => prev.map(m => (
+                                        m.precioUnitario === '' && m.codigo && precios[m.codigo]
+                                            ? { ...m, precioUnitario: roundTo2(Number(precios[m.codigo].precioVenta)) }
+                                            : m
+                                    )));
+                                }).catch(() => {});
+                        }
                     }
                 }
             })

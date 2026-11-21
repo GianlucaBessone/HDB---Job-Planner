@@ -110,6 +110,7 @@ Sin cambios de base de datos: usa el kardex existente (`ProductoStockMovimiento`
 
 | Origen | Cuándo mueve el stock |
 |---|---|
+| Material de OT | Al cargarlo en el ciclo sale del depósito; quitarlo lo devuelve (ver P8) |
 | Venta del PDV | Al confirmarla sale lo vendido (del almacén de la venta o el predeterminado). Cancelar pendientes devuelve lo cancelado; anularla devuelve todo |
 | Entrega a obra | Sale lo entregado menos lo devuelto y cerrado por el depósito. Alta, edición, importación de provisión, materiales que agrega una OS y devoluciones; borrar el material devuelve lo que quedaba afuera |
 | Stock negativo | Permitido: una venta nunca se frena por stock (Anexo A). El movimiento queda marcado `stockNegativo` para corregirlo con un conteo o ajuste |
@@ -117,12 +118,26 @@ Sin cambios de base de datos: usa el kardex existente (`ProductoStockMovimiento`
 - **Conciliación**: cada origen tiene una salida neta objetivo; se registra solo la diferencia con lo que ya está en el kardex para ese origen. Repetirla no duplica nada (bloqueo por origen dentro de la transacción).
 - **Lo anterior no se toca**: ventas confirmadas antes del cambio (`stockDescontado = false`) y materiales de obra creados antes de `STOCK_OBRA_DESDE` (20/11/2026 21:00 UTC; se puede mover con esa variable de entorno) no mueven stock, para no restar dos veces lo que ya se ajustó a mano.
 - **Vínculo con el catálogo**: el material de obra se busca por código = SKU (también sin ceros a la izquierda o por código de barras), igual que su precio. Un material sin producto en el catálogo no mueve stock.
-- **Fuera de alcance**: los materiales de las OT salen de `MaterialMaestro`, no de `Producto`; se integran con P8.
+
+### Hecho: una sola fuente de precios de materiales (P8)
+
+Sin cambios de base de datos. Lógica en `lib/ventas/precioMaterial.ts`: producto por código (SKU, con o sin ceros a la izquierda, o código de barras) y precio de venta vigente con la lista del proyecto, si no la del cliente, si no la predeterminada (`resolverPrecioProducto`, la misma regla que usa el PDV).
+
+| Antes leía `MaterialMaestro` | Ahora |
+|---|---|
+| Materiales de las OT (precio base del snapshot) | Precio del catálogo + el % de materiales del cliente, como antes. Un código fuera del catálogo se rechaza; el 999999 sigue para materiales manuales |
+| Buscador de materiales de la OT | `GET /api/materiales/catalogo?q=` con la lista del proyecto o cliente |
+| Precarga de precios al cobrar una OS | `GET /api/materiales/catalogo?codigos=` con la lista del proyecto |
+| Costo del proyecto → "Sincronizar precios" | Precio del catálogo con la lista del proyecto |
+| Alta y edición de materiales de obra, importación de provisión, edición de precio en el costo | Ya no escriben en `MaterialMaestro`; el buscador de materiales de obra ya no cae a esa tabla |
+
+- **Materiales de las OT al stock** (salen del depósito): cargar un material de catálogo en un ciclo lo descuenta; quitarlo lo devuelve (`conciliarStockCicloOT`, referencia `OT` por ciclo). Los de código 999999 son manuales y no mueven stock; los cargados antes de `STOCK_OBRA_DESDE` no se cuentan.
+- Se borran la vista desactivada `/inventario` y su API (`/api/inventario/**`).
+- Migración `prisma/sql/20261121_quitar_material_maestro` (destructiva, probada ida/vuelta/ida): borra la tabla. Se aplica **después** de desplegar P8. En producción quedan 103 códigos que no están en el catálogo (detalle en su README).
 
 ### Pendiente en esta fase
 
 - Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
-- P8 · Una sola fuente de precios de materiales (`Producto`); se retira `MaterialMaestro`. Con eso, los materiales de las OT también mueven el stock (P9).
 - P20 · Tarifas de mano de obra con una sola regla.
 - P24 · Proveedores únicos.
 - P27 · Tipo de proyecto con valores por defecto y estados calculados.

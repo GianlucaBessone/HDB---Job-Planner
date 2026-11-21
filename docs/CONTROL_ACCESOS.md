@@ -212,7 +212,7 @@ siembran con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
 | `ventas.cc_cobrar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/cobranzas` |
 | `ventas.cc_ajustar` | admin, supervisor, vendedor | `POST /api/ventas/cuentas-corrientes/movimientos` (saldo inicial, cargo manual, nota de crédito) y `POST /api/ventas/cuentas-corrientes/ordenes-por-cargar` (cargar OS y ciclos de OT firmados; verlos pide `ventas.cc_ver`) |
 | `ventas.cc_configurar` | admin, supervisor | `PUT /api/ventas/cuentas-corrientes/[clienteId]` (crédito) y `POST .../actualizacion-precios` |
-| `ventas.catalogo_gestionar` | admin, supervisor, vendedor | Escrituras de `/api/ventas/productos/**`, `/listas-precios/**`, `/proveedores/**`, `/precios/**` y del inventario viejo (`/api/inventario/**`). La lectura sigue abierta: la usan presupuestos, OS y proyectos |
+| `ventas.catalogo_gestionar` | admin, supervisor, vendedor | Escrituras de `/api/ventas/productos/**`, `/listas-precios/**`, `/proveedores/**`, `/precios/**`. La lectura sigue abierta: la usan presupuestos, OS y proyectos |
 | `ventas.pdv_operar` | admin, supervisor, vendedor | `POST /api/ventas/pdv/confirmar`, `/pdv/ventas` y `/pdv/ventas/[id]` (historial), `/pdv/pendientes`, `/pdv/remitos` |
 | `os.gestionar` | admin, supervisor, qa (y el responsable del proyecto, sobre sus OS) | `POST /api/ordenes-servicio`, `PUT /api/ordenes-servicio/[id]`; `GET /api/ordenes-servicio` sin filtro (con `?projectId`, también el responsable) |
 | `os.eliminar` | admin, supervisor | `DELETE /api/ordenes-servicio/[id]` |

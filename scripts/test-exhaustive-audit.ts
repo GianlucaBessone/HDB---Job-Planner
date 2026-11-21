@@ -244,11 +244,6 @@ async function runExhaustiveAudit() {
         if (createdListaPrecioId) {
             await prisma.listaPrecio.delete({ where: { id: createdListaPrecioId } });
         }
-        // Limpiar fallback en MaterialMaestro si se creó
-        await prisma.materialMaestro.deleteMany({
-            where: { codigo: { in: [testSku, 'TST_AUDIT'] } }
-        });
-
         // Verificar que no quedan residuos
         const residualProd = await prisma.producto.count({ where: { sku: testSku } });
         const residualLp = await prisma.listaPrecio.count({ where: { codigo: `LP_${testSuffix}` } });
@@ -270,7 +265,6 @@ async function runExhaustiveAudit() {
             if (createdProjectId) await prisma.project.deleteMany({ where: { id: createdProjectId } });
             if (createdProductoId) await prisma.producto.deleteMany({ where: { id: createdProductoId } });
             if (createdListaPrecioId) await prisma.listaPrecio.deleteMany({ where: { id: createdListaPrecioId } });
-            await prisma.materialMaestro.deleteMany({ where: { codigo: testSku } });
             console.log('Limpieza de emergencia ejecutada.');
         } catch (cleanupErr) {
             console.error('Error en limpieza de emergencia:', cleanupErr);

@@ -269,44 +269,6 @@ export async function GET(req: Request) {
             };
         });
 
-        // 4. Fallback retrocompatible a MaterialMaestro si no se encontró en Producto
-        if (candidatos.length === 0) {
-            const termNoZeros = term.replace(/^0+/, '').toLowerCase();
-            const maestroCandidates = await prisma.materialMaestro.findMany({
-                where: {
-                    OR: [
-                        { codigo: { contains: termNoZeros, mode: 'insensitive' } },
-                        { nombre: { contains: term, mode: 'insensitive' } }
-                    ]
-                },
-                take: 10
-            });
-            for (const m of maestroCandidates) {
-                const isExact = m.codigo.replace(/^0+/, '').toLowerCase() === termNoZeros;
-                candidatos.push({
-                    id: m.codigo,
-                    codigo: m.codigo,
-                    sku: m.codigo,
-                    nombre: m.nombre,
-                    descripcion: m.nombre,
-                    marca: null,
-                    marcaId: null,
-                    familiaId: null,
-                    unidad: m.unidad || 'Unid.',
-                    precioVenta: m.precioVenta || 0,
-                    precioAplicado: m.precioVenta || 0,
-                    precioBase: m.precioVenta || 0,
-                    esFallbackPrecio: true,
-                    detalleAjuste: 'Legacy MaterialMaestro',
-                    ivaPorcentaje: 21,
-                    costo: m.costo || 0,
-                    stockActual: 0,
-                    esCoincidenciaExacta: isExact,
-                    skuProveedor: null,
-                });
-            }
-        }
-
         const bestMatch = candidatos[0] || null;
 
         // Si se solicitó búsqueda por código simple (consumidor legacy):
@@ -425,28 +387,6 @@ export async function POST(req: Request) {
         },
         include: { usos: true, devoluciones: true },
     });
-
-    // Actualizar MaterialMaestro en try/catch para retrocompatibilidad segura
-    if (codigo) {
-        try {
-            await prisma.materialMaestro.upsert({
-                where: { codigo },
-                update: { 
-                    nombre, 
-                    unidad: unidad || 'unidad',
-                    precioVenta: resolvedPrecioVenta ?? undefined
-                },
-                create: { 
-                    codigo, 
-                    nombre, 
-                    unidad: unidad || 'unidad',
-                    precioVenta: resolvedPrecioVenta
-                },
-            });
-        } catch (e) {
-            console.warn('Upsert fallback legacy MaterialMaestro ignored:', e);
-        }
-    }
 
     // Lo entregado a obra sale del stock (P9)
     await conciliarMaterialesObra([material.id], { id: acceso.userId, nombre: acceso.nombre });

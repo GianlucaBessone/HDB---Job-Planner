@@ -106,7 +106,6 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/ventas/almacen',        label: 'Stock y almacenes',      description: 'Existencias, movimientos, ajustes y conteos',  roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos',  section: 'logistica', iconName: 'Warehouse',     color: 'bg-indigo-600' },
     { key: '/provision-materiales',  label: 'Materiales para obras',  description: 'Pedido, entrega, uso y devolución por proyecto', roles: ['vendedor', 'supervisor', 'admin', 'qa'], access: 'ambos',  section: 'logistica', iconName: 'Package',       color: 'bg-orange-500' },
     { key: '/herramientas',          label: 'Herramientas y carros',  description: 'Retiro, devolución y verificación',            roles: R_PERSONAL,                                access: 'ambos',  section: 'logistica', iconName: 'Wrench',        color: 'bg-slate-600' },
-    { key: '/inventario',            label: 'Inventario de materiales (desactivada)', description: 'Reemplazada por Productos y precios y Stock', roles: [],                                 access: 'oculta', section: 'logistica', iconName: 'PackageSearch', color: 'bg-slate-400' },
 
     // ─ Finanzas: lo que entra y lo que sale ─
     { key: '/ventas/cuentas-corrientes', label: 'Cuentas corrientes', description: 'Saldos, cobranzas y estados de cuenta', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'finanzas', iconName: 'Receipt', color: 'bg-cyan-600' },
@@ -156,7 +155,7 @@ export function getViewConfig(savedConfigs: Array<Partial<ViewConfig>> | null | 
 }
 
 /** Vistas dadas de baja: no se habilitan por rol ni por permiso especial. */
-export const VISTAS_DESACTIVADAS = ['/inventario'];
+export const VISTAS_DESACTIVADAS: string[] = [];
 
 /**
  * Acceso a una vista sin mirar dónde se muestra: permiso especial del usuario

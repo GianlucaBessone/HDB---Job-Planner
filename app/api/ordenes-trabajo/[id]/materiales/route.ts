@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { precioMaterial } from '@/lib/ventas/precioMaterial';
+import { conciliarStockCicloOT } from '@/lib/inventario/consumos';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,21 +89,19 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
       // Material de inventario
       materialSource = 'INVENTARIO';
 
-      // Buscar en MaterialMaestro o Producto
-      const [matMaestro, producto] = await Promise.all([
-        prisma.materialMaestro.findUnique({ where: { codigo: materialCodigo.trim() } }),
-        prisma.producto.findFirst({ where: { OR: [{ sku: materialCodigo.trim() }, { id: materialCodigo.trim() }] } }),
-      ]);
+      // Precio de venta vigente del catálogo de Productos, con la lista del proyecto o del cliente (P8).
+      // Antes se leía de MaterialMaestro, una tabla que ya no se mantenía.
+      const material = await precioMaterial(materialCodigo, { proyectoId: ot.proyectoId, clienteId: ot.clienteId });
 
-      if (!matMaestro && !producto) {
+      if (!material) {
         return NextResponse.json(
-          { error: `El material con código ${materialCodigo} no existe en inventario. Use el código 999999 para materiales no inventariados.` },
+          { error: `El material con código ${materialCodigo} no está en el catálogo de productos. Use el código 999999 para materiales que no están en el catálogo.` },
           { status: 404 }
         );
       }
 
-      finalDesc = finalDesc || matMaestro?.nombre || producto?.descripcion || 'Material de inventario';
-      precioBaseSnapshot = matMaestro?.precioVenta || producto?.precioBase || 0;
+      finalDesc = finalDesc || material.nombre;
+      precioBaseSnapshot = material.precioVenta;
 
       // Aplicar porcentaje del cliente
       porcentajeClienteSnapshot = ot.cliente.configuracion?.porcentajeMateriales || 0;
@@ -144,6 +144,9 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
           totalGeneral,
         },
       });
+
+      // Los materiales de catálogo de la OT salen del depósito (P9)
+      await conciliarStockCicloOT(tx, targetCiclo.id, { id: acceso.userId, nombre: acceso.nombre });
 
       return cicloMat;
     });
@@ -215,6 +218,9 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
           totalGeneral,
         },
       });
+
+      // El material quitado vuelve al depósito (P9)
+      await conciliarStockCicloOT(tx, item.cicloId, { id: acceso.userId, nombre: acceso.nombre });
     });
 
     await logAudit({

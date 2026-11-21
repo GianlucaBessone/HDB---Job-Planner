@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getNextInventarioNumero } from '@/lib/inventario/counter';
+import { productoPorCodigo } from '@/lib/ventas/precioMaterial';
 
 /**
  * Consumos reales → stock (auditoría, P9). Antes el kardex solo se movía con ajustes manuales:
@@ -16,7 +17,7 @@ import { getNextInventarioNumero } from '@/lib/inventario/counter';
  * conteo físico, Anexo A). Las existencias negativas se corrigen con un conteo o un ajuste.
  */
 
-export type OrigenConsumo = 'VENTA' | 'ENTREGA_OBRA';
+export type OrigenConsumo = 'VENTA' | 'ENTREGA_OBRA' | 'OT';
 
 const EPS = 0.0005;
 const r3 = (n: number) => Math.round(n * 1000) / 1000;
@@ -156,22 +157,6 @@ export async function conciliarStockVenta(
 }
 
 /**
- * Producto del catálogo para un código de material, con la misma búsqueda que usa el precio del
- * material (SKU tal cual, con o sin ceros a la izquierda, o código de barras).
- */
-export async function productoPorCodigo(tx: Prisma.TransactionClient, codigo: string) {
-    const limpio = codigo.trim();
-    const sinCeros = limpio.replace(/^0+/, '') || '0';
-    return tx.producto.findFirst({
-        where: {
-            activo: true,
-            OR: [{ sku: limpio.toUpperCase() }, { sku: limpio }, { sku: sinCeros.padStart(5, '0') }, { sku: sinCeros }, { codigoBarras: limpio }],
-        },
-        select: { id: true },
-    });
-}
-
-/**
  * Material borrado de la obra: lo que había salido vuelve al stock (el material ya no existe,
  * así que se revierte todo lo registrado con su id).
  */
@@ -234,6 +219,50 @@ export async function conciliarStockMaterialObra(
         almacenId,
         objetivos: new Map([[producto.id, neto]]),
         motivo: `Entrega a obra ${obra}: ${mat.nombre}`,
+        usuario,
+    });
+}
+
+/**
+ * Ciclo de OT: salen del depósito los materiales de catálogo cargados en el ciclo (los de código
+ * 999999 son manuales y no mueven stock). Quitar un material lo devuelve. Los materiales cargados
+ * antes de `STOCK_OBRA_DESDE` no se cuentan, para no restar dos veces lo que ya se ajustó a mano.
+ */
+export async function conciliarStockCicloOT(tx: Prisma.TransactionClient, cicloId: string, usuario?: Usuario): Promise<number> {
+    const ciclo = await tx.otCiclo.findUnique({
+        where: { id: cicloId },
+        select: {
+            id: true, numeroCiclo: true,
+            ordenTrabajo: { select: { numeroOT: true } },
+            materiales: { select: { materialSource: true, materialCodigo: true, cantidad: true, createdAt: true } },
+        },
+    });
+    if (!ciclo) return 0;
+
+    const objetivos = new Map<string, number>();
+    for (const m of ciclo.materiales) {
+        if (m.materialSource !== 'INVENTARIO' || m.createdAt < STOCK_OBRA_DESDE) continue;
+        const producto = await productoPorCodigo(tx, m.materialCodigo);
+        if (!producto) continue;
+        objetivos.set(producto.id, r3((objetivos.get(producto.id) || 0) + m.cantidad));
+    }
+
+    const previo = await tx.productoStockMovimiento.findFirst({
+        where: { referenciaTipo: 'OT', referenciaId: ciclo.id },
+        select: { almacenId: true },
+    });
+    if (!objetivos.size && !previo) return 0;
+    const almacenId = previo?.almacenId || (await almacenPorDefecto(tx));
+    if (!almacenId) return 0;
+
+    const ref = `${ciclo.ordenTrabajo.numeroOT} · ciclo ${ciclo.numeroCiclo}`;
+    return aplicarObjetivo(tx, {
+        referenciaTipo: 'OT',
+        referenciaId: ciclo.id,
+        referencia: ref,
+        almacenId,
+        objetivos,
+        motivo: `Materiales de la ${ref}`,
         usuario,
     });
 }
