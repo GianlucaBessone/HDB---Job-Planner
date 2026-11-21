@@ -150,10 +150,21 @@ Regla única (`lib/manoObra/tarifa.ts`), para una persona y un cliente: excepci�
 | Presupuestos de servicio | Categorías | Sin cambios: siguen siendo la base |
 | Cobro de OS | Valor global | Sin cambios: el valor global es el inicial del cobro (se edita en cada cobro) |
 
+### P24 · Proveedores únicos
+
+Migración `prisma/sql/20261121_proveedores_unicos` (mueve datos y borra la tabla `Proveedor`; probada ida/vuelta/ida con los proveedores de producción). **Aplicada en producción el 21/11/2026 (14:19 UTC).**
+
+| Dónde | Antes | Ahora |
+|---|---|---|
+| Maestro | `Proveedor` (Gastos) y `ProveedorVentas` (productos), el mismo proveedor cargado dos veces | Uno solo, `ProveedorVentas`, con CUIT único y siempre `30-12345678-9` (`lib/proveedores.ts`) |
+| Duplicados de producción | STRUMIA ×2, CORREDORES VIALES ×4 (dos con el CUIT mal escaneado) | Fusionados: 28 + 2 → 26 proveedores, las 63 facturas conservadas |
+| Gastos: alta, búsqueda, importación y escaneo | CUIT comparado tal cual (con y sin guiones = dos proveedores) | CUIT normalizado; si ya existe se usa ese; CUIT de menos de 11 dígitos se rechaza |
+| Ventas → Proveedores | Solo los de productos | Pestañas "Comerciales" y "De gastos" (los que solo tienen facturas de gastos: peajes, combustible, viajes); no se borra uno con facturas (se da de baja) |
+| Selectores de proveedor (producto, filtros, importaciones) | — | Solo comerciales: los de gastos no se mezclan |
+
 ### Pendiente en esta fase
 
 - Demoras del cliente (`/delays`) sigue como listado de todos los proyectos; se puede ocultar del menú cuando la bitácora reemplace su uso.
-- P24 · Proveedores únicos.
 - P27 · Tipo de proyecto con valores por defecto y estados calculados.
 
 ## Respuestas del Anexo A (21/11/2026)

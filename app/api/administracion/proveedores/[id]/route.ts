@@ -10,13 +10,13 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
 
     const id = params.id;
 
-    const existing = await prisma.proveedor.findUnique({ where: { id } });
+    const existing = await prisma.proveedorVentas.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
     }
 
     // Soft delete
-    await prisma.proveedor.update({
+    await prisma.proveedorVentas.update({
       where: { id },
       data: { activo: false }
     });

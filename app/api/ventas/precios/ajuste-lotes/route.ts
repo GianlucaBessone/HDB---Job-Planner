@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { PROVEEDORES_COMERCIALES } from '@/lib/proveedores';
 import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
 import { buildProductSearchWhere } from '@/lib/ventas/skuUtils';
@@ -255,7 +256,7 @@ export async function POST(req: NextRequest) {
 
       let defaultProvId: string | null = null;
       if (tipoAjuste === 'COSTO') {
-        const defaultProv = await tx.proveedorVentas.findFirst({ where: { activo: true }, orderBy: { createdAt: 'asc' } });
+        const defaultProv = await tx.proveedorVentas.findFirst({ where: { activo: true, ...PROVEEDORES_COMERCIALES }, orderBy: { createdAt: 'asc' } });
         defaultProvId = defaultProv?.id || null;
       }
 

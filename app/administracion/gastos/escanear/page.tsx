@@ -263,8 +263,10 @@ export default function EscanearFactura() {
       if (proveedor.cuit) {
         const provRes = await fetch(`/api/administracion/proveedores?search=${proveedor.cuit}`);
         const provs = await provRes.json();
-        if (provs && provs.length > 0) {
-          proveedorId = provs[0].id;
+        const digitos = proveedor.cuit.replace(/\D/g, '');
+        const match = Array.isArray(provs) ? provs.find((p: any) => (p.cuit || '').replace(/\D/g, '') === digitos) : null;
+        if (match) {
+          proveedorId = match.id;
         } else {
           // Create Provider
           const createProv = await fetch('/api/administracion/proveedores', {
@@ -278,6 +280,9 @@ export default function EscanearFactura() {
             })
           });
           const newProv = await createProv.json();
+          if (!createProv.ok && !(createProv.status === 409 && newProv.id)) {
+            throw new Error(newProv.error || 'No se pudo crear el proveedor');
+          }
           proveedorId = newProv.id;
         }
       }

@@ -1812,19 +1812,6 @@ model TareaComentario {
 // ADMINISTRACIÓN Y GASTOS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-model Proveedor {
-  id             String              @id @default(cuid())
-  razonSocial    String
-  nombreFantasia String?
-  cuit           String              @unique
-  condicionIva   String?
-  domicilio      String?             @db.Text
-  activo         Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  facturas       FacturaConsumo[]
-}
-
 model CodigoGasto {
   id          String           @id @default(cuid())
   codigo      String           @unique
@@ -1840,7 +1827,8 @@ model FacturaConsumo {
   fechaEmision      DateTime
   fechaVencimiento  DateTime?
   proveedorId       String
-  proveedor         Proveedor    @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
+  // Proveedor del maestro único (P24); antes el modelo Proveedor de Gastos
+  proveedor         ProveedorVentas @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
   codigoGastoId     String?
   codigoGasto       CodigoGasto? @relation(fields: [codigoGastoId], references: [id], onDelete: SetNull)
   descripcion       String?      @db.Text
@@ -2762,7 +2750,7 @@ model ProveedorVentas {
   codigo         String?                   @unique
   razonSocial    String
   nombreFantasia String?
-  cuit           String?
+  cuit           String?                   @unique // 30-12345678-9; único (P24: maestro único de proveedores)
   condicionIva   String?                   // Responsable Inscripto, Monotributo, etc.
   telefono       String?
   email          String?
@@ -2773,10 +2761,10 @@ model ProveedorVentas {
   createdAt      DateTime                  @default(now())
   updatedAt      DateTime                  @updatedAt
   productos      ProductoProveedorVentas[]
+  facturas       FacturaConsumo[]
 
   @@index([codigo])
   @@index([razonSocial])
-  @@index([cuit])
   @@index([activo])
 }
 

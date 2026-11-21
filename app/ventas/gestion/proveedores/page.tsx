@@ -17,14 +17,17 @@ import {
   Mail,
   Phone,
   SearchX,
+  Receipt,
 } from 'lucide-react';
 import VentasNavTabs from '@/components/ventas/VentasNavTabs';
 import ProveedorVentasFormModal, { ProveedorVentas } from '@/components/ventas/proveedores/ProveedorVentasFormModal';
-import { Badge, Button, ConfirmDialogBase, EmptyState, SegmentedControl } from '@/components/ui';
+import { Badge, Button, ConfirmDialogBase, EmptyState, SegmentedControl, Tabs } from '@/components/ui';
 import { showToast } from '@/components/Toast';
 import { formatCuit } from '@/lib/ventas/proveedorVentas';
 
 type Estado = 'activos' | 'inactivos' | 'todos';
+// Comerciales: con productos o sin facturas de gastos. De gastos: solo facturas de gastos (peajes, combustible, viajes).
+type Tipo = 'comerciales' | 'gastos';
 
 type AccionPendiente =
   | { tipo: 'eliminar'; proveedor: ProveedorVentas }
@@ -34,7 +37,8 @@ export default function ProveedoresVentasPage() {
   const router = useRouter();
 
   const [proveedores, setProveedores] = useState<ProveedorVentas[]>([]);
-  const [totales, setTotales] = useState({ activos: 0, inactivos: 0 });
+  const [totales, setTotales] = useState({ activos: 0, inactivos: 0, comerciales: 0, deGastos: 0 });
+  const [tipo, setTipo] = useState<Tipo>('comerciales');
   const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,19 +60,19 @@ export default function ProveedoresVentasPage() {
   const loadProveedores = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ estado });
+      const params = new URLSearchParams({ estado, tipo });
       if (debouncedSearch) params.set('q', debouncedSearch);
       const res = await fetch(`/api/ventas/proveedores?${params.toString()}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al cargar proveedores');
       setProveedores(data.proveedores || []);
-      setTotales(data.totales || { activos: 0, inactivos: 0 });
+      setTotales(data.totales || { activos: 0, inactivos: 0, comerciales: 0, deGastos: 0 });
     } catch (err: any) {
       showToast(err.message || 'Error de conexión', 'error');
     } finally {
       setLoading(false);
     }
-  }, [estado, debouncedSearch]);
+  }, [estado, tipo, debouncedSearch]);
 
   useEffect(() => {
     loadProveedores();
@@ -154,7 +158,9 @@ export default function ProveedoresVentasPage() {
       message:
         n > 0
           ? `Tiene ${n} producto${n === 1 ? '' : 's'} vinculado${n === 1 ? '' : 's'}, por eso no se puede eliminar. Al darlo de baja deja de aparecer en los selectores; los productos conservan su costo y SKU de proveedor. Podés reactivarlo cuando quieras.`
-          : 'Deja de aparecer en los selectores de productos. Podés reactivarlo cuando quieras.',
+          : (p.facturasCount || 0) > 0
+            ? `Tiene ${p.facturasCount} factura${p.facturasCount === 1 ? '' : 's'} de gastos, por eso no se puede eliminar. Al darlo de baja deja de aparecer en los selectores; las facturas se conservan. Podés reactivarlo cuando quieras.`
+            : 'Deja de aparecer en los selectores de productos. Podés reactivarlo cuando quieras.',
       confirmLabel: 'Dar de baja',
     };
   })();
@@ -233,6 +239,21 @@ export default function ProveedoresVentasPage() {
         </div>
       </div>
 
+      <Tabs
+        label="Tipo de proveedor"
+        value={tipo}
+        onChange={(id) => setTipo(id as Tipo)}
+        tabs={[
+          { id: 'comerciales', label: 'Comerciales', icon: <Building2 className="w-3.5 h-3.5" />, count: totales.comerciales },
+          { id: 'gastos', label: 'De gastos', icon: <Receipt className="w-3.5 h-3.5" />, count: totales.deGastos },
+        ]}
+      />
+      {tipo === 'gastos' && (
+        <p className="text-[11px] text-muted-foreground px-1">
+          Proveedores que solo tienen facturas de gastos (peajes, combustible, comidas de viaje…). No aparecen al elegir el proveedor de un producto o material.
+        </p>
+      )}
+
       {/* Tabla */}
       <div className="flex flex-col bg-card rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -246,8 +267,14 @@ export default function ProveedoresVentasPage() {
                 <th className="py-2 px-2.5 hidden md:table-cell">Contacto</th>
                 <th className="py-2 px-2.5 w-[140px] hidden xl:table-cell">Localidad</th>
                 <th className="py-2 px-2.5 w-[72px] sm:w-[90px] text-right">
-                  <span className="sm:hidden">Prod.</span>
-                  <span className="hidden sm:inline">Productos</span>
+                  {tipo === 'gastos' ? (
+                    'Facturas'
+                  ) : (
+                    <>
+                      <span className="sm:hidden">Prod.</span>
+                      <span className="hidden sm:inline">Productos</span>
+                    </>
+                  )}
                 </th>
                 <th className="py-2 px-2.5 w-[90px] hidden sm:table-cell">Estado</th>
                 <th className="py-2 px-2 w-[96px] sm:w-[112px] text-center">Acciones</th>
@@ -298,6 +325,7 @@ export default function ProveedoresVentasPage() {
               ) : (
                 proveedores.map((p) => {
                   const n = p.productosCount || 0;
+                  const vinculos = n + (p.facturasCount || 0);
                   return (
                     <tr
                       key={p.id}
@@ -354,7 +382,12 @@ export default function ProveedoresVentasPage() {
                         {[p.localidad, p.provincia].filter(Boolean).join(', ') || <span className="text-slate-300 dark:text-slate-600">—</span>}
                       </td>
                       <td className="py-1.5 px-2.5 text-right tabular-nums">
-                        {n > 0 ? (
+                        {tipo === 'gastos' ? (
+                          <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400" title="Facturas de gastos">
+                            <Receipt className="w-3 h-3" />
+                            {p.facturasCount || 0}
+                          </span>
+                        ) : n > 0 ? (
                           <button
                             type="button"
                             onClick={(e) => {
@@ -410,10 +443,10 @@ export default function ProveedoresVentasPage() {
                             </button>
                           )}
                           <button
-                            onClick={() => setAccion(n > 0 ? { tipo: 'baja', proveedor: p } : { tipo: 'eliminar', proveedor: p })}
-                            disabled={n > 0 && !p.activo}
+                            onClick={() => setAccion(vinculos > 0 ? { tipo: 'baja', proveedor: p } : { tipo: 'eliminar', proveedor: p })}
+                            disabled={vinculos > 0 && !p.activo}
                             className="p-1 rounded-md text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                            title={n > 0 ? 'Tiene productos vinculados: solo se puede dar de baja' : 'Eliminar definitivamente'}
+                            title={vinculos > 0 ? 'Tiene productos o facturas vinculados: solo se puede dar de baja' : 'Eliminar definitivamente'}
                             aria-label={`Eliminar ${p.razonSocial}`}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
