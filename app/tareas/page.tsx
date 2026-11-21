@@ -388,6 +388,48 @@ export default function TareasPage() {
         }
     };
 
+    /**
+     * Crea los recordatorios del formulario. La fecha se manda con zona horaria
+     * (el campo datetime-local está en la hora del dispositivo). Devuelve los
+     * mensajes de error de los que no se pudieron programar.
+     */
+    const crearRecordatorios = async (tareaId: string): Promise<string[]> => {
+        const errores: string[] = [];
+        for (const rec of formRecordatorios) {
+            if (!rec.fechaDisparo) continue;
+            const fecha = new Date(rec.fechaDisparo);
+            if (Number.isNaN(fecha.getTime())) { errores.push('fecha inválida'); continue; }
+            try {
+                const r = await safeApiRequest('/api/tareas/recordatorios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tareaId,
+                        tipo: rec.tipo,
+                        fechaDisparo: fecha.toISOString(),
+                        mensaje: rec.mensaje || form.titulo,
+                    }),
+                });
+                if (!r.ok) {
+                    const data = await r.json().catch(() => ({}));
+                    errores.push(data.error || `error ${r.status}`);
+                }
+            } catch {
+                errores.push('sin conexión');
+            }
+        }
+        return errores;
+    };
+
+    const avisarGuardado = (mensaje: string, fallidos: string[]) => {
+        if (fallidos.length === 0) {
+            showToast(mensaje, 'success');
+            return;
+        }
+        const cuantos = fallidos.length === 1 ? 'Un recordatorio no se programó' : `${fallidos.length} recordatorios no se programaron`;
+        showToast(`${mensaje}, pero ${cuantos.charAt(0).toLowerCase()}${cuantos.slice(1)}: ${fallidos[0]}`, 'error');
+    };
+
     const handleSave = async () => {
         if (!form.titulo.trim()) {
             showToast('El título es obligatorio', 'error');
@@ -409,23 +451,8 @@ export default function TareasPage() {
 
                 if (res.error) throw new Error(res.error);
 
-                // Create new recordatorios if any
-                for (const rec of formRecordatorios) {
-                    if (rec.fechaDisparo) {
-                        await safeApiRequest('/api/tareas/recordatorios', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                tareaId: editingTarea.id,
-                                tipo: rec.tipo,
-                                fechaDisparo: rec.fechaDisparo,
-                                mensaje: rec.mensaje || form.titulo,
-                            }),
-                        });
-                    }
-                }
-
-                showToast('Tarea actualizada', 'success');
+                const fallidos = await crearRecordatorios(editingTarea.id);
+                avisarGuardado('Tarea actualizada', fallidos);
             } else {
                 // Create
                 const res = await safeApiRequest('/api/tareas', {
@@ -439,23 +466,8 @@ export default function TareasPage() {
 
                 if (res.error) throw new Error(res.error);
 
-                // Create recordatorios
-                for (const rec of formRecordatorios) {
-                    if (rec.fechaDisparo) {
-                        await safeApiRequest('/api/tareas/recordatorios', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                tareaId: res.id,
-                                tipo: rec.tipo,
-                                fechaDisparo: rec.fechaDisparo,
-                                mensaje: rec.mensaje || form.titulo,
-                            }),
-                        });
-                    }
-                }
-
-                showToast('Tarea creada', 'success');
+                const fallidos = await crearRecordatorios(res.id);
+                avisarGuardado('Tarea creada', fallidos);
             }
 
             setShowModal(false);
