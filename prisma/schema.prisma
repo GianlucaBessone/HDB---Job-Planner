@@ -362,7 +362,6 @@ model ProjectTag {
   id             String                 @id @default(cuid())
   name           String                 @unique
   active         Boolean                @default(true)
-  impactsMetrics Boolean                @default(false)
   checklists     TagChecklistItem[]
   templates      TagChecklistTemplate[]
   createdAt      DateTime               @default(now())
@@ -403,7 +402,7 @@ model IdempotencyKey {
 model SystemSetting {
   id                    String  @id @default("default")
   dailyReminderEnabled  Boolean @default(false)
-  dailyReminderTime     String  @default("16:45")
+  dailyReminderTime     String? // HH:mm (Argentina). Sin hora no se envía (cron-job.org llama a /api/cron/reminders)
   valorManoObra         Float   @default(0)
   companyGeofenceLat    Float?
   companyGeofenceLng    Float?

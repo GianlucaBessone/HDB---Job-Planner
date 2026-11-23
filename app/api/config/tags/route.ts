@@ -42,14 +42,12 @@ const siNoSchema = z.boolean({ error: 'Datos inválidos' });
 const postSchema = z.object({
     name: nombreSchema,
     active: siNoSchema.default(true),
-    impactsMetrics: siNoSchema.default(false),
 });
 
 const putSchema = z.object({
     id: z.string({ error: 'Falta la etiqueta a editar' }).min(1, 'Falta la etiqueta a editar'),
     name: nombreSchema.optional(),
     active: siNoSchema.optional(),
-    impactsMetrics: siNoSchema.optional(),
 });
 
 async function leerBody<T extends z.ZodType>(req: Request, schema: T): Promise<z.infer<T> | NextResponse> {

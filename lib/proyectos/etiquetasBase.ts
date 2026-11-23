@@ -42,7 +42,6 @@ export async function sembrarEtiquetasBase(db: PrismaClient): Promise<{ creadas:
                 data: {
                     name: nombre,
                     active: true,
-                    impactsMetrics: true,
                     checklists: {
                         create: items.map((description, order) => ({ description, active: true, order })),
                     },
