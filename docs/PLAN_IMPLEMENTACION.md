@@ -202,7 +202,7 @@ P26 (OS + OT) descartada por las respuestas del Anexo A.
 
 ### P38 · Limpieza de datos sin uso
 
-Migración `prisma/sql/20261123_limpieza_p38` (destructiva: primero el código).
+Migración `prisma/sql/20261123_limpieza_p38` (destructiva: primero el código). **Aplicada en producción el 24/11/2026.**
 
 | Qué | Resultado |
 |---|---|
@@ -211,7 +211,13 @@ Migración `prisma/sql/20261123_limpieza_p38` (destructiva: primero el código).
 | `TagChecklistItem` | Se queda: sí se usa para armar el checklist de los proyectos nuevos por etiqueta (la auditoría se equivocó) |
 | Vista `/inventario` | Ya se había quitado en P8 |
 
+### P32 · Búsqueda global de registros
+
+La paleta (Ctrl+K o "Buscar" del encabezado) busca, desde 2 letras, además de vistas y acciones: **proyectos** (código, nombre, cliente), **clientes** (nombre, razón social, CUIT con o sin guiones), **órdenes de trabajo** y **de servicio** (número o proyecto), **presupuestos de servicio** (número, título, cliente), **productos** (SKU, código de barras, descripción) y **tickets** (código o título). Enter abre la ficha del registro.
+
+- `GET /api/buscar?q=` (`lib/buscador.ts`): cada tipo se busca solo si la persona puede abrir su vista (roles configurados y permisos especiales, igual que el menú); en tickets, sin `tickets.gestionar` solo los propios. Hasta 5 por tipo.
+- Sin cambios de base de datos.
+
 - P35 · Presupuestos unificados.
 - P29–P31 · Calidad reorganizada, objetivos unificados, acciones con origen.
-- P32 · Búsqueda global de registros.
 - Legajo, calendario de vencimientos, compras, portal del cliente completo.

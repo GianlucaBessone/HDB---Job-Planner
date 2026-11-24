@@ -27,6 +27,12 @@ Base local PostgreSQL 16 con el esquema de `main`: ida, vuelta e ida otra vez, 0
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 24/11/2026 (10:16 UTC)**, después del merge del PR #75, en una transacción.
+> Antes: `impactsMetrics` presente, hora `16:45` con valor por defecto, 34 ítems de checklist y 7 etiquetas.
+> Después: sin `impactsMetrics`; `dailyReminderTime` opcional, sin valor por defecto y vacía (recordatorio
+> activado pero sin hora: no se envía hasta elegirla); 34 ítems y 7 etiquetas intactos.
+> Falta: elegir la hora en Configuración y crear el trabajo en cron-job.org (pasos 3 y 4).
+
 1. **Código**: mergear el PR (el código nuevo no lee `impactsMetrics` y acepta la hora vacía).
 2. **Base**, con la URL directa de producción:
    ```bash

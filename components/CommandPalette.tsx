@@ -8,6 +8,18 @@ import { useAccessStore } from '@/lib/store/useAccessStore';
 import { renderIcon } from '@/lib/iconRegistry';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { useHistoryStore } from '@/lib/store/useHistoryStore';
+import type { ResultadoBusqueda, TipoRegistro } from '@/lib/buscador';
+
+// Búsqueda global de registros (P32): etiqueta e ícono de cada tipo (lib/buscador.ts)
+const TIPOS_REGISTRO: Record<TipoRegistro, { label: string; icon: string }> = {
+    proyecto: { label: 'Proyectos', icon: 'Briefcase' },
+    cliente: { label: 'Clientes', icon: 'Users' },
+    orden_trabajo: { label: 'Órdenes de trabajo', icon: 'ClipboardList' },
+    orden_servicio: { label: 'Órdenes de servicio', icon: 'FileSignature' },
+    presupuesto: { label: 'Presupuestos de servicio', icon: 'Calculator' },
+    producto: { label: 'Productos', icon: 'Package' },
+    ticket: { label: 'Tickets', icon: 'LifeBuoy' },
+};
 
 interface CommandPaletteProps {
     views: ViewConfig[];
@@ -22,6 +34,29 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+
+    const [registros, setRegistros] = useState<ResultadoBusqueda[]>([]);
+    const [buscando, setBuscando] = useState(false);
+
+    // Registros (proyectos, clientes, órdenes…) desde 2 letras, con espera para no buscar en cada tecla
+    useEffect(() => {
+        const q = query.trim();
+        if (!open || q.length < 2) {
+            setRegistros([]);
+            setBuscando(false);
+            return;
+        }
+        setBuscando(true);
+        const ctrl = new AbortController();
+        const t = setTimeout(() => {
+            fetch(`/api/buscar?q=${encodeURIComponent(q)}`, { signal: ctrl.signal })
+                .then((r) => (r.ok ? r.json() : { resultados: [] }))
+                .then((d) => setRegistros(Array.isArray(d.resultados) ? d.resultados : []))
+                .catch(() => {})
+                .finally(() => { if (!ctrl.signal.aborted) setBuscando(false); });
+        }, 250);
+        return () => { clearTimeout(t); ctrl.abort(); };
+    }, [query, open]);
 
     const commandsMap = useCommandStore((state) => state.commands);
     const historyEntries = useHistoryStore((state) => state.entries);
@@ -112,7 +147,27 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
             });
         }
 
-        // 3. Historial (Only if query is empty)
+        // 3. Registros (búsqueda global, P32), agrupados por tipo
+        if (q) {
+            const porTipo = new Map<TipoRegistro, ResultadoBusqueda[]>();
+            for (const r of registros) porTipo.set(r.tipo, [...(porTipo.get(r.tipo) || []), r]);
+            porTipo.forEach((lista, tipo) => {
+                const cfg = TIPOS_REGISTRO[tipo];
+                items.push({ type: 'header', label: cfg?.label || tipo });
+                lista.forEach((r) => {
+                    items.push({
+                        type: 'record',
+                        id: `reg-${r.tipo}-${r.id}`,
+                        label: r.titulo,
+                        description: r.detalle,
+                        iconName: cfg?.icon || 'FileText',
+                        action: () => router.push(r.url),
+                    });
+                });
+            });
+        }
+
+        // 4. Historial (Only if query is empty)
         if (!q && historyEntries.length > 0) {
             items.push({ type: 'header', label: 'Recientes' });
             // Get last 5 unique paths
@@ -130,7 +185,7 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
         }
 
         return items;
-    }, [query, views, role, permisos, commandsMap, historyEntries, router]);
+    }, [query, views, role, permisos, commandsMap, historyEntries, router, registros]);
 
     // Filter out headers for navigation indexing
     const navigableItems = flatItems.filter(item => item.type !== 'header');
@@ -177,11 +232,11 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="Buscar vistas, acciones, registros recientes..."
+                        placeholder="Buscar vistas, acciones, proyectos, clientes, órdenes, productos…"
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        aria-label="Buscar vistas, acciones y registros recientes"
+                        aria-label="Buscar vistas, acciones y registros"
                         className="flex-1 !bg-transparent !border-0 !p-0 !min-h-0 outline-none focus-visible:!outline-none text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
                     />
                     <button
@@ -194,11 +249,13 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
                 </div>
 
                 <div ref={listRef} className="max-h-[50vh] overflow-y-auto p-2">
-                    {flatItems.length === 0 ? (
+                    {flatItems.length === 0 && buscando ? (
+                        <p className="py-12 text-center text-[13px] text-slate-500 dark:text-slate-400">Buscando registros…</p>
+                    ) : flatItems.length === 0 ? (
                         <div className="py-12 text-center">
                             <Search className="w-6 h-6 text-slate-400 mx-auto mb-2" aria-hidden="true" />
                             <p className="text-sm font-medium text-slate-700 dark:text-slate-200">No se encontraron resultados</p>
-                            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">Probá con el nombre de un módulo o una acción.</p>
+                            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">Probá con el nombre de un módulo, un número de orden, un cliente o un producto.</p>
                         </div>
                     ) : (
                         flatItems.map((item, i) => {
@@ -233,8 +290,7 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
                                             ? 'bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200'
                                             : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                                     }`}>
-                                        {item.type === 'view' ? renderIcon(item.iconName, 'w-4 h-4') :
-                                         item.type === 'command' ? renderIcon(item.iconName, 'w-4 h-4') :
+                                        {item.type === 'view' || item.type === 'command' || item.type === 'record' ? renderIcon(item.iconName, 'w-4 h-4') :
                                          <Clock className="w-4 h-4" />}
                                     </div>
                                     
