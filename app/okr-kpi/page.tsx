@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { Target } from 'lucide-react';
 
@@ -15,13 +15,29 @@ import ModuleHeader from '@/components/ModuleHeader';
 
 type TabId = 'dashboard' | 'okr' | 'kpi' | 'graficos' | 'planes' | 'historico';
 
-export default function OkrKpiPage() {
+export default function OkrKpiPageWrapper() {
+    return (
+        <Suspense fallback={null}>
+            <OkrKpiPage />
+        </Suspense>
+    );
+}
+
+function OkrKpiPage() {
     const router = useRouter();
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [filters, setFilters] = useViewState('okr-kpi-filters', { activeTab: 'dashboard' as TabId });
     const { activeTab } = filters;
     const setActiveTab = (val: TabId) => setFilters({ activeTab: val });
     const [visitedTabs, setVisitedTabs] = useState<Record<TabId, boolean>>({ dashboard: true } as Record<TabId, boolean>);
+
+    // ?tab=planes (desde "Mis tareas" de Inicio) abre esa pestaña
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get('tab') as TabId | null;
+    useEffect(() => {
+        if (tabParam && ['dashboard', 'okr', 'kpi', 'graficos', 'planes', 'historico'].includes(tabParam)) setActiveTab(tabParam);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tabParam]);
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
