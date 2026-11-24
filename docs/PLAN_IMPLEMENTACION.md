@@ -241,6 +241,14 @@ Inicio suma el panel **Mis tareas**: las tareas (creadas o donde la persona est�
 - Menú: con vistas anidadas se marca solo la más específica; la miga muestra "Calidad › Mejora".
 - Sin cambios de base de datos ni de permisos.
 
+### P30 · Objetivos e indicadores unificados
+
+Un **objetivo de calidad** del SGI pasa a ser un **KPI marcado "Objetivo de calidad (SGI)"** (`Kpi.esSgi`): tiene meta numérica, mediciones (manuales o por dataset), historial y planes de acción, en lugar de indicador y meta como texto libre.
+
+- OKR y KPI → **Objetivos de calidad**: los KPI marcados; "Nuevo objetivo de calidad" crea un KPI ya marcado. En el formulario de cualquier KPI se puede marcar o desmarcar.
+- Se quitan `ObjetivoCalidad`, `AccionMejora.objetivoId`, `/api/sgi/objetivos` y la pestaña vieja (en producción había 0 objetivos).
+- Dos migraciones: `20261124_kpi_objetivo_sgi` (aditiva, antes del merge) y `20261124_quitar_objetivo_calidad` (destructiva, después del merge).
+
 - P35 · Presupuestos unificados.
-- P30 · Objetivos unificados (P31 etapa 2: acciones en una sola tabla).
+- P31 etapa 2: acciones en una sola tabla.
 - Legajo, calendario de vencimientos, compras, portal del cliente completo.

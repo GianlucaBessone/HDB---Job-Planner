@@ -1560,8 +1560,6 @@ model AccionMejora {
   oportunidadId String?
   oportunidad   Oportunidad? @relation(fields: [oportunidadId], references: [id])
 
-  objetivoId String?
-  objetivo   ObjetivoCalidad? @relation(fields: [objetivoId], references: [id])
 
   auditoriaId      String?
   documentoId      String?
@@ -1596,28 +1594,6 @@ model Riesgo {
   responsableId       String?
   fechaIdentificacion DateTime  @default(now())
   fechaRevision       DateTime?
-
-  accionesMejora AccionMejora[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ObjetivoCalidad {
-  id                 String    @id @default(cuid())
-  codigo             String?   @unique
-  titulo             String
-  descripcion        String    @db.Text
-  indicador          String
-  meta               String
-  unidad             String?
-  frecuenciaMedicion String?
-  responsableId      String?
-  estado             String    @default("Activo") // Activo, Cumplido, No Cumplido, En Revisión
-  periodo            String?
-  fechaInicio        DateTime?
-  fechaFin           DateTime?
-  resultadoActual    String?
 
   accionesMejora AccionMejora[]
 
@@ -1952,6 +1928,8 @@ model Kpi {
   responsableCarga     Operator? @relation("KpiResponsableCarga", fields: [responsableCargaId], references: [id])
   fuenteDatos          String?
   estado               String    @default("Activo") // Activo | Inactivo
+  // Objetivo de calidad del SGI (ISO 9001): reemplaza a ObjetivoCalidad (P30)
+  esSgi                Boolean   @default(false)
 
   // Tipo de registro y fuente de datos
   tipoRegistro      String   @default("Manual") // Manual | Dataset

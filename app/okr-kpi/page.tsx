@@ -11,8 +11,6 @@ import KpiTab from './components/KpiTab';
 import GraficosTab from './components/GraficosTab';
 import PlanesAccionTab from './components/PlanesAccionTab';
 import HistoricoTab from './components/HistoricoTab';
-// Objetivos de calidad: antes en Calidad (P29); paso previo a unificarlos con OKR (P30)
-import { ObjetivosTab } from '@/app/calidad/components/ObjetivosTab';
 import ModuleHeader from '@/components/ModuleHeader';
 
 type TabId = 'dashboard' | 'okr' | 'kpi' | 'objetivos' | 'graficos' | 'planes' | 'historico';
@@ -119,7 +117,8 @@ function OkrKpiPage() {
                 )}
                 {visitedTabs['objetivos'] && (
                     <div className={activeTab === 'objetivos' ? '' : 'hidden'}>
-                        <ObjetivosTab currentUser={currentUser} />
+                        {/* Objetivos de calidad = KPI marcados como SGI (P30) */}
+                        <KpiTab user={currentUser} isActive={activeTab === 'objetivos'} soloSgi />
                     </div>
                 )}
                 {visitedTabs['planes'] && (

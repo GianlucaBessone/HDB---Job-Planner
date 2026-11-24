@@ -68,6 +68,7 @@ export async function PUT(req: NextRequest, { params: paramsPromise }: { params:
                 responsableCargaId: body.responsableCargaId !== undefined ? (body.responsableCargaId === "" ? null : body.responsableCargaId) : existing.responsableCargaId,
                 fuenteDatos: body.fuenteDatos !== undefined ? (body.fuenteDatos === "" ? null : body.fuenteDatos) : existing.fuenteDatos,
                 estado: body.estado ?? existing.estado,
+                esSgi: typeof body.esSgi === 'boolean' ? body.esSgi : existing.esSgi,
                 tipoRegistro: body.tipoRegistro !== undefined ? body.tipoRegistro : existing.tipoRegistro,
                 datasetId: body.datasetId !== undefined ? (body.datasetId === "" ? null : body.datasetId) : existing.datasetId,
                 campoValor: body.campoValor !== undefined ? body.campoValor : existing.campoValor,
