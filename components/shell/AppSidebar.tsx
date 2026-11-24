@@ -26,10 +26,13 @@ interface AppSidebarProps {
 }
 
 /** Una ruta está activa si coincide o si es una subruta (p. ej. /ventas/gestion/productos/nuevo). */
-export function isRouteActive(pathname: string | null, key: string) {
+export function isRouteActive(pathname: string | null, key: string, keys?: string[]) {
     if (!pathname) return false;
     if (key === '/') return pathname === '/';
-    return pathname === key || pathname.startsWith(key + '/');
+    const coincide = (k: string) => pathname === k || pathname.startsWith(k + '/');
+    if (!coincide(key)) return false;
+    // Con vistas anidadas (/calidad y /calidad/mejora) solo se marca la más específica
+    return !keys?.some(k => k.length > key.length && k.startsWith(key + '/') && coincide(k));
 }
 
 const ROLE_LABEL: Record<string, string> = {
@@ -121,7 +124,7 @@ export function AppSidebar({ docked, open, onClose, onUndock, user, views, onLog
             key={keyPrefix + item.key}
             href={item.key}
             onClick={docked ? undefined : onClose}
-            aria-current={isRouteActive(pathname, item.key) ? 'page' : undefined}
+            aria-current={isRouteActive(pathname, item.key, views.map(v => v.key)) ? 'page' : undefined}
             className="nav-item"
             title={item.description}
         >

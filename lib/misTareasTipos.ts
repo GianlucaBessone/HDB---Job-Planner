@@ -25,7 +25,7 @@ export const ETIQUETA_ORIGEN: Record<OrigenTarea, string> = {
 /** Vista que hace falta poder abrir para ver cada origen (se filtra en la pantalla con `puedeVer`). */
 export const VISTA_ORIGEN: Record<OrigenTarea, string> = {
     tarea: '/tareas',
-    accion_mejora: '/calidad',
+    accion_mejora: '/calidad/mejora',
     plan_kpi: '/okr-kpi',
 };
 

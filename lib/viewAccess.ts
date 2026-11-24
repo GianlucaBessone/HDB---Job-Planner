@@ -113,8 +113,13 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/administracion/gastos',     label: 'Gastos y facturas',  description: 'Facturas de proveedores y gastos',      roles: ['admin', 'supervisor', 'qa'],             access: 'ambos', section: 'finanzas', iconName: 'Wallet',  color: 'bg-green-600' },
 
     // ─ Calidad: sistema de gestión ISO 9001 ─
-    { key: '/calidad',             label: 'Calidad y documentos',   description: 'Documentos, NC, CAPA, riesgos y competencias', roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'calidad', iconName: 'FileCheck', color: 'bg-emerald-600' },
-    { key: '/gestion-sugerencias', label: 'Sugerencias y mejoras',  description: 'Ideas y propuestas de mejora del personal',   roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'calidad', iconName: 'Lightbulb', color: 'bg-yellow-500' },
+    // Calidad en cuatro entradas (P29): antes una sola pantalla con 12 pestañas
+    { key: '/calidad',             label: 'Documentos',             description: 'Biblioteca, vencimientos, plantillas e historial del SGI', roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'calidad', iconName: 'FileCheck', color: 'bg-emerald-600' },
+    { key: '/calidad/mejora',      label: 'Mejora',                 description: 'No conformidades, CAPA, oportunidades y sugerencias', roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'calidad', iconName: 'Lightbulb', color: 'bg-yellow-500' },
+    { key: '/calidad/riesgos',     label: 'Riesgos',                description: 'Matriz de riesgos del SGI',                   roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'calidad', iconName: 'ShieldAlert', color: 'bg-rose-600' },
+    { key: '/calidad/formacion',   label: 'Formación y competencias', description: 'Capacitación obligatoria y matriz de competencias', roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'calidad', iconName: 'BookOpen', color: 'bg-indigo-600' },
+    // Sugerencias se abre desde Mejora (pestaña "Sugerencias")
+    { key: '/gestion-sugerencias', label: 'Sugerencias y mejoras',  description: 'Ideas y propuestas de mejora del personal',   roles: ['admin', 'qa', 'supervisor'], access: 'oculta', section: 'calidad', iconName: 'Lightbulb', color: 'bg-yellow-500' },
     { key: '/auditoria',           label: 'Auditoría de cambios',   description: 'Quién cambió qué y cuándo',                   roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'calidad', iconName: 'History',   color: 'bg-slate-900' },
     { key: '/verificacion-firmas', label: 'Verificación de firmas', description: 'Integridad de los documentos firmados',       roles: ['admin', 'qa', 'supervisor'], access: 'ambos', section: 'calidad', iconName: 'FileBadge', color: 'bg-blue-600' },
 
