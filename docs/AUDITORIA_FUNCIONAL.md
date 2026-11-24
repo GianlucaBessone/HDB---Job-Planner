@@ -104,7 +104,7 @@ Roles = roles por defecto en `lib/viewAccess.ts` (editables en Configuración �
 | Pestaña | Qué guarda | Dónde tiene efecto | Observación |
 |---|---|---|---|
 | Etiquetas | `ProjectTag` (nombre, activo, "impacta métricas") | Etiquetas de proyectos, especialidades de operadores, checklists por etiqueta | "Impacta métricas" **no lo usa ninguna métrica** (solo se guarda y se devuelve en `app/api/config/tags/route.ts`) |
-| Checklists | Vínculo plantilla ↔ etiqueta (`TagChecklistTemplate`) | Los proyectos con esa etiqueta heredan las plantillas | Las plantillas se crean en **Calidad → Plantillas de Checklist**: crear y vincular están en módulos distintos. El modelo viejo `TagChecklistItem` no se usa en ningún lado |
+| Checklists | Vínculo plantilla ↔ etiqueta (`TagChecklistTemplate`) | Los proyectos con esa etiqueta heredan las plantillas | Las plantillas se crean en **Calidad → Plantillas de Checklist**: crear y vincular están en módulos distintos. Corrección (23/11/2026): `TagChecklistItem` sí se usa, `lib/proyectos/checklistsPorEtiqueta.ts` la lee para el checklist de los proyectos nuevos |
 | Desplegables | `ConfigOption` en 5 categorías: áreas de demora, motivos de demora, categorías de proyecto, tipos de actividad, causas de registro de tiempo | Demoras, Proyectos, Registro de tiempos (y tipo de actividad en Documentos) | Cada lista sirve a una sola pantalla, pero se edita lejos de ella |
 | Sistema | Alerta diaria de carga de horas y umbral de días; fichaje en la base (activar, geocerca, radio, token QR, imprimir QR); disparar alertas a mano | Cron de recordatorios, Fichado | La hora del aviso se muestra como un campo deshabilitado fijo en 18:00 (`vercel.json` corre a las 21 UTC); `dailyReminderTime` existe en la base pero no tiene efecto |
 | Órdenes de Servicio | `valorManoObra` (un único valor hora global) | Cobro de OS y costo del proyecto (`app/api/projects/[id]/cost/route.ts:25`) | Es **una tarifa**, no una configuración del sistema; convive con otras dos fuentes de tarifa (ver 1.6) |
@@ -537,7 +537,7 @@ No como módulos, sino como secciones de la misma ficha: quién puede entrar y c
 | # | Elemento | Decisión | Justificación |
 |---|---|---|---|
 | E1 | Vista `/inventario` y tabla `MaterialMaestro` | **Eliminar** (después de migrar sus usos) | La vista está desactivada, pero OT, costo de proyecto y la importación de provisión siguen leyendo precios de esa tabla (X8). Migrar a `Producto` y borrar |
-| E2 | Modelo `TagChecklistItem` | **Eliminar** | No lo usa ningún archivo de `app/` ni `lib/` |
+| E2 | Modelo `TagChecklistItem` | ~~Eliminar~~ **Conservar** | Corrección (23/11/2026): lo lee `lib/proyectos/checklistsPorEtiqueta.ts` (relación `checklists`) |
 | E3 | "Impacta métricas" en etiquetas | **Eliminar** | No tiene efecto. La exclusión de métricas ya existe por proyecto (`noEnMetricas`), y con el tipo de proyecto (SE5) se resuelve sola |
 | E4 | `dailyReminderTime` y el campo de hora deshabilitado | **Eliminar** | La hora la fija `vercel.json`; mostrar un campo que no se puede cambiar confunde |
 | E5 | Configuración → Vistas: ubicación (menú/inicio/ambos), sección, etiqueta | **Eliminar** | Es diseño de producto, no una decisión del usuario. Permite dejar el menú distinto de la documentación y de la ayuda. Los roles de cada vista pasan a Accesos |

@@ -42,6 +42,17 @@ export async function GET(req: Request) {
         const currentHHmm = format(nowZoned, 'HH:mm');
         const todayStr = format(nowZoned, 'yyyy-MM-dd'); // YYYY-MM-DD
 
+        // La dispara cron-job.org cada pocos minutos (P38): sale la primera vez que se llega a la hora
+        // configurada; la clave del día evita repetirla. La ejecución manual no mira la hora.
+        if (!isManual) {
+            if (!setting.dailyReminderTime) {
+                return NextResponse.json({ message: 'Sin hora configurada para el recordatorio diario' });
+            }
+            if (currentHHmm < setting.dailyReminderTime) {
+                return NextResponse.json({ message: `Todavía no: el recordatorio sale a las ${setting.dailyReminderTime}` });
+            }
+        }
+
         const idempotencyKey = `daily-reminder-${todayStr}`;
         const alreadySent = await prisma.idempotencyKey.findUnique({ where: { key: idempotencyKey } });
         

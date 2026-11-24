@@ -11,7 +11,7 @@ export async function GET() {
 
         if (!setting) {
             setting = await prisma.systemSetting.create({
-                data: { id: 'default', dailyReminderEnabled: false, dailyReminderTime: '16:45', valorManoObra: 0, companyQrToken: '' }
+                data: { id: 'default', dailyReminderEnabled: false, dailyReminderTime: null, valorManoObra: 0, companyQrToken: '' }
             });
         }
 
@@ -27,6 +27,16 @@ export async function PUT(req: Request) {
         if (acceso instanceof NextResponse) return acceso;
 
         const body = await req.json();
+
+        // Hora del recordatorio diario (HH:mm, Argentina): sin valor preseteado. Sin hora no se envía (P38).
+        let horaRecordatorio: string | null | undefined = undefined;
+        if (body.dailyReminderTime !== undefined) {
+            const h = typeof body.dailyReminderTime === 'string' ? body.dailyReminderTime.trim() : '';
+            if (h && !/^([01]\d|2[0-3]):[0-5]\d$/.test(h)) {
+                return NextResponse.json({ error: 'La hora del recordatorio tiene que tener el formato HH:mm' }, { status: 400 });
+            }
+            horaRecordatorio = h || null;
+        }
 
         // Audit: get old value
         const oldValue = await prisma.systemSetting.findUnique({ where: { id: 'default' } });
@@ -45,7 +55,7 @@ export async function PUT(req: Request) {
             create: {
                 id: 'default',
                 dailyReminderEnabled: body.dailyReminderEnabled || false,
-                dailyReminderTime: body.dailyReminderTime || '16:45',
+                dailyReminderTime: horaRecordatorio ?? null,
                 valorManoObra: body.valorManoObra !== undefined ? parseFloat(body.valorManoObra) : 0,
                 companyGeofenceLat: body.companyGeofenceLat !== undefined ? parseFloat(body.companyGeofenceLat) : null,
                 companyGeofenceLng: body.companyGeofenceLng !== undefined ? parseFloat(body.companyGeofenceLng) : null,
@@ -55,7 +65,7 @@ export async function PUT(req: Request) {
             },
             update: {
                 dailyReminderEnabled: body.dailyReminderEnabled,
-                dailyReminderTime: body.dailyReminderTime !== undefined ? body.dailyReminderTime : undefined,
+                dailyReminderTime: horaRecordatorio,
                 valorManoObra: body.valorManoObra !== undefined ? parseFloat(body.valorManoObra) : undefined,
                 companyGeofenceLat: body.companyGeofenceLat !== undefined ? parseFloat(body.companyGeofenceLat) : undefined,
                 companyGeofenceLng: body.companyGeofenceLng !== undefined ? parseFloat(body.companyGeofenceLng) : undefined,

@@ -628,7 +628,7 @@ export function OptionsSection({ categorias, titulo = 'Desplegables' }: { catego
 export function SystemSection() {
     const [setting, setSetting] = useState({
         dailyReminderEnabled: false,
-        dailyReminderTime: '16:45',
+        dailyReminderTime: '' as string | null,
         companyGeofenceLat: null,
         companyGeofenceLng: null,
         companyGeofenceRadius: null,
@@ -657,6 +657,7 @@ export function SystemSection() {
             const body = {
                 ...currentData,
                 dailyReminderEnabled: setting.dailyReminderEnabled,
+                dailyReminderTime: setting.dailyReminderTime || null,
                 companyGeofenceLat: setting.companyGeofenceLat,
                 companyGeofenceLng: setting.companyGeofenceLng,
                 companyGeofenceRadius: setting.companyGeofenceRadius,
@@ -754,9 +755,23 @@ export function SystemSection() {
                             />
                         </div>
 
-                        <p className="text-xs text-muted-foreground px-1">
-                            El aviso sale todos los días a las 18:00 (hora de Argentina).
-                        </p>
+                        <div className="space-y-1.5">
+                            <label htmlFor="hora-recordatorio" className="px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                                Hora del aviso (Argentina)
+                            </label>
+                            <input
+                                id="hora-recordatorio"
+                                type="time"
+                                value={setting.dailyReminderTime || ''}
+                                onChange={e => setSetting({ ...setting, dailyReminderTime: e.target.value })}
+                                className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                            />
+                            <p className={`text-xs px-1 ${setting.dailyReminderTime ? 'text-muted-foreground' : 'text-warning-700 dark:text-warning-300 font-medium'}`}>
+                                {setting.dailyReminderTime
+                                    ? `El aviso sale todos los días a las ${setting.dailyReminderTime}.`
+                                    : 'Elegí la hora: sin hora no se envía el aviso.'}
+                            </p>
+                        </div>
                     </div>
                 )}
             </div>

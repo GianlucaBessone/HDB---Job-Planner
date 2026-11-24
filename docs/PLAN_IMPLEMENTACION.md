@@ -200,6 +200,17 @@ Nada: la fase 3 está completa.
 
 P26 (OS + OT) descartada por las respuestas del Anexo A.
 
+### P38 · Limpieza de datos sin uso
+
+Migración `prisma/sql/20261123_limpieza_p38` (destructiva: primero el código).
+
+| Qué | Resultado |
+|---|---|
+| "Impacta métricas" en etiquetas | Quitada de la API y de la base (no tenía efecto) |
+| Hora del recordatorio diario | No tenía efecto (Vercel llamaba a hora fija). Ahora se elige en Configuración, sin valor preseteado, y el envío lo dispara **cron-job.org** cada pocos minutos: sale al llegar a la hora configurada, una vez por día. Se quitó el cron de `vercel.json` |
+| `TagChecklistItem` | Se queda: sí se usa para armar el checklist de los proyectos nuevos por etiqueta (la auditoría se equivocó) |
+| Vista `/inventario` | Ya se había quitado en P8 |
+
 - P35 · Presupuestos unificados.
 - P29–P31 · Calidad reorganizada, objetivos unificados, acciones con origen.
 - P32 · Búsqueda global de registros.
