@@ -83,7 +83,7 @@ export async function misTareas(userId: string, ahora = new Date()): Promise<MiT
             estado: (a.estado === 'En Progreso' ? 'en_curso' : 'pendiente') as EstadoComun,
             vence: fecha(a.fechaCompromiso),
             vencida: !!a.fechaCompromiso && a.fechaCompromiso < ahora,
-            href: '/calidad?tab=capa',
+            href: '/calidad/mejora?tab=capa',
         })),
         ...planes.map((p) => ({
             id: p.id,

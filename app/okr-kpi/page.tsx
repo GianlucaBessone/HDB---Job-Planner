@@ -11,9 +11,11 @@ import KpiTab from './components/KpiTab';
 import GraficosTab from './components/GraficosTab';
 import PlanesAccionTab from './components/PlanesAccionTab';
 import HistoricoTab from './components/HistoricoTab';
+// Objetivos de calidad: antes en Calidad (P29); paso previo a unificarlos con OKR (P30)
+import { ObjetivosTab } from '@/app/calidad/components/ObjetivosTab';
 import ModuleHeader from '@/components/ModuleHeader';
 
-type TabId = 'dashboard' | 'okr' | 'kpi' | 'graficos' | 'planes' | 'historico';
+type TabId = 'dashboard' | 'okr' | 'kpi' | 'objetivos' | 'graficos' | 'planes' | 'historico';
 
 export default function OkrKpiPageWrapper() {
     return (
@@ -35,7 +37,7 @@ function OkrKpiPage() {
     const searchParams = useSearchParams();
     const tabParam = searchParams.get('tab') as TabId | null;
     useEffect(() => {
-        if (tabParam && ['dashboard', 'okr', 'kpi', 'graficos', 'planes', 'historico'].includes(tabParam)) setActiveTab(tabParam);
+        if (tabParam && ['dashboard', 'okr', 'kpi', 'objetivos', 'graficos', 'planes', 'historico'].includes(tabParam)) setActiveTab(tabParam);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tabParam]);
 
@@ -63,6 +65,7 @@ function OkrKpiPage() {
         { id: 'dashboard', label: 'Tablero Estratégico', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'okr', label: 'OKRs', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'kpi', label: 'KPIs', roles: ['supervisor', 'admin', 'qa'] },
+        { id: 'objetivos', label: 'Objetivos de calidad', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'graficos', label: 'Gráficos', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'planes', label: 'Planes de Acción', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'historico', label: 'Historial', roles: ['supervisor', 'admin', 'qa'] },
@@ -112,6 +115,11 @@ function OkrKpiPage() {
                 {visitedTabs['graficos'] && (
                     <div className={activeTab === 'graficos' ? '' : 'hidden'}>
                         <GraficosTab user={currentUser} isActive={activeTab === 'graficos'} />
+                    </div>
+                )}
+                {visitedTabs['objetivos'] && (
+                    <div className={activeTab === 'objetivos' ? '' : 'hidden'}>
+                        <ObjetivosTab currentUser={currentUser} />
                     </div>
                 )}
                 {visitedTabs['planes'] && (

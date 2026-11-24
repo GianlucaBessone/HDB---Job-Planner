@@ -59,6 +59,15 @@ export function Breadcrumbs() {
         return { url, label };
     });
 
+    // Vistas anidadas de una misma sección (/calidad → /calidad/mejora, P29): el tramo padre muestra la
+    // sección ("Calidad") y no el nombre de su propia vista ("Documentos")
+    breadcrumbItems.forEach((item, i) => {
+        const vista = DEFAULT_VIEWS.find(v => v.key === item.url);
+        if (!vista || titles[item.url]) return;
+        const hija = breadcrumbItems.slice(i + 1).some(o => DEFAULT_VIEWS.find(v => v.key === o.url)?.section === vista.section);
+        if (hija) item.label = DEFAULT_SECTIONS.find(sec => sec.key === vista.section)?.label || item.label;
+    });
+
     // Append drawer if it exists
     const drawerType = searchParams.get('drawer');
     const drawerId = searchParams.get('id');

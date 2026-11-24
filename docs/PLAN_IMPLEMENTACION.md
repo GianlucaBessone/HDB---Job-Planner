@@ -225,6 +225,22 @@ Inicio suma el panel **Mis tareas**: las tareas (creadas o donde la persona est�
 - `GET /api/mis-tareas` (`lib/misTareas.ts`, tipos en `lib/misTareasTipos.ts`). Sin cambios de base de datos.
 - **Etapa 2 (pendiente)**: unificar las tablas en una sola entidad de acción con origen (FU9). Es una migración de datos grande; conviene después de usar la vista unificada un tiempo.
 
+### P29 · Calidad en cuatro entradas
+
+"Calidad y documentos" (una pantalla con 12 pestañas) se divide en cuatro entradas del menú, con las mismas pestañas y los mismos roles (`app/calidad/SeccionCalidad.tsx`):
+
+| Entrada | Ruta | Pestañas |
+|---|---|---|
+| Documentos | `/calidad` | Tablero del SGI, Biblioteca, Vencimientos, Plantillas de checklist, Historial |
+| Mejora | `/calidad/mejora` | No conformidades, Acciones (CAPA), Oportunidades, Sugerencias (abre `/gestion-sugerencias`, que sale del menú) |
+| Riesgos | `/calidad/riesgos` | Matriz de riesgos |
+| Formación y competencias | `/calidad/formacion` | Capacitación, Matriz de competencias |
+
+- Los **objetivos de calidad** pasan a OKR y KPI (pestaña "Objetivos de calidad"), paso previo a P30.
+- Los enlaces viejos `/calidad?tab=…` redirigen a la entrada nueva (`/calidad?tab=library&docId=` de los avisos sigue igual).
+- Menú: con vistas anidadas se marca solo la más específica; la miga muestra "Calidad › Mejora".
+- Sin cambios de base de datos ni de permisos.
+
 - P35 · Presupuestos unificados.
-- P29–P30 · Calidad reorganizada, objetivos unificados (P31 etapa 2: acciones en una sola tabla).
+- P30 · Objetivos unificados (P31 etapa 2: acciones en una sola tabla).
 - Legajo, calendario de vencimientos, compras, portal del cliente completo.
