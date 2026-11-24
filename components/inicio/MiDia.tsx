@@ -8,6 +8,7 @@ import type { BadgeTone } from '@/components/ui';
 import { safeApiRequest } from '@/lib/offline';
 import { useAcceso } from '@/lib/store/useAccessStore';
 import type { MiDiaRespuesta, PendienteInicio } from '@/lib/inicio';
+import { MisTareas } from '@/components/inicio/MisTareas';
 
 const TONO: Record<PendienteInicio['tono'], BadgeTone> = {
     warning: 'warning',
@@ -135,6 +136,8 @@ export function MiDia() {
                     </ul>
                 )}
             </Panel>
+
+            <MisTareas />
         </section>
     );
 }

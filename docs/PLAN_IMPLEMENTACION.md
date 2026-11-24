@@ -218,6 +218,13 @@ La paleta (Ctrl+K o "Buscar" del encabezado) busca, desde 2 letras, además de v
 - `GET /api/buscar?q=` (`lib/buscador.ts`): cada tipo se busca solo si la persona puede abrir su vista (roles configurados y permisos especiales, igual que el menú); en tickets, sin `tickets.gestionar` solo los propios. Hasta 5 por tipo.
 - Sin cambios de base de datos.
 
+### P31 · "Mis tareas" unificado (etapa 1)
+
+Inicio suma el panel **Mis tareas**: las tareas (creadas o donde la persona está involucrada), las acciones de mejora (CAPA) y los planes de acción de KPI de los que es responsable, juntos, con su origen (tarea, no conformidad, sugerencia, riesgo, oportunidad, auditoría, KPI…), un estado común (pendiente / en curso) y el vencimiento; las vencidas primero. Cada una se abre en su módulo (`/tareas`, `/calidad?tab=capa`, `/okr-kpi?tab=planes`), y solo se muestran los orígenes cuyas vistas la persona puede abrir.
+
+- `GET /api/mis-tareas` (`lib/misTareas.ts`, tipos en `lib/misTareasTipos.ts`). Sin cambios de base de datos.
+- **Etapa 2 (pendiente)**: unificar las tablas en una sola entidad de acción con origen (FU9). Es una migración de datos grande; conviene después de usar la vista unificada un tiempo.
+
 - P35 · Presupuestos unificados.
-- P29–P31 · Calidad reorganizada, objetivos unificados, acciones con origen.
+- P29–P30 · Calidad reorganizada, objetivos unificados (P31 etapa 2: acciones en una sola tabla).
 - Legajo, calendario de vencimientos, compras, portal del cliente completo.
