@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import VentasNavTabs from '@/components/ventas/VentasNavTabs';
+import TiposPresupuesto from '@/components/presupuestos/TiposPresupuesto';
 import {
     Search, FileText, Trash2, Plus, Minus, Loader2, Wrench, ShoppingCart, RefreshCw,
     X, Save, Package, FilePlus2, History, ChevronDown, ChevronUp,
@@ -595,8 +596,9 @@ export default function CotizacionesPage() {
 
     return (
         <div className="flex flex-col h-full w-full min-h-0 max-h-full overflow-hidden gap-2">
-            <h1 className="sr-only">Cotizaciones</h1>
+            <h1 className="sr-only">Presupuestos de productos</h1>
             <VentasNavTabs currentTab="cotizaciones" className="mb-0 shrink-0" />
+            <TiposPresupuesto actual="productos" className="shrink-0" />
 
             {/* Barra de la vista */}
             <header className="flex flex-wrap items-center justify-between gap-2 shrink-0">

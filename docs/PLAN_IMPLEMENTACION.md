@@ -257,5 +257,17 @@ Un **objetivo de calidad** del SGI pasa a ser un **KPI marcado "Objetivo de cali
 - El responsable es el involucrado con rol "responsable": las acciones de calidad aparecen en **Tareas** (las cerradas con las completadas, las anuladas con las canceladas) y en **Mis tareas** de su responsable.
 - Migraciones: `20261125_tarea_accion_con_origen` (aditiva, antes del merge; **aplicada el 25/11/2026**) y `20261125_quitar_accionmejora_plankpi` (borra las dos tablas, vacías en producción; después del merge). **Las dos aplicadas en producción el 25/11/2026.**
 
-- P35 · Presupuestos unificados.
-- Legajo, calendario de vencimientos, compras, portal del cliente completo.
+### P35 · Presupuestos en una entrada (dos tipos)
+
+Comercial → **Presupuestos** reemplaza a "Cotizaciones" y "Presupuestos de servicio" en el menú (`/presupuestos` abre el tipo que la persona puede ver: servicio para gestión, productos para vendedores). Las dos pantallas suman arriba **De productos | De servicio** (`components/presupuestos/TiposPresupuesto.tsx`), con los tipos que la persona puede abrir; el menú marca "Presupuestos" en las dos.
+
+- Cada tipo conserva su editor, sus estados, sus permisos y su tabla (`Cotizacion` y `PresupuestoServicio`). Sin cambios de base de datos.
+- Pendiente si hiciera falta: fusión de tablas con numeración y estados comunes (la auditoría la dejó a confirmar; en producción hay 10 cotizaciones y 0 presupuestos de servicio).
+### Calendario único de vencimientos
+
+Mi trabajo → **Vencimientos** (`/vencimientos`): EPP entregado y vigente, competencias del personal, documentos a revisar, presupuestos de servicio enviados y presupuestos de productos vigentes, en una sola lista por fecha, con pestañas **Vencidos / Próximos 30 días / Próximos 90 días** y filtro por tipo. Cada ítem abre su módulo.
+
+- `GET /api/vencimientos?desde=&hasta=` (`lib/vencimientos.ts`, Zod): cada tipo solo si la persona puede abrir su vista. Del EPP cuenta el elemento vigente (el reemplazado deja de estar `VIGENTE`) y no las actas rechazadas. Sin cambios de base de datos.
+- Pendiente: herramientas (no tienen fecha de verificación en el modelo), crédito de clientes y certificados externos.
+
+- Legajo, compras, portal del cliente completo.

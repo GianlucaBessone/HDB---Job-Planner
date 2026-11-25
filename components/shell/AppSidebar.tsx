@@ -26,10 +26,16 @@ interface AppSidebarProps {
 }
 
 /** Una ruta está activa si coincide o si es una subruta (p. ej. /ventas/gestion/productos/nuevo). */
+/** Entradas del menú que agrupan pantallas con otra ruta (P35: Presupuestos abre productos o servicio). */
+const RUTAS_DE_ENTRADA: Record<string, string[]> = {
+    '/presupuestos': ['/presupuestos-servicio', '/ventas/cotizaciones'],
+};
+
 export function isRouteActive(pathname: string | null, key: string, keys?: string[]) {
     if (!pathname) return false;
     if (key === '/') return pathname === '/';
     const coincide = (k: string) => pathname === k || pathname.startsWith(k + '/');
+    if (RUTAS_DE_ENTRADA[key]?.some(coincide)) return true;
     if (!coincide(key)) return false;
     // Con vistas anidadas (/calidad y /calidad/mejora) solo se marca la más específica
     return !keys?.some(k => k.length > key.length && k.startsWith(key + '/') && coincide(k));
