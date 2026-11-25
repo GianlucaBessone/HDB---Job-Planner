@@ -240,8 +240,11 @@ export default function TareasPage() {
             completada: [],
             cancelada: [],
         };
+        // Las acciones de calidad (P31) suman "cerrada" y "anulada": van con completadas y canceladas
+        const columna: Record<string, string> = { cerrada: 'completada', anulada: 'cancelada' };
         filteredTareas.forEach(t => {
-            if (cols[t.estado]) cols[t.estado].push(t);
+            const c = columna[t.estado] || t.estado;
+            if (cols[c]) cols[c].push(t);
         });
         return cols;
     }, [filteredTareas]);

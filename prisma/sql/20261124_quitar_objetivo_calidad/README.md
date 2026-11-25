@@ -11,6 +11,9 @@ En producción (24/11/2026): **0 objetivos de calidad** y 0 acciones vinculadas;
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 25/11/2026 (11:43 UTC)**, después del merge del PR #79 y de su despliegue. Antes: 0 objetivos y 0 acciones vinculadas. Después: sin `ObjetivoCalidad` ni `AccionMejora.objetivoId`; 5 KPI con `esSgi`.
+
+
 1. Parte 1 aplicada y PR mergeado.
 2. Verificar que siga vacía: `select count(*) from "ObjetivoCalidad"` → 0.
 3. `psql "$DATABASE_URL" -f prisma/sql/20261124_quitar_objetivo_calidad/up.sql`

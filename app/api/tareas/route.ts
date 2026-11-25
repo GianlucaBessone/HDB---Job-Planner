@@ -270,7 +270,7 @@ export async function PUT(req: NextRequest) {
         const isPureStatusChange = keysChanged.length === 1 && keysChanged[0] === 'estado';
 
         if (isPureStatusChange && oldTarea.estado !== data.estado) {
-            const statusLabels: Record<string, string> = { pendiente: 'Pendiente', en_progreso: 'En Progreso', completada: 'Completada', cancelada: 'Cancelada' };
+            const statusLabels: Record<string, string> = { pendiente: 'Pendiente', en_progreso: 'En Progreso', completada: 'Completada', cancelada: 'Cancelada', cerrada: 'Cerrada', anulada: 'Anulada' };
             const label = statusLabels[data.estado as string] || data.estado;
             
             const targetIds = tarea.involucrados.map(i => i.operatorId).filter(id => id !== actingUserId);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { INCLUIR_RESPONSABLE, comoAccionMejora } from '@/lib/acciones';
 import { MENSAJE_ANULADO, puedeBorrarseSgi, totalVinculados } from '@/lib/sgi/bajas';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
@@ -14,12 +15,12 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
     try {
         const opt = await prisma.oportunidad.findUnique({
             where: { id: params.id },
-            include: { accionesMejora: true }
+            include: { accionesMejora: { include: INCLUIR_RESPONSABLE } }
         });
 
         if (!opt) return NextResponse.json({ error: 'Oportunidad no encontrada' }, { status: 404 });
 
-        return NextResponse.json(opt);
+        return NextResponse.json({ ...opt, accionesMejora: opt.accionesMejora.map(comoAccionMejora) });
     } catch (error) {
         console.error('Error fetching Oportunidad details:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });

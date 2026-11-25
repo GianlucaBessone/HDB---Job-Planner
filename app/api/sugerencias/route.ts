@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { INCLUIR_RESPONSABLE, comoAccionMejora } from '@/lib/acciones';
 import { detectarTipoArchivo } from '@/lib/tipoArchivo';
 import { verifyPin } from '@/lib/pinAuth';
 
@@ -254,18 +255,14 @@ export async function GET(req: Request) {
                     orderBy: { fecha: 'asc' }
                 },
                 acciones: {
-                    include: {
-                        responsable: {
-                            select: { id: true, nombreCompleto: true }
-                        }
-                    },
+                    include: INCLUIR_RESPONSABLE,
                     orderBy: { createdAt: 'asc' }
                 }
             },
             orderBy: { fecha_creacion: 'desc' }
         });
 
-        return NextResponse.json(sugerencias);
+        return NextResponse.json(sugerencias.map(s => ({ ...s, acciones: s.acciones.map(comoAccionMejora) })));
     } catch (error) {
         console.error('Error fetching sugerencias:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
+import { estadoCapaDesdeTarea } from '@/lib/acciones';
 import { getEmbedding, cosineSimilarity } from '@/lib/ai/embeddings';
 
 export const dynamic = 'force-dynamic';
@@ -110,9 +111,9 @@ Causa Raíz: ${nc.analisisCausaRaiz?.map(acr => acr.causaRaiz || acr.descripcion
                     score: Math.round(m.score * 100),
                     causaRaiz: acr?.causaRaiz || acr?.descripcion || 'No detallada',
                     acciones: m.nc.accionesMejora.map(a => ({
-                        codigoAccion: a.codigoAccion || 'Acción',
+                        codigoAccion: a.codigo || 'Acción',
                         descripcion: a.descripcion,
-                        estado: a.estado,
+                        estado: estadoCapaDesdeTarea(a.estado),
                         eficacia: a.eficacia
                     })),
                     verificaciones: m.nc.verificacionesEficacia.map(v => ({

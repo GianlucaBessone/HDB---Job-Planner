@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
                             take: 20,
                         },
                         planesAccion: {
-                            where: { estado: { not: 'Cerrado' } },
+                            // Planes abiertos (tareas con KPI, P31)
+                            where: { estado: { in: ['pendiente', 'en_progreso'] } },
                             select: { id: true, estado: true },
                         },
                         _count: { select: { historico: true, planesAccion: true } },

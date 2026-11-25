@@ -10,6 +10,9 @@ Reemplaza a `ObjetivoCalidad` (indicador y meta como texto libre), que se quita 
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 25/11/2026 (11:38 UTC)**, antes del merge del PR #79. 5 KPI, ninguno marcado.
+
+
 1. `psql "$DATABASE_URL" -f prisma/sql/20261124_kpi_objetivo_sgi/up.sql`
 2. Mergear el PR.
 3. Aplicar la parte 2.

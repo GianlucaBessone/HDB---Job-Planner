@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { WHERE_ACCION_MEJORA, estadoCapaDesdeTarea } from '@/lib/acciones';
 import { exigirAcceso } from '@/lib/permisosServer';
 
 export const dynamic = 'force-dynamic';
@@ -9,9 +10,11 @@ export async function GET(req: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     try {
-        const acciones = await prisma.accionMejora.findMany({
-            select: { estado: true, eficacia: true, fechaCompromiso: true }
-        });
+        // Acciones de mejora = tareas con tipo de acción (P31); estados en formato CAPA
+        const acciones = (await prisma.tarea.findMany({
+            where: WHERE_ACCION_MEJORA,
+            select: { estado: true, eficacia: true, fechaVencimiento: true }
+        })).map(t => ({ estado: estadoCapaDesdeTarea(t.estado), eficacia: t.eficacia, fechaCompromiso: t.fechaVencimiento }));
 
         const stats = {
             total: acciones.length,

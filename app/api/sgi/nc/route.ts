@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { estadoCapaDesdeTarea } from '@/lib/acciones';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
 
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
                 accionesMejora: {
                     select: {
                         id: true,
-                        codigoAccion: true,
+                        codigo: true,
                         estado: true,
                         porcentajeAvance: true
                     }
@@ -34,7 +35,11 @@ export async function GET(req: NextRequest) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return NextResponse.json(ncs);
+        // Acciones = tareas (P31): mismo formato que antes
+        return NextResponse.json(ncs.map(nc => ({
+            ...nc,
+            accionesMejora: nc.accionesMejora.map(({ codigo, estado, ...a }) => ({ ...a, codigoAccion: codigo, estado: estadoCapaDesdeTarea(estado) })),
+        })));
     } catch (error) {
         console.error('Error fetching No Conformidades:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
