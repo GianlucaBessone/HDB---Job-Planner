@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { INCLUIR_RESPONSABLE, comoPlanKpi } from '@/lib/acciones';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
 import { recalcularAvanceOkr } from '@/lib/okrKpiEngine';
@@ -22,9 +23,7 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
                     orderBy: { fechaMedicion: 'desc' },
                 },
                 planesAccion: {
-                    include: {
-                        responsable: { select: { id: true, nombreCompleto: true } },
-                    },
+                    include: INCLUIR_RESPONSABLE,
                     orderBy: { createdAt: 'desc' },
                 },
             },
@@ -34,7 +33,8 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
             return NextResponse.json({ error: 'KPI no encontrado' }, { status: 404 });
         }
 
-        return NextResponse.json(kpi);
+        // Planes de acción = tareas con KPI (P31): mismo formato que antes
+        return NextResponse.json({ ...kpi, planesAccion: kpi.planesAccion.map(comoPlanKpi) });
     } catch (error) {
         console.error('Error fetching KPI:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });

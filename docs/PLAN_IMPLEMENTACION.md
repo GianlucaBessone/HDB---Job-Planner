@@ -247,8 +247,15 @@ Un **objetivo de calidad** del SGI pasa a ser un **KPI marcado "Objetivo de cali
 
 - OKR y KPI → **Objetivos de calidad**: los KPI marcados; "Nuevo objetivo de calidad" crea un KPI ya marcado. En el formulario de cualquier KPI se puede marcar o desmarcar.
 - Se quitan `ObjetivoCalidad`, `AccionMejora.objetivoId`, `/api/sgi/objetivos` y la pestaña vieja (en producción había 0 objetivos).
-- Dos migraciones: `20261124_kpi_objetivo_sgi` (aditiva, antes del merge) y `20261124_quitar_objetivo_calidad` (destructiva, después del merge).
+- Dos migraciones: `20261124_kpi_objetivo_sgi` (aditiva, antes del merge) y `20261124_quitar_objetivo_calidad` (destructiva, después del merge). **Las dos aplicadas en producción el 25/11/2026.**
+
+### P31 · Acción con origen (etapa 2)
+
+`Tarea` es la única entidad de acción. Las **acciones de mejora (CAPA)** son tareas con tipo de acción (`codigo` CAPA-AAAA-0001, avance, eficacia, evidencia) y los **planes de acción de KPI**, tareas con KPI (causa, acción correctiva). Cada tarea tiene **origen** (`origenTipo`: libre, proyecto, NC, sugerencia, riesgo, oportunidad, KPI, calidad) y su vínculo.
+
+- Las APIs de CAPA, NC, riesgos, oportunidades, sugerencias, verificación de eficacia y planes de acción leen y escriben tareas con el mismo formato de siempre (`lib/acciones.ts`), así que las pantallas de Calidad y de OKR no cambian.
+- El responsable es el involucrado con rol "responsable": las acciones de calidad aparecen en **Tareas** (las cerradas con las completadas, las anuladas con las canceladas) y en **Mis tareas** de su responsable.
+- Migraciones: `20261125_tarea_accion_con_origen` (aditiva, antes del merge; **aplicada el 25/11/2026**) y `20261125_quitar_accionmejora_plankpi` (borra las dos tablas, vacías en producción; después del merge).
 
 - P35 · Presupuestos unificados.
-- P31 etapa 2: acciones en una sola tabla.
 - Legajo, calendario de vencimientos, compras, portal del cliente completo.

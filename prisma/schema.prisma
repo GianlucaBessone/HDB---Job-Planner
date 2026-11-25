@@ -161,7 +161,6 @@ model Operator {
   safetyAudits              SafetyAudit[]
   sugerencias_creadas       Sugerencia[]                @relation("SugerenciaAutor")
   sugerencias_asignadas     Sugerencia[]                @relation("SugerenciaResponsable")
-  acciones_mejora           AccionMejora[]
   ncRegistradas             NoConformidad[]             @relation("NCResponsableRegistro")
   ncTratadas                NoConformidad[]             @relation("NCResponsableTratamiento")
   analisisCausaRaiz         AnalisisCausaRaiz[]
@@ -181,7 +180,6 @@ model Operator {
   // OKR / KPI
   okrsResponsable     Okr[]             @relation("OkrResponsable")
   kpisResponsable     Kpi[]             @relation("KpiResponsableCarga")
-  planesAccionKpi     PlanAccionKpi[]   @relation("PlanAccionKpiResponsable")
   datasetsResponsable Dataset[]         @relation("DatasetResponsable")
   technicalReports    TechnicalReport[] @relation("ReportResponsable")
 
@@ -1338,7 +1336,7 @@ model Sugerencia {
   archivos            SugerenciaAdjunto[]
   historial           SugerenciaHistorial[]
   comentarios         SugerenciaComentario[]
-  acciones            AccionMejora[]
+  acciones            Tarea[]                @relation("TareaSugerencia")
   analisis_ia         Json? // AI analysis result (cached)
 
   @@index([usuario_id])
@@ -1419,7 +1417,7 @@ model NoConformidad {
   updatedAt DateTime @updatedAt
 
   analisisCausaRaiz      AnalisisCausaRaiz[]
-  accionesMejora         AccionMejora[]
+  accionesMejora         Tarea[]                @relation("TareaNC")
   verificacionesEficacia VerificacionEficacia[]
   reuniones              ReunionNC[]
   documentacionAfectada  DocumentacionAfectada[]
@@ -1455,8 +1453,9 @@ model VerificacionEficacia {
   ncId          String?
   noConformidad NoConformidad? @relation(fields: [ncId], references: [id], onDelete: Cascade)
 
+  // Acción de mejora verificada: una Tarea con origen de calidad (P31)
   accionMejoraId String?
-  accionMejora   AccionMejora? @relation(fields: [accionMejoraId], references: [id], onDelete: Cascade)
+  accionMejora   Tarea?         @relation(fields: [accionMejoraId], references: [id], onDelete: Cascade)
 
   responsableVerificacionId String?
   responsableVerificacion   Operator? @relation(fields: [responsableVerificacionId], references: [id])
@@ -1524,58 +1523,6 @@ model CapacitacionRequerida {
   @@index([ncId])
 }
 
-model AccionMejora {
-  id                String  @id @default(cuid())
-  codigoAccion      String? @unique
-  tipoAccion        String  @default("Mejora Continua") // Correctiva, Preventiva, Mejora Continua, Mitigación de Riesgo
-  origen            String  @default("Otro") // No Conformidad, Riesgo, Auditoría Interna, etc.
-  descripcion       String  @db.Text
-  justificacion     String? @db.Text
-  beneficioEsperado String? @db.Text
-
-  responsableId String?
-  responsable   Operator? @relation(fields: [responsableId], references: [id], onDelete: SetNull)
-
-  prioridad        String    @default("Media") // Baja, Media, Alta
-  fechaCreacion    DateTime  @default(now())
-  fechaInicio      DateTime?
-  fechaCompromiso  DateTime?
-  fechaCierre      DateTime?
-  porcentajeAvance Float     @default(0)
-  estado           String    @default("Pendiente") // Pendiente, En Progreso, Completada, Cerrada, Cancelada
-  eficacia         String? // Pendiente, Eficaz, Ineficaz
-  evidencia        String?   @db.Text
-  observaciones    String?   @db.Text
-
-  // Relaciones opcionales para trazabilidad
-  ncId          String?
-  noConformidad NoConformidad? @relation(fields: [ncId], references: [id])
-
-  sugerenciaId String?
-  sugerencia   Sugerencia? @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
-
-  riesgoId String?
-  riesgo   Riesgo? @relation(fields: [riesgoId], references: [id])
-
-  oportunidadId String?
-  oportunidad   Oportunidad? @relation(fields: [oportunidadId], references: [id])
-
-
-  auditoriaId      String?
-  documentoId      String?
-  capacitacionId   String?
-  proyectoMejoraId String?
-
-  verificaciones VerificacionEficacia[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  @@index([ncId])
-  @@index([sugerenciaId])
-  @@index([responsableId])
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // RIESGOS, OBJETIVOS Y OPORTUNIDADES
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1595,7 +1542,7 @@ model Riesgo {
   fechaIdentificacion DateTime  @default(now())
   fechaRevision       DateTime?
 
-  accionesMejora AccionMejora[]
+  accionesMejora Tarea[] @relation("TareaRiesgo")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1612,7 +1559,7 @@ model Oportunidad {
   responsableId       String?
   fechaIdentificacion DateTime @default(now())
 
-  accionesMejora AccionMejora[]
+  accionesMejora Tarea[] @relation("TareaOportunidad")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1724,6 +1671,33 @@ model Tarea {
   notas       String?           @db.Text
   comentarios TareaComentario[]
 
+  // ── Acción con origen (auditoría, P31 / FU9): Tarea es la única entidad de "algo que hacer para una fecha".
+  // Las acciones de mejora (CAPA) y los planes de acción de KPI son tareas con origen de calidad.
+  origenTipo        String  @default("libre") // libre | proyecto | nc | sugerencia | riesgo | oportunidad | kpi | calidad
+  codigo            String? @unique // CAPA-2026-0001 (acciones de mejora)
+  tipoAccion        String? // CAPA: Correctiva | Preventiva | Mejora Continua | Mitigación de Riesgo
+  origenDetalle     String? // CAPA: origen declarado (No Conformidad, Auditoría Interna, Otro…)
+  justificacion     String? @db.Text
+  beneficioEsperado String? @db.Text
+  causa             String? @db.Text // plan de KPI
+  accionCorrectiva  String? @db.Text // plan de KPI
+  porcentajeAvance  Float   @default(0)
+  eficacia          String? // Pendiente | Eficaz | Ineficaz
+  evidencia         String? @db.Text
+
+  ncId          String?
+  noConformidad NoConformidad? @relation("TareaNC", fields: [ncId], references: [id])
+  sugerenciaId  String?
+  sugerencia    Sugerencia?    @relation("TareaSugerencia", fields: [sugerenciaId], references: [id], onDelete: Cascade)
+  riesgoId      String?
+  riesgo        Riesgo?        @relation("TareaRiesgo", fields: [riesgoId], references: [id])
+  oportunidadId String?
+  oportunidad   Oportunidad?   @relation("TareaOportunidad", fields: [oportunidadId], references: [id])
+  kpiId         String?
+  kpi           Kpi?           @relation("TareaKpi", fields: [kpiId], references: [id], onDelete: Restrict)
+
+  verificaciones VerificacionEficacia[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1731,6 +1705,10 @@ model Tarea {
   @@index([projectId])
   @@index([creadorId])
   @@index([fechaVencimiento])
+  @@index([origenTipo])
+  @@index([ncId])
+  @@index([sugerenciaId])
+  @@index([kpiId])
 }
 
 model TareaInvolucrado {
@@ -1949,7 +1927,7 @@ model Kpi {
   usuarioModificacionId String?
 
   historico    KpiHistorico[]
-  planesAccion PlanAccionKpi[]
+  planesAccion Tarea[]          @relation("TareaKpi")
 
   @@index([okrId])
   @@index([estado])
@@ -1991,27 +1969,6 @@ model GraficoConfig {
   updatedAt DateTime @updatedAt
 
   @@index([datasetId])
-}
-
-model PlanAccionKpi {
-  id               String    @id @default(uuid())
-  kpiId            String
-  kpi              Kpi       @relation(fields: [kpiId], references: [id], onDelete: Restrict)
-  descripcion      String    @db.Text
-  causa            String?   @db.Text
-  accionCorrectiva String?   @db.Text
-  responsableId    String?
-  responsable      Operator? @relation("PlanAccionKpiResponsable", fields: [responsableId], references: [id])
-  fechaCompromiso  DateTime?
-  fechaCierre      DateTime?
-  estado           String    @default("Pendiente") // Pendiente | En Curso | Cerrado
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([kpiId])
-  @@index([estado])
-  @@index([responsableId])
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

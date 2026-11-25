@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { INCLUIR_RESPONSABLE, comoAccionMejora } from '@/lib/acciones';
 import { MENSAJE_ANULADO, puedeBorrarseSgi, totalVinculados } from '@/lib/sgi/bajas';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { logAudit } from '@/lib/audit';
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
                 responsableRegistro: { select: { id: true, nombreCompleto: true } },
                 responsablesTratamiento: { select: { id: true, nombreCompleto: true } },
                 analisisCausaRaiz: true,
-                accionesMejora: true,
+                accionesMejora: { include: INCLUIR_RESPONSABLE },
                 verificacionesEficacia: true,
                 reuniones: true,
                 documentacionAfectada: {
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
 
         if (!nc) return NextResponse.json({ error: 'No Conformidad no encontrada' }, { status: 404 });
 
-        return NextResponse.json(nc);
+        return NextResponse.json({ ...nc, accionesMejora: nc.accionesMejora.map(comoAccionMejora) });
     } catch (error) {
         console.error('Error fetching No Conformidad details:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });

@@ -1,101 +1,82 @@
 import { prisma } from '@/lib/prisma';
 
 /**
- * "Mis tareas" unificado (auditoría, P31 / FU9, etapa 1). Tareas, acciones de mejora (CAPA) y planes de acción
- * de KPI son "algo que alguien tiene que hacer para una fecha", cada uno en su módulo y con sus estados. Acá se
- * leen juntos para la persona, con su origen, un estado común y el vencimiento. Las tablas no cambian.
+ * "Mis tareas" unificado (auditoría, P31 / FU9). Desde la etapa 2 todo vive en `Tarea`: las acciones de mejora
+ * (CAPA) son tareas con tipo de acción y los planes de acción de KPI, tareas con KPI (`lib/acciones.ts`). Acá se
+ * leen las de la persona con su origen, un estado común y el vencimiento.
  */
 
-import type { EstadoComun, MiTarea } from '@/lib/misTareasTipos';
+import type { EstadoComun, MiTarea, OrigenTarea } from '@/lib/misTareasTipos';
 export type { EstadoComun, MiTarea, OrigenTarea } from '@/lib/misTareasTipos';
 
 const fecha = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : null);
 const corto = (t: string, n = 120) => (t.length > n ? `${t.slice(0, n - 1)}…` : t);
 
-/** Estados abiertos de cada origen (lo cerrado, completado o cancelado no se muestra). */
-const ABIERTOS = {
-    tarea: ['pendiente', 'en_progreso'],
-    accion: ['Pendiente', 'En Progreso'],
-    plan: ['Pendiente', 'En Curso'],
+const ABIERTAS = ['pendiente', 'en_progreso'];
+
+const HREF: Record<OrigenTarea, string> = {
+    tarea: '/tareas',
+    accion_mejora: '/calidad/mejora?tab=capa',
+    plan_kpi: '/okr-kpi?tab=planes',
 };
 
 export async function misTareas(userId: string, ahora = new Date()): Promise<MiTarea[]> {
-    const [tareas, acciones, planes] = await Promise.all([
-        prisma.tarea
-            .findMany({
-                where: {
-                    estado: { in: ABIERTOS.tarea },
-                    OR: [{ creadorId: userId }, { involucrados: { some: { operatorId: userId } } }],
-                },
-                select: { id: true, titulo: true, estado: true, fechaVencimiento: true, project: { select: { nombre: true } } },
-                take: 200,
-            })
-            .catch(() => []),
-        prisma.accionMejora
-            .findMany({
-                where: { responsableId: userId, estado: { in: ABIERTOS.accion } },
-                select: {
-                    id: true,
-                    codigoAccion: true,
-                    descripcion: true,
-                    estado: true,
-                    origen: true,
-                    fechaCompromiso: true,
-                    noConformidad: { select: { codigoNC: true } },
-                    sugerencia: { select: { titulo: true } },
-                    riesgo: { select: { codigo: true } },
-                    oportunidad: { select: { codigo: true } },
-                },
-                take: 200,
-            })
-            .catch(() => []),
-        prisma.planAccionKpi
-            .findMany({
-                where: { responsableId: userId, estado: { in: ABIERTOS.plan } },
-                select: { id: true, descripcion: true, estado: true, fechaCompromiso: true, kpi: { select: { nombre: true } } },
-                take: 200,
-            })
-            .catch(() => []),
-    ]);
+    const involucrado = { involucrados: { some: { operatorId: userId } } };
+    const tareas = await prisma.tarea
+        .findMany({
+            where: {
+                estado: { in: ABIERTAS },
+                // Las de calidad (CAPA, planes de KPI) son de su responsable; las comunes, también de quien las creó
+                OR: [involucrado, { creadorId: userId, tipoAccion: null, kpiId: null }],
+            },
+            select: {
+                id: true,
+                titulo: true,
+                descripcion: true,
+                codigo: true,
+                estado: true,
+                fechaVencimiento: true,
+                tipoAccion: true,
+                origenDetalle: true,
+                kpiId: true,
+                project: { select: { nombre: true } },
+                noConformidad: { select: { codigoNC: true } },
+                sugerencia: { select: { titulo: true } },
+                riesgo: { select: { codigo: true } },
+                oportunidad: { select: { codigo: true } },
+                kpi: { select: { nombre: true } },
+            },
+            take: 300,
+        })
+        .catch(() => []);
 
-    const lista: MiTarea[] = [
-        ...tareas.map((t) => ({
+    const lista: MiTarea[] = tareas.map((t) => {
+        const origen: OrigenTarea = t.kpiId ? 'plan_kpi' : t.tipoAccion ? 'accion_mejora' : 'tarea';
+        const origenDetalle =
+            origen === 'plan_kpi'
+                ? `KPI ${t.kpi?.nombre ?? ''}`.trim()
+                : origen === 'accion_mejora'
+                  ? (t.noConformidad?.codigoNC && `No conformidad ${t.noConformidad.codigoNC}`) ||
+                    (t.sugerencia && 'Sugerencia') ||
+                    (t.riesgo && `Riesgo${t.riesgo.codigo ? ` ${t.riesgo.codigo}` : ''}`) ||
+                    (t.oportunidad && `Oportunidad${t.oportunidad.codigo ? ` ${t.oportunidad.codigo}` : ''}`) ||
+                    t.origenDetalle ||
+                    'Acción de mejora'
+                  : t.project?.nombre
+                    ? `Tarea · ${t.project.nombre}`
+                    : 'Tarea';
+        const texto = origen === 'tarea' ? t.titulo : corto(t.descripcion || t.titulo);
+        return {
             id: t.id,
-            origen: 'tarea' as const,
-            origenDetalle: t.project?.nombre ? `Tarea · ${t.project.nombre}` : 'Tarea',
-            titulo: t.titulo,
+            origen,
+            origenDetalle,
+            titulo: [origen === 'accion_mejora' ? t.codigo : null, texto].filter(Boolean).join(' · '),
             estado: (t.estado === 'en_progreso' ? 'en_curso' : 'pendiente') as EstadoComun,
             vence: fecha(t.fechaVencimiento),
             vencida: !!t.fechaVencimiento && t.fechaVencimiento < ahora,
-            href: '/tareas',
-        })),
-        ...acciones.map((a) => ({
-            id: a.id,
-            origen: 'accion_mejora' as const,
-            origenDetalle:
-                (a.noConformidad?.codigoNC && `No conformidad ${a.noConformidad.codigoNC}`) ||
-                (a.sugerencia && 'Sugerencia') ||
-                (a.riesgo && `Riesgo${a.riesgo.codigo ? ` ${a.riesgo.codigo}` : ''}`) ||
-                (a.oportunidad && `Oportunidad${a.oportunidad.codigo ? ` ${a.oportunidad.codigo}` : ''}`) ||
-                a.origen ||
-                'Acción de mejora',
-            titulo: [a.codigoAccion, corto(a.descripcion)].filter(Boolean).join(' · '),
-            estado: (a.estado === 'En Progreso' ? 'en_curso' : 'pendiente') as EstadoComun,
-            vence: fecha(a.fechaCompromiso),
-            vencida: !!a.fechaCompromiso && a.fechaCompromiso < ahora,
-            href: '/calidad/mejora?tab=capa',
-        })),
-        ...planes.map((p) => ({
-            id: p.id,
-            origen: 'plan_kpi' as const,
-            origenDetalle: `KPI ${p.kpi.nombre}`,
-            titulo: corto(p.descripcion),
-            estado: (p.estado === 'En Curso' ? 'en_curso' : 'pendiente') as EstadoComun,
-            vence: fecha(p.fechaCompromiso),
-            vencida: !!p.fechaCompromiso && p.fechaCompromiso < ahora,
-            href: '/okr-kpi?tab=planes',
-        })),
-    ];
+            href: HREF[origen],
+        };
+    });
 
     // Vencidas primero; después por fecha (sin fecha al final)
     return lista.sort((a, b) => {

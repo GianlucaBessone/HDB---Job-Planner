@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { INCLUIR_RESPONSABLE, asignarResponsable, comoAccionMejora } from '@/lib/acciones';
 import { logAudit } from '@/lib/audit';
 import { sendPushNotification } from '@/lib/onesignal';
 import { exigirAcceso } from '@/lib/permisosServer';
@@ -38,11 +39,7 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
                     orderBy: { fecha: 'asc' }
                 },
                 acciones: {
-                    include: {
-                        responsable: {
-                            select: { id: true, nombreCompleto: true }
-                        }
-                    },
+                    include: INCLUIR_RESPONSABLE,
                     orderBy: { createdAt: 'asc' }
                 }
             }
@@ -52,7 +49,8 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
             return NextResponse.json({ error: 'Propuesta no encontrada.' }, { status: 404 });
         }
 
-        return NextResponse.json(sugerencia);
+        // Acciones = tareas (P31): mismo formato que antes
+        return NextResponse.json({ ...sugerencia, acciones: sugerencia.acciones.map(comoAccionMejora) });
     } catch (error) {
         console.error('Error fetching sugerencia:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
@@ -229,15 +227,24 @@ export async function PATCH(req: Request, { params: paramsPromise }: { params: P
 
         // 3. Handle AccionMejora addition
         if (nuevaAccion && nuevaAccion.descripcion && nuevaAccion.descripcion.trim() !== '') {
-            const accion = await prisma.accionMejora.create({
+            // Acción de mejora = tarea con origen "sugerencia" (P31)
+            const descripcion = nuevaAccion.descripcion.trim();
+            const creada = await prisma.tarea.create({
                 data: {
+                    titulo: descripcion.split('\n')[0].slice(0, 140),
+                    descripcion,
+                    origenTipo: 'sugerencia',
+                    tipoAccion: 'Mejora Continua',
+                    origenDetalle: 'Sugerencia',
                     sugerenciaId: sugerencia.id,
-                    descripcion: nuevaAccion.descripcion.trim(),
-                    responsableId: nuevaAccion.responsableId || null,
-                    fechaCompromiso: nuevaAccion.fechaLimite ? new Date(nuevaAccion.fechaLimite) : null,
-                    estado: 'Pendiente'
+                    fechaVencimiento: nuevaAccion.fechaLimite ? new Date(nuevaAccion.fechaLimite) : null,
+                    estado: 'pendiente',
+                    creadorId: auditUserId,
+                    creadorNombre: auditUserName,
                 }
             });
+            await asignarResponsable(prisma, creada.id, nuevaAccion.responsableId || null);
+            const accion = { ...creada, responsableId: (nuevaAccion.responsableId as string | undefined) || null };
 
             await logAudit({
                 userId: auditUserId,
@@ -301,17 +308,13 @@ export async function PATCH(req: Request, { params: paramsPromise }: { params: P
                     orderBy: { fecha: 'asc' }
                 },
                 acciones: {
-                    include: {
-                        responsable: {
-                            select: { id: true, nombreCompleto: true }
-                        }
-                    },
+                    include: INCLUIR_RESPONSABLE,
                     orderBy: { createdAt: 'asc' }
                 }
             }
         });
 
-        return NextResponse.json(updatedSugerencia);
+        return NextResponse.json(updatedSugerencia ? { ...updatedSugerencia, acciones: updatedSugerencia.acciones.map(comoAccionMejora) } : updatedSugerencia);
     } catch (error: any) {
         console.error('Error updating sugerencia:', error);
         return NextResponse.json({ error: 'Error del servidor al actualizar.' }, { status: 500 });

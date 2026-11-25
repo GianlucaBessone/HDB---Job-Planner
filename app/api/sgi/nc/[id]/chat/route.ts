@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { exigirAcceso } from '@/lib/permisosServer';
 import { prisma } from '@/lib/prisma';
+import { estadoCapaDesdeTarea } from '@/lib/acciones';
 import { generateObject } from '@/lib/ai/service';
 import { getEmbedding, cosineSimilarity } from '@/lib/ai/embeddings';
 
@@ -114,7 +115,7 @@ Causa Raíz: ${other.analisisCausaRaiz?.map(acr => acr.causaRaiz || acr.descripc
             if (topMatches.length > 0) {
                 similarNcsFormatted = topMatches.map(m => {
                     const acr = m.nc.analisisCausaRaiz?.[0];
-                    const actions = m.nc.accionesMejora.map(a => `${a.codigoAccion || 'Acción'}: ${a.descripcion} (${a.estado})`).join(', ');
+                    const actions = m.nc.accionesMejora.map(a => `${a.codigo || 'Acción'}: ${a.descripcion} (${estadoCapaDesdeTarea(a.estado)})`).join(', ');
                     const verified = m.nc.verificacionesEficacia?.[0]?.eficaz ?? 'No validado';
                     return `- [NC: ${m.nc.codigoNC || 'Sin código'}] ${m.nc.descripcion}
   * Causa Raíz: ${acr?.causaRaiz || acr?.descripcion || 'No detallada'}

@@ -30,7 +30,8 @@ export async function POST(req: NextRequest) {
 
         // Update CAPA efficacy if linked
         if (body.accionMejoraId) {
-            await prisma.accionMejora.update({
+            // La acción de mejora es una Tarea (P31)
+            await prisma.tarea.update({
                 where: { id: body.accionMejoraId },
                 data: { eficacia: body.eficaz ? 'Eficaz' : 'Ineficaz' }
             });
