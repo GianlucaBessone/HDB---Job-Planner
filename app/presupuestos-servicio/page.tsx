@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Calculator, Plus, RefreshCw, ChevronRight, HardHat, FileText } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
+import TiposPresupuesto from '@/components/presupuestos/TiposPresupuesto';
 import { EmptyState, ErrorState, LoadingState, Pagination, Stat } from '@/components/ui';
 import { useAcceso } from '@/lib/store/useAccessStore';
 import { useCommandStore } from '@/lib/store/useCommandStore';
@@ -115,6 +116,8 @@ export default function PresupuestosServicioPage() {
                 activeTabId={tab}
                 onTabChange={setTab}
             />
+
+            <TiposPresupuesto actual="servicio" />
 
             {data && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
