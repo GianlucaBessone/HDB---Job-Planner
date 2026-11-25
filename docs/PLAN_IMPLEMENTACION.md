@@ -263,4 +263,11 @@ Comercial → **Presupuestos** reemplaza a "Cotizaciones" y "Presupuestos de ser
 
 - Cada tipo conserva su editor, sus estados, sus permisos y su tabla (`Cotizacion` y `PresupuestoServicio`). Sin cambios de base de datos.
 - Pendiente si hiciera falta: fusión de tablas con numeración y estados comunes (la auditoría la dejó a confirmar; en producción hay 10 cotizaciones y 0 presupuestos de servicio).
-- Legajo, calendario de vencimientos, compras, portal del cliente completo.
+### Calendario único de vencimientos
+
+Mi trabajo → **Vencimientos** (`/vencimientos`): EPP entregado y vigente, competencias del personal, documentos a revisar, presupuestos de servicio enviados y presupuestos de productos vigentes, en una sola lista por fecha, con pestañas **Vencidos / Próximos 30 días / Próximos 90 días** y filtro por tipo. Cada ítem abre su módulo.
+
+- `GET /api/vencimientos?desde=&hasta=` (`lib/vencimientos.ts`, Zod): cada tipo solo si la persona puede abrir su vista. Del EPP cuenta el elemento vigente (el reemplazado deja de estar `VIGENTE`) y no las actas rechazadas. Sin cambios de base de datos.
+- Pendiente: herramientas (no tienen fecha de verificación en el modelo), crédito de clientes y certificados externos.
+
+- Legajo, compras, portal del cliente completo.
