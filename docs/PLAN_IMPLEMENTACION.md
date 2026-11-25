@@ -269,5 +269,19 @@ Mi trabajo → **Vencimientos** (`/vencimientos`): EPP entregado y vigente, comp
 
 - `GET /api/vencimientos?desde=&hasta=` (`lib/vencimientos.ts`, Zod): cada tipo solo si la persona puede abrir su vista. Del EPP cuenta el elemento vigente (el reemplazado deja de estar `VIGENTE`) y no las actas rechazadas. Sin cambios de base de datos.
 - Pendiente: herramientas (no tienen fecha de verificación en el modelo), crédito de clientes y certificados externos.
+- También muestra las entregas de compras pendientes (fecha esperada de las órdenes enviadas o recibidas en parte).
 
-- Legajo, compras, portal del cliente completo.
+### Compras y recepción
+
+Logística → **Compras** (`/compras`): órdenes de compra a proveedores comerciales, con pestañas **Abiertas / Recibidas / Canceladas / Todas**.
+
+- **Orden** (`OrdenCompra`, número `OC-AAAA-000001`): proveedor, almacén donde entra la mercadería, fecha esperada y productos con su costo sin IVA (por defecto, el que ese proveedor tiene cargado en el producto). Se guarda como borrador (editable, se puede borrar) y se envía; enviada ya no cambia proveedor ni productos.
+- **Recepción** (`RecepcionCompra`, `REC-AAAA-000001`): cantidades por ítem (por defecto, lo que falta), remito y fecha. Entra el stock al almacén con su movimiento de kardex (`ENTRADA`, `referenciaTipo = 'COMPRA'`, idempotente como las ventas y entregas a obra). Puede haber varias; se puede recibir de más (queda a la vista). La orden pasa sola a "Recibida en parte" o "Recibida".
+- **Anular una recepción** saca del stock lo que había entrado (`SALIDA` con el mismo origen) y la orden vuelve a esperar lo que falta. **Cancelar** (o "Cerrar sin el resto" si llegó una parte) deja de esperar lo pendiente; lo recibido queda.
+- Opción al recibir, solo para quien gestiona compras: **actualizar el costo** del proveedor en cada producto (cambia los precios de venta que se calculan desde el costo). Sin tildar, los costos no cambian.
+- **Factura**: se vincula una factura del mismo proveedor cargada en Gastos y facturas (`OrdenCompra.facturaId`); una factura puede cubrir varias órdenes.
+- Permisos nuevos en `lib/permisos.ts` (grupo Compras): `compras.ver` (admin, supervisor, qa, vendedor), `compras.gestionar` y `compras.recibir` (admin y supervisor; se pueden dar como permiso especial, por ejemplo al encargado del depósito).
+- Un proveedor con órdenes de compra cuenta como comercial (`lib/proveedores.ts`).
+- Migración `20261126_compras_recepcion` (aditiva: cuatro tablas nuevas).
+
+- Legajo, portal del cliente completo.

@@ -109,6 +109,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
 
     // ─ Logística: stock, materiales para obras y herramientas ─
     { key: '/ventas/almacen',        label: 'Stock y almacenes',      description: 'Existencias, movimientos, ajustes y conteos',  roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos',  section: 'logistica', iconName: 'Warehouse',     color: 'bg-indigo-600' },
+    { key: '/compras',               label: 'Compras',                description: 'Órdenes de compra, recepción y factura del proveedor', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos',  section: 'logistica', iconName: 'ShoppingCart',  color: 'bg-indigo-500' },
     { key: '/provision-materiales',  label: 'Materiales para obras',  description: 'Pedido, entrega, uso y devolución por proyecto', roles: ['vendedor', 'supervisor', 'admin', 'qa'], access: 'ambos',  section: 'logistica', iconName: 'Package',       color: 'bg-orange-500' },
     { key: '/herramientas',          label: 'Herramientas y carros',  description: 'Retiro, devolución y verificación',            roles: R_PERSONAL,                                access: 'ambos',  section: 'logistica', iconName: 'Wrench',        color: 'bg-slate-600' },
 

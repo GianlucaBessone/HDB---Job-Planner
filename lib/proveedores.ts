@@ -69,5 +69,5 @@ export function comoProveedorGastos<T extends { direccion: string | null }>(p: T
  * producto. No aparecen en los selectores de productos ni de materiales; pasan a comerciales al vincularles
  * un producto.
  */
-export const PROVEEDORES_DE_GASTOS: Prisma.ProveedorVentasWhereInput = { productos: { none: {} }, facturas: { some: {} } };
-export const PROVEEDORES_COMERCIALES: Prisma.ProveedorVentasWhereInput = { OR: [{ productos: { some: {} } }, { facturas: { none: {} } }] };
+export const PROVEEDORES_DE_GASTOS: Prisma.ProveedorVentasWhereInput = { productos: { none: {} }, ordenesCompra: { none: {} }, facturas: { some: {} } };
+export const PROVEEDORES_COMERCIALES: Prisma.ProveedorVentasWhereInput = { OR: [{ productos: { some: {} } }, { ordenesCompra: { some: {} } }, { facturas: { none: {} } }] };

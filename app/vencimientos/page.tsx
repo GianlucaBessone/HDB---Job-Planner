@@ -74,7 +74,7 @@ export default function VencimientosPage() {
         <div className="w-full space-y-5">
             <ModuleHeader
                 title="Vencimientos"
-                description="EPP, competencias, documentos y presupuestos que vencen, en una sola lista"
+                description="EPP, competencias, documentos, presupuestos y entregas que vencen, en una sola lista"
                 icon={<CalendarClock className="w-5 h-5" />}
                 tabs={TABS.map((t) => ({ ...t, count: datos ? conteos[t.id] : undefined }))}
                 activeTabId={rango}
@@ -106,7 +106,7 @@ export default function VencimientosPage() {
                         <EmptyState
                             icon={<CheckCircle2 />}
                             title={rango === 'vencidos' ? 'No hay nada vencido' : 'No vence nada en este período'}
-                            description="Se muestran EPP, competencias, documentos y presupuestos de las pantallas que podés abrir."
+                            description="Se muestran EPP, competencias, documentos, presupuestos y entregas de compras de las pantallas que podés abrir."
                         />
                     ) : (
                         <div className="space-y-4">
