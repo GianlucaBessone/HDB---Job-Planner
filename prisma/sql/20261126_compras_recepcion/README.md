@@ -16,5 +16,8 @@ Auditoría, faltante "Compras y recepción". Crea cuatro tablas nuevas:
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 25/11/2026 (14:04 UTC)**, antes del merge. 4 tablas y 8 claves foráneas creadas.
+
+
 1. `psql "$DATABASE_URL" -f prisma/sql/20261126_compras_recepcion/up.sql`
 2. Mergear el PR.
