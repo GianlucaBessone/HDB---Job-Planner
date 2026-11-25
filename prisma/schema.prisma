@@ -9,40 +9,40 @@ datasource db {
 }
 
 model Project {
-  id                      String              @id @default(cuid())
-  codigoProyecto          String?             @unique
+  id                      String                      @id @default(cuid())
+  codigoProyecto          String?                     @unique
   nombre                  String
-  activo                  Boolean             @default(true)
-  noEnMetricas            Boolean             @default(false)
+  activo                  Boolean                     @default(true)
+  noEnMetricas            Boolean                     @default(false)
   categoria               String?
   tipoActividad           String?
   observaciones           String?
-  horasEstimadas          Int                 @default(0)
-  horasConsumidas         Int                 @default(0)
+  horasEstimadas          Int                         @default(0)
+  horasConsumidas         Int                         @default(0)
   cliente                 String? // Keeping this for legacy text
   clientId                String?
-  client                  HdbClient?          @relation(fields: [clientId], references: [id])
+  client                  HdbClient?                  @relation(fields: [clientId], references: [id])
   responsable             String? // Legacy name field
   responsableId           String?
-  responsableUser         Operator?           @relation("ProjectResponsable", fields: [responsableId], references: [id])
-  tags                    Json                @default("[]") // Technical tags: "Montaje", "Tendido", etc.
-  estado                  String              @default("activo") // por_hacer | planificado | activo | finalizado ("en riesgo" y "atrasado" se calculan: lib/proyectos/salud.ts)
-  tipo                    String              @default("obra") // obra | servicio | contrato | interno (lib/proyectos/tipos.ts)
+  responsableUser         Operator?                   @relation("ProjectResponsable", fields: [responsableId], references: [id])
+  tags                    Json                        @default("[]") // Technical tags: "Montaje", "Tendido", etc.
+  estado                  String                      @default("activo") // por_hacer | planificado | activo | finalizado ("en riesgo" y "atrasado" se calculan: lib/proyectos/salud.ts)
+  tipo                    String                      @default("obra") // obra | servicio | contrato | interno (lib/proyectos/tipos.ts)
   fechaInicio             String?
   fechaFin                String?
-  finalizadoConPendientes Boolean             @default(false)
-  publicToken             String?             @unique
+  finalizadoConPendientes Boolean                     @default(false)
+  publicToken             String?                     @unique
   pendientesSnapshot      Json? // Snapshot of incomplete items if forced finish
-  createdAt               DateTime            @default(now())
-  updatedAt               DateTime            @default(now()) @updatedAt
+  createdAt               DateTime                    @default(now())
+  updatedAt               DateTime                    @default(now()) @updatedAt
   clientDelays            ClientDelay[]
   timeEntries             TimeEntry[]
   checklistItems          ChecklistItem[]
   logs                    ProjectLog[]
-  generarOS               Boolean             @default(false)
-  aprovisionamiento       Boolean             @default(false)
+  generarOS               Boolean                     @default(false)
+  aprovisionamiento       Boolean                     @default(false)
   listaPrecioId           String?
-  listaPrecio             ListaPrecio?        @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  listaPrecio             ListaPrecio?                @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
   ordenesServicio         OrdenServicio[]
   encuestas               EncuestaServicio[]
   materialesProyecto      MaterialProyecto[]
@@ -52,8 +52,8 @@ model Project {
   geofenceLng             Float?
   geofenceRadius          Float? // radius in meters
   qrToken                 String? // current token signature for QR validation
-  fichajeHabilitado       Boolean             @default(false)
-  proyectoFijo            Boolean             @default(false)
+  fichajeHabilitado       Boolean                     @default(false)
+  proyectoFijo            Boolean                     @default(false)
   qrHistory               QrTokenHistory[]
   toolMovements           ToolMovement[]
   documentChecklists      DocumentChecklist[]
@@ -66,9 +66,9 @@ model Project {
   pliegos                 Pliego[]
 
   // Presupuestos de servicio (relaciones inversas: no agregan columnas a Project)
-  presupuestoServicio     PresupuestoServicio?
-  proyectoTareas          ProyectoTarea[]
-  asignacionesOperadores  ProyectoAsignacion[]
+  presupuestoServicio    PresupuestoServicio?
+  proyectoTareas         ProyectoTarea[]
+  asignacionesOperadores ProyectoAsignacion[]
 
   @@index([qrToken])
 }
@@ -187,37 +187,37 @@ model Operator {
   technicalReportPersonnel TechnicalReportPersonnel[]
 
   // EPP (Elementos de Protección Personal)
-  eppDeliveries            EppDelivery[]
-  eppRequests              EppRequest[]
+  eppDeliveries EppDelivery[]
+  eppRequests   EppRequest[]
 
   // Órdenes de Trabajo
-  ordenesTrabajoCreadas     OrdenTrabajo[]      @relation("OtCreador")
-  ordenesTrabajoResponsable OrdenTrabajo[]      @relation("OtResponsable")
+  ordenesTrabajoCreadas     OrdenTrabajo[]       @relation("OtCreador")
+  ordenesTrabajoResponsable OrdenTrabajo[]       @relation("OtResponsable")
   otCicloOperadores         OtCicloOperador[]
   clientRates               ClientOperatorRate[]
   // Categoría de mano de obra (Oficial, Ayudante…): define su valor hora por defecto (P20)
   manoObraCategoriaId       String?
-  manoObraCategoria         ManoObraCategoria?          @relation(fields: [manoObraCategoriaId], references: [id], onDelete: SetNull)
+  manoObraCategoria         ManoObraCategoria?   @relation(fields: [manoObraCategoriaId], references: [id], onDelete: SetNull)
 
   // Ventas (PDV), Cuentas Corrientes y Cotizaciones
-  ventasRealizadas          Venta[]                     @relation("VentaVendedor")
-  ventasAnuladas            Venta[]                     @relation("VentaAnulador")
-  cotizacionesRealizadas    Cotizacion[]                @relation("CotizacionVendedor")
+  ventasRealizadas       Venta[]      @relation("VentaVendedor")
+  ventasAnuladas         Venta[]      @relation("VentaAnulador")
+  cotizacionesRealizadas Cotizacion[] @relation("CotizacionVendedor")
 
   // Tickets de soporte
-  ticketsReportados         Ticket[]                    @relation("TicketReportadoPor")
-  ticketsAsignados          Ticket[]                    @relation("TicketAsignadoA")
+  ticketsReportados Ticket[] @relation("TicketReportadoPor")
+  ticketsAsignados  Ticket[] @relation("TicketAsignadoA")
 
   // Control horario (ajustes de ingreso/egreso validados por supervisión)
-  controlHorarioAjustes     ControlHorarioAjuste[]
+  controlHorarioAjustes ControlHorarioAjuste[]
 
   // Viajes y viáticos
-  viajesResponsable         Viaje[]                     @relation("ViajeResponsable")
-  viajesCreados             Viaje[]                     @relation("ViajeCreador")
-  viajesParticipante        ViajeParticipante[]
+  viajesResponsable  Viaje[]             @relation("ViajeResponsable")
+  viajesCreados      Viaje[]             @relation("ViajeCreador")
+  viajesParticipante ViajeParticipante[]
 
   // Proyectos: operadores asignados desde el wizard de creación
-  proyectoAsignaciones      ProyectoAsignacion[]
+  proyectoAsignaciones ProyectoAsignacion[]
 }
 
 model FavoriteBlock {
@@ -241,43 +241,43 @@ model Planning {
 }
 
 model HdbClient {
-  id                        String                      @id @default(cuid())
-  nombre                    String
+  id               String            @id @default(cuid())
+  nombre           String
   // Datos fiscales (prisma/sql/20261120_clientes_datos_fiscales). Opcionales: los clientes
   // existentes no los tienen. Ventas y cotizaciones los toman de acá en vez de tipearlos.
-  razonSocial               String?
-  cuit                      String?                     // Formato 30-12345678-9
-  condicionIva              String?                     // CONDICIONES_IVA de lib/ventas/proveedorVentas.ts
-  email                     String?
-  telefono                  String?
-  direccion                 String?
-  activo                    Boolean                     @default(true)
-  listaPrecioId             String?
-  listaPrecio               ListaPrecio?                @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
-  projects                  Project[]
-  createdAt                 DateTime                    @default(now())
-  technicalReports          TechnicalReport[]
-  eppPublicShares           EppPublicShare[]
+  razonSocial      String?
+  cuit             String? // Formato 30-12345678-9
+  condicionIva     String? // CONDICIONES_IVA de lib/ventas/proveedorVentas.ts
+  email            String?
+  telefono         String?
+  direccion        String?
+  activo           Boolean           @default(true)
+  listaPrecioId    String?
+  listaPrecio      ListaPrecio?      @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  projects         Project[]
+  createdAt        DateTime          @default(now())
+  technicalReports TechnicalReport[]
+  eppPublicShares  EppPublicShare[]
 
   // Órdenes de Trabajo & Portal
-  ordenesTrabajo            OrdenTrabajo[]
-  configuracion             HdbClientConfig?
-  responsables              ClientResponsable[]
-  operatorRates             ClientOperatorRate[]
-  tarifasCategoria          ClienteTarifaCategoria[]
-  sectores                  ClientSector[]
+  ordenesTrabajo   OrdenTrabajo[]
+  configuracion    HdbClientConfig?
+  responsables     ClientResponsable[]
+  operatorRates    ClientOperatorRate[]
+  tarifasCategoria ClienteTarifaCategoria[]
+  sectores         ClientSector[]
 
   // Ventas (PDV), Cuentas Corrientes y Cotizaciones
-  ventas                    Venta[]
-  cuentaCorrienteConfig     CuentaCorrienteConfig?
-  cuentaCorrienteMovs       CuentaCorrienteMovimiento[]
-  cotizaciones              Cotizacion[]
+  ventas                Venta[]
+  cuentaCorrienteConfig CuentaCorrienteConfig?
+  cuentaCorrienteMovs   CuentaCorrienteMovimiento[]
+  cotizaciones          Cotizacion[]
 
   // Operaciones
-  pliegos                   Pliego[]
+  pliegos Pliego[]
 
   // Presupuestos de servicio
-  presupuestosServicio      PresupuestoServicio[]
+  presupuestosServicio PresupuestoServicio[]
 
   @@index([listaPrecioId])
   @@index([cuit])
@@ -357,13 +357,13 @@ model ActivityRecipient {
 }
 
 model ProjectTag {
-  id             String                 @id @default(cuid())
-  name           String                 @unique
-  active         Boolean                @default(true)
-  checklists     TagChecklistItem[]
-  templates      TagChecklistTemplate[]
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
+  id         String                 @id @default(cuid())
+  name       String                 @unique
+  active     Boolean                @default(true)
+  checklists TagChecklistItem[]
+  templates  TagChecklistTemplate[]
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
 }
 
 model TagChecklistItem {
@@ -452,13 +452,13 @@ model OrdenServicio {
 
   // Cobro
   listaPrecioId            String?
-  listaPrecio              ListaPrecio?            @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
-  cobroGenerado            Boolean   @default(false)
+  listaPrecio              ListaPrecio? @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  cobroGenerado            Boolean      @default(false)
   cobroValorManoObra       Float?
   cobroDescuentoPorcentaje Float?
-  cobroAplicarIva          Boolean   @default(true)
+  cobroAplicarIva          Boolean      @default(true)
   cobroTotalFinal          Float?
-  cobroObservaciones       String?   @db.Text
+  cobroObservaciones       String?      @db.Text
   cobroCondicionPago       String?
   cobroOtrosConceptos      Json? // [{ nombre: string, precio: number }]
   cobroFechaGeneracion     DateTime?
@@ -483,12 +483,12 @@ model OrdenServicioMaterial {
   productoId         String?
   producto           Producto?         @relation(fields: [productoId], references: [id], onDelete: SetNull)
   material           String
-  codigo             String?           // SKU o '999999'
+  codigo             String? // SKU o '999999'
   skuProveedor       String?
   cantidad           Float
   unidadMedida       String
-  costoUnitario      Float?            // Snapshot histórico de costo al momento de uso
-  precioUnitario     Float?            // Snapshot histórico de precio de venta/referencia
+  costoUnitario      Float? // Snapshot histórico de costo al momento de uso
+  precioUnitario     Float? // Snapshot histórico de precio de venta/referencia
   esManual           Boolean           @default(false)
   materialProyectoId String?           @map("material_proyecto_id")
   materialProyecto   MaterialProyecto? @relation(fields: [materialProyectoId], references: [id], onDelete: SetNull)
@@ -744,10 +744,10 @@ model ToolMovementItem {
 model DocumentAccessModule {
   id          String              @id @default(cuid())
   codigo      String              @unique // "1", "2", "3"
-  nombre      String              // "Procesos Estratégicos y Liderazgo", etc.
+  nombre      String // "Procesos Estratégicos y Liderazgo", etc.
   descripcion String?             @db.Text
-  icon        String?             // "Compass", "Layers", "LifeBuoy", etc.
-  color       String?             // "indigo", "emerald", "amber", etc.
+  icon        String? // "Compass", "Layers", "LifeBuoy", etc.
+  color       String? // "indigo", "emerald", "amber", etc.
   orden       Int                 @default(0)
   subAccesses DocumentSubAccess[]
   createdAt   DateTime            @default(now())
@@ -758,8 +758,8 @@ model DocumentSubAccess {
   id              String               @id @default(cuid())
   moduleId        String
   module          DocumentAccessModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  codigo          String               // "1.1", "1.2", "2.1", etc.
-  nombre          String               // "Dirección y Liderazgo", etc.
+  codigo          String // "1.1", "1.2", "2.1", etc.
+  nombre          String // "Dirección y Liderazgo", etc.
   descripcion     String?              @db.Text
   icon            String?
   orden           Int                  @default(0)
@@ -1417,7 +1417,7 @@ model NoConformidad {
   updatedAt DateTime @updatedAt
 
   analisisCausaRaiz      AnalisisCausaRaiz[]
-  accionesMejora         Tarea[]                @relation("TareaNC")
+  accionesMejora         Tarea[]                 @relation("TareaNC")
   verificacionesEficacia VerificacionEficacia[]
   reuniones              ReunionNC[]
   documentacionAfectada  DocumentacionAfectada[]
@@ -1455,7 +1455,7 @@ model VerificacionEficacia {
 
   // Acción de mejora verificada: una Tarea con origen de calidad (P31)
   accionMejoraId String?
-  accionMejora   Tarea?         @relation(fields: [accionMejoraId], references: [id], onDelete: Cascade)
+  accionMejora   Tarea?  @relation(fields: [accionMejoraId], references: [id], onDelete: Cascade)
 
   responsableVerificacionId String?
   responsableVerificacion   Operator? @relation(fields: [responsableVerificacionId], references: [id])
@@ -1777,15 +1777,15 @@ model CodigoGasto {
 }
 
 model FacturaConsumo {
-  id                String       @id @default(cuid())
+  id                String          @id @default(cuid())
   fechaEmision      DateTime
   fechaVencimiento  DateTime?
   proveedorId       String
   // Proveedor del maestro único (P24); antes el modelo Proveedor de Gastos
   proveedor         ProveedorVentas @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
   codigoGastoId     String?
-  codigoGasto       CodigoGasto? @relation(fields: [codigoGastoId], references: [id], onDelete: SetNull)
-  descripcion       String?      @db.Text
+  codigoGasto       CodigoGasto?    @relation(fields: [codigoGastoId], references: [id], onDelete: SetNull)
+  descripcion       String?         @db.Text
   tipoComprobante   String?
   letraComprobante  String?
   puntoVenta        String?
@@ -1817,6 +1817,9 @@ model FacturaConsumo {
 
   // Archivo
   archivoUrl String? @db.Text
+
+  // Órdenes de compra que factura (compras y recepción)
+  ordenesCompra OrdenCompra[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1927,7 +1930,7 @@ model Kpi {
   usuarioModificacionId String?
 
   historico    KpiHistorico[]
-  planesAccion Tarea[]          @relation("TareaKpi")
+  planesAccion Tarea[]        @relation("TareaKpi")
 
   @@index([okrId])
   @@index([estado])
@@ -2363,25 +2366,25 @@ model MessageTemplate {
 // ==========================================
 
 model EppItem {
-  id                 String              @id @default(cuid())
-  codigo             String?             @unique // Ej: EPP-CASCO-01
-  nombre             String              // Ej: Casco de Seguridad con Barbijo
-  descripcion        String?             @db.Text
-  categoria          String              // Cabeza, Protección Ocular, Auditivo, Manos, Calzado, Altura, Ropa
-  esGlobal           Boolean             @default(true) // true = entregado a todos los operadores; false = específico
-  diasValidez        Int                 @default(365) // Días de vigencia desde la entrega
-  stockActual        Int                 @default(0)
-  stockMinimo        Int                 @default(5)
-  talle              String?             // Opcional si aplica
+  id                 String   @id @default(cuid())
+  codigo             String?  @unique // Ej: EPP-CASCO-01
+  nombre             String // Ej: Casco de Seguridad con Barbijo
+  descripcion        String?  @db.Text
+  categoria          String // Cabeza, Protección Ocular, Auditivo, Manos, Calzado, Altura, Ropa
+  esGlobal           Boolean  @default(true) // true = entregado a todos los operadores; false = específico
+  diasValidez        Int      @default(365) // Días de vigencia desde la entrega
+  stockActual        Int      @default(0)
+  stockMinimo        Int      @default(5)
+  talle              String? // Opcional si aplica
   marca              String?
-  normaCertificacion String?             // IRAM, ANSI, CE
-  activo             Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  normaCertificacion String? // IRAM, ANSI, CE
+  activo             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  stockMovements     EppStockMovement[]
-  deliveryItems      EppDeliveryItem[]
-  requests           EppRequest[]
+  stockMovements EppStockMovement[]
+  deliveryItems  EppDeliveryItem[]
+  requests       EppRequest[]
 
   @@index([categoria])
   @@index([esGlobal])
@@ -2391,7 +2394,7 @@ model EppStockMovement {
   id             String       @id @default(cuid())
   eppItemId      String
   eppItem        EppItem      @relation(fields: [eppItemId], references: [id], onDelete: Cascade)
-  tipo           String       // INGRESO | EGRESO_ENTREGA | AJUSTE
+  tipo           String // INGRESO | EGRESO_ENTREGA | AJUSTE
   cantidad       Int
   stockAnterior  Int
   stockPosterior Int
@@ -2409,23 +2412,23 @@ model EppStockMovement {
 }
 
 model EppDelivery {
-  id                 String            @id @default(cuid())
-  codigoActa         String            @unique // Ej: EPP-ENT-2026-0001
+  id                 String    @id @default(cuid())
+  codigoActa         String    @unique // Ej: EPP-ENT-2026-0001
   operatorId         String
-  operator           Operator          @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  fechaEntrega       DateTime          @default(now())
-  entregadoPor       String?           // Supervisor que despachó
-  estado             String            @default("PENDIENTE_FIRMA") // PENDIENTE_FIRMA | FIRMADA | RECHAZADA
-  signatureId        String?           // ID en DocumentSignatureAudit (checksum app estándar)
-  signatureHash      String?           // Checksum SHA-256
-  firmaManuscritaUrl String?           @db.Text
+  operator           Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  fechaEntrega       DateTime  @default(now())
+  entregadoPor       String? // Supervisor que despachó
+  estado             String    @default("PENDIENTE_FIRMA") // PENDIENTE_FIRMA | FIRMADA | RECHAZADA
+  signatureId        String? // ID en DocumentSignatureAudit (checksum app estándar)
+  signatureHash      String? // Checksum SHA-256
+  firmaManuscritaUrl String?   @db.Text
   signedAt           DateTime?
   observaciones      String?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  items              EppDeliveryItem[]
-  stockMovements     EppStockMovement[]
+  items          EppDeliveryItem[]
+  stockMovements EppStockMovement[]
 
   @@index([operatorId])
   @@index([estado])
@@ -2459,7 +2462,7 @@ model EppRequest {
   eppItemId       String
   eppItem         EppItem   @relation(fields: [eppItemId], references: [id], onDelete: Cascade)
   talle           String?
-  motivo          String    // VENCIMIENTO | DETERIORO | EXTRAVIO | NUEVA_TAREA
+  motivo          String // VENCIMIENTO | DETERIORO | EXTRAVIO | NUEVA_TAREA
   comentario      String?   @db.Text
   estado          String    @default("PENDIENTE") // PENDIENTE | APROBADA | RECHAZADA | ENTREGADA
   fechaSolicitud  DateTime  @default(now())
@@ -2474,7 +2477,7 @@ model EppRequest {
 model EppPublicShare {
   id           String     @id @default(cuid())
   token        String     @unique // Token único para acceso público
-  titulo       String?    // Ej: "Matriz EPP General" o "Matriz EPP - Aluar"
+  titulo       String? // Ej: "Matriz EPP General" o "Matriz EPP - Aluar"
   tipo         String     @default("GENERAL") // GENERAL | CLIENTE
   clientId     String?
   client       HdbClient? @relation(fields: [clientId], references: [id], onDelete: SetNull)
@@ -2506,7 +2509,7 @@ model Categoria {
 model UnidadMedida {
   id        String     @id @default(cuid())
   codigo    String     @unique // "UN", "M", "KG", "L", "ROLLO", "CAJA", etc.
-  nombre    String     // "Unidad", "Metro", "Kilogramo", etc.
+  nombre    String // "Unidad", "Metro", "Kilogramo", etc.
   decimales Int        @default(3) // Decimales permitidos en cantidades de stock (0 = solo enteros)
   activo    Boolean    @default(true)
   createdAt DateTime   @default(now())
@@ -2552,7 +2555,7 @@ model SubFamilia {
 model IvaAlicuota {
   id             String     @id @default(cuid())
   porcentaje     Float      @unique // 0, 2.5, 5, 10.5, 21, 27
-  nombre         String     // "21%", "10.5%", "Exento (0%)", etc.
+  nombre         String // "21%", "10.5%", "Exento (0%)", etc.
   activo         Boolean    @default(true)
   predeterminado Boolean    @default(false)
   createdAt      DateTime   @default(now())
@@ -2561,31 +2564,31 @@ model IvaAlicuota {
 }
 
 model ListaPrecio {
-  id               String           @id @default(cuid())
-  codigo           String           @unique // "LISTA_1", "LISTA_2", "LISTA_3", "GREMIO_15", etc.
-  nombre           String           // "Lista de Precio 1", "Gremio -15%", etc.
-  descripcion      String?
-  tipoAjuste       String           @default("MANUAL") // MANUAL | PORCENTAJE_COSTO | MARGEN_COSTO | DESCUENTO_BASE | RECARGO_BASE
-  valorAjuste      Float            @default(0) // % de ajuste (ej: 15 para +15% o -10)
-  listaBaseId      String?
-  listaBase        ListaPrecio?     @relation("ListaPrecioBase", fields: [listaBaseId], references: [id], onDelete: SetNull)
-  listasDerivadas  ListaPrecio[]    @relation("ListaPrecioBase")
-  aplicaA          String           @default("TODOS") // TODOS | FAMILIA | MARCA
-  familiaId        String?
-  familia          Familia?         @relation(fields: [familiaId], references: [id], onDelete: SetNull)
-  marcaId          String?
-  marca            Marca?           @relation(fields: [marcaId], references: [id], onDelete: SetNull)
-  orden            Int              @default(1)
-  esPredeterminada Boolean          @default(false)
-  ivaDiscriminado  Boolean          @default(false)
-  activo           Boolean          @default(true)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  projects         Project[]
-  ordenesServicio  OrdenServicio[]
-  clients          HdbClient[]
-  ventas           Venta[]
-  cotizaciones     Cotizacion[]
+  id                           String                       @id @default(cuid())
+  codigo                       String                       @unique // "LISTA_1", "LISTA_2", "LISTA_3", "GREMIO_15", etc.
+  nombre                       String // "Lista de Precio 1", "Gremio -15%", etc.
+  descripcion                  String?
+  tipoAjuste                   String                       @default("MANUAL") // MANUAL | PORCENTAJE_COSTO | MARGEN_COSTO | DESCUENTO_BASE | RECARGO_BASE
+  valorAjuste                  Float                        @default(0) // % de ajuste (ej: 15 para +15% o -10)
+  listaBaseId                  String?
+  listaBase                    ListaPrecio?                 @relation("ListaPrecioBase", fields: [listaBaseId], references: [id], onDelete: SetNull)
+  listasDerivadas              ListaPrecio[]                @relation("ListaPrecioBase")
+  aplicaA                      String                       @default("TODOS") // TODOS | FAMILIA | MARCA
+  familiaId                    String?
+  familia                      Familia?                     @relation(fields: [familiaId], references: [id], onDelete: SetNull)
+  marcaId                      String?
+  marca                        Marca?                       @relation(fields: [marcaId], references: [id], onDelete: SetNull)
+  orden                        Int                          @default(1)
+  esPredeterminada             Boolean                      @default(false)
+  ivaDiscriminado              Boolean                      @default(false)
+  activo                       Boolean                      @default(true)
+  createdAt                    DateTime                     @default(now())
+  updatedAt                    DateTime                     @updatedAt
+  projects                     Project[]
+  ordenesServicio              OrdenServicio[]
+  clients                      HdbClient[]
+  ventas                       Venta[]
+  cotizaciones                 Cotizacion[]
   presupuestoServicioVersiones PresupuestoServicioVersion[]
 
   @@index([tipoAjuste])
@@ -2597,10 +2600,10 @@ model ListaPrecio {
 model Almacen {
   id                 String                    @id @default(cuid())
   codigo             String                    @unique // "ALM-CENTRAL"
-  nombre             String                    // "Almacén Central"
+  nombre             String // "Almacén Central"
   descripcion        String?
-  direccion          String?                   // Dirección o referencia física
-  responsableId      String?                   // Operator.id (referencia lógica)
+  direccion          String? // Dirección o referencia física
+  responsableId      String? // Operator.id (referencia lógica)
   responsableNombre  String?
   esPredeterminado   Boolean                   @default(false)
   activo             Boolean                   @default(true)
@@ -2614,15 +2617,16 @@ model Almacen {
   operaciones        StockOperacion[]          @relation("OperacionAlmacen")
   operacionesDestino StockOperacion[]          @relation("OperacionAlmacenDestino")
   conteos            ConteoInventario[]
+  ordenesCompra      OrdenCompra[]
 }
 
 model AlmacenUbicacion {
   id                 String                    @id @default(cuid())
   almacenId          String
   almacen            Almacen                   @relation(fields: [almacenId], references: [id], onDelete: Cascade)
-  codigo             String                    // "ESTANTE-A1", "PASILLO-1"
+  codigo             String // "ESTANTE-A1", "PASILLO-1"
   nombre             String?
-  tipo               String?                   // ESTANTERIA | PASILLO | DEPOSITO | PISO | OTRO
+  tipo               String? // ESTANTERIA | PASILLO | DEPOSITO | PISO | OTRO
   activo             Boolean                   @default(true)
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
@@ -2638,37 +2642,38 @@ model AlmacenUbicacion {
 }
 
 model Producto {
-  id           String              @id @default(cuid())
-  sku          String              @unique // SKU Interno
-  codigoBarras String?             @unique // Código de barras para lector
+  id           String        @id @default(cuid())
+  sku          String        @unique // SKU Interno
+  codigoBarras String?       @unique // Código de barras para lector
   descripcion  String
   categoriaId  String?
-  categoria    Categoria?          @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  categoria    Categoria?    @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
   marcaId      String?
-  marca        Marca?              @relation(fields: [marcaId], references: [id], onDelete: SetNull)
+  marca        Marca?        @relation(fields: [marcaId], references: [id], onDelete: SetNull)
   familiaId    String?
-  familia      Familia?            @relation(fields: [familiaId], references: [id], onDelete: SetNull)
+  familia      Familia?      @relation(fields: [familiaId], references: [id], onDelete: SetNull)
   subFamiliaId String?
-  subFamilia   SubFamilia?         @relation(fields: [subFamiliaId], references: [id], onDelete: SetNull)
+  subFamilia   SubFamilia?   @relation(fields: [subFamiliaId], references: [id], onDelete: SetNull)
   unidadId     String?
-  unidad       UnidadMedida?       @relation(fields: [unidadId], references: [id], onDelete: SetNull)
+  unidad       UnidadMedida? @relation(fields: [unidadId], references: [id], onDelete: SetNull)
   ivaId        String?
-  iva          IvaAlicuota?        @relation(fields: [ivaId], references: [id], onDelete: SetNull)
-  rentabilidad Float                     @default(0) // Margen de ganancia (%)
-  precioBase   Float                     @default(0) // Precio Base de Venta (único precio propio del producto)
-  activo       Boolean                   @default(true) // Baja lógica
-  createdAt    DateTime                  @default(now())
-  updatedAt    DateTime                  @updatedAt
+  iva          IvaAlicuota?  @relation(fields: [ivaId], references: [id], onDelete: SetNull)
+  rentabilidad Float         @default(0) // Margen de ganancia (%)
+  precioBase   Float         @default(0) // Precio Base de Venta (único precio propio del producto)
+  activo       Boolean       @default(true) // Baja lógica
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
-  proveedores               ProductoProveedorVentas[]
-  stocks                    ProductoStock[]
-  movimientos               ProductoStockMovimiento[]
-  historial                 ProductoHistorial[]
-  ordenesServicioMateriales OrdenServicioMaterial[]
-  ventaItems                VentaItem[]
-  cotizacionItems           CotizacionItem[]
+  proveedores                   ProductoProveedorVentas[]
+  stocks                        ProductoStock[]
+  movimientos                   ProductoStockMovimiento[]
+  historial                     ProductoHistorial[]
+  ordenesServicioMateriales     OrdenServicioMaterial[]
+  ventaItems                    VentaItem[]
+  cotizacionItems               CotizacionItem[]
   presupuestoServicioMateriales PresupuestoServicioMaterial[]
-  conteoDetalles            ConteoInventarioDetalle[]
+  conteoDetalles                ConteoInventarioDetalle[]
+  ordenCompraItems              OrdenCompraItem[]
 
   @@index([sku])
   @@index([codigoBarras])
@@ -2686,7 +2691,7 @@ model ProveedorVentas {
   razonSocial    String
   nombreFantasia String?
   cuit           String?                   @unique // 30-12345678-9; único (P24: maestro único de proveedores)
-  condicionIva   String?                   // Responsable Inscripto, Monotributo, etc.
+  condicionIva   String? // Responsable Inscripto, Monotributo, etc.
   telefono       String?
   email          String?
   direccion      String?
@@ -2697,6 +2702,7 @@ model ProveedorVentas {
   updatedAt      DateTime                  @updatedAt
   productos      ProductoProveedorVentas[]
   facturas       FacturaConsumo[]
+  ordenesCompra  OrdenCompra[]
 
   @@index([codigo])
   @@index([razonSocial])
@@ -2734,7 +2740,7 @@ model ProductoStock {
   producto           Producto          @relation(fields: [productoId], references: [id], onDelete: Cascade)
   almacenId          String
   almacen            Almacen           @relation(fields: [almacenId], references: [id], onDelete: Restrict)
-  ubicacionId        String?           // Ubicación asignada (principal) dentro del almacén
+  ubicacionId        String? // Ubicación asignada (principal) dentro del almacén
   ubicacion          AlmacenUbicacion? @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
   stockActual        Float             @default(0)
   stockMinimo        Float             @default(0) // 0 = no configurado
@@ -2749,44 +2755,44 @@ model ProductoStock {
 }
 
 model ProductoStockMovimiento {
-  id                 String                    @id @default(cuid())
-  numero             String?                   @unique // MOV-2026-000001 (null en movimientos legacy)
+  id                 String                   @id @default(cuid())
+  numero             String?                  @unique // MOV-2026-000001 (null en movimientos legacy)
   operacionId        String?
-  operacion          StockOperacion?           @relation(fields: [operacionId], references: [id], onDelete: Restrict)
+  operacion          StockOperacion?          @relation(fields: [operacionId], references: [id], onDelete: Restrict)
   productoId         String
-  producto           Producto                  @relation(fields: [productoId], references: [id], onDelete: Restrict)
-  almacenId          String                    // Almacén cuyo saldo se ve afectado
-  almacen            Almacen                   @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  producto           Producto                 @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  almacenId          String // Almacén cuyo saldo se ve afectado
+  almacen            Almacen                  @relation(fields: [almacenId], references: [id], onDelete: Restrict)
   ubicacionId        String?
-  ubicacion          AlmacenUbicacion?         @relation("MovUbicacion", fields: [ubicacionId], references: [id], onDelete: Restrict)
+  ubicacion          AlmacenUbicacion?        @relation("MovUbicacion", fields: [ubicacionId], references: [id], onDelete: Restrict)
   almacenOrigenId    String?
-  almacenOrigen      Almacen?                  @relation("MovAlmacenOrigen", fields: [almacenOrigenId], references: [id], onDelete: Restrict)
+  almacenOrigen      Almacen?                 @relation("MovAlmacenOrigen", fields: [almacenOrigenId], references: [id], onDelete: Restrict)
   ubicacionOrigenId  String?
-  ubicacionOrigen    AlmacenUbicacion?         @relation("MovUbicacionOrigen", fields: [ubicacionOrigenId], references: [id], onDelete: Restrict)
+  ubicacionOrigen    AlmacenUbicacion?        @relation("MovUbicacionOrigen", fields: [ubicacionOrigenId], references: [id], onDelete: Restrict)
   almacenDestinoId   String?
-  almacenDestino     Almacen?                  @relation("MovAlmacenDestino", fields: [almacenDestinoId], references: [id], onDelete: Restrict)
+  almacenDestino     Almacen?                 @relation("MovAlmacenDestino", fields: [almacenDestinoId], references: [id], onDelete: Restrict)
   ubicacionDestinoId String?
-  ubicacionDestino   AlmacenUbicacion?         @relation("MovUbicacionDestino", fields: [ubicacionDestinoId], references: [id], onDelete: Restrict)
-  tipo               String                    // STOCK_INICIAL | ENTRADA | SALIDA | AJUSTE_POSITIVO | AJUSTE_NEGATIVO | TRANSFERENCIA_ENTRADA | TRANSFERENCIA_SALIDA | CONTEO | REVERSA
-  cantidad           Float                     // Siempre positiva
-  variacion          Float                     @default(0) // Efecto con signo sobre el saldo (+/-)
+  ubicacionDestino   AlmacenUbicacion?        @relation("MovUbicacionDestino", fields: [ubicacionDestinoId], references: [id], onDelete: Restrict)
+  tipo               String // STOCK_INICIAL | ENTRADA | SALIDA | AJUSTE_POSITIVO | AJUSTE_NEGATIVO | TRANSFERENCIA_ENTRADA | TRANSFERENCIA_SALIDA | CONTEO | REVERSA
+  cantidad           Float // Siempre positiva
+  variacion          Float                    @default(0) // Efecto con signo sobre el saldo (+/-)
   stockAnterior      Float
   stockPosterior     Float
   motivo             String?
   observaciones      String?
-  referenciaTipo     String?                   // ALTA_PRODUCTO | IMPORTACION | AJUSTE | TRANSFERENCIA | CONTEO | VENTA | REVERSA | MANUAL
+  referenciaTipo     String? // ALTA_PRODUCTO | IMPORTACION | AJUSTE | TRANSFERENCIA | CONTEO | VENTA | REVERSA | MANUAL
   referenciaId       String?
-  referencia         String?                   // Texto legible: nº de conteo, remito, etc.
-  estado             String                    @default("CONFIRMADO")
-  reversaDeId        String?                   @unique // Un movimiento sólo puede revertirse una vez
-  reversaDe          ProductoStockMovimiento?  @relation("MovReversa", fields: [reversaDeId], references: [id], onDelete: Restrict)
-  reversadoPor       ProductoStockMovimiento?  @relation("MovReversa")
-  conteoDetalleId    String?                   @unique // Idempotencia de confirmación de conteos
-  conteoDetalle      ConteoInventarioDetalle?  @relation(fields: [conteoDetalleId], references: [id], onDelete: Restrict)
+  referencia         String? // Texto legible: nº de conteo, remito, etc.
+  estado             String                   @default("CONFIRMADO")
+  reversaDeId        String?                  @unique // Un movimiento sólo puede revertirse una vez
+  reversaDe          ProductoStockMovimiento? @relation("MovReversa", fields: [reversaDeId], references: [id], onDelete: Restrict)
+  reversadoPor       ProductoStockMovimiento? @relation("MovReversa")
+  conteoDetalleId    String?                  @unique // Idempotencia de confirmación de conteos
+  conteoDetalle      ConteoInventarioDetalle? @relation(fields: [conteoDetalleId], references: [id], onDelete: Restrict)
   metadata           Json?
   usuarioId          String?
   usuarioNombre      String?
-  createdAt          DateTime                  @default(now())
+  createdAt          DateTime                 @default(now())
 
   @@index([productoId])
   @@index([almacenId])
@@ -2804,13 +2810,13 @@ model ProductoStockMovimiento {
 model StockOperacion {
   id               String                    @id @default(cuid())
   numero           String                    @unique // OPI-2026-000001
-  tipo             String                    // AJUSTE | TRANSFERENCIA | ENTRADA | SALIDA | CONTEO | STOCK_INICIAL | REVERSA
+  tipo             String // AJUSTE | TRANSFERENCIA | ENTRADA | SALIDA | CONTEO | STOCK_INICIAL | REVERSA
   estado           String                    @default("CONFIRMADA")
   almacenId        String?
   almacen          Almacen?                  @relation("OperacionAlmacen", fields: [almacenId], references: [id], onDelete: Restrict)
   almacenDestinoId String?
   almacenDestino   Almacen?                  @relation("OperacionAlmacenDestino", fields: [almacenDestinoId], references: [id], onDelete: Restrict)
-  modoAjuste       String?                   // DIFERENCIA | EXISTENCIA_REAL
+  modoAjuste       String? // DIFERENCIA | EXISTENCIA_REAL
   motivo           String?
   observaciones    String?
   referenciaTipo   String?
@@ -2845,9 +2851,9 @@ model ConteoInventario {
   almacen             Almacen                   @relation(fields: [almacenId], references: [id], onDelete: Restrict)
   ubicacionId         String?
   ubicacion           AlmacenUbicacion?         @relation(fields: [ubicacionId], references: [id], onDelete: Restrict)
-  tipo                String                    // GENERAL | UBICACION | FAMILIA | SELECCION | CICLICO
+  tipo                String // GENERAL | UBICACION | FAMILIA | SELECCION | CICLICO
   estado              String                    @default("BORRADOR") // BORRADOR | EN_CONTEO | PENDIENTE_REVISION | CONFIRMADO | CANCELADO
-  alcance             Json?                     // Criterios de selección usados
+  alcance             Json? // Criterios de selección usados
   observaciones       String?
   acumularEscaneos    Boolean                   @default(true)
   responsableId       String?
@@ -2855,7 +2861,7 @@ model ConteoInventario {
   creadoPorId         String?
   creadoPorNombre     String?
   iniciadoEn          DateTime?
-  finalizadoEn        DateTime?                 // Fin de captura → pendiente de revisión
+  finalizadoEn        DateTime? // Fin de captura → pendiente de revisión
   revisadoPorId       String?
   revisadoPorNombre   String?
   revisadoEn          DateTime?
@@ -2867,7 +2873,7 @@ model ConteoInventario {
   motivoCancelacion   String?
   operacionId         String?                   @unique
   operacion           StockOperacion?           @relation(fields: [operacionId], references: [id], onDelete: Restrict)
-  corrigeConteoId     String?                   // Conteo de corrección vinculado a uno confirmado
+  corrigeConteoId     String? // Conteo de corrección vinculado a uno confirmado
   corrigeConteo       ConteoInventario?         @relation("ConteoCorreccion", fields: [corrigeConteoId], references: [id], onDelete: Restrict)
   correcciones        ConteoInventario[]        @relation("ConteoCorreccion")
   createdAt           DateTime                  @default(now())
@@ -2890,7 +2896,7 @@ model ConteoInventarioDetalle {
   stockTeorico       Float                    @default(0) // Snapshot al iniciar el conteo
   cantidadContada    Float?
   diferencia         Float?
-  segundaCantidad    Float?                   // Segunda revisión (según permisos)
+  segundaCantidad    Float? // Segunda revisión (según permisos)
   segundoConteoPorId String?
   segundoConteoEn    DateTime?
   estado             String                   @default("PENDIENTE") // PENDIENTE | CONTADO | REVISADO
@@ -2910,12 +2916,12 @@ model ProductoHistorial {
   id            String   @id @default(cuid())
   productoId    String
   producto      Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
-  tipo          String   // CREACION | EDICION_DATOS | CAMBIO_PRECIO | CAMBIO_COSTO | CAMBIO_IVA | AJUSTE_MASIVO | IMPORTACION_EXCEL | BAJA_LOGICA | AJUSTE_STOCK
-  campo         String?  // p1 | p2 | p3 | costo | iva | rentabilidad | descripcion | stock, etc.
+  tipo          String // CREACION | EDICION_DATOS | CAMBIO_PRECIO | CAMBIO_COSTO | CAMBIO_IVA | AJUSTE_MASIVO | IMPORTACION_EXCEL | BAJA_LOGICA | AJUSTE_STOCK
+  campo         String? // p1 | p2 | p3 | costo | iva | rentabilidad | descripcion | stock, etc.
   valorAnterior String?
   valorNuevo    String?
-  origen        String   // EDICION_DIRECTA | AJUSTE_RAPIDO | AJUSTE_LOTES | IMPORTACION_EXCEL | AJUSTE_STOCK
-  detalles      Json?    // Metadatos { porcentaje, listaPrecio, nombreArchivo, cantidadAfectada, etc. }
+  origen        String // EDICION_DIRECTA | AJUSTE_RAPIDO | AJUSTE_LOTES | IMPORTACION_EXCEL | AJUSTE_STOCK
+  detalles      Json? // Metadatos { porcentaje, listaPrecio, nombreArchivo, cantidadAfectada, etc. }
   usuarioId     String?
   usuarioNombre String?
   createdAt     DateTime @default(now())
@@ -2935,13 +2941,13 @@ model OtCounter {
 }
 
 model HdbClientConfig {
-  id                   String     @id @default(cuid())
-  clientId             String     @unique
-  client               HdbClient  @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  porcentajeMateriales Float      @default(0) // % incremento/descuento sobre materiales de inventario
-  habilitadoOT         Boolean    @default(false) // Si el cliente está habilitado en el módulo de OT
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+  id                   String    @id @default(cuid())
+  clientId             String    @unique
+  client               HdbClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  porcentajeMateriales Float     @default(0) // % incremento/descuento sobre materiales de inventario
+  habilitadoOT         Boolean   @default(false) // Si el cliente está habilitado en el módulo de OT
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 model ClientOperatorRate {
@@ -3010,7 +3016,7 @@ model OrdenTrabajo {
   numeroOT         String              @unique // ej: OT-2026-0001
   numeroSecuencial Int
   anio             Int
-  refCliente       String?             // Referencia manual aportada por el cliente (ej: OS-45872)
+  refCliente       String? // Referencia manual aportada por el cliente (ej: OS-45872)
   clienteId        String
   cliente          HdbClient           @relation(fields: [clienteId], references: [id], onDelete: Restrict)
   proyectoId       String
@@ -3022,8 +3028,8 @@ model OrdenTrabajo {
   responsableId    String
   responsable      Operator            @relation("OtResponsable", fields: [responsableId], references: [id], onDelete: Restrict)
   estado           String              @default("ABIERTA") // ABIERTA | PAUSADA | PENDIENTE_FIRMA | CERRADA
-  tipoCierre       String?             // NORMAL | INCOMPLETO | PARCIAL
-  otPreviaId      String?
+  tipoCierre       String? // NORMAL | INCOMPLETO | PARCIAL
+  otPreviaId       String?
   otPrevia         OrdenTrabajo?       @relation("OtContinuacion", fields: [otPreviaId], references: [id], onDelete: SetNull)
   otSiguiente      OrdenTrabajo[]      @relation("OtContinuacion")
   ciclos           OtCiclo[]
@@ -3043,30 +3049,30 @@ model OrdenTrabajo {
 }
 
 model OtCiclo {
-  id                   String              @id @default(cuid())
-  ordenTrabajoId       String
-  ordenTrabajo         OrdenTrabajo        @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
-  numeroCiclo          Int                 @default(1)
-  periodo              String              // ej: "2026-09" o "Septiembre 2026"
-  estado               String              @default("ABIERTO") // ABIERTO | PENDIENTE_FIRMA | FIRMADO
-  operadores           OtCicloOperador[]
-  materiales           OtCicloMaterial[]
-  totalHoras           Float               @default(0)
-  totalManoObra        Float               @default(0)
-  totalMateriales      Float               @default(0)
-  totalGeneral         Float               @default(0)
-  
+  id              String            @id @default(cuid())
+  ordenTrabajoId  String
+  ordenTrabajo    OrdenTrabajo      @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+  numeroCiclo     Int               @default(1)
+  periodo         String // ej: "2026-09" o "Septiembre 2026"
+  estado          String            @default("ABIERTO") // ABIERTO | PENDIENTE_FIRMA | FIRMADO
+  operadores      OtCicloOperador[]
+  materiales      OtCicloMaterial[]
+  totalHoras      Float             @default(0)
+  totalManoObra   Float             @default(0)
+  totalMateriales Float             @default(0)
+  totalGeneral    Float             @default(0)
+
   // Firma y sellado criptográfico
   fechaFirma           DateTime?
   responsableClienteId String?
-  responsableCliente   ClientResponsable?  @relation(fields: [responsableClienteId], references: [id], onDelete: SetNull)
+  responsableCliente   ClientResponsable? @relation(fields: [responsableClienteId], references: [id], onDelete: SetNull)
   firmanteNombre       String?
-  tipoCierre           String?             // NORMAL | INCOMPLETO | PARCIAL
-  esquemaVersion       String?             @default("1.0")
-  hashIntegridad       String?             // SHA-256 canónico de 64 caracteres hex
-  datosCanonicos       String?             @db.Text
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
+  tipoCierre           String? // NORMAL | INCOMPLETO | PARCIAL
+  esquemaVersion       String?            @default("1.0")
+  hashIntegridad       String? // SHA-256 canónico de 64 caracteres hex
+  datosCanonicos       String?            @db.Text
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
   @@unique([ordenTrabajoId, numeroCiclo])
   @@index([ordenTrabajoId])
@@ -3074,34 +3080,34 @@ model OtCiclo {
 }
 
 model OtCicloOperador {
-  id                 String   @id @default(cuid())
-  cicloId            String
-  ciclo              OtCiclo  @relation(fields: [cicloId], references: [id], onDelete: Cascade)
-  operadorId         String
-  operador           Operator @relation(fields: [operadorId], references: [id], onDelete: Restrict)
-  horas              Float    @default(0)
-  valorHoraSnapshot  Float    @default(0)
-  costoManoObra      Float    @default(0)
-  createdAt          DateTime @default(now())
+  id                String   @id @default(cuid())
+  cicloId           String
+  ciclo             OtCiclo  @relation(fields: [cicloId], references: [id], onDelete: Cascade)
+  operadorId        String
+  operador          Operator @relation(fields: [operadorId], references: [id], onDelete: Restrict)
+  horas             Float    @default(0)
+  valorHoraSnapshot Float    @default(0)
+  costoManoObra     Float    @default(0)
+  createdAt         DateTime @default(now())
 
   @@index([cicloId])
   @@index([operadorId])
 }
 
 model OtCicloMaterial {
-  id                         String   @id @default(cuid())
-  cicloId                    String
-  ciclo                      OtCiclo  @relation(fields: [cicloId], references: [id], onDelete: Cascade)
-  materialSource             String   @default("INVENTARIO") // INVENTARIO | MANUAL
-  materialCodigo             String   // SKU o código inventario, o "999999"
-  descripcion                String
-  cantidad                   Float    @default(1)
-  metros                     Float?
-  precioBaseSnapshot         Float    @default(0)
-  porcentajeClienteSnapshot  Float    @default(0) // 0 si materialSource == MANUAL
-  precioFinalSnapshot        Float    @default(0) // Precio final directo si es MANUAL
-  importeTotal               Float    @default(0)
-  createdAt                  DateTime @default(now())
+  id                        String   @id @default(cuid())
+  cicloId                   String
+  ciclo                     OtCiclo  @relation(fields: [cicloId], references: [id], onDelete: Cascade)
+  materialSource            String   @default("INVENTARIO") // INVENTARIO | MANUAL
+  materialCodigo            String // SKU o código inventario, o "999999"
+  descripcion               String
+  cantidad                  Float    @default(1)
+  metros                    Float?
+  precioBaseSnapshot        Float    @default(0)
+  porcentajeClienteSnapshot Float    @default(0) // 0 si materialSource == MANUAL
+  precioFinalSnapshot       Float    @default(0) // Precio final directo si es MANUAL
+  importeTotal              Float    @default(0)
+  createdAt                 DateTime @default(now())
 
   @@index([cicloId])
   @@index([materialCodigo])
@@ -3113,7 +3119,7 @@ model OtComentario {
   ordenTrabajo   OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
   usuarioId      String?
   usuarioNombre  String
-  usuarioRol     String       // operador | supervisor | admin | vendedor | cliente
+  usuarioRol     String // operador | supervisor | admin | vendedor | cliente
   texto          String       @db.Text
   createdAt      DateTime     @default(now())
 
@@ -3144,72 +3150,72 @@ model VentaCounter {
 }
 
 model Venta {
-  id                      String        @id @default(cuid())
-  numero                  String        @unique // Ej: "VTA-2026-000001"
-  fecha                   DateTime      @default(now())
+  id     String   @id @default(cuid())
+  numero String   @unique // Ej: "VTA-2026-000001"
+  fecha  DateTime @default(now())
 
   // Cliente (Consumidor Final o HdbClient nominal)
-  clienteId               String?
-  cliente                 HdbClient?    @relation(fields: [clienteId], references: [id], onDelete: SetNull)
-  clienteNombre           String        // "Consumidor Final" o nombre del cliente nominal
-  clienteIdentificacion   String?       // CUIT, DNI o identificación fiscal
-  clienteDireccion        String?
-  clienteTelefono         String?
-  clienteEmail            String?
+  clienteId             String?
+  cliente               HdbClient? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  clienteNombre         String // "Consumidor Final" o nombre del cliente nominal
+  clienteIdentificacion String? // CUIT, DNI o identificación fiscal
+  clienteDireccion      String?
+  clienteTelefono       String?
+  clienteEmail          String?
 
   // Lista de precios aplicada
-  listaPrecioId           String?
-  listaPrecio             ListaPrecio?  @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
-  listaPrecioNombre       String        // "Lista de Precio 1", etc.
+  listaPrecioId     String?
+  listaPrecio       ListaPrecio? @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  listaPrecioNombre String // "Lista de Precio 1", etc.
 
   // Vendedor / Operador
-  vendedorId              String?
-  vendedor                Operator?     @relation("VentaVendedor", fields: [vendedorId], references: [id], onDelete: SetNull)
-  vendedorNombre          String?
+  vendedorId     String?
+  vendedor       Operator? @relation("VentaVendedor", fields: [vendedorId], references: [id], onDelete: SetNull)
+  vendedorNombre String?
 
   // Almacén de referencia para integración futura
-  almacenId               String?
-  almacenNombre           String?
+  almacenId     String?
+  almacenNombre String?
 
   // Importes y cálculos comerciales
-  subtotal                Float         @default(0)
-  descuentoPorcentaje     Float         @default(0)
-  descuentoMonto          Float         @default(0)
-  recargoPorcentaje       Float         @default(0)
-  recargoMonto            Float         @default(0)
-  impuestosMonto          Float         @default(0) // IVA total desglosado
-  total                   Float         @default(0)
+  subtotal            Float @default(0)
+  descuentoPorcentaje Float @default(0)
+  descuentoMonto      Float @default(0)
+  recargoPorcentaje   Float @default(0)
+  recargoMonto        Float @default(0)
+  impuestosMonto      Float @default(0) // IVA total desglosado
+  total               Float @default(0)
 
   // Estados
-  estado                  String        @default("CONFIRMADA") // "CONFIRMADA" | "ANULADA"
-  estadoPago              String        @default("PAGADO")     // "PAGADO" | "PARCIAL" | "PENDIENTE"
+  estado     String @default("CONFIRMADA") // "CONFIRMADA" | "ANULADA"
+  estadoPago String @default("PAGADO") // "PAGADO" | "PARCIAL" | "PENDIENTE"
 
   // Cobro y Cuenta Corriente
-  totalPagado             Float         @default(0) // Cobrado mediante medios efectivos (efectivo, transf, tarjeta)
-  saldoPendiente          Float         @default(0) // Pendiente de pago / a cuenta corriente
-  imputadoCuentaCorriente Float         @default(0) // Importe asignado a cuenta corriente
-  cuentaCorrienteConciliada Boolean     @default(false) // Bandera para cuando se habilite el módulo de CC
+  totalPagado               Float   @default(0) // Cobrado mediante medios efectivos (efectivo, transf, tarjeta)
+  saldoPendiente            Float   @default(0) // Pendiente de pago / a cuenta corriente
+  imputadoCuentaCorriente   Float   @default(0) // Importe asignado a cuenta corriente
+  cuentaCorrienteConciliada Boolean @default(false) // Bandera para cuando se habilite el módulo de CC
 
   // Remitos y entrega física de materiales
-  estadoEntrega           String        @default("PENDIENTE") // "PENDIENTE" | "PARCIAL" | "ENTREGADO" | "CANCELADO"
-  remitos                 RemitoEntrega[]
+  estadoEntrega String          @default("PENDIENTE") // "PENDIENTE" | "PARCIAL" | "ENTREGADO" | "CANCELADO"
+  remitos       RemitoEntrega[]
 
   // Preparación para integración con Almacén / Stock
-  stockDescontado         Boolean       @default(false)
-  movimientoStockId       String?
+  stockDescontado   Boolean @default(false)
+  movimientoStockId String?
 
   // Anulación y trazabilidad
-  motivoAnulacion         String?
-  anuladoPorId            String?
-  anuladoPor              Operator?     @relation("VentaAnulador", fields: [anuladoPorId], references: [id], onDelete: SetNull)
-  anuladoEn               DateTime?
+  motivoAnulacion String?
+  anuladoPorId    String?
+  anuladoPor      Operator? @relation("VentaAnulador", fields: [anuladoPorId], references: [id], onDelete: SetNull)
+  anuladoEn       DateTime?
 
-  observaciones           String?
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @updatedAt
+  observaciones String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  items                   VentaItem[]
-  pagos                   VentaPago[]
+  items VentaItem[]
+  pagos VentaPago[]
 
   @@index([numero])
   @@index([fecha])
@@ -3227,9 +3233,9 @@ model VentaItem {
   venta               Venta     @relation(fields: [ventaId], references: [id], onDelete: Cascade)
   productoId          String?
   producto            Producto? @relation(fields: [productoId], references: [id], onDelete: SetNull)
-  sku                 String    // Snapshot histórico
-  descripcion         String    // Snapshot histórico
-  unidad              String?   // Snapshot histórico
+  sku                 String // Snapshot histórico
+  descripcion         String // Snapshot histórico
+  unidad              String? // Snapshot histórico
   cantidad            Float     @default(1)
   precioOriginal      Float     @default(0) // Precio lista antes de descuento o modificación
   precioUnitario      Float     @default(0) // Precio unitario final aplicado
@@ -3241,9 +3247,9 @@ model VentaItem {
   motivoModificacion  String?
 
   // Control de entrega física
-  cantidadEntregada   Float     @default(0)
-  cantidadCancelada   Float     @default(0)
-  remitoItems         RemitoEntregaItem[]
+  cantidadEntregada Float               @default(0)
+  cantidadCancelada Float               @default(0)
+  remitoItems       RemitoEntregaItem[]
 
   @@index([ventaId])
   @@index([productoId])
@@ -3251,16 +3257,16 @@ model VentaItem {
 }
 
 model VentaPago {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   ventaId       String
-  venta         Venta     @relation(fields: [ventaId], references: [id], onDelete: Cascade)
-  metodo        String    // EFECTIVO | TRANSFERENCIA | TARJETA_DEBITO | TARJETA_CREDITO | CUENTA_CORRIENTE | CHEQUE
-  monto         Float     @default(0) // Monto imputado a la venta
-  montoRecibido Float?    // Solo para efectivo: importe entregado por cliente
-  vuelto        Float?    // Solo para efectivo: cambio entregado
-  referencia    String?   // Últimos 4 dígitos o comprobante de transferencia
+  venta         Venta    @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  metodo        String // EFECTIVO | TRANSFERENCIA | TARJETA_DEBITO | TARJETA_CREDITO | CUENTA_CORRIENTE | CHEQUE
+  monto         Float    @default(0) // Monto imputado a la venta
+  montoRecibido Float? // Solo para efectivo: importe entregado por cliente
+  vuelto        Float? // Solo para efectivo: cambio entregado
+  referencia    String? // Últimos 4 dígitos o comprobante de transferencia
   observaciones String?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime @default(now())
 
   @@index([ventaId])
   @@index([metodo])
@@ -3272,24 +3278,24 @@ model RemitoEntregaCounter {
 }
 
 model RemitoEntrega {
-  id                    String              @id @default(cuid())
-  numero                String              @unique // Ej: "REM-2026-000001"
-  fecha                 DateTime            @default(now())
+  id                    String   @id @default(cuid())
+  numero                String   @unique // Ej: "REM-2026-000001"
+  fecha                 DateTime @default(now())
   ventaId               String
-  venta                 Venta               @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  venta                 Venta    @relation(fields: [ventaId], references: [id], onDelete: Cascade)
   clienteNombre         String
   clienteIdentificacion String?
   clienteDireccion      String?
   clienteTelefono       String?
   vendedorNombre        String?
-  receptorNombre        String?             // Quien retira físicamente
-  receptorDni           String?             // DNI de quien retira
+  receptorNombre        String? // Quien retira físicamente
+  receptorDni           String? // DNI de quien retira
   observaciones         String?
-  estado                String              @default("CONFORME") // "CONFORME" | "ANULADO"
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  estado                String   @default("CONFORME") // "CONFORME" | "ANULADO"
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  items                 RemitoEntregaItem[]
+  items RemitoEntregaItem[]
 
   @@index([ventaId])
   @@index([numero])
@@ -3297,15 +3303,15 @@ model RemitoEntrega {
 }
 
 model RemitoEntregaItem {
-  id             String        @id @default(cuid())
-  remitoId       String
-  remito         RemitoEntrega @relation(fields: [remitoId], references: [id], onDelete: Cascade)
-  ventaItemId    String
-  ventaItem      VentaItem     @relation(fields: [ventaItemId], references: [id], onDelete: Cascade)
-  sku            String
-  descripcion    String
-  unidad         String?
-  cantidad       Float         @default(1) // Cantidad entregada en este remito
+  id          String        @id @default(cuid())
+  remitoId    String
+  remito      RemitoEntrega @relation(fields: [remitoId], references: [id], onDelete: Cascade)
+  ventaItemId String
+  ventaItem   VentaItem     @relation(fields: [ventaItemId], references: [id], onDelete: Cascade)
+  sku         String
+  descripcion String
+  unidad      String?
+  cantidad    Float         @default(1) // Cantidad entregada en este remito
 
   @@index([remitoId])
   @@index([ventaItemId])
@@ -3344,14 +3350,14 @@ model CuentaCorrienteMovimiento {
   clienteId           String
   cliente             HdbClient @relation(fields: [clienteId], references: [id], onDelete: Restrict)
   fecha               DateTime  @default(now())
-  tipo                String    // "RECIBO_PAGO" | "CARGO_MANUAL" | "SALDO_INICIAL" | "NOTA_CREDITO" | "CARGO_SERVICIO"
+  tipo                String // "RECIBO_PAGO" | "CARGO_MANUAL" | "SALDO_INICIAL" | "NOTA_CREDITO" | "CARGO_SERVICIO"
   concepto            String
   debe                Float     @default(0) // Aumenta deuda del cliente (CARGO_MANUAL, SALDO_INICIAL)
   haber               Float     @default(0) // Disminuye deuda del cliente (RECIBO_PAGO, NOTA_CREDITO)
   saldoPendienteCargo Float     @default(0) // Para CARGO_MANUAL / SALDO_INICIAL: saldo aún no cubierto por recibos
   fechaVencimiento    DateTime? // Para CARGO_MANUAL / SALDO_INICIAL
-  mediosPago          Json?     // [{ metodo, monto, referencia, observaciones }]
-  imputaciones        Json?     // [{ destinoTipo: 'VENTA'|'CARGO', destinoId, numero, montoImputado, saldoAnterior, saldoPosterior }]
+  mediosPago          Json? // [{ metodo, monto, referencia, observaciones }]
+  imputaciones        Json? // [{ destinoTipo: 'VENTA'|'CARGO', destinoId, numero, montoImputado, saldoAnterior, saldoPosterior }]
   ventaId             String?
   estado              String    @default("CONFIRMADO") // "CONFIRMADO" | "ANULADO"
   operadorId          String?
@@ -3384,15 +3390,15 @@ model CotizacionCounter {
 }
 
 model Cotizacion {
-  id                    String           @id @default(cuid())
-  numero                String           @unique // Ej: "COT-2026-000001"
-  fecha                 DateTime         @default(now())
-  validezDias           Int              @default(15)
-  fechaVencimiento      DateTime?
+  id               String    @id @default(cuid())
+  numero           String    @unique // Ej: "COT-2026-000001"
+  fecha            DateTime  @default(now())
+  validezDias      Int       @default(15)
+  fechaVencimiento DateTime?
 
   // Cliente (Registrado o Eventual)
   clienteId             String?
-  cliente               HdbClient?       @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  cliente               HdbClient? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
   clienteNombre         String
   clienteIdentificacion String?
   clienteDireccion      String?
@@ -3400,41 +3406,41 @@ model Cotizacion {
   clienteEmail          String?
 
   // Lista de precios y régimen fiscal
-  listaPrecioId         String?
-  listaPrecio           ListaPrecio?     @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
-  listaPrecioNombre     String           @default("Lista General")
-  ivaDiscriminado       Boolean          @default(false)
+  listaPrecioId     String?
+  listaPrecio       ListaPrecio? @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  listaPrecioNombre String       @default("Lista General")
+  ivaDiscriminado   Boolean      @default(false)
 
   // Vendedor
-  vendedorId            String?
-  vendedor              Operator?        @relation("CotizacionVendedor", fields: [vendedorId], references: [id], onDelete: SetNull)
-  vendedorNombre        String?
+  vendedorId     String?
+  vendedor       Operator? @relation("CotizacionVendedor", fields: [vendedorId], references: [id], onDelete: SetNull)
+  vendedorNombre String?
 
   // Condiciones comerciales
-  condicionPago         String?          // Ej: "Contado", "Transferencia", "Cuenta Corriente 30 días"
-  plazoEntrega          String?          // Ej: "Inmediata", "48-72 hs hábiles"
-  referenciaObra        String?          // Obra, proyecto o referencia del cliente
+  condicionPago  String? // Ej: "Contado", "Transferencia", "Cuenta Corriente 30 días"
+  plazoEntrega   String? // Ej: "Inmediata", "48-72 hs hábiles"
+  referenciaObra String? // Obra, proyecto o referencia del cliente
 
   // Totales
-  subtotal              Float            @default(0)
-  descuentoPorcentaje   Float            @default(0)
-  descuentoMonto        Float            @default(0)
-  recargoPorcentaje     Float            @default(0)
-  recargoMonto          Float            @default(0)
-  impuestosMonto        Float            @default(0)
-  total                 Float            @default(0)
+  subtotal            Float @default(0)
+  descuentoPorcentaje Float @default(0)
+  descuentoMonto      Float @default(0)
+  recargoPorcentaje   Float @default(0)
+  recargoMonto        Float @default(0)
+  impuestosMonto      Float @default(0)
+  total               Float @default(0)
 
   // Estado y trazabilidad
-  estado                String           @default("VIGENTE") // "VIGENTE" | "APROBADA" | "RECHAZADA" | "CONVERTIDA" | "VENCIDA" | "ANULADA"
-  ventaId               String?          // ID de la Venta si se convirtió en PDV
-  ventaNumero           String?          // Número de la Venta asociada
-  observaciones         String?          @db.Text
-  notasInternas         String?          @db.Text
-  motivoAnulacion       String?
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+  estado          String   @default("VIGENTE") // "VIGENTE" | "APROBADA" | "RECHAZADA" | "CONVERTIDA" | "VENCIDA" | "ANULADA"
+  ventaId         String? // ID de la Venta si se convirtió en PDV
+  ventaNumero     String? // Número de la Venta asociada
+  observaciones   String?  @db.Text
+  notasInternas   String?  @db.Text
+  motivoAnulacion String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  items                 CotizacionItem[]
+  items CotizacionItem[]
 
   @@index([numero])
   @@index([fecha])
@@ -3481,57 +3487,57 @@ model TicketCounter {
 }
 
 model Ticket {
-  id                     String    @id @default(cuid())
-  codigo                 String    @unique
-  tipo                   String    @default("error") // error | funcionalidad | sugerencia | consulta
+  id                     String  @id @default(cuid())
+  codigo                 String  @unique
+  tipo                   String  @default("error") // error | funcionalidad | sugerencia | consulta
   titulo                 String
-  descripcion            String    @db.Text
-  pasosReproducir        String?   @db.Text
-  comportamientoEsperado String?   @db.Text
-  contexto               Json      @default("{}") // { ruta, url, navegador, so, pantalla, version }
-  adjuntos               Json      @default("[]") // [{ id, nombre, url, size }] — url apunta a /api/tickets/adjuntos/{id}
-  etiquetas              Json      @default("[]")
+  descripcion            String  @db.Text
+  pasosReproducir        String? @db.Text
+  comportamientoEsperado String? @db.Text
+  contexto               Json    @default("{}") // { ruta, url, navegador, so, pantalla, version }
+  adjuntos               Json    @default("[]") // [{ id, nombre, url, size }] — url apunta a /api/tickets/adjuntos/{id}
+  etiquetas              Json    @default("[]")
 
-  urgencia               String    @default("media") // critica | alta | media | baja
-  impacto                String    @default("usuario_unico") // organizacion | area | varios_usuarios | usuario_unico
-  prioridad              String    @default("P3") // P0 | P1 | P2 | P3
-  estado                 String    @default("nuevo")
+  urgencia               String @default("media") // critica | alta | media | baja
+  impacto                String @default("usuario_unico") // organizacion | area | varios_usuarios | usuario_unico
+  prioridad              String @default("P3") // P0 | P1 | P2 | P3
+  estado                 String @default("nuevo")
   // Lo que eligió quien reportó; el triaje puede cambiar tipo/urgencia/impacto/prioridad.
   clasificacionDeclarada Json? // { tipo, urgencia, impacto, prioridad }
 
-  reportadoPorId         String?
-  reportadoPor           Operator? @relation("TicketReportadoPor", fields: [reportadoPorId], references: [id], onDelete: SetNull)
-  reportadoPorNombre     String?
-  asignadoAId            String?
-  asignadoA              Operator? @relation("TicketAsignadoA", fields: [asignadoAId], references: [id], onDelete: SetNull)
-  asignadoANombre        String?
+  reportadoPorId     String?
+  reportadoPor       Operator? @relation("TicketReportadoPor", fields: [reportadoPorId], references: [id], onDelete: SetNull)
+  reportadoPorNombre String?
+  asignadoAId        String?
+  asignadoA          Operator? @relation("TicketAsignadoA", fields: [asignadoAId], references: [id], onDelete: SetNull)
+  asignadoANombre    String?
 
   // Evaluación de Gemini y trabajo del agente (API /api/agente)
-  riesgo                 String    @default("desconocido") // bajo | medio | alto | critico | desconocido
-  autoFixAutorizadoPorUsuario Boolean @default(false) // consentimiento de quien reportó
-  autoFixPermitido       Boolean   @default(false) // decisión del triaje o del gestor
-  analisisAgente         Json? // { resumen, causaRaiz, alcance, plan, archivosProbables, requiereAprobacion, ... }
-  estimacion             Json? // { esfuerzo, horas, confianza, riesgo }
-  rama                   String?
-  commitHash             String?
-  prUrl                  String?
+  riesgo                      String    @default("desconocido") // bajo | medio | alto | critico | desconocido
+  autoFixAutorizadoPorUsuario Boolean   @default(false) // consentimiento de quien reportó
+  autoFixPermitido            Boolean   @default(false) // decisión del triaje o del gestor
+  analisisAgente              Json? // { resumen, causaRaiz, alcance, plan, archivosProbables, requiereAprobacion, ... }
+  estimacion                  Json? // { esfuerzo, horas, confianza, riesgo }
+  rama                        String?
+  commitHash                  String?
+  prUrl                       String?
   // Bloqueo para que dos agentes no trabajen el mismo ticket
-  tomadoPorTokenId       String?
-  tomadoHasta            DateTime?
-  resolucion             String?   @db.Text
-  verificado             Boolean   @default(false)
-  intentosAgente         Int       @default(0)
+  tomadoPorTokenId            String?
+  tomadoHasta                 DateTime?
+  resolucion                  String?   @db.Text
+  verificado                  Boolean   @default(false)
+  intentosAgente              Int       @default(0)
 
-  fechaResolucion        DateTime?
-  fechaCierre            DateTime?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  fechaResolucion DateTime?
+  fechaCierre     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  historial              TicketHistorial[]
-  comentarios            TicketComentario[]
-  eventosAgente          TicketEventoAgente[]
-  archivos               TicketAdjunto[]
-  agenteTokens           TicketAgenteToken[]
+  historial     TicketHistorial[]
+  comentarios   TicketComentario[]
+  eventosAgente TicketEventoAgente[]
+  archivos      TicketAdjunto[]
+  agenteTokens  TicketAgenteToken[]
 
   @@index([estado])
   @@index([tipo])
@@ -3658,10 +3664,10 @@ model Viaje {
   cierre            Json? // { estimado, gastado, aprobado, rechazado, anticipo, propios, resultado }
 
   // Recorrido y precálculo con valores de referencia
-  medioTransporte   String? // auto_propio | vehiculo_nafta | vehiculo_gas | otro
-  kmIda             Float?
-  idaYVuelta        Boolean   @default(true)
-  tarifaId          String? // ViajeTarifa usada para el precálculo
+  medioTransporte String? // auto_propio | vehiculo_nafta | vehiculo_gas | otro
+  kmIda           Float?
+  idaYVuelta      Boolean @default(true)
+  tarifaId        String? // ViajeTarifa usada para el precálculo
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -3937,16 +3943,16 @@ model OperatorPermiso {
 // Catálogo de categorías de mano de obra (Oficial, Medio oficial, Ayudante…).
 // Se edita desde Ventas y Comercial › Presupuestos de servicios › Mano de obra.
 model ManoObraCategoria {
-  id            String                        @id @default(cuid())
-  nombre        String                        @unique
-  valorHora     Float                         @default(0)
-  ivaPorcentaje Float                         @default(21)
-  orden         Int                           @default(0)
-  activo        Boolean                       @default(true)
-  createdAt     DateTime                      @default(now())
-  updatedAt     DateTime                      @updatedAt
-  lineas        PresupuestoServicioManoObra[]
-  operadores    Operator[]
+  id             String                        @id @default(cuid())
+  nombre         String                        @unique
+  valorHora      Float                         @default(0)
+  ivaPorcentaje  Float                         @default(21)
+  orden          Int                           @default(0)
+  activo         Boolean                       @default(true)
+  createdAt      DateTime                      @default(now())
+  updatedAt      DateTime                      @updatedAt
+  lineas         PresupuestoServicioManoObra[]
+  operadores     Operator[]
   tarifasCliente ClienteTarifaCategoria[]
 }
 
@@ -4164,4 +4170,82 @@ model ProyectoBorrador {
   updatedAt     DateTime @updatedAt
 
   @@index([creadoPorId])
+}
+
+// ─── Compras y recepción (auditoría, faltante) ──────────────────────────────────────────────────────────
+// Orden de compra a un proveedor comercial. Cada recepción (parcial o total) entra stock al almacén con su
+// movimiento de kardex (referenciaTipo COMPRA, referenciaId = recepción). La factura del proveedor se vincula.
+model OrdenCompra {
+  id              String            @id @default(cuid())
+  numero          String            @unique // OC-2026-000001
+  proveedorId     String
+  proveedor       ProveedorVentas   @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
+  almacenId       String
+  almacen         Almacen           @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  estado          String            @default("borrador") // borrador | enviada | parcial | recibida | cancelada
+  fechaEmision    DateTime          @default(now())
+  fechaEsperada   DateTime?
+  fechaEnvio      DateTime?
+  fechaRecepcion  DateTime? // Cuando quedó recibida completa
+  observaciones   String?           @db.Text
+  facturaId       String?
+  factura         FacturaConsumo?   @relation(fields: [facturaId], references: [id], onDelete: SetNull)
+  creadoPorId     String?
+  creadoPorNombre String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  items           OrdenCompraItem[]
+  recepciones     RecepcionCompra[]
+
+  @@index([proveedorId])
+  @@index([estado])
+  @@index([facturaId])
+  @@index([fechaEmision])
+}
+
+model OrdenCompraItem {
+  id               String                @id @default(cuid())
+  ordenId          String
+  orden            OrdenCompra           @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  productoId       String
+  producto         Producto              @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  descripcion      String // Copia al pedir (el producto puede cambiar de nombre)
+  cantidad         Float
+  costoUnitario    Float                 @default(0) // Sin IVA
+  cantidadRecibida Float                 @default(0) // Suma de recepciones vigentes
+  posicion         Int                   @default(0)
+  recepciones      RecepcionCompraItem[]
+
+  @@unique([ordenId, productoId])
+  @@index([productoId])
+}
+
+model RecepcionCompra {
+  id            String                @id @default(cuid())
+  numero        String                @unique // REC-2026-000001
+  ordenId       String
+  orden         OrdenCompra           @relation(fields: [ordenId], references: [id], onDelete: Restrict)
+  fecha         DateTime              @default(now())
+  remito        String? // Nº de remito del proveedor
+  observaciones String?
+  anulada       Boolean               @default(false) // Anularla saca del stock lo que había entrado
+  anuladaAt     DateTime?
+  usuarioId     String?
+  usuarioNombre String?
+  createdAt     DateTime              @default(now())
+  items         RecepcionCompraItem[]
+
+  @@index([ordenId])
+}
+
+model RecepcionCompraItem {
+  id          String          @id @default(cuid())
+  recepcionId String
+  recepcion   RecepcionCompra @relation(fields: [recepcionId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        OrdenCompraItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  cantidad    Float
+
+  @@unique([recepcionId, itemId])
+  @@index([itemId])
 }

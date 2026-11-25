@@ -129,6 +129,11 @@ export const FUNCIONES = [
     { id: 'inventario.exportar_inventario', label: 'Exportar inventario', description: 'Descargar existencias y movimientos', grupo: 'Almacén y stock', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
     { id: 'inventario.permitir_stock_negativo', label: 'Permitir stock negativo', description: 'Confirmar operaciones que dejan el stock en negativo', grupo: 'Almacén y stock', roles: ['admin'] },
 
+    // ─ Compras ─
+    { id: 'compras.ver', label: 'Ver órdenes de compra', description: 'Consultar órdenes de compra, recepciones y facturas vinculadas', grupo: 'Compras', roles: ['admin', 'supervisor', 'qa', 'vendedor'] },
+    { id: 'compras.gestionar', label: 'Gestionar órdenes de compra', description: 'Crear, editar, enviar y cancelar órdenes y vincular la factura del proveedor', grupo: 'Compras', roles: ['admin', 'supervisor'] },
+    { id: 'compras.recibir', label: 'Recibir mercadería', description: 'Registrar o anular recepciones, que entran o sacan stock del almacén', grupo: 'Compras', roles: ['admin', 'supervisor'] },
+
     // ─ Recursos Humanos: EPP ─
     { id: 'rrhh.epp_ver', label: 'Ver EPP del personal', description: 'Consultar matriz, catálogo, kardex, solicitudes y legajo de EPP', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'rrhh.epp_gestionar', label: 'Gestionar EPP', description: 'Editar catálogo y stock, resolver solicitudes y administrar enlaces públicos de la matriz', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },

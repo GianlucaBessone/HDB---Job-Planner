@@ -17,7 +17,8 @@ import { productoPorCodigo } from '@/lib/ventas/precioMaterial';
  * conteo físico, Anexo A). Las existencias negativas se corrigen con un conteo o un ajuste.
  */
 
-export type OrigenConsumo = 'VENTA' | 'ENTREGA_OBRA' | 'OT';
+/** COMPRA: recepción de una orden de compra; su objetivo es negativo (entra stock). */
+export type OrigenConsumo = 'VENTA' | 'ENTREGA_OBRA' | 'OT' | 'COMPRA';
 
 const EPS = 0.0005;
 const r3 = (n: number) => Math.round(n * 1000) / 1000;
@@ -279,4 +280,34 @@ export async function conciliarMaterialesObra(materialIds: (string | null | unde
             console.error(`No se pudo mover el stock del material de obra ${id}:`, e);
         }
     }
+}
+
+/**
+ * Recepción de una orden de compra → ENTRADA al almacén de la orden (compras y recepción). Una recepción
+ * anulada tiene objetivo cero: la conciliación saca del stock lo que había entrado.
+ */
+export async function conciliarStockRecepcion(tx: Prisma.TransactionClient, recepcionId: string, usuario?: Usuario): Promise<number> {
+    const r = await tx.recepcionCompra.findUnique({
+        where: { id: recepcionId },
+        select: {
+            numero: true,
+            anulada: true,
+            orden: { select: { numero: true, almacenId: true } },
+            items: { select: { cantidad: true, item: { select: { productoId: true } } } },
+        },
+    });
+    if (!r) return 0;
+    const objetivos = new Map<string, number>();
+    if (!r.anulada) {
+        for (const i of r.items) objetivos.set(i.item.productoId, (objetivos.get(i.item.productoId) || 0) - i.cantidad);
+    }
+    return aplicarObjetivo(tx, {
+        referenciaTipo: 'COMPRA',
+        referenciaId: recepcionId,
+        referencia: `${r.orden.numero} · ${r.numero}`,
+        almacenId: r.orden.almacenId,
+        objetivos,
+        motivo: r.anulada ? 'Recepción de compra anulada' : 'Recepción de compra',
+        usuario,
+    });
 }

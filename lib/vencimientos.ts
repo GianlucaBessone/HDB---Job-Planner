@@ -6,8 +6,8 @@ export type { TipoVencimiento, Vencimiento } from '@/lib/vencimientosTipos';
 
 /**
  * Calendario único de vencimientos (auditoría, faltante "Calendario único de vencimientos"). Junta lo que vence
- * en cada módulo: EPP entregado, competencias del personal, documentos a revisar, presupuestos de servicio y
- * presupuestos de productos. Cada tipo se incluye solo si la persona puede abrir su vista (igual que el menú).
+ * en cada módulo: EPP entregado, competencias del personal, documentos a revisar, presupuestos de servicio,
+ * presupuestos de productos y entregas de compras. Cada tipo se incluye solo si la persona puede abrir su vista (igual que el menú).
  */
 
 const DIA = 86_400_000;
@@ -122,6 +122,23 @@ export async function vencimientos(acceso: AccesoSesion, desdeDias = -90, hastaD
                     take: 500,
                 })
                 .then((r) => r.map((c) => item('cotizacion', c.id, c.fechaVencimiento!, c.numero, c.clienteNombre, '/ventas/cotizaciones')))
+        );
+    }
+
+    // Órdenes de compra que esperan mercadería (fecha esperada de entrega)
+    if (ve('/compras')) {
+        fuentes.push(
+            prisma.ordenCompra
+                .findMany({
+                    where: { estado: { in: ['enviada', 'parcial'] }, fechaEsperada: entre },
+                    select: { id: true, numero: true, estado: true, fechaEsperada: true, proveedor: { select: { razonSocial: true } } },
+                    take: 500,
+                })
+                .then((r) =>
+                    r.map((o) =>
+                        item('compra', o.id, o.fechaEsperada!, `${o.numero} · ${o.proveedor.razonSocial}`, o.estado === 'parcial' ? 'Entrega pendiente (recibida en parte)' : 'Entrega pendiente', `/compras?orden=${o.id}`)
+                    )
+                )
         );
     }
 

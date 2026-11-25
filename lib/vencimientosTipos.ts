@@ -1,6 +1,6 @@
 /** Tipos y etiquetas del calendario de vencimientos (sin Prisma: los usa también la pantalla). */
 
-export type TipoVencimiento = 'epp' | 'competencia' | 'documento' | 'presupuesto_servicio' | 'cotizacion';
+export type TipoVencimiento = 'epp' | 'competencia' | 'documento' | 'presupuesto_servicio' | 'cotizacion' | 'compra';
 
 export interface Vencimiento {
     id: string;
@@ -19,4 +19,5 @@ export const ETIQUETA_VENCIMIENTO: Record<TipoVencimiento, string> = {
     documento: 'Documentos',
     presupuesto_servicio: 'Presupuestos de servicio',
     cotizacion: 'Presupuestos de productos',
+    compra: 'Entregas de compras',
 };

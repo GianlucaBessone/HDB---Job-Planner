@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export type SerieInventario = 'MOV' | 'OPI' | 'CNT';
+export type SerieInventario = 'MOV' | 'OPI' | 'CNT' | 'OC' | 'REC';
 
 /**
  * Genera el siguiente número correlativo atómico para documentos de inventario.
