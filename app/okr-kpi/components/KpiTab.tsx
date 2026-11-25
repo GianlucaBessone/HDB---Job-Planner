@@ -5,7 +5,11 @@ import { Plus, Activity, Edit2, X, TrendingUp, AlertTriangle, CheckCircle2, XCir
 import ReactECharts from 'echarts-for-react';
 import SemaforoIcon from './SemaforoIcon';
 
-export default function KpiTab({ user, isActive = true }: { user: any; isActive?: boolean }) {
+/**
+ * KPI asociados a OKR. Con `soloSgi` muestra los objetivos de calidad del SGI (KPI marcados `esSgi`, P30) y los
+ * KPI nuevos quedan marcados.
+ */
+export default function KpiTab({ user, isActive = true, soloSgi = false }: { user: any; isActive?: boolean; soloSgi?: boolean }) {
     const [kpis, setKpis] = useState<any[]>([]);
     const [okrs, setOkrs] = useState<any[]>([]);
     const [operators, setOperators] = useState<any[]>([]);
@@ -64,7 +68,7 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
         } catch (err) { console.error(err); } finally { setSyncingId(null); }
     };
 
-    const filteredKpis = filterOkrId ? kpis.filter(k => k.okrId === filterOkrId) : kpis;
+    const filteredKpis = kpis.filter(k => (!soloSgi || k.esSgi) && (!filterOkrId || k.okrId === filterOkrId));
 
     if (loading) return <div className="flex items-center justify-center py-20"><div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" /></div>;
 
@@ -72,8 +76,8 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Indicadores (KPI)</h2>
-                    <p className="text-sm text-slate-400">Gestión de KPIs asociados a OKRs</p>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{soloSgi ? 'Objetivos de calidad' : 'Indicadores (KPI)'}</h2>
+                    <p className="text-sm text-slate-400">{soloSgi ? 'KPI marcados como objetivo de calidad del SGI (ISO 9001), con meta, mediciones y planes de acción' : 'Gestión de KPIs asociados a OKRs'}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <select value={filterOkrId} onChange={e => setFilterOkrId(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-700 dark:text-slate-200">
@@ -81,7 +85,7 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
                         {okrs.map((o: any) => <option key={o.id} value={o.id}>{o.codigoOkr} — {o.nombre}</option>)}
                     </select>
                     <button onClick={() => { setEditingKpi(null); setShowKpiModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary-hover shrink-0">
-                        <Plus className="w-4 h-4" /> Nuevo KPI
+                        <Plus className="w-4 h-4" /> {soloSgi ? 'Nuevo objetivo de calidad' : 'Nuevo KPI'}
                     </button>
                 </div>
             </div>
@@ -89,8 +93,8 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
             {filteredKpis.length === 0 ? (
                 <div className="bg-card text-card-foreground border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
                     <Activity className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
-                    <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">Sin KPIs</h3>
-                    <p className="text-sm text-slate-400">Creá un KPI asociado a un OKR</p>
+                    <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">{soloSgi ? 'Sin objetivos de calidad' : 'Sin KPIs'}</h3>
+                    <p className="text-sm text-slate-400">{soloSgi ? 'Creá uno o marcá un KPI existente como "Objetivo de calidad (SGI)"' : 'Creá un KPI asociado a un OKR'}</p>
                 </div>
             ) : (
                 <div className="space-y-3">
@@ -158,7 +162,7 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
                 </div>
             )}
 
-            {showKpiModal && <KpiFormModal kpi={editingKpi} okrs={okrs} operators={operators} datasets={datasets} onClose={() => { setShowKpiModal(false); setEditingKpi(null); }} onSave={handleSaveKpi} />}
+            {showKpiModal && <KpiFormModal kpi={editingKpi} sgiPorDefecto={soloSgi} okrs={okrs} operators={operators} datasets={datasets} onClose={() => { setShowKpiModal(false); setEditingKpi(null); }} onSave={handleSaveKpi} />}
             {showMedicionModal && <MedicionModal kpi={showMedicionModal} onClose={() => setShowMedicionModal(null)} onSave={(data: any) => handleSaveMedicion(showMedicionModal.id, data)} />}
         </div>
     );
@@ -188,7 +192,7 @@ function MiniChart({ historico, objetivo }: { historico: any[]; objetivo: number
     return <ReactECharts option={option} style={{ height: 40 }} opts={{ renderer: 'svg' }} />;
 }
 
-function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) {
+function KpiFormModal({ kpi, sgiPorDefecto = false, okrs, operators, datasets, onClose, onSave }: any) {
     const [form, setForm] = useState({
         okrId: kpi?.okrId || '',
         nombre: kpi?.nombre || '',
@@ -202,6 +206,7 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
         responsableCargaId: kpi?.responsableCargaId || '',
         fuenteDatos: kpi?.fuenteDatos || '',
         estado: kpi?.estado || 'Activo',
+        esSgi: kpi ? !!kpi.esSgi : sgiPorDefecto,
         tipoRegistro: kpi?.tipoRegistro || 'Manual',
         datasetId: kpi?.datasetId || '',
         campoValor: kpi?.campoValor || '',
@@ -282,6 +287,13 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                             <input value={form.fuenteDatos} onChange={e => setForm(p => ({ ...p, fuenteDatos: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Sistema ERP, encuestas" />
                         </div>
                     </div>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" className="mt-1 w-4 h-4" checked={form.esSgi} onChange={e => setForm(p => ({ ...p, esSgi: e.target.checked }))} />
+                        <span>
+                            <span className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Objetivo de calidad (SGI)</span>
+                            <span className="block text-xs text-slate-500 dark:text-slate-400">Aparece en "Objetivos de calidad" (ISO 9001).</span>
+                        </span>
+                    </label>
                     <div>
                         <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fórmula de Cálculo</label>
                         <input value={form.formulaCalculo} onChange={e => setForm(p => ({ ...p, formulaCalculo: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: (Clientes satisfechos / Total encuestas) x 100" />

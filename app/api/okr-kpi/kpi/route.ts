@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
                 responsableCargaId: body.responsableCargaId || null,
                 fuenteDatos: body.fuenteDatos || null,
                 estado: 'Activo',
+                esSgi: body.esSgi === true,
                 tipoRegistro: body.tipoRegistro || 'Manual',
                 datasetId: body.datasetId || null,
                 campoValor: body.campoValor || null,
