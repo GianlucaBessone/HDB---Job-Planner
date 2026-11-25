@@ -255,7 +255,7 @@ Un **objetivo de calidad** del SGI pasa a ser un **KPI marcado "Objetivo de cali
 
 - Las APIs de CAPA, NC, riesgos, oportunidades, sugerencias, verificación de eficacia y planes de acción leen y escriben tareas con el mismo formato de siempre (`lib/acciones.ts`), así que las pantallas de Calidad y de OKR no cambian.
 - El responsable es el involucrado con rol "responsable": las acciones de calidad aparecen en **Tareas** (las cerradas con las completadas, las anuladas con las canceladas) y en **Mis tareas** de su responsable.
-- Migraciones: `20261125_tarea_accion_con_origen` (aditiva, antes del merge; **aplicada el 25/11/2026**) y `20261125_quitar_accionmejora_plankpi` (borra las dos tablas, vacías en producción; después del merge).
+- Migraciones: `20261125_tarea_accion_con_origen` (aditiva, antes del merge; **aplicada el 25/11/2026**) y `20261125_quitar_accionmejora_plankpi` (borra las dos tablas, vacías en producción; después del merge). **Las dos aplicadas en producción el 25/11/2026.**
 
 - P35 · Presupuestos unificados.
 - Legajo, calendario de vencimientos, compras, portal del cliente completo.
