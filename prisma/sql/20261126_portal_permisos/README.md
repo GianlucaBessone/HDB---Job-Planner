@@ -13,5 +13,8 @@ Se tildan en la ficha del cliente → Tarifas, responsables y sectores → Respo
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 26/11/2026 (15:05 UTC)**, antes del merge. 1 responsable, ninguno con los permisos nuevos.
+
+
 1. `psql "$DATABASE_URL" -f prisma/sql/20261126_portal_permisos/up.sql`
 2. Mergear el PR.

@@ -304,4 +304,5 @@ El portal (`/portal-clientes`) suma tres secciones a las OT:
 - **Estado de cuenta** (solo habilitados): saldo, vencido, a vencer, crédito disponible, comprobantes pendientes y movimientos, sin datos internos (observaciones, operadores, medios de pago, imputaciones). Los anulados no se muestran.
 - **Permisos por responsable** (`ClientResponsable.verCuentaCorriente` y `aprobarPresupuestos`, apagados por defecto): se tildan en la ficha del cliente → Portal y OT → Tarifas, responsables y sectores → Responsables. Cada pedido vuelve a leer al responsable de la base: un permiso quitado o un acceso bloqueado rige al instante, aunque la sesión siga abierta. Con la clave temporal las secciones nuevas responden 403 hasta cambiarla.
 - El PDF del presupuesto se generó en `lib/presupuestosServicio/pdf.ts` para usarlo desde la pantalla interna y desde el portal.
-- Migración `20261126_portal_permisos` (aditiva: dos columnas booleanas).
+- Migración `20261126_portal_permisos` (aditiva: dos columnas booleanas). **Aplicada en producción el 26/11/2026.**
+- Seguridad (de paso): `GET /api/clients/[id]/responsables` y la configuración del cliente devolvían el hash de la clave del portal a cualquier sesión. Ahora nunca lo devuelven (`CAMPOS_RESPONSABLE` en `lib/portalAuth.ts`) y la lista exige `clientes.gestionar`.
