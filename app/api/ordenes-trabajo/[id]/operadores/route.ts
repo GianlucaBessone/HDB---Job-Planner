@@ -211,11 +211,18 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
 
     const item = await prisma.otCicloOperador.findUnique({
       where: { id: itemId },
-      include: { ciclo: { include: { ordenTrabajo: { select: { id: true, estado: true } } } } },
+      include: { ciclo: { include: { ordenTrabajo: { select: { id: true, estado: true, responsableId: true } } } } },
     });
 
     if (!item || item.ciclo.ordenTrabajo.id !== params.id) {
       return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
+    }
+    // Editar horas: el responsable de la OT, o quien tenga ot.editar_horas (admin y supervisor).
+    if (item.ciclo.ordenTrabajo.responsableId !== acceso.userId && !acceso.puede('ot.editar_horas')) {
+      return NextResponse.json(
+        { error: 'Solo el responsable de la OT, un supervisor o un administrador pueden editar horas' },
+        { status: 403 }
+      );
     }
     if (item.ciclo.ordenTrabajo.estado === 'CERRADA') {
       return NextResponse.json({ error: 'No se pueden modificar horas de una OT cerrada' }, { status: 400 });

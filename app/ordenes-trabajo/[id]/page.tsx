@@ -37,7 +37,7 @@ import { formatDate, formatDateTime } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import SearchableCombobox from '@/components/ui/SearchableCombobox';
-import { useAcceso } from '@/lib/store/useAccessStore';
+import { useAcceso, useAccessStore } from '@/lib/store/useAccessStore';
 
 // Dynamic import of PDFDownloadLink to prevent SSR issues
 const OTPdfDownloadLink = dynamic(
@@ -58,7 +58,9 @@ export default function DetalleOrdenTrabajoPage() {
 
   // Montos (valor hora, precios, totales): solo con la función ot.ver_montos,
   // que por defecto tienen admin y supervisor. La API tampoco los envía sin ese permiso.
-  const verMontos = useAcceso().puede('ot.ver_montos');
+  const acceso = useAcceso();
+  const sesionUserId = useAccessStore((s) => s.userId);
+  const verMontos = acceso.puede('ot.ver_montos');
   const canSeeLaborCosts = verMontos;
   const canSeeMaterialCosts = verMontos;
   const canSeeTotalCosts = verMontos;
@@ -420,6 +422,9 @@ export default function DetalleOrdenTrabajoPage() {
 
   const isClosed = ot.estado === 'CERRADA';
   const activeCycle = ot.ciclos.find((c: any) => c.estado !== 'FIRMADO') || ot.ciclos[ot.ciclos.length - 1];
+  // Sumar o corregir horas: el responsable de la OT, supervisor o admin (función ot.editar_horas).
+  const puedeEditarHoras =
+    acceso.puede('ot.editar_horas') || (!!sesionUserId && sesionUserId === ot.responsableId);
 
   return (
     <div className="space-y-6">
@@ -764,6 +769,7 @@ export default function DetalleOrdenTrabajoPage() {
                                 )}
                                 {!isSigned && !isClosed && (
                                   <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                                    {puedeEditarHoras && (
                                     <button
                                       onClick={() =>
                                         setEditHoras({
@@ -780,6 +786,7 @@ export default function DetalleOrdenTrabajoPage() {
                                     >
                                       <Edit2 className="w-3.5 h-3.5" />
                                     </button>
+                                    )}
                                     <button
                                       onClick={() => setConfirmDeleteHourItemId(op.id)}
                                       className="p-1 text-slate-400 hover:text-rose-500 rounded"

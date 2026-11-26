@@ -217,6 +217,7 @@ siembran con `scripts/seed-etiquetas-base.ts`, que solo crea las que faltan.
 | `os.gestionar` | admin, supervisor, qa (y el responsable del proyecto, sobre sus OS) | `POST /api/ordenes-servicio`, `PUT /api/ordenes-servicio/[id]`; `GET /api/ordenes-servicio` sin filtro (con `?projectId`, también el responsable) |
 | `os.eliminar` | admin, supervisor | `DELETE /api/ordenes-servicio/[id]` |
 | `os.cobrar` | admin, supervisor | `PUT /api/ordenes-servicio/[id]/cobro` (el PDF del cobro: `os.cobrar` ∨ `os.gestionar`) |
+| `ot.editar_horas` | admin, supervisor (y el responsable de la OT, sobre la suya) | `PATCH /api/ordenes-trabajo/[id]/operadores` (sumar o corregir horas de un técnico ya cargado). Cargar horas nuevas sigue abierto |
 | `ot.ver_montos` | admin, supervisor | `GET /api/ordenes-trabajo` y `/[id]`, respuestas de `/[id]/operadores` y `/[id]/materiales`, export de `/cliente/[clientId]/export`. Sin la función, valor hora, mano de obra, precios, importes y totales van en `null` (o sin esas columnas) y la pantalla y el PDF no los muestran. Cargar horas y materiales sigue abierto |
 | `proyectos.costos` | admin, supervisor, qa | `/api/projects/[id]/cost`, `cost/materials`, `cost/sync-prices` |
 | `proyectos.finalizar` | admin, supervisor, qa | `POST /api/projects/[id]/finalize` (el responsable la pide por aviso) |
