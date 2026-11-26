@@ -282,6 +282,17 @@ Logística → **Compras** (`/compras`): órdenes de compra a proveedores comerc
 - **Factura**: se vincula una factura del mismo proveedor cargada en Gastos y facturas (`OrdenCompra.facturaId`); una factura puede cubrir varias órdenes.
 - Permisos nuevos en `lib/permisos.ts` (grupo Compras): `compras.ver` (admin, supervisor, qa, vendedor), `compras.gestionar` y `compras.recibir` (admin y supervisor; se pueden dar como permiso especial, por ejemplo al encargado del depósito).
 - Un proveedor con órdenes de compra cuenta como comercial (`lib/proveedores.ts`).
-- Migración `20261126_compras_recepcion` (aditiva: cuatro tablas nuevas).
+- Migración `20261126_compras_recepcion` (aditiva: cuatro tablas nuevas). **Aplicada en producción el 25/11/2026.**
 
-- Legajo, portal del cliente completo.
+### Legajo del personal
+
+Personas → **Legajo del personal** (`/rrhh/legajo`, también desde Recursos humanos): cada persona con su número de legajo, ingreso y antigüedad, contacto de emergencia y documentos, con filtros **Con vencimientos** y **Datos incompletos**. La ficha (`/rrhh/legajo/[id]`) edita los datos y los documentos.
+
+- **Datos** (`LegajoPersonal`, 1 a 1 con `Operator`): legajo, ingreso, egreso, CUIL, nacimiento, teléfono, email, domicilio, obra social, grupo sanguíneo, contacto de emergencia y observaciones. El DNI sigue en `Operator.dni`. El número de legajo no se repite.
+- **Documentos** (`DocumentoPersonal`): apto médico, licencia de conducir, ART, habilitación, seguro u otro, con número, emisión, vencimiento y archivo adjunto opcional (PDF o imagen, hasta 8 MB, se valida la firma del archivo) en el almacenamiento de archivos; se abre con URL prefirmada. Vencido / por vencer (30 días) / vigente.
+- Los documentos del personal activo aparecen en **Vencimientos**.
+- Permisos nuevos: `rrhh.legajo_ver` (admin, supervisor, qa) y `rrhh.legajo_gestionar` (admin, supervisor). Las respuestas no se guardan en caché y la auditoría registra qué campos cambiaron, sin los valores.
+- Pendiente si hace falta: que cada persona vea su propio legajo ("Mi legajo").
+- Migración `20261126_legajo_personal` (aditiva: dos tablas nuevas). **Aplicada en producción el 26/11/2026.**
+
+- Portal del cliente completo.

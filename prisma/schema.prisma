@@ -216,6 +216,10 @@ model Operator {
   viajesCreados      Viaje[]             @relation("ViajeCreador")
   viajesParticipante ViajeParticipante[]
 
+  // Legajo del personal
+  legajo           LegajoPersonal?
+  documentosLegajo DocumentoPersonal[]
+
   // Proyectos: operadores asignados desde el wizard de creación
   proyectoAsignaciones ProyectoAsignacion[]
 }
@@ -4248,4 +4252,51 @@ model RecepcionCompraItem {
 
   @@unique([recepcionId, itemId])
   @@index([itemId])
+}
+
+// ─── Legajo del personal (auditoría, faltante) ──────────────────────────────────────────────────────────
+// Datos de la persona como empleado (ingreso, contacto de emergencia…) y sus documentos con vencimiento
+// (apto médico, licencia de conducir, ART, habilitaciones). El DNI sigue en Operator.dni.
+model LegajoPersonal {
+  operatorId                 String    @id
+  operator                   Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  legajo                     String?   @unique // Número de legajo interno
+  fechaIngreso               DateTime?
+  fechaEgreso                DateTime?
+  cuil                       String?
+  fechaNacimiento            DateTime?
+  telefono                   String?
+  email                      String?
+  domicilio                  String?
+  localidad                  String?
+  obraSocial                 String?
+  grupoSanguineo             String?
+  contactoEmergenciaNombre   String?
+  contactoEmergenciaTelefono String?
+  contactoEmergenciaRelacion String?
+  observaciones              String?   @db.Text
+  actualizadoPorNombre       String?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+}
+
+model DocumentoPersonal {
+  id               String    @id @default(cuid())
+  operatorId       String
+  operator         Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  tipo             String // apto_medico | licencia_conducir | art | habilitacion | seguro | otro
+  nombre           String // "Licencia B1", "Trabajo en altura", "Apto preocupacional"…
+  numero           String?
+  fechaEmision     DateTime?
+  fechaVencimiento DateTime?
+  archivoKey       String? // rrhh/legajo/<uuid>.<ext> en el almacenamiento de archivos
+  archivoNombre    String?
+  archivoTipo      String?
+  observaciones    String?   @db.Text
+  creadoPorNombre  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([operatorId])
+  @@index([fechaVencimiento])
 }
