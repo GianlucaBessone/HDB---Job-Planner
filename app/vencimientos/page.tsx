@@ -74,7 +74,7 @@ export default function VencimientosPage() {
         <div className="w-full space-y-5">
             <ModuleHeader
                 title="Vencimientos"
-                description="EPP, competencias, documentos, presupuestos y entregas que vencen, en una sola lista"
+                description="EPP, legajos, competencias, documentos, presupuestos y entregas que vencen, en una sola lista"
                 icon={<CalendarClock className="w-5 h-5" />}
                 tabs={TABS.map((t) => ({ ...t, count: datos ? conteos[t.id] : undefined }))}
                 activeTabId={rango}

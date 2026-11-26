@@ -95,6 +95,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     // Se abre desde Asistencia y horas y desde los pendientes de Inicio.
     { key: '/aprobaciones',       label: 'Fichadas a aprobar',  description: 'Fichadas con alertas para validar',     roles: R_GESTION,                   access: 'oculta', section: 'personas', iconName: 'ShieldCheck', color: 'bg-teal-600' },
     { key: '/rrhh',               label: 'Recursos humanos',    description: 'Selección de personal y EPP',           roles: ['admin', 'supervisor', 'qa'], access: 'ambos', section: 'personas', iconName: 'Briefcase',   color: 'bg-indigo-600' },
+    { key: '/rrhh/legajo',        label: 'Legajo del personal', description: 'Datos del personal, contacto de emergencia y documentos que vencen', roles: ['admin', 'supervisor', 'qa'], access: 'ambos', section: 'personas', iconName: 'IdCard', color: 'bg-indigo-500' },
     { key: '/viajes',             label: 'Viajes y viáticos',   description: 'Planificación y rendición de viajes',   roles: ['admin', 'supervisor', 'qa'], access: 'ambos', section: 'personas', iconName: 'Plane',       color: 'bg-sky-700' },
 
     // ─ Comercial: clientes, ofertas, mostrador y precios ─

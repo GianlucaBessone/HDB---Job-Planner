@@ -134,6 +134,10 @@ export const FUNCIONES = [
     { id: 'compras.gestionar', label: 'Gestionar órdenes de compra', description: 'Crear, editar, enviar y cancelar órdenes y vincular la factura del proveedor', grupo: 'Compras', roles: ['admin', 'supervisor'] },
     { id: 'compras.recibir', label: 'Recibir mercadería', description: 'Registrar o anular recepciones, que entran o sacan stock del almacén', grupo: 'Compras', roles: ['admin', 'supervisor'] },
 
+    // ─ Recursos Humanos: legajo ─
+    { id: 'rrhh.legajo_ver', label: 'Ver legajos del personal', description: 'Consultar datos personales, contacto de emergencia y documentos con vencimiento', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
+    { id: 'rrhh.legajo_gestionar', label: 'Gestionar legajos', description: 'Editar datos del legajo y cargar, reemplazar o borrar documentos', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor'] },
+
     // ─ Recursos Humanos: EPP ─
     { id: 'rrhh.epp_ver', label: 'Ver EPP del personal', description: 'Consultar matriz, catálogo, kardex, solicitudes y legajo de EPP', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'rrhh.epp_gestionar', label: 'Gestionar EPP', description: 'Editar catálogo y stock, resolver solicitudes y administrar enlaces públicos de la matriz', grupo: 'Recursos Humanos', roles: ['admin', 'supervisor', 'qa'] },

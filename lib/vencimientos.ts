@@ -7,7 +7,8 @@ export type { TipoVencimiento, Vencimiento } from '@/lib/vencimientosTipos';
 /**
  * Calendario único de vencimientos (auditoría, faltante "Calendario único de vencimientos"). Junta lo que vence
  * en cada módulo: EPP entregado, competencias del personal, documentos a revisar, presupuestos de servicio,
- * presupuestos de productos y entregas de compras. Cada tipo se incluye solo si la persona puede abrir su vista (igual que el menú).
+ * presupuestos de productos, entregas de compras
+ * y documentos del legajo del personal. Cada tipo se incluye solo si la persona puede abrir su vista (igual que el menú).
  */
 
 const DIA = 86_400_000;
@@ -122,6 +123,19 @@ export async function vencimientos(acceso: AccesoSesion, desdeDias = -90, hastaD
                     take: 500,
                 })
                 .then((r) => r.map((c) => item('cotizacion', c.id, c.fechaVencimiento!, c.numero, c.clienteNombre, '/ventas/cotizaciones')))
+        );
+    }
+
+    // Documentos del legajo (apto médico, licencia, ART, habilitaciones) del personal activo
+    if (ve('/rrhh/legajo')) {
+        fuentes.push(
+            prisma.documentoPersonal
+                .findMany({
+                    where: { fechaVencimiento: entre, operator: { activo: true } },
+                    select: { id: true, nombre: true, fechaVencimiento: true, operatorId: true, operator: { select: { nombreCompleto: true } } },
+                    take: 500,
+                })
+                .then((r) => r.map((d) => item('legajo', d.id, d.fechaVencimiento!, d.nombre, d.operator.nombreCompleto, `/rrhh/legajo/${d.operatorId}`)))
         );
     }
 

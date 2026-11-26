@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import ModuleHeader from '@/components/ModuleHeader';
 import { Panel, Stat } from '@/components/ui';
-import { Activity, ArrowRight, Briefcase, ChevronRight, Package, ShieldCheck, Table, UserPlus, Users } from 'lucide-react';
+import { Activity, ArrowRight, Briefcase, ChevronRight, IdCard, Package, ShieldCheck, Table, UserPlus, Users } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,11 +91,12 @@ export default async function RRHHPage() {
 
                 <Panel
                     title="Personal y EPP"
-                    description="Dotación de elementos de protección personal, stock y actas firmadas"
+                    description="Legajos, dotación de elementos de protección personal, stock y actas firmadas"
                     padded={false}
                     actions={<Link href="/rrhh/personal/epp" className="btn btn-secondary btn-sm">Abrir <ArrowRight className="w-4 h-4" aria-hidden="true" /></Link>}
                 >
                     <ul className="divide-y divide-border">
+                        <Acceso href="/rrhh/legajo" icon={<IdCard />} titulo="Legajo del personal" descripcion="Ingreso, contacto de emergencia y documentos que vencen" />
                         <Acceso href="/rrhh/personal/epp?tab=matriz" icon={<Table />} titulo="Matriz de EPP" descripcion={`${d.operarios} operarios · ${d.eppGlobales} elementos de asignación general`} />
                         <Acceso href="/rrhh/personal/epp?tab=stock" icon={<Package />} titulo="Stock de depósito" descripcion="Ingresos, compras y kardex" />
                         <Acceso href="/rrhh/personal/epp?tab=solicitudes" icon={<ShieldCheck />} titulo="Solicitudes del personal" descripcion={d.solicitudes ? `${d.solicitudes} pendientes de resolver` : 'Pedidos de recambio o rotura'} />
