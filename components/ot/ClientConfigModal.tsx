@@ -84,6 +84,8 @@ export default function ClientConfigModal({
     email: '',
     cargo: '',
     portalHabilitado: true,
+    verCuentaCorriente: false,
+    aprobarPresupuestos: false,
     proyectosIds: [] as string[],
   });
   const [generatedKeyInfo, setGeneratedKeyInfo] = useState<{ nombre: string; key: string } | null>(null);
@@ -277,6 +279,8 @@ export default function ClientConfigModal({
       email: '',
       cargo: '',
       portalHabilitado: true,
+      verCuentaCorriente: false,
+      aprobarPresupuestos: false,
       proyectosIds: projects.map((p) => p.id),
     });
   };
@@ -288,6 +292,8 @@ export default function ClientConfigModal({
       email: resp.email || '',
       cargo: resp.cargo || '',
       portalHabilitado: resp.portalHabilitado,
+      verCuentaCorriente: !!resp.verCuentaCorriente,
+      aprobarPresupuestos: !!resp.aprobarPresupuestos,
       proyectosIds: resp.proyectos.map((p: any) => p.proyectoId || p.project?.id),
     });
   };
@@ -766,6 +772,8 @@ export default function ClientConfigModal({
                                 >
                                   {r.portalHabilitado ? 'Portal Habilitado' : 'Acceso Bloqueado'}
                                 </span>
+                                {r.verCuentaCorriente && <span className="badge badge-info">Estado de cuenta</span>}
+                                {r.aprobarPresupuestos && <span className="badge badge-info">Acepta presupuestos</span>}
                               </div>
                               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                 {r.email || 'Sin correo electrónico'}
@@ -874,6 +882,35 @@ export default function ClientConfigModal({
                           </select>
                         </div>
                       </div>
+
+                      {/* Permisos del portal completo (apagados por defecto) */}
+                      <fieldset className="pt-2 space-y-2">
+                        <legend className="mb-1 block text-[13px] font-medium text-foreground">Además de sus proyectos, en el portal puede…</legend>
+                        <label className="flex items-start gap-2.5 text-xs text-foreground cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="mt-0.5"
+                            checked={respForm.verCuentaCorriente}
+                            onChange={(e) => setRespForm({ ...respForm, verCuentaCorriente: e.target.checked })}
+                          />
+                          <span>
+                            <span className="font-semibold">Ver el estado de cuenta</span>
+                            <span className="block text-muted-foreground">Saldo, deuda vencida y movimientos de la cuenta corriente del cliente.</span>
+                          </span>
+                        </label>
+                        <label className="flex items-start gap-2.5 text-xs text-foreground cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="mt-0.5"
+                            checked={respForm.aprobarPresupuestos}
+                            onChange={(e) => setRespForm({ ...respForm, aprobarPresupuestos: e.target.checked })}
+                          />
+                          <span>
+                            <span className="font-semibold">Aceptar o rechazar presupuestos</span>
+                            <span className="block text-muted-foreground">Los presupuestos de servicio enviados al cliente; la aceptación queda sellada como cuando se registra acá.</span>
+                          </span>
+                        </label>
+                      </fieldset>
 
                       {/* Granular Project Permissions */}
                       <div className="pt-2">

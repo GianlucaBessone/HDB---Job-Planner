@@ -34,6 +34,8 @@ export async function GET(req: NextRequest) {
         cargo: responsable.cargo,
         email: responsable.email,
         mustChangePassword: responsable.mustChangePassword,
+        verCuentaCorriente: responsable.verCuentaCorriente,
+        aprobarPresupuestos: responsable.aprobarPresupuestos,
         cliente: responsable.client,
         proyectosAutorizados: responsable.proyectos.map((p) => p.project),
       },

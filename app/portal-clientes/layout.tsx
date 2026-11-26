@@ -8,6 +8,9 @@ import {
 
   FolderGit2,
   FileText,
+  ClipboardCheck,
+  FileSignature,
+  Wallet,
   LayoutDashboard,
   LogOut,
   User,
@@ -74,10 +77,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     );
   }
 
+  // Estado de cuenta solo para responsables habilitados (ClientResponsable.verCuentaCorriente)
   const navLinks = [
-    { href: '/portal-clientes', label: 'Mis Proyectos', icon: FolderGit2 },
-    { href: '/portal-clientes/ordenes-trabajo', label: 'Órdenes de Trabajo', icon: FileText },
-    { href: '/portal-clientes/dashboard', label: 'Dashboard & Métricas', icon: LayoutDashboard },
+    { href: '/portal-clientes', label: 'Proyectos', icon: FolderGit2 },
+    { href: '/portal-clientes/ordenes-trabajo', label: 'Órdenes de trabajo', icon: FileText },
+    { href: '/portal-clientes/ordenes-servicio', label: 'Órdenes de servicio', icon: ClipboardCheck },
+    { href: '/portal-clientes/presupuestos', label: 'Presupuestos', icon: FileSignature },
+    ...(session?.verCuentaCorriente ? [{ href: '/portal-clientes/estado-cuenta', label: 'Estado de cuenta', icon: Wallet }] : []),
+    { href: '/portal-clientes/dashboard', label: 'Métricas', icon: LayoutDashboard },
   ];
 
   return (
@@ -102,7 +109,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden xl:flex items-center gap-0.5">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive =
@@ -115,7 +122,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                   key={link.href}
                   href={link.href}
                   aria-current={isActive ? 'page' : undefined}
-                  className="nav-item"
+                  className="nav-item whitespace-nowrap"
                 >
                   <Icon className="w-4 h-4" />
                   {link.label}
@@ -147,7 +154,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden btn btn-ghost btn-icon btn-icon-inline"
+              className="xl:hidden btn btn-ghost btn-icon btn-icon-inline"
               aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-expanded={mobileMenuOpen}
             >
@@ -158,7 +165,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-card p-3 space-y-1">
+          <div className="xl:hidden border-t border-border bg-card p-3 space-y-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive =

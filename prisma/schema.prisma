@@ -2984,20 +2984,23 @@ model ClientSector {
 }
 
 model ClientResponsable {
-  id                 String                      @id @default(cuid())
-  clientId           String
-  client             HdbClient                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  nombre             String
-  email              String?
-  cargo              String?
-  activo             Boolean                     @default(true)
-  portalHabilitado   Boolean                     @default(true)
-  passwordHash       String?
-  mustChangePassword Boolean                     @default(true)
-  proyectos          ClientResponsableProyecto[]
-  firmasCiclos       OtCiclo[]
-  createdAt          DateTime                    @default(now())
-  updatedAt          DateTime                    @updatedAt
+  id                  String                      @id @default(cuid())
+  clientId            String
+  client              HdbClient                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  nombre              String
+  email               String?
+  cargo               String?
+  activo              Boolean                     @default(true)
+  portalHabilitado    Boolean                     @default(true)
+  passwordHash        String?
+  mustChangePassword  Boolean                     @default(true)
+  // Portal completo: permisos por responsable, apagados por defecto
+  verCuentaCorriente  Boolean                     @default(false) // Ve el estado de cuenta del cliente
+  aprobarPresupuestos Boolean                     @default(false) // Puede aceptar o rechazar presupuestos enviados
+  proyectos           ClientResponsableProyecto[]
+  firmasCiclos        OtCiclo[]
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
 
   @@index([clientId])
 }

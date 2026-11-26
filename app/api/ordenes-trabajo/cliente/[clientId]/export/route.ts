@@ -73,7 +73,7 @@ export async function GET(
               },
             },
             materiales: true,
-            responsableCliente: true,
+            responsableCliente: { select: { nombre: true } },
           },
         },
       },

@@ -295,4 +295,13 @@ Personas → **Legajo del personal** (`/rrhh/legajo`, también desde Recursos hu
 - Pendiente si hace falta: que cada persona vea su propio legajo ("Mi legajo").
 - Migración `20261126_legajo_personal` (aditiva: dos tablas nuevas). **Aplicada en producción el 26/11/2026.**
 
-- Portal del cliente completo.
+### Portal del cliente completo
+
+El portal (`/portal-clientes`) suma tres secciones a las OT:
+
+- **Órdenes de servicio** de los proyectos autorizados del responsable: "Para firmar" y "Firmadas". Se firman con el mismo link público que envía HDB (`/os/[token]`), así la firma es una sola.
+- **Presupuestos** de servicio enviados al cliente (no se ven borradores ni revisiones en curso): el mismo PDF que se envió, y quien está habilitado los **acepta** (con su referencia, p. ej. nº de orden de compra) o los **rechaza** con motivo. La aceptación usa el mismo servicio que la registración interna: queda la copia sellada con hash y la auditoría con el nombre del responsable "(cliente, portal del cliente)". Un presupuesto vencido no se puede aceptar desde el portal.
+- **Estado de cuenta** (solo habilitados): saldo, vencido, a vencer, crédito disponible, comprobantes pendientes y movimientos, sin datos internos (observaciones, operadores, medios de pago, imputaciones). Los anulados no se muestran.
+- **Permisos por responsable** (`ClientResponsable.verCuentaCorriente` y `aprobarPresupuestos`, apagados por defecto): se tildan en la ficha del cliente → Portal y OT → Tarifas, responsables y sectores → Responsables. Cada pedido vuelve a leer al responsable de la base: un permiso quitado o un acceso bloqueado rige al instante, aunque la sesión siga abierta. Con la clave temporal las secciones nuevas responden 403 hasta cambiarla.
+- El PDF del presupuesto se generó en `lib/presupuestosServicio/pdf.ts` para usarlo desde la pantalla interna y desde el portal.
+- Migración `20261126_portal_permisos` (aditiva: dos columnas booleanas).

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { CAMPOS_RESPONSABLE } from '@/lib/portalAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,9 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
           orderBy: { nombre: 'asc' },
         },
         responsables: {
-          include: {
+          // Sin el hash de la clave del portal
+          select: {
+            ...CAMPOS_RESPONSABLE,
             proyectos: {
               include: {
                 project: { select: { id: true, nombre: true, codigoProyecto: true } },
