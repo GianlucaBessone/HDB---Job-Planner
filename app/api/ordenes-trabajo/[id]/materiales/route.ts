@@ -169,6 +169,12 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
       },
     });
 
+    if (!acceso.puede('ot.ver_montos')) {
+      return NextResponse.json(
+        { ...result, precioBaseSnapshot: null, porcentajeClienteSnapshot: null, precioFinalSnapshot: null, importeTotal: null },
+        { status: 201 }
+      );
+    }
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
     console.error('Error in POST /api/ordenes-trabajo/[id]/materiales:', error);

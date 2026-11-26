@@ -3,11 +3,16 @@ import { prisma } from '@/lib/prisma';
 import { generateOtNumber } from '@/lib/ot/counter';
 import { logAudit } from '@/lib/audit';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { otSinMontos } from '@/lib/ot/montos';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+    const verMontos = acceso.puede('ot.ver_montos');
+
     const { searchParams } = new URL(req.url);
     const clienteId = searchParams.get('clienteId') || undefined;
     const proyectoId = searchParams.get('proyectoId') || undefined;
@@ -72,7 +77,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     return NextResponse.json({
-      data: ots,
+      data: verMontos ? ots : ots.map((ot) => otSinMontos(ot)),
       pagination: {
         total,
         page,

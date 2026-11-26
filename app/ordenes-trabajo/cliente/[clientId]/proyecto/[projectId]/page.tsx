@@ -28,6 +28,7 @@ import {
 import { formatDate } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
 import ExportClientModal from '@/components/ot/ExportClientModal';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 interface OtListItem {
   id: string;
@@ -44,9 +45,9 @@ interface OtListItem {
     periodo: string;
     estado: string;
     totalHoras: number;
-    totalManoObra: number;
-    totalMateriales: number;
-    totalGeneral: number;
+    totalManoObra: number | null;
+    totalMateriales: number | null;
+    totalGeneral: number | null;
     hashIntegridad?: string | null;
   }[];
 }
@@ -83,7 +84,8 @@ export default function ProyectoOtsPage() {
   }, []);
 
   const userRole = (currentUser?.role || 'admin').toLowerCase();
-  const isOperador = userRole === 'operador';
+  // Montos de la OT: solo con la función ot.ver_montos (admin y supervisor por defecto).
+  const verMontos = useAcceso().puede('ot.ver_montos');
   const isVendedor = userRole === 'vendedor';
   const isSupervisorOrAdmin = userRole === 'supervisor' || userRole === 'admin';
 
@@ -371,7 +373,7 @@ export default function ProyectoOtsPage() {
           {filteredOts.map((ot) => {
             // Aggregate totals across all cycles
             const totalHoras = ot.ciclos.reduce((acc, c) => acc + c.totalHoras, 0);
-            const totalMateriales = ot.ciclos.reduce((acc, c) => acc + c.totalMateriales, 0);
+            const totalMateriales = ot.ciclos.reduce((acc, c) => acc + (c.totalMateriales ?? 0), 0);
 
             return (
               <Link
@@ -434,7 +436,7 @@ export default function ProyectoOtsPage() {
                         </div>
                       )}
 
-                      {!isOperador && (
+                      {verMontos && (
                         <div className="text-right">
                           <span className="text-[11px] uppercase font-bold text-slate-400 block">Materiales</span>
                           <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
