@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import * as xlsx from 'xlsx';
+import { exigirAcceso } from '@/lib/permisosServer';
 
 export async function GET(
   req: NextRequest,
@@ -8,6 +9,10 @@ export async function GET(
 ) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+    const verMontos = acceso.puede('ot.ver_montos');
+
     const { clientId } = params;
     const { searchParams } = new URL(req.url);
 
@@ -162,6 +167,17 @@ export async function GET(
       });
     });
 
+    // Sin permiso para ver montos, se quitan las columnas de importes ($) y ajustes (%).
+    if (!verMontos) {
+      for (const filas of [rowsResumen, rowsMateriales, rowsManoObra] as Record<string, unknown>[][]) {
+        for (const fila of filas) {
+          for (const clave of Object.keys(fila)) {
+            if (clave.includes('($)') || clave.includes('(%)')) delete fila[clave];
+          }
+        }
+      }
+    }
+
     const clientSlug = client.nombre.replace(/[^a-zA-Z0-9_-]/g, '_');
     const dateStamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
@@ -191,7 +207,7 @@ export async function GET(
       rowsResumen.length > 0 ? rowsResumen : [{ Mensaje: 'No hay datos para los filtros seleccionados' }]
     );
     // Adjust column widths
-    wsResumen['!cols'] = [
+    if (verMontos) wsResumen['!cols'] = [
       { wch: 15 }, // OT
       { wch: 25 }, // Proyecto
       { wch: 15 }, // Codigo Proyecto
@@ -217,7 +233,7 @@ export async function GET(
     const wsMateriales = xlsx.utils.json_to_sheet(
       rowsMateriales.length > 0 ? rowsMateriales : [{ Mensaje: 'No hay materiales registrados' }]
     );
-    wsMateriales['!cols'] = [
+    if (verMontos) wsMateriales['!cols'] = [
       { wch: 15 }, // OT
       { wch: 25 }, // Proyecto
       { wch: 8 },  // Ciclo
@@ -237,7 +253,7 @@ export async function GET(
     const wsManoObra = xlsx.utils.json_to_sheet(
       rowsManoObra.length > 0 ? rowsManoObra : [{ Mensaje: 'No hay mano de obra registrada' }]
     );
-    wsManoObra['!cols'] = [
+    if (verMontos) wsManoObra['!cols'] = [
       { wch: 15 }, // OT
       { wch: 25 }, // Proyecto
       { wch: 8 },  // Ciclo

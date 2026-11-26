@@ -37,6 +37,7 @@ import { formatDate, formatDateTime } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import SearchableCombobox from '@/components/ui/SearchableCombobox';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 // Dynamic import of PDFDownloadLink to prevent SSR issues
 const OTPdfDownloadLink = dynamic(
@@ -54,14 +55,13 @@ export default function DetalleOrdenTrabajoPage() {
   const [activeTab, setActiveTab] = useState<'detalle' | 'chat' | 'historial'>('detalle');
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  const userRole = (currentUser?.role || '').toLowerCase();
-  const isOperador = userRole === 'operador';
-  const isVendedor = userRole === 'vendedor';
-  const isSupervisorOrAdmin = !isOperador && !isVendedor;
 
-  const canSeeLaborCosts = isSupervisorOrAdmin;
-  const canSeeMaterialCosts = isSupervisorOrAdmin || isVendedor;
-  const canSeeTotalCosts = isSupervisorOrAdmin;
+  // Montos (valor hora, precios, totales): solo con la función ot.ver_montos,
+  // que por defecto tienen admin y supervisor. La API tampoco los envía sin ese permiso.
+  const verMontos = useAcceso().puede('ot.ver_montos');
+  const canSeeLaborCosts = verMontos;
+  const canSeeMaterialCosts = verMontos;
+  const canSeeTotalCosts = verMontos;
 
   // Edit general info modal
   const [isEditingInfo, setIsEditingInfo] = useState(false);
@@ -71,6 +71,16 @@ export default function DetalleOrdenTrabajoPage() {
   // Modals for adding hours & materials
   const [isAddOperatorOpen, setIsAddOperatorOpen] = useState(false);
   const [opFormData, setOpFormData] = useState({ operadorId: '', horas: '' });
+
+  // Editar horas de un técnico ya cargado (sumar o corregir el total)
+  const [editHoras, setEditHoras] = useState<{
+    itemId: string;
+    nombre: string;
+    horasActuales: number;
+    modo: 'sumar' | 'fijar';
+    horas: string;
+  } | null>(null);
+  const [savingHoras, setSavingHoras] = useState(false);
 
   const [isAddMaterialOpen, setIsAddMaterialOpen] = useState(false);
   const [matFormData, setMatFormData] = useState({
@@ -238,7 +248,8 @@ export default function DetalleOrdenTrabajoPage() {
         }),
       });
       if (res.ok) {
-        showToast('Horas registradas', 'success');
+        const data = await res.json().catch(() => ({}));
+        showToast(data?.sumado ? 'Horas sumadas al técnico ya cargado' : 'Horas registradas', 'success');
         setIsAddOperatorOpen(false);
         setOpFormData({ operadorId: '', horas: '' });
         loadOt();
@@ -248,6 +259,35 @@ export default function DetalleOrdenTrabajoPage() {
       }
     } catch {
       showToast('Error de conexión', 'error');
+    }
+  };
+
+  const handleEditHoras = async () => {
+    if (!editHoras) return;
+    const valor = parseFloat(editHoras.horas);
+    if (isNaN(valor) || (editHoras.modo === 'sumar' ? valor === 0 : valor <= 0)) {
+      showToast(editHoras.modo === 'sumar' ? 'Ingresá las horas a sumar' : 'El total de horas debe ser mayor a 0', 'error');
+      return;
+    }
+    setSavingHoras(true);
+    try {
+      const res = await fetch(`/api/ordenes-trabajo/${id}/operadores`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: editHoras.itemId, modo: editHoras.modo, horas: valor }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        showToast(`Horas actualizadas: ${editHoras.nombre} queda con ${Number(data.horas).toFixed(2)} h`, 'success');
+        setEditHoras(null);
+        loadOt();
+      } else {
+        showToast(data.error || 'Error al modificar horas', 'error');
+      }
+    } catch {
+      showToast('Error de conexión', 'error');
+    } finally {
+      setSavingHoras(false);
     }
   };
 
@@ -408,6 +448,7 @@ export default function DetalleOrdenTrabajoPage() {
           {/* Print / PDF Link */}
           <OTPdfDownloadLink
             ot={ot}
+            mostrarMontos={verMontos}
             fileName={`${ot.numeroOT}_${ot.cliente.nombre.replace(/\s+/g, '_')}.pdf`}
             className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
           >
@@ -714,18 +755,36 @@ export default function DetalleOrdenTrabajoPage() {
                                 {canSeeLaborCosts && (
                                   <>
                                     <td className="py-2.5 px-4 text-right text-slate-500 font-mono">
-                                      ${op.valorHoraSnapshot.toLocaleString('es-AR')}
+                                      ${(op.valorHoraSnapshot ?? 0).toLocaleString('es-AR')}
                                     </td>
                                     <td className="py-2.5 px-4 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
-                                      ${op.costoManoObra.toLocaleString('es-AR')}
+                                      ${(op.costoManoObra ?? 0).toLocaleString('es-AR')}
                                     </td>
                                   </>
                                 )}
                                 {!isSigned && !isClosed && (
-                                  <td className="py-2.5 px-3 text-right">
+                                  <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                                    <button
+                                      onClick={() =>
+                                        setEditHoras({
+                                          itemId: op.id,
+                                          nombre: op.operador?.nombreCompleto || 'Técnico',
+                                          horasActuales: op.horas,
+                                          modo: 'sumar',
+                                          horas: '',
+                                        })
+                                      }
+                                      className="p-1 text-slate-400 hover:text-primary rounded"
+                                      title="Sumar o corregir horas"
+                                      aria-label={`Sumar o corregir horas de ${op.operador?.nombreCompleto || 'técnico'}`}
+                                    >
+                                      <Edit2 className="w-3.5 h-3.5" />
+                                    </button>
                                     <button
                                       onClick={() => setConfirmDeleteHourItemId(op.id)}
                                       className="p-1 text-slate-400 hover:text-rose-500 rounded"
+                                      title="Eliminar registro"
+                                      aria-label={`Eliminar horas de ${op.operador?.nombreCompleto || 'técnico'}`}
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -796,10 +855,10 @@ export default function DetalleOrdenTrabajoPage() {
                                 {canSeeMaterialCosts && (
                                   <>
                                     <td className="py-2.5 px-4 text-right font-mono text-slate-600 dark:text-slate-400">
-                                      ${m.precioFinalSnapshot.toLocaleString('es-AR')}
+                                      ${(m.precioFinalSnapshot ?? 0).toLocaleString('es-AR')}
                                     </td>
                                     <td className="py-2.5 px-4 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
-                                      ${m.importeTotal.toLocaleString('es-AR')}
+                                      ${(m.importeTotal ?? 0).toLocaleString('es-AR')}
                                     </td>
                                   </>
                                 )}
@@ -834,7 +893,7 @@ export default function DetalleOrdenTrabajoPage() {
                         <div>
                           <span className="text-[11px] uppercase font-bold text-slate-400 block">Mano de Obra</span>
                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                            ${ciclo.totalManoObra.toLocaleString('es-AR')}
+                            ${(ciclo.totalManoObra ?? 0).toLocaleString('es-AR')}
                           </span>
                         </div>
                       )}
@@ -842,7 +901,7 @@ export default function DetalleOrdenTrabajoPage() {
                         <div>
                           <span className="text-[11px] uppercase font-bold text-slate-400 block">Materiales</span>
                           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                            ${ciclo.totalMateriales.toLocaleString('es-AR')}
+                            ${(ciclo.totalMateriales ?? 0).toLocaleString('es-AR')}
                           </span>
                         </div>
                       ) : (
@@ -859,7 +918,7 @@ export default function DetalleOrdenTrabajoPage() {
                       <div className="text-right">
                         <span className="text-[11px] uppercase font-bold text-primary block">Total Ciclo</span>
                         <span className="text-sm font-bold text-primary font-mono">
-                          ${ciclo.totalGeneral.toLocaleString('es-AR')}
+                          ${(ciclo.totalGeneral ?? 0).toLocaleString('es-AR')}
                         </span>
                       </div>
                     )}
@@ -998,6 +1057,17 @@ export default function DetalleOrdenTrabajoPage() {
                 className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
               />
             </div>
+            {(() => {
+              const yaCargado = activeCycle?.operadores?.find((o: any) => o.operadorId === opFormData.operadorId);
+              if (!yaCargado) return null;
+              const suma = parseFloat(opFormData.horas);
+              return (
+                <p className="text-[11px] leading-relaxed p-2.5 rounded-lg bg-primary/5 border border-primary/20 text-slate-600 dark:text-slate-300">
+                  Este técnico ya tiene <strong>{yaCargado.horas.toFixed(2)} h</strong> en el ciclo. Las horas se suman a su registro
+                  {!isNaN(suma) && suma > 0 && <> y queda con <strong>{(yaCargado.horas + suma).toFixed(2)} h</strong></>}.
+                </p>
+              );
+            })()}
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setIsAddOperatorOpen(false)}
@@ -1010,6 +1080,94 @@ export default function DetalleOrdenTrabajoPage() {
                 className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg"
               >
                 Guardar Horas
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: SUMAR / CORREGIR HORAS DE UN TÉCNICO YA CARGADO */}
+      {editHoras && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                Horas de {editHoras.nombre}
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Tiene cargadas <strong>{editHoras.horasActuales.toFixed(2)} h</strong> en este ciclo.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-800" role="tablist">
+              {([
+                { modo: 'sumar', label: 'Sumar horas' },
+                { modo: 'fijar', label: 'Corregir total' },
+              ] as const).map((o) => (
+                <button
+                  key={o.modo}
+                  type="button"
+                  role="tab"
+                  aria-selected={editHoras.modo === o.modo}
+                  onClick={() => setEditHoras({ ...editHoras, modo: o.modo, horas: '' })}
+                  className={`py-1.5 text-xs font-bold rounded-md transition-colors ${
+                    editHoras.modo === o.modo
+                      ? 'bg-white dark:bg-slate-900 text-primary shadow-sm'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                {editHoras.modo === 'sumar'
+                  ? 'Horas a sumar * (para descontar, usá un número negativo)'
+                  : 'Total de horas del técnico en el ciclo *'}
+              </label>
+              <input
+                type="number"
+                step="0.25"
+                autoFocus
+                placeholder={editHoras.modo === 'sumar' ? 'Ej: 2' : `Ej: ${editHoras.horasActuales}`}
+                value={editHoras.horas}
+                onChange={(e) => setEditHoras({ ...editHoras, horas: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleEditHoras();
+                }}
+                className="w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+              />
+              {(() => {
+                const v = parseFloat(editHoras.horas);
+                if (isNaN(v)) return null;
+                const total = editHoras.modo === 'sumar' ? editHoras.horasActuales + v : v;
+                return (
+                  <p className={`text-[11px] mt-1.5 ${total > 0 ? 'text-slate-500' : 'text-rose-500'}`}>
+                    {total > 0
+                      ? <>Queda con <strong>{total.toFixed(2)} h</strong>.</>
+                      : 'El total debe ser mayor a 0. Para quitar al técnico, eliminá el registro.'}
+                  </p>
+                );
+              })()}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setEditHoras(null)}
+                className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleEditHoras}
+                disabled={savingHoras}
+                className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 disabled:opacity-60"
+              >
+                {savingHoras && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                Guardar
               </button>
             </div>
           </div>

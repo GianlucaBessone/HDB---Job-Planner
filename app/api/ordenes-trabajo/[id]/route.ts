@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { otSinMontos } from '@/lib/ot/montos';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
   try {
+    const acceso = await exigirAcceso(req);
+    if (acceso instanceof NextResponse) return acceso;
+
     const { id } = params;
     const ot = await prisma.ordenTrabajo.findUnique({
       where: { id },
@@ -72,7 +76,7 @@ export async function GET(req: NextRequest, { params: paramsPromise }: { params:
       return NextResponse.json({ error: 'Orden de trabajo no encontrada' }, { status: 404 });
     }
 
-    return NextResponse.json(ot);
+    return NextResponse.json(acceso.puede('ot.ver_montos') ? ot : otSinMontos(ot));
   } catch (error: any) {
     console.error('Error in GET /api/ordenes-trabajo/[id]:', error);
     return NextResponse.json({ error: error.message || 'Error al obtener orden de trabajo' }, { status: 500 });

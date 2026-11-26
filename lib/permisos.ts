@@ -105,6 +105,7 @@ export const FUNCIONES = [
     { id: 'os.gestionar', label: 'Gestionar órdenes de servicio', description: 'Crear y editar órdenes de servicio de cualquier proyecto (el responsable del proyecto gestiona las suyas)', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor', 'qa'] },
     { id: 'os.eliminar', label: 'Eliminar órdenes de servicio', description: 'Eliminar una orden de servicio con sus materiales, operadores y firma', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor'] },
     { id: 'os.cobrar', label: 'Cobrar órdenes de servicio', description: 'Cargar el cobro de una orden de servicio', grupo: 'Órdenes de servicio', roles: ['admin', 'supervisor'] },
+    { id: 'ot.ver_montos', label: 'Ver montos de órdenes de trabajo', description: 'Valor hora, mano de obra, precios de materiales y totales facturados de las OT', grupo: 'Órdenes de trabajo', roles: ['admin', 'supervisor'] },
 
     // ─ Presupuestos de servicio ─
     { id: 'presupuestos.ver', label: 'Ver presupuestos de servicio', description: 'Consultar presupuestos, sus revisiones y el reporte presupuestado vs. real', grupo: 'Presupuestos de servicio', roles: ['admin', 'supervisor', 'qa'] },

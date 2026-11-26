@@ -218,9 +218,9 @@ export interface OTPdfDocumentProps {
       periodo: string;
       estado: string;
       totalHoras: number;
-      totalManoObra: number;
-      totalMateriales: number;
-      totalGeneral: number;
+      totalManoObra: number | null;
+      totalMateriales: number | null;
+      totalGeneral: number | null;
       fechaFirma?: string | Date | null;
       firmanteNombre?: string | null;
       tipoCierre?: string | null;
@@ -228,31 +228,33 @@ export interface OTPdfDocumentProps {
       operadores: {
         operador: { nombreCompleto: string };
         horas: number;
-        valorHoraSnapshot: number;
-        costoManoObra: number;
+        valorHoraSnapshot: number | null;
+        costoManoObra: number | null;
       }[];
       materiales: {
         materialCodigo: string;
         descripcion: string;
         cantidad: number;
         metros?: number | null;
-        precioFinalSnapshot: number;
-        importeTotal: number;
+        precioFinalSnapshot: number | null;
+        importeTotal: number | null;
         materialSource: string;
       }[];
     }[];
   };
+  /** false: el PDF sale sin valor hora, precios ni totales en pesos (usuarios sin ot.ver_montos). */
+  mostrarMontos?: boolean;
 }
 
-export function OTPdfDocument({ ot }: OTPdfDocumentProps) {
+export function OTPdfDocument({ ot, mostrarMontos = true }: OTPdfDocumentProps) {
   const latestCycle = ot.ciclos[ot.ciclos.length - 1] || ot.ciclos[0];
   const allOperators = ot.ciclos.flatMap((c) => c.operadores);
   const allMaterials = ot.ciclos.flatMap((c) => c.materiales);
 
   const grandTotalHoras = ot.ciclos.reduce((s, c) => s + c.totalHoras, 0);
-  const grandTotalMO = ot.ciclos.reduce((s, c) => s + c.totalManoObra, 0);
-  const grandTotalMat = ot.ciclos.reduce((s, c) => s + c.totalMateriales, 0);
-  const grandTotal = ot.ciclos.reduce((s, c) => s + c.totalGeneral, 0);
+  const grandTotalMO = ot.ciclos.reduce((s, c) => s + (c.totalManoObra ?? 0), 0);
+  const grandTotalMat = ot.ciclos.reduce((s, c) => s + (c.totalMateriales ?? 0), 0);
+  const grandTotal = ot.ciclos.reduce((s, c) => s + (c.totalGeneral ?? 0), 0);
 
   const signedCycles = ot.ciclos.filter((c) => c.estado === 'FIRMADO' && c.hashIntegridad);
 
@@ -317,21 +319,25 @@ export function OTPdfDocument({ ot }: OTPdfDocumentProps) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Técnicos y Mano de Obra</Text>
             <View style={styles.tableHeader}>
-              <Text style={[styles.th, { width: '45%' }]}>Técnico</Text>
-              <Text style={[styles.th, styles.tdRight, { width: '15%' }]}>Horas</Text>
-              <Text style={[styles.th, styles.tdRight, { width: '20%' }]}>Valor Hora</Text>
-              <Text style={[styles.th, styles.tdRight, { width: '20%' }]}>Subtotal</Text>
+              <Text style={[styles.th, { width: mostrarMontos ? '45%' : '80%' }]}>Técnico</Text>
+              <Text style={[styles.th, styles.tdRight, { width: mostrarMontos ? '15%' : '20%' }]}>Horas</Text>
+              {mostrarMontos && <Text style={[styles.th, styles.tdRight, { width: '20%' }]}>Valor Hora</Text>}
+              {mostrarMontos && <Text style={[styles.th, styles.tdRight, { width: '20%' }]}>Subtotal</Text>}
             </View>
             {allOperators.map((op, idx) => (
               <View key={idx} style={styles.tableRow}>
-                <Text style={[styles.td, { width: '45%' }]}>{op.operador.nombreCompleto}</Text>
-                <Text style={[styles.td, styles.tdRight, { width: '15%' }]}>{op.horas.toFixed(2)} h</Text>
-                <Text style={[styles.td, styles.tdRight, { width: '20%' }]}>
-                  ${op.valorHoraSnapshot.toLocaleString('es-AR')}
-                </Text>
-                <Text style={[styles.td, styles.tdRight, { width: '20%', fontFamily: 'Helvetica-Bold' }]}>
-                  ${op.costoManoObra.toLocaleString('es-AR')}
-                </Text>
+                <Text style={[styles.td, { width: mostrarMontos ? '45%' : '80%' }]}>{op.operador.nombreCompleto}</Text>
+                <Text style={[styles.td, styles.tdRight, { width: mostrarMontos ? '15%' : '20%' }]}>{op.horas.toFixed(2)} h</Text>
+                {mostrarMontos && (
+                  <Text style={[styles.td, styles.tdRight, { width: '20%' }]}>
+                    ${(op.valorHoraSnapshot ?? 0).toLocaleString('es-AR')}
+                  </Text>
+                )}
+                {mostrarMontos && (
+                  <Text style={[styles.td, styles.tdRight, { width: '20%', fontFamily: 'Helvetica-Bold' }]}>
+                    ${(op.costoManoObra ?? 0).toLocaleString('es-AR')}
+                  </Text>
+                )}
               </View>
             ))}
           </View>
@@ -343,26 +349,30 @@ export function OTPdfDocument({ ot }: OTPdfDocumentProps) {
             <Text style={styles.sectionTitle}>Materiales Utilizados</Text>
             <View style={styles.tableHeader}>
               <Text style={[styles.th, { width: '15%' }]}>Código</Text>
-              <Text style={[styles.th, { width: '40%' }]}>Material</Text>
-              <Text style={[styles.th, styles.tdRight, { width: '12%' }]}>Cant.</Text>
-              <Text style={[styles.th, styles.tdRight, { width: '15%' }]}>Precio Unit.</Text>
-              <Text style={[styles.th, styles.tdRight, { width: '18%' }]}>Subtotal</Text>
+              <Text style={[styles.th, { width: mostrarMontos ? '40%' : '65%' }]}>Material</Text>
+              <Text style={[styles.th, styles.tdRight, { width: mostrarMontos ? '12%' : '20%' }]}>Cant.</Text>
+              {mostrarMontos && <Text style={[styles.th, styles.tdRight, { width: '15%' }]}>Precio Unit.</Text>}
+              {mostrarMontos && <Text style={[styles.th, styles.tdRight, { width: '18%' }]}>Subtotal</Text>}
             </View>
             {allMaterials.map((mat, idx) => (
               <View key={idx} style={styles.tableRow}>
                 <Text style={[styles.td, { width: '15%' }]}>
                   {mat.materialCodigo} {mat.materialSource === 'MANUAL' ? '(M)' : ''}
                 </Text>
-                <Text style={[styles.td, { width: '40%' }]}>{mat.descripcion}</Text>
-                <Text style={[styles.td, styles.tdRight, { width: '12%' }]}>
+                <Text style={[styles.td, { width: mostrarMontos ? '40%' : '65%' }]}>{mat.descripcion}</Text>
+                <Text style={[styles.td, styles.tdRight, { width: mostrarMontos ? '12%' : '20%' }]}>
                   {mat.cantidad} {mat.metros ? `(${mat.metros}m)` : ''}
                 </Text>
-                <Text style={[styles.td, styles.tdRight, { width: '15%' }]}>
-                  ${mat.precioFinalSnapshot.toLocaleString('es-AR')}
-                </Text>
-                <Text style={[styles.td, styles.tdRight, { width: '18%', fontFamily: 'Helvetica-Bold' }]}>
-                  ${mat.importeTotal.toLocaleString('es-AR')}
-                </Text>
+                {mostrarMontos && (
+                  <Text style={[styles.td, styles.tdRight, { width: '15%' }]}>
+                    ${(mat.precioFinalSnapshot ?? 0).toLocaleString('es-AR')}
+                  </Text>
+                )}
+                {mostrarMontos && (
+                  <Text style={[styles.td, styles.tdRight, { width: '18%', fontFamily: 'Helvetica-Bold' }]}>
+                    ${(mat.importeTotal ?? 0).toLocaleString('es-AR')}
+                  </Text>
+                )}
               </View>
             ))}
           </View>
@@ -374,20 +384,26 @@ export function OTPdfDocument({ ot }: OTPdfDocumentProps) {
             <Text style={styles.totalLabel}>Horas Totales</Text>
             <Text style={styles.totalValue}>{grandTotalHoras.toFixed(2)} h</Text>
           </View>
-          <View style={styles.totalItem}>
-            <Text style={styles.totalLabel}>Mano de Obra</Text>
-            <Text style={styles.totalValue}>${grandTotalMO.toLocaleString('es-AR')}</Text>
-          </View>
-          <View style={styles.totalItem}>
-            <Text style={styles.totalLabel}>Materiales</Text>
-            <Text style={styles.totalValue}>${grandTotalMat.toLocaleString('es-AR')}</Text>
-          </View>
-          <View style={styles.totalItem}>
-            <Text style={styles.totalLabel}>Costo Total</Text>
-            <Text style={[styles.totalValue, { color: '#059669', fontSize: 11 }]}>
-              ${grandTotal.toLocaleString('es-AR')}
-            </Text>
-          </View>
+          {mostrarMontos && (
+            <View style={styles.totalItem}>
+              <Text style={styles.totalLabel}>Mano de Obra</Text>
+              <Text style={styles.totalValue}>${grandTotalMO.toLocaleString('es-AR')}</Text>
+            </View>
+          )}
+          {mostrarMontos && (
+            <View style={styles.totalItem}>
+              <Text style={styles.totalLabel}>Materiales</Text>
+              <Text style={styles.totalValue}>${grandTotalMat.toLocaleString('es-AR')}</Text>
+            </View>
+          )}
+          {mostrarMontos && (
+            <View style={styles.totalItem}>
+              <Text style={styles.totalLabel}>Costo Total</Text>
+              <Text style={[styles.totalValue, { color: '#059669', fontSize: 11 }]}>
+                ${grandTotal.toLocaleString('es-AR')}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Firma e Integridad Documental */}

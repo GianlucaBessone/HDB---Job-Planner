@@ -12,11 +12,13 @@ interface OTPdfDownloadLinkProps {
   fileName: string;
   className?: string;
   children: ReactNode;
+  /** false: PDF sin montos (ver OTPdfDocument). */
+  mostrarMontos?: boolean;
 }
 
-export default function OTPdfDownloadLink({ ot, fileName, className, children }: OTPdfDownloadLinkProps) {
+export default function OTPdfDownloadLink({ ot, fileName, className, children, mostrarMontos = true }: OTPdfDownloadLinkProps) {
   return (
-    <PDFDownloadLink document={<OTPdfDocument ot={ot} />} fileName={fileName} className={className}>
+    <PDFDownloadLink document={<OTPdfDocument ot={ot} mostrarMontos={mostrarMontos} />} fileName={fileName} className={className}>
       {children}
     </PDFDownloadLink>
   );

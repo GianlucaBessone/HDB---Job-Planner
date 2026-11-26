@@ -8,6 +8,7 @@ import type { BadgeTone } from '@/components/ui';
 import { safeApiRequest } from '@/lib/offline';
 import { formatARS } from '@/lib/formatCurrency';
 import { formatDate } from '@/lib/formatDate';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 const POR_PAGINA = 30;
 
@@ -28,7 +29,7 @@ interface OTFila {
     cliente: { id: string; nombre: string } | null;
     proyecto: { id: string; nombre: string; codigoProyecto: string | null } | null;
     responsable: { id: string; nombreCompleto: string } | null;
-    ciclos: { numeroCiclo: number; periodo: string; estado: string; totalGeneral: number }[];
+    ciclos: { numeroCiclo: number; periodo: string; estado: string; totalGeneral: number | null }[];
 }
 
 /**
@@ -37,6 +38,7 @@ interface OTFila {
  * proyecto, sector o texto del reporte.
  */
 export default function OTListaGlobal({ busqueda }: { busqueda: string }) {
+    const verMontos = useAcceso().puede('ot.ver_montos');
     const [estado, setEstado] = useState('TODAS');
     const [pagina, setPagina] = useState(1);
     const [filas, setFilas] = useState<OTFila[]>([]);
@@ -116,7 +118,7 @@ export default function OTListaGlobal({ busqueda }: { busqueda: string }) {
                                 <th scope="col">Estado</th>
                                 <th scope="col">Responsable</th>
                                 <th scope="col">Último ciclo</th>
-                                <th scope="col" className="text-right">Total del ciclo</th>
+                                {verMontos && <th scope="col" className="text-right">Total del ciclo</th>}
                                 <th scope="col">Creada</th>
                             </tr>
                         </thead>
@@ -140,7 +142,9 @@ export default function OTListaGlobal({ busqueda }: { busqueda: string }) {
                                         <td><Badge tone={est?.tone ?? 'neutral'}>{est?.label ?? ot.estado}</Badge></td>
                                         <td>{ot.responsable?.nombreCompleto ?? '—'}</td>
                                         <td className="whitespace-nowrap">{ciclo ? `${ciclo.numeroCiclo} · ${ciclo.periodo}` : '—'}</td>
-                                        <td className="text-right tabular-nums whitespace-nowrap">{ciclo ? formatARS(ciclo.totalGeneral) : '—'}</td>
+                                        {verMontos && (
+                                            <td className="text-right tabular-nums whitespace-nowrap">{ciclo?.totalGeneral != null ? formatARS(ciclo.totalGeneral) : '—'}</td>
+                                        )}
                                         <td className="whitespace-nowrap">{formatDate(ot.createdAt)}</td>
                                     </tr>
                                 );
