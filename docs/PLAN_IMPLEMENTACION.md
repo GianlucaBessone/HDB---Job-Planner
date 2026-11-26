@@ -293,6 +293,6 @@ Personas → **Legajo del personal** (`/rrhh/legajo`, también desde Recursos hu
 - Los documentos del personal activo aparecen en **Vencimientos**.
 - Permisos nuevos: `rrhh.legajo_ver` (admin, supervisor, qa) y `rrhh.legajo_gestionar` (admin, supervisor). Las respuestas no se guardan en caché y la auditoría registra qué campos cambiaron, sin los valores.
 - Pendiente si hace falta: que cada persona vea su propio legajo ("Mi legajo").
-- Migración `20261126_legajo_personal` (aditiva: dos tablas nuevas).
+- Migración `20261126_legajo_personal` (aditiva: dos tablas nuevas). **Aplicada en producción el 26/11/2026.**
 
 - Portal del cliente completo.

@@ -14,5 +14,8 @@ Auditoría, faltante "Legajo de personal". Crea dos tablas nuevas:
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 26/11/2026 (14:27 UTC)**, antes del merge. 2 tablas y 2 claves foráneas creadas.
+
+
 1. `psql "$DATABASE_URL" -f prisma/sql/20261126_legajo_personal/up.sql`
 2. Mergear el PR.
