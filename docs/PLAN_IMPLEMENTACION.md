@@ -327,4 +327,4 @@ Antes el análisis del pliego se copiaba a mano en el presupuesto. Ahora, en un 
 - **Materiales**: los del pliego y, si se tilda, los sugeridos por la IA, con la cantidad interpretada ("1.500 m" → 1500; sin número → 1 y la cantidad original en la descripción) y sin precio: se eligen del catálogo en el editor.
 - El presupuesto queda vinculado (`PresupuestoServicio.pliegoId`): el pliego lista sus presupuestos y el presupuesto muestra "Pliego PLG-…".
 - Permisos: armar exige `presupuestos.gestionar` y ver pliegos.
-- Migración `20261127_presupuesto_desde_pliego` (aditiva: una columna opcional).
+- Migración `20261127_presupuesto_desde_pliego` (aditiva: una columna opcional). **Aplicada en producción el 27/11/2026.**
