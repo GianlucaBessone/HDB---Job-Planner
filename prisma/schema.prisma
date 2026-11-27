@@ -3829,22 +3829,23 @@ model ViajeTarifa {
 // tarea (estado actual) y en PliegoTareaMarca (historial).
 
 model Pliego {
-  id              String           @id @default(cuid())
-  codigo          String           @unique // PLG-2026-0001
+  id              String                @id @default(cuid())
+  codigo          String                @unique // PLG-2026-0001
   titulo          String
-  descripcion     String?          @db.Text
+  descripcion     String?               @db.Text
   projectId       String?
-  project         Project?         @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  project         Project?              @relation(fields: [projectId], references: [id], onDelete: SetNull)
   clientId        String?
-  client          HdbClient?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  estado          String           @default("borrador") // borrador | analizando | analizado | error
-  ultimoError     String?          @db.Text
+  client          HdbClient?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  estado          String                @default("borrador") // borrador | analizando | analizado | error
+  ultimoError     String?               @db.Text
   creadoPorId     String
   creadoPorNombre String
   archivo         PliegoArchivo?
   analisis        PliegoAnalisis[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  presupuestos    PresupuestoServicio[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 
   @@index([projectId])
   @@index([clientId])
@@ -3997,6 +3998,9 @@ model PresupuestoServicio {
   motivoRechazo    String?
   proyectoId       String?                      @unique
   proyecto         Project?                     @relation(fields: [proyectoId], references: [id], onDelete: SetNull)
+  // Pliego del que salió (P36): el presupuesto se arma desde el análisis del pliego
+  pliegoId         String?
+  pliego           Pliego?                      @relation(fields: [pliegoId], references: [id], onDelete: SetNull)
   convertidoEn     DateTime?
   convertidoPorId  String?
   creadoPorId      String?
@@ -4006,6 +4010,7 @@ model PresupuestoServicio {
   versiones        PresupuestoServicioVersion[]
   snapshot         PresupuestoServicioSnapshot?
 
+  @@index([pliegoId])
   @@index([clienteId])
   @@index([estado])
   @@index([createdAt])

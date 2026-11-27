@@ -279,6 +279,7 @@ export async function obtenerPresupuesto(id: string) {
         include: {
             cliente: { select: { id: true, nombre: true, email: true, telefono: true, direccion: true, listaPrecioId: true } },
             proyecto: { select: { id: true, codigoProyecto: true, nombre: true, estado: true } },
+            pliego: { select: { id: true, codigo: true, titulo: true } },
             versiones: { orderBy: { version: 'desc' }, include: includeVersion },
             snapshot: true,
         },
@@ -292,7 +293,8 @@ export async function obtenerPresupuesto(id: string) {
 
 // ── Escritura ──────────────────────────────────────────────────────
 
-export async function crearPresupuesto(input: ContenidoPresupuestoInput, usuario: UsuarioSesion) {
+/** `origen.pliegoId`: el presupuesto se armó desde el análisis de ese pliego (P36). */
+export async function crearPresupuesto(input: ContenidoPresupuestoInput, usuario: UsuarioSesion, origen?: { pliegoId?: string | null }) {
     const prep = await prepararContenido(input, usuario);
     const creado = await prisma.$transaction(
         async (tx) => {
@@ -305,6 +307,7 @@ export async function crearPresupuesto(input: ContenidoPresupuestoInput, usuario
                     titulo: prep.titulo,
                     estado: 'borrador',
                     versionActual: 1,
+                    pliegoId: origen?.pliegoId ?? null,
                     creadoPorId: usuario.id,
                     creadoPorNombre: usuario.nombre,
                 },

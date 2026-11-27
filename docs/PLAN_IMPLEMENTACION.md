@@ -317,3 +317,14 @@ Antes los datos de una persona estaban repartidos entre Usuarios (rol, PIN, acce
 - **Accesos**: rol, estado y permisos especiales; "Editar usuario, rol y PIN" abre la edición en Usuarios (`/operators?editar=<id>`) y "Accesos y permisos especiales" abre el mismo diálogo de siempre.
 - **Mi ficha** (`/personas/yo`, en el menú del usuario): cada persona ve su legajo (sin las observaciones internas de RRHH), sus documentos y adjuntos, su EPP, su formación, sus horas y sus viajes, en solo lectura. No ve sus accesos ni la ficha de otros.
 - El formulario del legajo pasó a `components/personas/LegajoFicha.tsx`. Sin cambios de base de datos.
+
+### P36 · Del pliego al presupuesto
+
+Antes el análisis del pliego se copiaba a mano en el presupuesto. Ahora, en un pliego analizado, el panel **Presupuesto** arma un presupuesto de servicio en borrador (`POST /api/pliegos/[id]/presupuesto`, `lib/presupuestoDesdePliego.ts`) y lo abre en el editor:
+
+- Cliente y título del pliego (si el pliego no tiene cliente, se elige en el diálogo). Alcance: el resumen del análisis con la referencia al pliego.
+- **Tareas**: las marcadas "dentro del pliego" (con su modificación, si la tienen) y, si se tilda, las sin marcar. Las "fuera del pliego" no se cargan. Cada tarea lleva una línea de mano de obra con la primera categoría activa y 0 horas, para completar.
+- **Materiales**: los del pliego y, si se tilda, los sugeridos por la IA, con la cantidad interpretada ("1.500 m" → 1500; sin número → 1 y la cantidad original en la descripción) y sin precio: se eligen del catálogo en el editor.
+- El presupuesto queda vinculado (`PresupuestoServicio.pliegoId`): el pliego lista sus presupuestos y el presupuesto muestra "Pliego PLG-…".
+- Permisos: armar exige `presupuestos.gestionar` y ver pliegos.
+- Migración `20261127_presupuesto_desde_pliego` (aditiva: una columna opcional). **Aplicada en producción el 27/11/2026.**
