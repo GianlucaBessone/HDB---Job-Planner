@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
 import { exigirAcceso } from '@/lib/permisosServer';
@@ -6,6 +7,27 @@ import { nivelSobreTarea } from '@/lib/tareas/acceso';
 
 /** Campos que un colaborador puede cambiar. */
 const CAMPOS_COLABORADOR = ['estado', 'fechaCompletada'];
+
+const PRIORIDADES = ['baja', 'media', 'alta', 'urgente'] as const;
+const ESTADOS = ['pendiente', 'en_progreso', 'completada', 'cancelada', 'cerrada', 'anulada'] as const;
+const ESTADOS_CERRADOS_OK = ['completada', 'cerrada'];
+const ROLES = ['responsable', 'colaborador', 'observador'] as const;
+
+const involucradosSchema = z.array(z.object({
+    operatorId: z.string().min(1),
+    rol: z.enum(ROLES).catch('responsable'),
+})).max(50);
+
+const camposSchema = z.object({
+    prioridad: z.enum(PRIORIDADES).optional(),
+    estado: z.enum(ESTADOS).optional(),
+    involucrados: involucradosSchema.optional(),
+});
+
+/** Una persona aparece una sola vez (la última fila gana): evita choques con @@unique([tareaId, operatorId]). */
+function sinDuplicados<T extends { operatorId: string }>(lista: T[]): T[] {
+    return Array.from(new Map(lista.map(i => [i.operatorId, i])).values());
+}
 
 // ── GET — List tareas with filters ─────────────────────────────────
 export async function GET(req: NextRequest) {
@@ -74,6 +96,10 @@ export async function POST(req: NextRequest) {
         if (acceso instanceof NextResponse) return acceso;
 
         const body = await req.json();
+        const validado = camposSchema.safeParse(body);
+        if (!validado.success) {
+            return NextResponse.json({ error: 'Datos inválidos (prioridad, estado o involucrados)' }, { status: 400 });
+        }
         const {
             titulo,
             descripcion,
@@ -83,7 +109,6 @@ export async function POST(req: NextRequest) {
             fechaInicio,
             fechaVencimiento,
             projectId,
-            involucrados = [], // [{ operatorId, rol }]
             notas,
         } = body;
 
@@ -91,15 +116,17 @@ export async function POST(req: NextRequest) {
         const creadorId = acceso.userId;
         const creadorNombre = acceso.nombre;
 
-        if (!titulo) {
+        if (typeof titulo !== 'string' || !titulo.trim()) {
             return NextResponse.json({ error: 'Faltan campos obligatorios (titulo)' }, { status: 400 });
         }
+        const listaInvolucrados = sinDuplicados(validado.data.involucrados ?? []);
 
         const tarea = await prisma.tarea.create({
             data: {
-                titulo,
+                titulo: titulo.trim(),
                 descripcion: descripcion || null,
                 estado,
+                fechaCompletada: ESTADOS_CERRADOS_OK.includes(estado) ? new Date() : null,
                 prioridad,
                 categoria: categoria || null,
                 fechaInicio: fechaInicio ? new Date(fechaInicio) : null,
@@ -109,9 +136,9 @@ export async function POST(req: NextRequest) {
                 creadorNombre,
                 notas: notas || null,
                 involucrados: {
-                    create: involucrados.map((inv: any) => ({
+                    create: listaInvolucrados.map(inv => ({
                         operatorId: inv.operatorId,
-                        rol: inv.rol || 'responsable',
+                        rol: inv.rol,
                     })),
                 },
             },
@@ -184,7 +211,19 @@ export async function PUT(req: NextRequest) {
 
         const body = await req.json();
         // actorId / actorName del cuerpo se ignoran; el creador no se reasigna desde acá.
-        const { id, involucrados, actorId: _actorId, actorName: _actorName, creadorId: _creadorId, creadorNombre: _creadorNombre, ...data } = body;
+        const { id, involucrados: involucradosBody, actorId: _actorId, actorName: _actorName, creadorId: _creadorId, creadorNombre: _creadorNombre, ...data } = body;
+
+        const validado = camposSchema.safeParse(body);
+        if (!validado.success) {
+            return NextResponse.json({ error: 'Datos inválidos (prioridad, estado o involucrados)' }, { status: 400 });
+        }
+        const involucrados = involucradosBody === undefined || involucradosBody === null
+            ? undefined
+            : sinDuplicados(validado.data.involucrados ?? []);
+        if (typeof data.titulo === 'string') {
+            data.titulo = data.titulo.trim();
+            if (!data.titulo) return NextResponse.json({ error: 'El título es obligatorio' }, { status: 400 });
+        }
 
         if (!id) {
             return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
@@ -220,19 +259,31 @@ export async function PUT(req: NextRequest) {
         // Handle empty strings for optional relations
         if (data.projectId === '') data.projectId = null;
 
-        // If completing, set the completion date automatically
-        if (data.estado === 'completada' && !data.fechaCompletada) {
-            data.fechaCompletada = new Date();
+        // Fecha de cierre: se pone al completar y se borra al reabrir o cancelar.
+        if (data.estado !== undefined && data.estado !== oldTarea.estado) {
+            if (ESTADOS_CERRADOS_OK.includes(data.estado)) {
+                if (!data.fechaCompletada) data.fechaCompletada = new Date();
+            } else {
+                data.fechaCompletada = null;
+            }
         }
 
         // Update involucrados if provided (Diff strategy)
         if (involucrados) {
             const existing = await prisma.tareaInvolucrado.findMany({ where: { tareaId: id } });
             const existingIds = existing.map(e => e.operatorId);
-            const newIds = involucrados.map((i: any) => i.operatorId);
-            
+            const newIds = involucrados.map(i => i.operatorId);
+
             const toDelete = existingIds.filter(id => !newIds.includes(id));
-            const toCreate = involucrados.filter((i: any) => !existingIds.includes(i.operatorId));
+            const toCreate = involucrados.filter(i => !existingIds.includes(i.operatorId));
+            // Cambio de rol de alguien que ya estaba
+            const toUpdate = involucrados.filter(i => existing.some(e => e.operatorId === i.operatorId && e.rol !== i.rol));
+            for (const inv of toUpdate) {
+                await prisma.tareaInvolucrado.update({
+                    where: { tareaId_operatorId: { tareaId: id, operatorId: inv.operatorId } },
+                    data: { rol: inv.rol },
+                });
+            }
             
             if (toDelete.length > 0) {
                 await prisma.tareaInvolucrado.deleteMany({
@@ -241,10 +292,10 @@ export async function PUT(req: NextRequest) {
             }
             if (toCreate.length > 0) {
                 await prisma.tareaInvolucrado.createMany({
-                    data: toCreate.map((inv: any) => ({
+                    data: toCreate.map(inv => ({
                         tareaId: id,
                         operatorId: inv.operatorId,
-                        rol: inv.rol || 'responsable',
+                        rol: inv.rol,
                     }))
                 });
             }
@@ -266,7 +317,7 @@ export async function PUT(req: NextRequest) {
         const actingUserId = acceso.userId;
         const actingUserName = acceso.nombre;
 
-        const keysChanged = Object.keys(data);
+        const keysChanged = Object.keys(data).filter(k => k !== 'fechaCompletada');
         const isPureStatusChange = keysChanged.length === 1 && keysChanged[0] === 'estado';
 
         if (isPureStatusChange && oldTarea.estado !== data.estado) {
@@ -303,8 +354,8 @@ export async function PUT(req: NextRequest) {
 
         if (involucrados) {
             const oldIds = oldTarea.involucrados.map(i => i.operatorId);
-            const newIds = involucrados.map((i: any) => i.operatorId);
-            
+            const newIds = involucrados.map(i => i.operatorId);
+
             const removedIds = oldIds.filter(id => !newIds.includes(id) && id !== actingUserId);
             const addedIds = newIds.filter(id => !oldIds.includes(id) && id !== actingUserId);
 
