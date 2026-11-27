@@ -328,3 +328,20 @@ Antes el análisis del pliego se copiaba a mano en el presupuesto. Ahora, en un 
 - El presupuesto queda vinculado (`PresupuestoServicio.pliegoId`): el pliego lista sus presupuestos y el presupuesto muestra "Pliego PLG-…".
 - Permisos: armar exige `presupuestos.gestionar` y ver pliegos.
 - Migración `20261127_presupuesto_desde_pliego` (aditiva: una columna opcional). **Aplicada en producción el 27/11/2026.**
+
+### P17 · Permisos del catálogo en las pantallas
+
+Las pantallas que todavía comparaban el rol a mano ahora usan las funciones de `lib/permisos.ts` (`useAcceso().puede` o `puedeFuncion`), las mismas que exige su API. Así un permiso especial (dar o quitar una función a una persona) también cambia lo que ve la pantalla, no solo lo que acepta el servidor.
+
+| Pantalla | Antes | Ahora |
+|---|---|---|
+| Usuarios y accesos | Editar, activar y borrar si el rol no era operador ni vendedor | `usuarios.gestionar`; el rol, con `usuarios.asignar_rol` |
+| Registro de horas | El operador veía y cargaba solo lo suyo | Sin `timesheets.gestionar_horas`, solo lo propio |
+| Avisos (aprobar correcciones de horas) | Supervisor, admin y QA | `timesheets.gestionar_horas` |
+| Órdenes de servicio | Cobro y cancelar para admin y QA (la API pedía `os.cobrar`: admin y supervisor) | Cobro con `os.cobrar`, cancelar con `os.gestionar`: QA ya no ve botones que fallaban y supervisión ve los que puede usar |
+| Demoras | Editar y borrar para admin, supervisor y QA | `demoras.gestionar` |
+| Tickets | Gestionar para admin, supervisor y QA | `tickets.gestionar` |
+| Datasets y Diccionario | Redirigían si el rol no era de gestión | Decide el acceso a la vista (roles por vista y permisos especiales) |
+| Pestañas de Calidad, OKR y KPI, Herramientas | Lista de roles por pestaña | `calidad.ver`, `okr.ver`, `herramientas.gestionar`; las pestañas para todos quedan para quien abre la vista |
+
+Quedan comparaciones de rol que no son permisos: filtrar qué personas listar (por ejemplo, operadores en la agenda) y el color de la etiqueta del rol. Sin cambios de base de datos.

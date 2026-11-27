@@ -12,12 +12,8 @@ export default function DatasetsPage() {
         const stored = localStorage.getItem('currentUser');
         if (stored) {
             const user = JSON.parse(stored);
-            const role = user.role?.toLowerCase() || '';
-            if (['admin', 'qa', 'supervisor'].includes(role)) {
-                setCurrentUser(user);
-            } else {
-                router.replace('/');
-            }
+            // P17: el acceso a la vista lo decide el layout (roles por vista y permisos especiales)
+            setCurrentUser(user);
         } else {
             router.replace('/');
         }

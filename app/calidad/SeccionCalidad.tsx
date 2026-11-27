@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FileCheck, Lightbulb, ShieldAlert, GraduationCap } from 'lucide-react';
 import { useViewState } from '@/lib/hooks/useViewState';
 import ModuleHeader from '@/components/ModuleHeader';
+import { useAcceso } from '@/lib/store/useAccessStore';
+import type { FuncionId } from '@/lib/permisos';
 
 import DashboardTab from './components/DashboardTab';
 import LibraryTab from './components/LibraryTab';
@@ -25,20 +27,21 @@ import { OportunidadesTab } from './components/OportunidadesTab';
 export type SeccionId = 'documentos' | 'mejora' | 'riesgos' | 'formacion';
 type TabId = 'dashboard' | 'library' | 'templates' | 'expirations' | 'history' | 'training' | 'competencies' | 'nc' | 'capa' | 'riesgos' | 'oportunidades' | 'sugerencias';
 
-const GESTION = ['supervisor', 'admin', 'qa'];
-const TODOS = ['operador', ...GESTION];
+// P17: pestañas por función del catálogo (antes, listas de roles). null: quien abre la entrada
+const GESTION: FuncionId = 'calidad.ver';
+const TODOS = null;
 
-const SECCIONES: Record<SeccionId, { titulo: string; descripcion: string; icono: React.ReactNode; tabs: { id: TabId; label: string; roles: string[] }[] }> = {
+const SECCIONES: Record<SeccionId, { titulo: string; descripcion: string; icono: React.ReactNode; tabs: { id: TabId; label: string; funcion: FuncionId | null }[] }> = {
     documentos: {
         titulo: 'Documentos',
         descripcion: 'Biblioteca documental, vencimientos, plantillas de checklist e historial del SGI',
         icono: <FileCheck className="w-5 h-5" />,
         tabs: [
-            { id: 'dashboard', label: 'Tablero del SGI', roles: GESTION },
-            { id: 'library', label: 'Biblioteca', roles: TODOS },
-            { id: 'expirations', label: 'Vencimientos', roles: GESTION },
-            { id: 'templates', label: 'Plantillas de checklist', roles: GESTION },
-            { id: 'history', label: 'Historial', roles: GESTION },
+            { id: 'dashboard', label: 'Tablero del SGI', funcion: GESTION },
+            { id: 'library', label: 'Biblioteca', funcion: TODOS },
+            { id: 'expirations', label: 'Vencimientos', funcion: GESTION },
+            { id: 'templates', label: 'Plantillas de checklist', funcion: GESTION },
+            { id: 'history', label: 'Historial', funcion: GESTION },
         ],
     },
     mejora: {
@@ -46,25 +49,25 @@ const SECCIONES: Record<SeccionId, { titulo: string; descripcion: string; icono:
         descripcion: 'No conformidades, acciones correctivas y preventivas, oportunidades y sugerencias',
         icono: <Lightbulb className="w-5 h-5" />,
         tabs: [
-            { id: 'nc', label: 'No conformidades', roles: GESTION },
-            { id: 'capa', label: 'Acciones (CAPA)', roles: GESTION },
-            { id: 'oportunidades', label: 'Oportunidades', roles: GESTION },
-            { id: 'sugerencias', label: 'Sugerencias', roles: GESTION },
+            { id: 'nc', label: 'No conformidades', funcion: GESTION },
+            { id: 'capa', label: 'Acciones (CAPA)', funcion: GESTION },
+            { id: 'oportunidades', label: 'Oportunidades', funcion: GESTION },
+            { id: 'sugerencias', label: 'Sugerencias', funcion: GESTION },
         ],
     },
     riesgos: {
         titulo: 'Riesgos',
         descripcion: 'Matriz de riesgos del SGI',
         icono: <ShieldAlert className="w-5 h-5" />,
-        tabs: [{ id: 'riesgos', label: 'Matriz de riesgos', roles: GESTION }],
+        tabs: [{ id: 'riesgos', label: 'Matriz de riesgos', funcion: GESTION }],
     },
     formacion: {
         titulo: 'Formación y competencias',
         descripcion: 'Capacitación obligatoria y matriz de competencias del personal',
         icono: <GraduationCap className="w-5 h-5" />,
         tabs: [
-            { id: 'training', label: 'Capacitación', roles: TODOS },
-            { id: 'competencies', label: 'Matriz de competencias', roles: TODOS },
+            { id: 'training', label: 'Capacitación', funcion: TODOS },
+            { id: 'competencies', label: 'Matriz de competencias', funcion: TODOS },
         ],
     },
 };
@@ -119,7 +122,8 @@ export default function SeccionCalidad({ seccion }: { seccion: SeccionId }) {
     }, [activeTab]);
 
     const role = currentUser?.role?.toLowerCase() || 'operador';
-    const allowedTabs = useMemo(() => cfg.tabs.filter((t) => t.roles.includes(role)), [cfg, role]);
+    const { puede } = useAcceso();
+    const allowedTabs = useMemo(() => cfg.tabs.filter((t) => !t.funcion || puede(t.funcion)), [cfg, puede]);
 
     useEffect(() => {
         if (!currentUser) return;

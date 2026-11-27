@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAcceso } from '@/lib/store/useAccessStore';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ModuleHeader from '@/components/ModuleHeader';
@@ -66,6 +67,7 @@ function prioridadLabel(value: string) {
 }
 
 export default function TicketsPage() {
+    const { puede: puedeTickets } = useAcceso();
     const [user, setUser] = useState<any>(null);
     const [tickets, setTickets] = useState<any[]>([]);
     const [metrics, setMetrics] = useState<any>(null);
@@ -100,7 +102,8 @@ export default function TicketsPage() {
     }, []);
 
     const role = (user?.role || 'operador').toLowerCase();
-    const canManage = ['admin', 'qa', 'supervisor'].includes(role);
+    // P17: función del catálogo en lugar de la lista de roles
+    const canManage = puedeTickets('tickets.gestionar');
 
     const fetchData = useCallback(async () => {
         setLoading(true);

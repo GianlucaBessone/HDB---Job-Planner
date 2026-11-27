@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useAcceso } from '@/lib/store/useAccessStore';
+import type { FuncionId } from '@/lib/permisos';
 import {
     Wrench, Plus, Search, ScanLine, Camera, ArrowLeft, X, Save, Trash2, Edit2,
     CheckCircle2, AlertTriangle, Clock, RefreshCw, Minus, ClipboardCheck, Filter,
@@ -111,15 +113,18 @@ function HerramientasPage() {
 
     const role = currentUser?.role?.toLowerCase() || 'operador';
 
-    const tabs: { id: TabId; label: string; icon: React.ReactNode; roles: string[] }[] = [
-        { id: 'herramientas', label: 'Herramientas', icon: <Wrench className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
-        { id: 'carros', label: 'Carros', icon: <Package className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
-        { id: 'retiros', label: 'Retiros', icon: <ScanLine className="w-4 h-4" />, roles: ['operador', 'supervisor', 'admin'] },
-        { id: 'verificacion', label: 'Verificación', icon: <ShieldCheck className="w-4 h-4" />, roles: ['operador', 'supervisor', 'admin'] },
-        { id: 'historial', label: 'Historial', icon: <Clock className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
+    // P17: pestañas por función del catálogo (antes, lista de roles). Sin función: quien abre la vista
+    const { puede } = useAcceso();
+    const tabs: { id: TabId; label: string; icon: React.ReactNode; funcion: FuncionId | null }[] = [
+        { id: 'herramientas', label: 'Herramientas', icon: <Wrench className="w-4 h-4" />, funcion: 'herramientas.gestionar' },
+        { id: 'carros', label: 'Carros', icon: <Package className="w-4 h-4" />, funcion: 'herramientas.gestionar' },
+        { id: 'retiros', label: 'Retiros', icon: <ScanLine className="w-4 h-4" />, funcion: null },
+        { id: 'verificacion', label: 'Verificación', icon: <ShieldCheck className="w-4 h-4" />, funcion: null },
+        { id: 'historial', label: 'Historial', icon: <Clock className="w-4 h-4" />, funcion: 'herramientas.gestionar' },
     ];
 
-    const allowedTabs = useMemo(() => tabs.filter(t => t.roles.includes(role)), [role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const allowedTabs = useMemo(() => tabs.filter(t => !t.funcion || puede(t.funcion)), [puede]);
 
     // Default to first allowed tab if current isn't allowed
     useEffect(() => {

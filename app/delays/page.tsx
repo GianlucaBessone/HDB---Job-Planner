@@ -31,6 +31,7 @@ import { getProjectOptions } from '@/lib/projectSelectHelper';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { useRef } from 'react';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 interface Project {
     id: string;
@@ -55,6 +56,8 @@ interface ClientDelay {
 const AREAS = ['Control Documentario', 'Calidad', 'Compras', 'IT', 'Producción', 'Logística', 'Seguridad', 'MAPHI', 'Portería', 'Mantenimiento', 'Ingeniería', 'Gerencia', 'Otro'];
 
 export default function DelaysPage() {
+    // P17: editar y borrar demoras es la función demoras.gestionar (antes: rol admin, supervisor o QA)
+    const gestionaDemoras = useAcceso().puede('demoras.gestionar');
     const [delays, setDelays] = useState<ClientDelay[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<{ nombreCompleto: string }[]>([]);
@@ -474,7 +477,7 @@ export default function DelaysPage() {
                                                 </td>
                                                 <td className="p-4 text-right">
                                                     <div className="flex items-center justify-end gap-1">
-                                                        {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor' || currentUser?.role === 'qa') && (
+                                                        {gestionaDemoras && (
                                                             <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-primary hover:bg-primary/10 transition-all">
                                                                 <Edit2 className="w-4 h-4" />
                                                             </button>
@@ -512,7 +515,7 @@ export default function DelaysPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0">
-                                                {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor' || currentUser?.role === 'qa') && (
+                                                {gestionaDemoras && (
                                                     <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
                                                         <Edit2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                                     </button>
@@ -629,7 +632,7 @@ export default function DelaysPage() {
                                         <label className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <User className="w-3 h-3" /> Quien registra
                                         </label>
-                                        {currentUser?.role === 'operador' ? (
+                                        {!gestionaDemoras ? (
                                             <div className="w-full bg-muted border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 font-bold text-slate-500 dark:text-slate-400 h-[50px] flex items-center">
                                                 {formData.operador}
                                             </div>

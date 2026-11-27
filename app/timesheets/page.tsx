@@ -20,6 +20,7 @@ import { useRef } from 'react';
 import { calculateHours } from '@/lib/timeUtils';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { TimePicker } from '@/components/ui/TimePicker';
+import { puedeFuncion } from '@/lib/permisos';
 
 interface Assignment {
     id: string;
@@ -95,6 +96,8 @@ export default function TimesheetsPage() {
     const setFilterProject = (val: string) => setFilters({ filterProject: val });
     const [currentUser, setCurrentUser] = useState<any>(null);
     const permisosEspeciales = useAccessStore(s => s.permisos);
+    // P17: ver y cargar horas de otros es la función timesheets.gestionar_horas (antes: rol distinto de operador)
+    const gestionaHoras = (u: any) => puedeFuncion('timesheets.gestionar_horas', u?.role, permisosEspeciales);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,12 +139,27 @@ export default function TimesheetsPage() {
         loadData(parsedUser);
     }, []);
 
+    // Los permisos especiales llegan después del primer render: si cambian quién ve las horas de todos, se recargan
+    const accesosCargados = useAccessStore(s => s.cargado);
+    const veTodasLasHoras = currentUser ? gestionaHoras(currentUser) : null;
+    const primeraCarga = useRef(true);
+    useEffect(() => {
+        if (!accesosCargados || veTodasLasHoras === null) return;
+        if (primeraCarga.current) {
+            primeraCarga.current = false;
+            // Solo recarga si la carga inicial (por rol) no coincide con los permisos ya leídos
+            if (veTodasLasHoras === puedeFuncion('timesheets.gestionar_horas', currentUser?.role, [])) return;
+        }
+        loadData(currentUser);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [accesosCargados, veTodasLasHoras]);
+
     const loadData = async (userObj?: any) => {
         setIsLoading(true);
         try {
             const user = userObj || currentUser;
             let entriesUrl = '/api/time-entries';
-            if (user?.role === 'operador') {
+            if (!gestionaHoras(user)) {
                 entriesUrl += `?operatorId=${user.id}`;
             }
 
@@ -210,7 +228,7 @@ export default function TimesheetsPage() {
             }]);
 
             if (entry.estadoConfirmado) {
-                if (currentUser?.role === 'operador') {
+                if (!gestionaHoras(currentUser)) {
                     setPendingAction({ type: 'request_modification', entry });
                     setIsRequestModalOpen(true);
                     return;
@@ -219,7 +237,7 @@ export default function TimesheetsPage() {
         } else {
             setEditingEntry(null);
             setFormData({
-                operatorId: currentUser?.role === 'operador' ? currentUser.id : '',
+                operatorId: !gestionaHoras(currentUser) ? currentUser.id : '',
                 fecha: new Date().toISOString().split('T')[0],
                 horaIngreso: '',
                 horaEgreso: ''
@@ -387,7 +405,7 @@ export default function TimesheetsPage() {
 
     const handleDeleteClick = (entry: TimeEntry) => {
         if (entry.estadoConfirmado) {
-            if (currentUser?.role === 'operador') {
+            if (!gestionaHoras(currentUser)) {
                 setPendingAction({ type: 'request_deletion', entry });
                 setIsRequestModalOpen(true);
                 return;
@@ -472,7 +490,7 @@ export default function TimesheetsPage() {
 
     // Derived Data
     // Restricted projects list for operators (filters out planned/old finalized)
-    const operatorVisibleProjects = currentUser?.role === 'operador' ? filterOperatorProjects(projects) : projects;
+    const operatorVisibleProjects = !gestionaHoras(currentUser) ? filterOperatorProjects(projects) : projects;
     const activeProjects = operatorVisibleProjects.filter(p => p.estado !== 'finalizado' || (new Date(p.updatedAt || 0) > new Date(Date.now() - 24*60*60*1000)));
     const activeOperators = operators;
 
@@ -688,7 +706,7 @@ export default function TimesheetsPage() {
                             className="h-[42px] bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none flex-1 min-w-0"
                         />
                     </div>
-                    {currentUser?.role !== 'operador' && (
+                    {gestionaHoras(currentUser) && (
                         <div className="flex items-center gap-2 w-full md:w-auto md:min-w-[200px]">
                             <SearchableSelect
                                 label="Filtrar Operador"
@@ -721,7 +739,7 @@ export default function TimesheetsPage() {
                         </button>
                     )}
 
-                    {currentUser?.role !== 'operador' && (
+                    {gestionaHoras(currentUser) && (
                         <button
                             onClick={exportToExcel}
                             className="ml-auto bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold py-2 px-3 rounded-xl shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap"
@@ -1022,7 +1040,7 @@ export default function TimesheetsPage() {
                                             value={formData.operatorId}
                                             onChange={(val) => setFormData({ ...formData, operatorId: val })}
                                             placeholder="Seleccionar operador..."
-                                            disabled={!!editingEntry || currentUser?.role === 'operador'}
+                                            disabled={!!editingEntry || !gestionaHoras(currentUser)}
                                         />
                                     </div>
 

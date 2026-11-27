@@ -14,6 +14,7 @@ import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
 import { useAccessStore } from '@/lib/store/useAccessStore';
+import { puedeFuncion } from '@/lib/permisos';
 import CodeBadge from '@/components/CodeBadge';
 import dynamic from 'next/dynamic';
 import { useViewState } from '@/lib/hooks/useViewState';
@@ -654,6 +655,9 @@ function OrdenesServicioContent() {
     };
 
     const permisosEspeciales = useAccessStore(s => s.permisos);
+    // P17: cobro con os.cobrar y cancelar con os.gestionar (como exige la API); antes se mostraban a admin y QA
+    const cobraOS = puedeFuncion('os.cobrar', currentUser?.role, permisosEspeciales);
+    const gestionaOS = puedeFuncion('os.gestionar', currentUser?.role, permisosEspeciales);
     const role = currentUser?.role?.trim().toLowerCase() || '';
     const isSupervisorOrAdmin = !role || !viewConfig || isViewAllowed('/ordenes-servicio', role, 'sidebar', viewConfig, permisosEspeciales);
 
@@ -830,7 +834,7 @@ function OrdenesServicioContent() {
 
                                     {/* Actions */}
                                     <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                                        {(currentUser?.role === 'admin' || currentUser?.role === 'qa') && os.cobroGenerado && (
+                                        {cobraOS && os.cobroGenerado && (
                                             <a
                                                 href={`/api/ordenes-servicio/${os.id}/cobro/pdf`}
                                                 target="_blank"
@@ -841,7 +845,7 @@ function OrdenesServicioContent() {
                                                 <FileText className="w-3.5 h-3.5" /> PDF Cobro
                                             </a>
                                         )}
-                                        {(currentUser?.role === 'admin' || currentUser?.role === 'qa') && os.estado === 'cobrada' && (
+                                        {cobraOS && os.estado === 'cobrada' && (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -852,15 +856,15 @@ function OrdenesServicioContent() {
                                                 <CheckCircle2 className="w-3.5 h-3.5" /> Pagada
                                             </button>
                                         )}
-                                        {(currentUser?.role === 'admin' || currentUser?.role === 'qa') && (os.estado === 'pendiente' || os.estado === 'firmada' || os.estado === 'cobrada') && (
+                                        {(cobraOS || gestionaOS) && (os.estado === 'pendiente' || os.estado === 'firmada' || os.estado === 'cobrada') && (
                                             <>
-                                                <button
+                                                {cobraOS && <button
                                                     onClick={(e) => { e.stopPropagation(); setOsCobroToOpen(os); }}
                                                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all"
                                                 >
                                                     <Calculator className="w-3.5 h-3.5" /> {os.cobroGenerado ? 'Ver Cobro' : 'Generar Cobro'}
-                                                </button>
-                                                <button
+                                                </button>}
+                                                {gestionaOS && <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setOsToCancel(os);
@@ -869,7 +873,7 @@ function OrdenesServicioContent() {
                                                     title="Cancelar orden"
                                                 >
                                                     <X className="w-3.5 h-3.5" /> Cancelar
-                                                </button>
+                                                </button>}
                                             </>
                                         )}
                                         <button
