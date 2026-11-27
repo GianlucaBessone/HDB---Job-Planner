@@ -306,3 +306,14 @@ El portal (`/portal-clientes`) suma tres secciones a las OT:
 - El PDF del presupuesto se generó en `lib/presupuestosServicio/pdf.ts` para usarlo desde la pantalla interna y desde el portal.
 - Migración `20261126_portal_permisos` (aditiva: dos columnas booleanas). **Aplicada en producción el 26/11/2026.**
 - Seguridad (de paso): `GET /api/clients/[id]/responsables` y la configuración del cliente devolvían el hash de la clave del portal a cualquier sesión. Ahora nunca lo devuelven (`CAMPOS_RESPONSABLE` en `lib/portalAuth.ts`) y la lista exige `clientes.gestionar`.
+
+### P16 · Ficha única de la persona
+
+Antes los datos de una persona estaban repartidos entre Usuarios (rol, PIN, accesos), RRHH (EPP), Legajo, Calidad (competencias y capacitaciones), Asistencia (horas) y Viajes. Ahora hay una ficha (`/personas/[id]`) con pestañas **Resumen · Legajo · Accesos · EPP · Formación · Horas · Viajes**.
+
+- Se abre desde **Usuarios y accesos** (el nombre), desde **Legajo del personal** y desde **Vencimientos**. `/rrhh/legajo/[id]` redirige a la pestaña Legajo.
+- Cada pestaña aparece solo si quien mira puede abrir el módulo de origen (`lib/fichaPersona.ts`, `GET /api/personas/[id]`): Legajo con `rrhh.legajo_ver`/`gestionar`; Accesos con Usuarios y accesos y `usuarios.gestionar` o `usuarios.accesos`; EPP con Recursos humanos; Formación con Formación y competencias; Horas con Asistencia y horas; Viajes con Viajes. La ficha de otra persona la abre quien ve Usuarios y accesos o el Legajo.
+- **Resumen**: documentos vencidos o por vencer, EPP, competencias por vencer, horas de los últimos 30 días y datos básicos (legajo, ingreso y antigüedad, rol, categoría de mano de obra).
+- **Accesos**: rol, estado y permisos especiales; "Editar usuario, rol y PIN" abre la edición en Usuarios (`/operators?editar=<id>`) y "Accesos y permisos especiales" abre el mismo diálogo de siempre.
+- **Mi ficha** (`/personas/yo`, en el menú del usuario): cada persona ve su legajo (sin las observaciones internas de RRHH), sus documentos y adjuntos, su EPP, su formación, sus horas y sus viajes, en solo lectura. No ve sus accesos ni la ficha de otros.
+- El formulario del legajo pasó a `components/personas/LegajoFicha.tsx`. Sin cambios de base de datos.

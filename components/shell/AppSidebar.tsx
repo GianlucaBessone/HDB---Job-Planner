@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import OneSignal from 'react-onesignal';
-import { BellRing, ChevronDown, Home, LogOut, MoreHorizontal, Palette, PanelLeftClose, Star, X } from 'lucide-react';
+import { BellRing, ChevronDown, Home, LogOut, MoreHorizontal, Palette, PanelLeftClose, Star, UserRound, X } from 'lucide-react';
 import { ViewConfig, isViewAllowed, groupViewsBySection } from '@/lib/viewAccess';
 import { getFavorites, getSidebarFavorites, prefsUserId, setSidebarFavorites } from '@/lib/viewPreferences';
 import { renderIcon } from '@/lib/iconRegistry';
@@ -264,6 +264,10 @@ function UserBlock({ user, role, onLogout }: { user: any; role: string; onLogout
         <div ref={ref} className="relative shrink-0 border-t border-border p-3">
             {menuOpen && (
                 <div role="menu" className="absolute left-3 right-3 bottom-[calc(100%-4px)] bg-popover text-popover-foreground border border-border rounded-xl shadow-xl p-1 animate-in fade-in slide-in-from-bottom-1 duration-150">
+                    {/* Ficha única de la persona (P16): legajo, EPP, formación, horas y viajes propios */}
+                    <Link role="menuitem" href="/personas/yo" onClick={() => setMenuOpen(false)} className="nav-item w-full">
+                        <UserRound /> Mi ficha
+                    </Link>
                     <button
                         role="menuitem"
                         onClick={() => { setMenuOpen(false); activatePushNotifications(); }}

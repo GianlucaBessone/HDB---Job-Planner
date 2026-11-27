@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
     Plus,
     Search,
@@ -103,6 +104,10 @@ export default function OperatorsPage() {
                     data = data.filter((op: any) => op.id === user.id);
                 }
                 setOperators(Array.isArray(data) ? data : []);
+                // ?editar=<id> abre la edición de esa persona (enlace desde su ficha)
+                const editar = !silent && typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('editar') : null;
+                const op = editar && Array.isArray(data) ? data.find((o: any) => o.id === editar) : null;
+                if (op) openEdit(op);
             }
             if (tagsRes.ok) {
                 const tagsData = await tagsRes.json();
@@ -551,7 +556,7 @@ export default function OperatorsPage() {
                                                 <UsersIcon className="w-5 h-5" />
                                             </div>
                                             <div className="min-w-0">
-                                                <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate">{op.nombreCompleto}</h4>
+                                                <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate"><Link href={`/personas/${op.id}`} className="hover:underline" title="Abrir la ficha de la persona">{op.nombreCompleto}</Link></h4>
                                                 <div className="flex flex-wrap gap-1 mt-1 mb-1">
                                                     <span className={`px-2 py-[2px] rounded-md text-[11px] font-bold uppercase tracking-wider ${
                                                         op.role === 'admin' || op.role === 'qa' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' : 
@@ -660,7 +665,7 @@ export default function OperatorsPage() {
                                                 {op.role || 'operador'}
                                             </span>
                                         </div>
-                                        <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-primary transition-colors">{op.nombreCompleto}</h4>
+                                        <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-primary transition-colors"><Link href={`/personas/${op.id}`} className="hover:underline" title="Abrir la ficha de la persona">{op.nombreCompleto}</Link></h4>
                                         <div className="flex flex-wrap gap-1.5 mt-3 min-h-[32px]">
                                             {tags.map((t: string) => (
                                                 <span key={t} className="bg-background text-foreground text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800 group-hover:border-primary/10 transition-colors">

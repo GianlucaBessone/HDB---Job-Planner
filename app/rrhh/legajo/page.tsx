@@ -103,7 +103,7 @@ export default function LegajosPage() {
                                         {lista.map((p) => (
                                             <tr key={p.id} className="hover:bg-surface-sunken transition-colors">
                                                 <td className="px-4 py-2.5">
-                                                    <Link href={`/rrhh/legajo/${p.id}`} className="font-medium text-foreground hover:underline">
+                                                    <Link href={`/personas/${p.id}?tab=legajo`} className="font-medium text-foreground hover:underline">
                                                         {p.nombreCompleto}
                                                     </Link>
                                                     <span className="block text-xs text-muted-foreground">
