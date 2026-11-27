@@ -933,7 +933,7 @@ export default function PdvPage() {
       {/* Pestañas de Navegación (ocultas en pantalla completa) */}
       {!isFullscreen && (
         <div className="shrink-0">
-          <VentasNavTabs currentTab="pdv" className="mb-0" />
+          <VentasNavTabs currentTab="pdv" className="mb-0" sinEncabezado />
         </div>
       )}
 

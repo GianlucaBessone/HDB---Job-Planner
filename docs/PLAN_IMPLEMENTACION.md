@@ -376,3 +376,14 @@ Antes un pedido de autorización era un aviso con botones: sin estado, el solici
 - Los avisos viejos `TIME_MODIFICATION_REQUEST` y `PROJECT_FINALIZE_REQUEST` pendientes se siguen pudiendo resolver desde la campana.
 - Pendiente para más adelante: precio fuera de lista (hoy PIN de supervisor en el punto de venta) y gastos fuera de política.
 - Migración `20261127_solicitudes` (aditiva: tabla nueva). **Aplicada en producción el 27/11/2026.**
+
+## Mejoras chicas
+
+### P43 · ModuleHeader en todas las pantallas
+
+Antes 31 pantallas armaban su título a mano (h1/h2 sueltos, varios tamaños, algunas sin título visible). Ahora todas usan `ModuleHeader` como único h1, con ícono, descripción y acciones a la derecha.
+
+- Convertidas: Aprobaciones, Consumo de IA, Auditoría de cambios, Clientes, Datasets, Demoras del cliente, Diccionario de datos, Sugerencias y mejoras, Herramientas y carros, Informes técnicos (lista y nuevo), Fichadas en curso, Notificaciones, Usuarios y accesos, Órdenes de servicio (con pestañas Activas/Historial) y Generar orden de servicio, Nueva orden de trabajo, Agenda del equipo, Provisión de materiales, Registro de horas, Verificación de firmas.
+- **Ventas**: `VentasNavTabs` dibuja el encabezado de la sección (Gestión comercial, Presupuestos de productos, Almacén y stock, Cuentas corrientes) con `titulo`/`descripcion` para las subpantallas (Proveedores, Importación masiva, Nuevo/Editar producto). Los títulos chicos que repetían el nombre dentro de las tarjetas se quitaron.
+- Quedan con diseño propio, a propósito: Inicio ("Mi día"), Fichado, Punto de venta (`sinEncabezado`) y el formulario público de ideas y reclamos.
+- `ModuleHeader` marca el encabezado con `data-module-header` (sirve para controlar en pruebas que cada pantalla tenga uno).

@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { Bell, Check, Trash2, ArrowRight, CheckCircle2, Circle, ShieldAlert, FileText, MessageSquare, Info, AlertCircle, CalendarDays } from 'lucide-react';
 import { showToast } from '@/components/Toast';
@@ -203,16 +204,11 @@ function NotificationsContent() {
 
     return (
         <div className="min-h-screen bg-background text-foreground pb-20 pt-8 px-4 md:px-8 max-w-3xl mx-auto">
-            <div className="flex items-center justify-between gap-3 mb-8">
-                <div className="flex items-center gap-2 min-w-0">
-                    <Link href="/" className="p-2 bg-card text-card-foreground rounded-full shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition shrink-0">
-                        <ArrowRight className="w-5 h-5 text-slate-500 dark:text-slate-400 rotate-180" />
-                    </Link>
-                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-1.5 truncate">
-                        <Bell className="shrink-0 w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        <span className="truncate">Centro de Actividad</span>
-                    </h1>
-                </div>
+            <ModuleHeader
+                title="Notificaciones"
+                icon={<Bell className="w-5 h-5" />}
+                toolbar={
+                    <>
                 {notifications.length > 0 && (
                     <button
                         onClick={() => setShowClearModal(true)}
@@ -223,7 +219,9 @@ function NotificationsContent() {
                         <span className="sm:hidden">Limpiar</span>
                     </button>
                 )}
-            </div>
+                    </>
+                }
+            />
 
             <div className="flex p-1 bg-slate-200/50 rounded-2xl mb-6">
                 <button

@@ -1,5 +1,7 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
+
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -383,29 +385,11 @@ function GenerarOSContent() {
 
     return (
         <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-16">
-            {/* Header */}
-            <div className="space-y-1">
-                <button
-                    onClick={() => router.back()}
-                    className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-primary transition-colors mb-4"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Volver
-                </button>
-                <div className="flex items-center gap-3">
-                    <div className="bg-emerald-600 p-2.5 rounded-2xl shadow-lg text-white">
-                        <FileSignature className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <h1 className="text-title text-slate-900 dark:text-slate-50">
-                            {isFirmada ? 'Orden de Servicio Firmada' : editId ? 'Modificar Orden de Servicio' : 'Generar Orden de Servicio'}
-                        </h1>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                            {project.codigoProyecto ? `${project.codigoProyecto} | ` : ''}{project.nombre}
-                        </p>
-                    </div>
-                </div>
-            </div>
+            <ModuleHeader
+                title={isFirmada ? 'Orden de servicio firmada' : editId ? 'Modificar orden de servicio' : 'Generar orden de servicio'}
+                description={`${project.codigoProyecto ? `${project.codigoProyecto} | ` : ''}${project.nombre}`}
+                icon={<FileSignature className="w-5 h-5" />}
+            />
 
             {isFirmada && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex gap-3 text-emerald-800 animate-in zoom-in-95 duration-200">

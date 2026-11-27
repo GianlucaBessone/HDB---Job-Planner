@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useViewState } from '@/lib/hooks/useViewState';
@@ -252,16 +253,12 @@ export default function GestionSugerenciasPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-blue-900 p-6 rounded-2xl text-white shadow-xl">
-                <div>
-                    <h1 className="text-title flex items-center gap-3">
-                        <ShieldCheck className="text-blue-400 w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Gestión de Sugerencias y Reclamos
-                    </h1>
-                    <p className="text-blue-200 mt-2 font-medium max-w-2xl">
-                        Tablero central para la evaluación, seguimiento y resolución de las ideas, sugerencias y reclamos presentados en la plataforma.
-                    </p>
-                </div>
+            <ModuleHeader
+                title="Sugerencias y mejoras"
+                description="Tablero central para la evaluación, seguimiento y resolución de las ideas, sugerencias y reclamos presentados en la plataforma."
+                icon={<ShieldCheck className="w-5 h-5" />}
+                toolbar={
+                    <>
                 <div className="flex flex-col md:flex-row items-center gap-4">
                     <div className="flex items-stretch bg-primary hover:bg-blue-500 rounded-lg shadow-sm border border-blue-500 transition-colors">
                         <button
@@ -294,7 +291,9 @@ export default function GestionSugerenciasPage() {
                         </div>
                     </div>
                 </div>
-            </div>
+                    </>
+                }
+            />
 
             {/* Nav Tabs */}
             <div className="flex border-b border-slate-200 dark:border-slate-700">

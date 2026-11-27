@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useCallback } from 'react';
 import { AsistenciaNav } from '@/components/asistencia/AsistenciaNav';
 import { 
@@ -334,17 +335,12 @@ export default function FichadasAdminPage() {
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-20">
             <AsistenciaNav />
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="space-y-1">
-                    <h2 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg">
-                            <Clock className="w-6 h-6" />
-                        </div>
-                        Fichadas en curso
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Control auditado de ingresos y egresos (GPS / Dispositivo)</p>
-                </div>
-                
+            <ModuleHeader
+                title="Fichadas en curso"
+                description="Control auditado de ingresos y egresos (GPS / Dispositivo)"
+                icon={<Clock className="w-5 h-5" />}
+                toolbar={
+                    <>
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <button 
                         onClick={loadEntries}
@@ -368,7 +364,9 @@ export default function FichadasAdminPage() {
                         Exportar Excel
                     </button>
                 </div>
-            </div>
+                    </>
+                }
+            />
 
             {/* Filters Bar */}
             <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 items-end">

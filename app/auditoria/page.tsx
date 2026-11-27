@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useRef } from "react";
 import { useViewState } from "@/lib/hooks/useViewState";
 import { useCommandStore } from "@/lib/store/useCommandStore";
@@ -243,15 +244,12 @@ export default function AuditPage() {
     return (
         <div className="space-y-8 animate-in fade-in duration-200 pb-20">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                        <History className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Registro de Auditoría
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium italic">Trazabilidad completa de acciones y cambios en el sistema.</p>
-                </div>
-
+            <ModuleHeader
+                title="Auditoría de cambios"
+                description="Trazabilidad completa de acciones y cambios en el sistema."
+                icon={<History className="w-5 h-5" />}
+                toolbar={
+                    <>
                 <div className="flex flex-wrap gap-3">
                     <select 
                         value={filterEntity}
@@ -271,7 +269,6 @@ export default function AuditPage() {
                         <option value="OBJETIVO">Objetivos</option>
                         <option value="OPORTUNIDAD">Oportunidades</option>
                     </select>
-
                     <select 
                         value={filterAction}
                         onChange={e => setFilterAction(e.target.value)}
@@ -285,7 +282,9 @@ export default function AuditPage() {
                         <option value="REJECT">Rechazo</option>
                     </select>
                 </div>
-            </div>
+                    </>
+                }
+            />
 
             {/* Stats Summary */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

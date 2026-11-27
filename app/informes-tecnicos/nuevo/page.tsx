@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Loader2, ArrowLeft, Building2 } from 'lucide-react';
@@ -52,21 +53,11 @@ export default function NuevoInformePage() {
     return (
         <div className="w-full max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200 space-y-6">
             {/* Header */}
-            <div className="space-y-4">
-                <Link
-                    href="/informes-tecnicos"
-                    className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
-                >
-                    <ArrowLeft className="w-4 h-4" /> Volver
-                </Link>
-                <div>
-                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                        <FileText className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Nuevo Informe Técnico
-                    </h2>
-                    <p className="text-sm text-slate-500 font-medium mt-1">Seleccioná el tipo de informe que deseas confeccionar.</p>
-                </div>
-            </div>
+            <ModuleHeader
+                title="Nuevo informe técnico"
+                description="Seleccioná el tipo de informe que deseas confeccionar."
+                icon={<FileText className="w-5 h-5" />}
+            />
 
             {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

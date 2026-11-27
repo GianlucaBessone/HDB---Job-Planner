@@ -4,13 +4,30 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Boxes, CreditCard, Warehouse, Receipt, FileSignature } from 'lucide-react';
+import ModuleHeader from '@/components/ModuleHeader';
+
+type Seccion = 'gestion' | 'pdv' | 'cotizaciones' | 'almacen' | 'cuentas-corrientes';
 
 interface VentasNavTabsProps {
-  currentTab?: 'gestion' | 'pdv' | 'cotizaciones' | 'almacen' | 'cuentas-corrientes';
+  currentTab?: Seccion;
   className?: string;
+  /** Título del encabezado (ModuleHeader); por defecto, el de la sección. */
+  titulo?: string;
+  descripcion?: string;
+  /** Sin encabezado: para pantallas con diseño propio, como el punto de venta. */
+  sinEncabezado?: boolean;
 }
 
-export default function VentasNavTabs({ currentTab, className }: VentasNavTabsProps) {
+/** Encabezado por defecto de cada sección de Ventas: el título de la pantalla es el único h1. */
+const ENCABEZADO: Record<Seccion, { titulo: string; descripcion: string; Icono: typeof Boxes }> = {
+  gestion: { titulo: 'Gestión comercial', descripcion: 'Catálogo de productos, precios, stock y proveedores', Icono: Boxes },
+  pdv: { titulo: 'Punto de venta', descripcion: 'Ventas de mostrador y cobro', Icono: CreditCard },
+  cotizaciones: { titulo: 'Presupuestos de productos', descripcion: 'Cotizador e historial de presupuestos de productos', Icono: FileSignature },
+  almacen: { titulo: 'Almacén y stock', descripcion: 'Existencias, movimientos, ajustes y conteos', Icono: Warehouse },
+  'cuentas-corrientes': { titulo: 'Cuentas corrientes', descripcion: 'Saldos de clientes, comprobantes y cobros', Icono: Receipt },
+};
+
+export default function VentasNavTabs({ currentTab, className, titulo, descripcion, sinEncabezado }: VentasNavTabsProps) {
   const pathname = usePathname();
 
   const tabs = [
@@ -57,7 +74,18 @@ export default function VentasNavTabs({ currentTab, className }: VentasNavTabsPr
     },
   ];
 
+  const enc = currentTab ? ENCABEZADO[currentTab] : null;
+
   return (
+    <>
+    {enc && !sinEncabezado && (
+      <ModuleHeader
+        title={titulo ?? enc.titulo}
+        description={descripcion ?? enc.descripcion}
+        icon={<enc.Icono className="w-5 h-5" />}
+        className="mb-3 shrink-0"
+      />
+    )}
     <div className={`flex items-center gap-1 p-1 bg-slate-100/70 dark:bg-slate-900/50 rounded-xl border border-slate-200/80 dark:border-slate-800 overflow-x-auto hide-scrollbar w-fit max-w-full ${className ?? 'mb-2.5'}`}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
@@ -82,5 +110,6 @@ export default function VentasNavTabs({ currentTab, className }: VentasNavTabsPr
         );
       })}
     </div>
+    </>
   );
 }

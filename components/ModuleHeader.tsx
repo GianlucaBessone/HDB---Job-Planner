@@ -79,7 +79,7 @@ export default function ModuleHeader({
         : [];
 
     return (
-        <header className={cn('mb-5 w-full', className)}>
+        <header data-module-header className={cn('mb-5 w-full', className)}>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 w-full">
                 <div className="min-w-0">
                     <div className="min-w-0">

@@ -1,5 +1,7 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
+
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
@@ -688,27 +690,14 @@ function OrdenesServicioContent() {
 
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 space-y-6">
-            {/* Header */}
-            <div className="space-y-1">
-                <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                    <FileSignature className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                    Órdenes de Servicio
-                </h2>
-                <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-700 mt-4">
-                    <button
-                        onClick={() => { setActiveTab('activas'); setFilterEstado('all'); }}
-                        className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'activas' ? 'border-primary text-primary' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
-                    >
-                        Activas
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('historial'); setFilterEstado('all'); }}
-                        className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'historial' ? 'border-primary text-primary' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
-                    >
-                        Historial
-                    </button>
-                </div>
-            </div>
+            <ModuleHeader
+                title="Órdenes de servicio"
+                description="Trabajo certificado, firma del cliente y cobro"
+                icon={<FileSignature className="w-5 h-5" />}
+                tabs={[{ id: 'activas', label: 'Activas' }, { id: 'historial', label: 'Historial' }]}
+                activeTabId={activeTab}
+                onTabChange={(id) => { setActiveTab(id as typeof activeTab); setFilterEstado('all'); }}
+            />
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">

@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useRef } from "react";
 import { AsistenciaNav } from '@/components/asistencia/AsistenciaNav';
 import { format } from "date-fns";
@@ -175,22 +176,21 @@ export default function ApprovalsPage() {
         <div className="space-y-8 animate-in fade-in duration-200">
             <AsistenciaNav />
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                        <ShieldCheck className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Fichadas a aprobar
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">Revisa las entradas que requieren validación manual.</p>
-                </div>
-                
+            <ModuleHeader
+                title="Fichadas a aprobar"
+                description="Revisa las entradas que requieren validación manual."
+                icon={<ShieldCheck className="w-5 h-5" />}
+                toolbar={
+                    <>
                 <div className="flex items-center gap-3">
                     <div className="bg-card text-card-foreground px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-2">
                         <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
                         <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{entries.length} Pendientes</span>
                     </div>
                 </div>
-            </div>
+                    </>
+                }
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Entries List */}

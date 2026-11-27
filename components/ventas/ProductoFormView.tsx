@@ -351,7 +351,7 @@ export default function ProductoFormView({
   return (
     <div className="flex flex-col space-y-2 max-w-7xl mx-auto w-full pb-12">
       {/* 4-Area Navigation Tabs */}
-      <VentasNavTabs currentTab="gestion" />
+      <VentasNavTabs currentTab="gestion" titulo={isEdit ? 'Editar producto' : 'Nuevo producto'} descripcion="Datos, precios y stock del producto" />
 
       {/* Main ERP Card */}
       <form onSubmit={handleSubmit} className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex flex-col">
@@ -372,9 +372,6 @@ export default function ProductoFormView({
             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-sm md:text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                {isEdit ? 'Editar Producto' : 'Nuevo Producto'}
-              </h1>
 
               {isEdit && formData.sku && (
                 <span className="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-primary/10 text-primary border border-primary/20">

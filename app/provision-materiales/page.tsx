@@ -1,4 +1,5 @@
 "use client";
+import ModuleHeader from "@/components/ModuleHeader";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { formatDateInline } from "@/lib/formatDate";
 import Link from "next/link";
@@ -2239,38 +2240,29 @@ export default function ProvisionMaterialesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 justify-between">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-primary rounded-2xl shadow-lg shrink-0">
-            <Package className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-title text-slate-800 dark:text-slate-100 leading-tight">
-              Provisión de Materiales
-            </h1>
-            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
-              Gestión de entrega y devolución de materiales por proyecto
-            </p>
-          </div>
-        </div>
-        {isAuthorized && (
-          <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-            <button
-              onClick={handleDownloadTemplate}
-              className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-card border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[12px] md:text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm"
-            >
-              <Download className="w-4 h-4" /> Plantilla
-            </button>
-            <button
-              onClick={() => setShowImport(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-slate-900 text-white rounded-2xl text-[12px] md:text-xs font-semibold hover:bg-slate-800 transition-all shadow-lg"
-            >
-              <FileUp className="w-4 h-4 md:w-4 md:h-4" /> Importar Excel
-            </button>
-          </div>
-        )}
-      </div>
+      <ModuleHeader
+        title="Provisión de materiales"
+        description="Gestión de entrega y devolución de materiales por proyecto"
+        icon={<Package className="w-5 h-5" />}
+        toolbar={
+          isAuthorized ? (
+            <>
+              <button
+                onClick={handleDownloadTemplate}
+                className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-card border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[12px] md:text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm"
+              >
+                <Download className="w-4 h-4" /> Plantilla
+              </button>
+              <button
+                onClick={() => setShowImport(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-slate-900 text-white rounded-2xl text-[12px] md:text-xs font-semibold hover:bg-slate-800 transition-all shadow-lg"
+              >
+                <FileUp className="w-4 h-4" /> Importar Excel
+              </button>
+            </>
+          ) : undefined
+        }
+      />
 
       {/* KPIs */}
       <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">

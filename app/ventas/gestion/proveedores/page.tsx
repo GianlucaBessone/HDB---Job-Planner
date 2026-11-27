@@ -167,7 +167,7 @@ export default function ProveedoresVentasPage() {
 
   return (
     <div className="flex flex-col space-y-2">
-      <VentasNavTabs currentTab="gestion" />
+      <VentasNavTabs currentTab="gestion" titulo="Proveedores" descripcion="Datos, contactos y condiciones de los proveedores" />
 
       {/* Toolbar */}
       <div className="bg-card px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
@@ -183,12 +183,6 @@ export default function ProveedoresVentasPage() {
               <span className="hidden sm:inline">Volver</span>
             </button>
             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <Building2 className="w-4 h-4" />
-            </div>
-            <h1 className="text-sm md:text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              Proveedores
-            </h1>
             <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50 whitespace-nowrap">
               {totalVisible} {totalVisible === 1 ? 'proveedor' : 'proveedores'}
             </span>
