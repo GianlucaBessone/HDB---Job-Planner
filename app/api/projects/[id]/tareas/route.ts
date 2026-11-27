@@ -14,7 +14,12 @@ export async function GET(req: NextRequest, { params }: Ctx) {
     try {
         const { id } = await params;
         const tareas = await prisma.proyectoTarea.findMany({ where: { projectId: id }, orderBy: { orden: 'asc' } });
-        return NextResponse.json(tareas, { headers: { 'Cache-Control': 'private, no-store' } });
+        // Horas reales por tarea: registros de horas que indican la tarea (sin devoluciones)
+        const sumas = tareas.length
+            ? await prisma.timeEntry.groupBy({ by: ['proyectoTareaId'], where: { projectId: id, isDevolucion: false, proyectoTareaId: { in: tareas.map((t) => t.id) } }, _sum: { horasTrabajadas: true } })
+            : [];
+        const reales = new Map(sumas.map((x) => [x.proyectoTareaId, Math.round((x._sum.horasTrabajadas || 0) * 100) / 100]));
+        return NextResponse.json(tareas.map((t) => ({ ...t, horasReales: reales.get(t.id) ?? 0 })), { headers: { 'Cache-Control': 'private, no-store' } });
     } catch (e) {
         if (esTablaFaltante(e)) return NextResponse.json([]);
         return responderError(e, 'projects/[id]/tareas GET');

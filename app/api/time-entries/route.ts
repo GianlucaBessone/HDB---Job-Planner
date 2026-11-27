@@ -35,6 +35,7 @@ export async function GET(req: Request) {
             where,
             include: {
                 project: { select: { nombre: true, cliente: true, codigoProyecto: true } },
+                proyectoTarea: { select: { id: true, descripcion: true } },
                 operator: { select: { nombreCompleto: true } }
             },
             orderBy: [{ fecha: 'desc' }, { horaIngreso: 'desc' }]
@@ -61,6 +62,7 @@ const postSchema = z.object({
     operatorId: z.string({ error: 'Falta el operador' }).trim().min(1, 'Falta el operador').max(64),
     fecha: fechaSchema,
     projectId: idSchema.nullish(),
+    proyectoTareaId: idSchema.nullish(),
     causaRegistro: z.string().trim().max(200).nullish(),
     horaIngreso: horaSchema,
     horaEgreso: horaSchema,
@@ -74,6 +76,7 @@ const putSchema = z.object({
     id: z.string({ error: 'Falta el id del registro' }).trim().min(1, 'Falta el id del registro').max(64),
     fecha: fechaSchema.optional(),
     projectId: idSchema.nullish(),
+    proyectoTareaId: idSchema.nullish(),
     causaRegistro: z.string().trim().max(200).nullish(),
     horaIngreso: horaSchema,
     horaEgreso: horaSchema,
@@ -82,6 +85,17 @@ const putSchema = z.object({
     isDevolucion: z.boolean().optional(),
     descripcionDevolucion: textoSchema,
 });
+
+/**
+ * Horas reales por tarea: la tarea tiene que ser del proyecto del registro. Devuelve el id válido, null o un error.
+ */
+async function tareaDelProyecto(proyectoTareaId: string | null | undefined, projectId: string | null): Promise<string | null | NextResponse> {
+    if (!proyectoTareaId) return null;
+    if (!projectId) return NextResponse.json({ error: 'Una tarea solo se indica en un registro de proyecto.' }, { status: 400 });
+    const t = await prisma.proyectoTarea.findFirst({ where: { id: proyectoTareaId, projectId }, select: { id: true } });
+    if (!t) return NextResponse.json({ error: 'La tarea no es de ese proyecto.' }, { status: 400 });
+    return t.id;
+}
 
 function datosInvalidos(error: z.ZodError) {
     return NextResponse.json({ error: error.issues[0]?.message || 'Datos inválidos' }, { status: 400 });
@@ -97,7 +111,7 @@ export async function POST(req: Request) {
 
             const parsed = postSchema.safeParse(await req.json().catch(() => null));
             if (!parsed.success) return datosInvalidos(parsed.error);
-            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion } = parsed.data;
+            const { operatorId, projectId, proyectoTareaId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion } = parsed.data;
 
             // DEVOLUCIÓN requires a description
             if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
@@ -121,6 +135,9 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
             }
 
+            const tareaId = await tareaDelProyecto(proyectoTareaId, projectId || null);
+            if (tareaId instanceof NextResponse) return tareaId;
+
             let horasTrabajadas = 0;
             if (horaIngreso && horaEgreso) {
                 horasTrabajadas = calculateHours(horaIngreso, horaEgreso);
@@ -133,6 +150,7 @@ export async function POST(req: Request) {
                 data: {
                     operatorId,
                     projectId: projectId || null,
+                    proyectoTareaId: tareaId,
                     causaRegistro: causaRegistro || null,
                     fecha,
                     horaIngreso,
@@ -186,7 +204,7 @@ export async function PUT(req: Request) {
 
         const parsed = putSchema.safeParse(await req.json().catch(() => null));
         if (!parsed.success) return datosInvalidos(parsed.error);
-        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion } = parsed.data;
+        const { id, projectId, proyectoTareaId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion } = parsed.data;
 
         // DEVOLUCIÓN requires a description
         if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
@@ -210,6 +228,10 @@ export async function PUT(req: Request) {
         // Handle causa mode: if causaRegistro is being set, clear projectId
         const newCausa = causaRegistro !== undefined ? causaRegistro : existing.causaRegistro;
         const newProjectId = newCausa ? null : (projectId !== undefined ? projectId : oldProjectId);
+        // La tarea: la enviada o la que tenía, siempre que siga siendo del proyecto (si cambia el proyecto, se borra)
+        const tareaPedida = proyectoTareaId !== undefined ? proyectoTareaId : newProjectId === oldProjectId ? existing.proyectoTareaId : null;
+        const newTareaId = await tareaDelProyecto(tareaPedida, newProjectId);
+        if (newTareaId instanceof NextResponse) return newTareaId;
 
         let horasTrabajadas = existing.horasTrabajadas;
         let newHoraIngreso = horaIngreso !== undefined ? horaIngreso : existing.horaIngreso;
@@ -227,6 +249,7 @@ export async function PUT(req: Request) {
             where: { id },
             data: {
                 projectId: newProjectId,
+                proyectoTareaId: newTareaId,
                 causaRegistro: newCausa || null,
                 fecha: fecha !== undefined ? fecha : existing.fecha,
                 horaIngreso: newHoraIngreso,

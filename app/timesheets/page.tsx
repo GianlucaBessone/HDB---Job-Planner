@@ -30,6 +30,8 @@ interface Assignment {
     isExtra: boolean;
     isDevolucion: boolean;
     descripcionDevolucion: string;
+    /** Tarea del proyecto (horas reales por tarea); vacío = sin tarea */
+    tareaId?: string;
 }
 
 interface Project {
@@ -59,6 +61,8 @@ interface TimeEntry {
     isExtra: boolean;
     isDevolucion: boolean;
     descripcionDevolucion: string | null;
+    proyectoTareaId?: string | null;
+    proyectoTarea?: { id: string; descripcion: string } | null;
 }
 
 interface CausaOption {
@@ -224,7 +228,8 @@ export default function TimesheetsPage() {
                 horas: entry.horasTrabajadas ?? '',
                 isExtra: entry.isExtra || false,
                 isDevolucion: entry.isDevolucion || false,
-                descripcionDevolucion: entry.descripcionDevolucion || ''
+                descripcionDevolucion: entry.descripcionDevolucion || '',
+                tareaId: entry.proyectoTareaId || ''
             }]);
 
             if (entry.estadoConfirmado) {
@@ -255,6 +260,20 @@ export default function TimesheetsPage() {
         setIsModalOpen(true);
     };
 
+    // Tareas de cada proyecto, para elegir en qué se trabajó (horas reales por tarea)
+    const [tareasPorProyecto, setTareasPorProyecto] = useState<Record<string, { id: string; descripcion: string; completada: boolean }[]>>({});
+    useEffect(() => {
+        const ids = Array.from(new Set(assignments.filter(a => a.type === 'proyecto' && a.targetId).map(a => a.targetId)));
+        ids.filter(id => !(id in tareasPorProyecto)).forEach(id => {
+            setTareasPorProyecto(prev => ({ ...prev, [id]: [] }));
+            safeApiRequest(`/api/projects/${id}/tareas`)
+                .then(r => (r.ok ? r.json() : []))
+                .then((l: any[]) => setTareasPorProyecto(prev => ({ ...prev, [id]: Array.isArray(l) ? l.map(t => ({ id: t.id, descripcion: t.descripcion, completada: !!t.completada })) : [] })))
+                .catch(() => {});
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [assignments]);
+
     const handleAddAssignment = () => {
         setAssignments([...assignments, {
             id: Math.random().toString(36).substring(7),
@@ -275,6 +294,8 @@ export default function TimesheetsPage() {
         setAssignments(prev => prev.map(a => {
             if (a.id === id) {
                 const updated = { ...a, [field]: value };
+                // Otra tarea si cambia el proyecto o el tipo
+                if (field === 'type' || field === 'targetId') updated.tareaId = '';
                 if (field === 'type') {
                     updated.targetId = '';
                     updated.isExtra = false;
@@ -333,6 +354,7 @@ export default function TimesheetsPage() {
                     horaEgreso: formData.horaEgreso,
                     projectId: a.type === 'proyecto' ? a.targetId : null,
                     causaRegistro: a.type === 'causa' ? a.targetId : null,
+                    proyectoTareaId: a.type === 'proyecto' && a.tareaId ? a.tareaId : null,
                     isExtra: a.isDevolucion || a.type === 'causa' ? false : a.isExtra,
                     isDevolucion: a.type === 'causa' ? false : a.isDevolucion,
                     descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null
@@ -372,6 +394,7 @@ export default function TimesheetsPage() {
                         horaEgreso: sliceEnd,
                         projectId: a.type === 'proyecto' ? a.targetId : null,
                         causaRegistro: a.type === 'causa' ? a.targetId : null,
+                        proyectoTareaId: a.type === 'proyecto' && a.tareaId ? a.tareaId : null,
                         isExtra: a.isDevolucion || a.type === 'causa' ? false : a.isExtra,
                         isDevolucion: a.type === 'causa' ? false : a.isDevolucion,
                         descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null
@@ -791,6 +814,7 @@ export default function TimesheetsPage() {
                                                             {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                                                         </div>
                                                     )}
+                                                    {entry.proyectoTarea && <p className="text-[11px] text-muted-foreground truncate max-w-[320px] mt-0.5" title={entry.proyectoTarea.descripcion}>Tarea: {entry.proyectoTarea.descripcion}</p>}
                                                 </td>
                                                 <td className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 text-center whitespace-nowrap">
                                                     {entry.horaIngreso} - {entry.horaEgreso}
@@ -884,6 +908,7 @@ export default function TimesheetsPage() {
                                                     <>
                                                         <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{entry.project?.nombre || 'BASE / EMPRESA'}</p>
                                                         {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                                        {entry.proyectoTarea && <p className="text-[11px] text-muted-foreground truncate">Tarea: {entry.proyectoTarea.descripcion}</p>}
                                                     </>
                                                 )}
                                             </div>
@@ -1181,6 +1206,23 @@ export default function TimesheetsPage() {
                                                             />
                                                         </div>
                                                     </div>
+
+                                                    {a.type === 'proyecto' && a.targetId && (tareasPorProyecto[a.targetId]?.length ?? 0) > 0 && (
+                                                        <div className="space-y-2">
+                                                            <label htmlFor={`tarea-${a.id}`} className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Tarea (opcional)</label>
+                                                            <select
+                                                                id={`tarea-${a.id}`}
+                                                                className="input"
+                                                                value={a.tareaId || ''}
+                                                                onChange={e => handleAssignmentChange(a.id, 'tareaId', e.target.value)}
+                                                            >
+                                                                <option value="">Sin tarea</option>
+                                                                {tareasPorProyecto[a.targetId].map(t => (
+                                                                    <option key={t.id} value={t.id}>{t.descripcion}{t.completada ? ' (hecha)' : ''}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    )}
 
                                                     {a.type === 'proyecto' ? (
                                                         <div className="flex gap-2">

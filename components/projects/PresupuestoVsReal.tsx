@@ -43,20 +43,24 @@ export default function PresupuestoVsReal({ data }: { data: any }) {
             )}
 
             <div className="grid grid-cols-1 gap-4">
-                <Panel title="Horas por tarea" description="Las horas reales por tarea llegan en la fase 2: hoy los registros de horas no indican la tarea." bodyClassName="p-0">
+                <Panel title="Horas por tarea" description="Reales: horas trabajadas de los registros que indican la tarea (sin extras dobles ni devoluciones)." bodyClassName="p-0">
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[520px]">
-                            <thead><tr><th className="text-left !pl-4">Tarea</th><th className="text-right">Presup.</th><th className="text-right">Proyecto</th><th className="text-left">Estado</th></tr></thead>
+                            <thead><tr><th className="text-left !pl-4">Tarea</th><th className="text-right">Presup.</th><th className="text-right">Proyecto</th><th className="text-right">Reales</th><th className="text-left">Estado</th></tr></thead>
                             <tbody>
                                 {horas.tareas.map((t: any, i: number) => (
                                     <tr key={i}>
                                         <td className="!pl-4">{t.descripcion}{t.origen === 'manual' && <span className="text-xs text-slate-500"> · no presupuestada</span>}</td>
                                         <td className="text-right tabular-nums">{t.horasPresupuesto ?? '—'}</td>
                                         <td className="text-right tabular-nums">{t.origen === 'quitada' ? '—' : t.horasProyecto}</td>
+                                        <td className={`text-right tabular-nums ${t.horasReales !== null && t.horasReales > (t.horasPresupuesto ?? t.horasProyecto) && (t.horasPresupuesto ?? t.horasProyecto) > 0 ? 'text-danger-600 font-semibold' : ''}`}>{t.horasReales === null ? '—' : t.horasReales}</td>
                                         <td>{t.origen === 'quitada' ? <Badge tone="neutral">No incluida</Badge> : t.completada ? <Badge tone="success">Hecha</Badge> : <Badge tone="neutral">Pendiente</Badge>}</td>
                                     </tr>
                                 ))}
-                                <tr className="font-semibold"><td className="!pl-4">Total</td><td className="text-right tabular-nums">{horas.presupuestadas}</td><td className="text-right tabular-nums">{horas.proyecto}</td><td /></tr>
+                                {horas.sinTarea > 0 && (
+                                    <tr><td className="!pl-4 text-slate-500">Sin tarea indicada</td><td /><td /><td className="text-right tabular-nums text-slate-500">{horas.sinTarea}</td><td /></tr>
+                                )}
+                                <tr className="font-semibold"><td className="!pl-4">Total</td><td className="text-right tabular-nums">{horas.presupuestadas}</td><td className="text-right tabular-nums">{horas.proyecto}</td><td className="text-right tabular-nums">{Math.round((horas.tareas.reduce((a: number, t: any) => a + (t.horasReales || 0), 0) + (horas.sinTarea || 0)) * 100) / 100}</td><td /></tr>
                             </tbody>
                         </table>
                     </div>

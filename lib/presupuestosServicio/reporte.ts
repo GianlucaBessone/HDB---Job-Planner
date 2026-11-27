@@ -44,7 +44,7 @@ export async function presupuestadoVsReal(projectId: string) {
         prisma.materialProyecto.findMany({ where: { proyectoId: projectId }, include: { usos: true } }),
         prisma.timeEntry.findMany({
             where: { projectId, isDevolucion: false },
-            select: { horasTrabajadas: true, isExtra: true, operator: { select: { id: true, nombreCompleto: true } } },
+            select: { horasTrabajadas: true, isExtra: true, proyectoTareaId: true, operator: { select: { id: true, nombreCompleto: true } } },
         }),
     ]);
 
@@ -57,17 +57,25 @@ export async function presupuestadoVsReal(projectId: string) {
     const proyeccion = avance > 0 ? Math.round(horasConsumidas / avance) : null;
 
     const porTareaPresupuesto = new Map(d.tareas.map((t) => [t.presupuestoTareaId, t]));
-    const filasTareas = tareas.map((t) => ({
+    // Horas reales por tarea: suma de los registros que indican la tarea (horas trabajadas, sin devoluciones)
+    const realesPorTarea = new Map<string, number>();
+    let horasSinTarea = 0;
+    for (const r of registros) {
+        if (r.proyectoTareaId) realesPorTarea.set(r.proyectoTareaId, (realesPorTarea.get(r.proyectoTareaId) || 0) + (r.horasTrabajadas || 0));
+        else horasSinTarea += r.horasTrabajadas || 0;
+    }
+    const filasTareas: { descripcion: string; horasPresupuesto: number | null; horasProyecto: number; horasReales: number | null; completada: boolean; origen: string }[] = tareas.map((t) => ({
         descripcion: t.descripcion,
         horasPresupuesto: t.presupuestoTareaId ? porTareaPresupuesto.get(t.presupuestoTareaId)?.horas ?? null : null,
         horasProyecto: t.horasEstimadas,
+        horasReales: r2(realesPorTarea.get(t.id) || 0),
         completada: t.completada,
         origen: t.origen,
     }));
     const usadas = new Set(tareas.map((t) => t.presupuestoTareaId).filter(Boolean));
     for (const t of d.tareas) {
         if (t.presupuestoTareaId && !usadas.has(t.presupuestoTareaId)) {
-            filasTareas.push({ descripcion: t.descripcion, horasPresupuesto: t.horas, horasProyecto: 0, completada: false, origen: 'quitada' });
+            filasTareas.push({ descripcion: t.descripcion, horasPresupuesto: t.horas, horasProyecto: 0, horasReales: null, completada: false, origen: 'quitada' });
         }
     }
 
@@ -139,6 +147,8 @@ export async function presupuestadoVsReal(projectId: string) {
             proyeccion,
             desvioProyectado: proyeccion !== null && horasPresupuestadas > 0 ? proyeccion / horasPresupuestadas - 1 : null,
             tareas: filasTareas,
+            /** Horas registradas sin indicar la tarea (registros viejos o sin elegirla) */
+            sinTarea: r2(horasSinTarea),
             operadores,
         },
         materiales: {
