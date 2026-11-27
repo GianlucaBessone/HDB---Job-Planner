@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { renderToStream } from '@react-pdf/renderer';
-import { createElement } from 'react';
-import path from 'path';
-import fs from 'fs';
 import { prisma } from '@/lib/prisma';
 import { sesion, responderError, errorJson } from '@/lib/presupuestosServicio/sesion';
 import { includeVersion } from '@/lib/presupuestosServicio/servicio';
-import { normalizarOpcionesDocumento, hoyArgentina } from '@/lib/presupuestosServicio/calculos';
-import { PresupuestoPdfDocument } from '@/components/presupuestosServicio/PresupuestoPdfDocument';
+import { normalizarOpcionesDocumento } from '@/lib/presupuestosServicio/calculos';
+import { renderPdfPresupuesto } from '@/lib/presupuestosServicio/pdf';
 
 export const dynamic = 'force-dynamic';
-
-async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
-        stream.on('data', (c: Buffer) => chunks.push(c));
-        stream.on('end', () => resolve(Buffer.concat(chunks)));
-        stream.on('error', reject);
-    });
-}
 
 function bool(v: string | null, d: boolean): boolean {
     return v === null ? d : v === '1' || v === 'true';
@@ -57,35 +44,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             condiciones: bool(sp.get('condiciones'), guardadas.condiciones),
         });
 
-        let logoBase64: string | null = null;
-        try {
-            const logo = path.join(process.cwd(), 'public', 'logo-hdb.jpg');
-            if (fs.existsSync(logo)) logoBase64 = `data:image/jpeg;base64,${fs.readFileSync(logo).toString('base64')}`;
-        } catch {
-            /* sin logo */
-        }
-
-        const fechaEmision = v.enviadaEn ? new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(v.enviadaEn) : hoyArgentina();
-        const element = createElement(PresupuestoPdfDocument, {
-            numero: p.numero,
-            titulo: p.titulo,
-            cliente: {
-                nombre: p.clienteNombre,
-                direccion: p.cliente?.direccion,
-                telefono: p.cliente?.telefono,
-                email: p.cliente?.email,
-            },
-            version: {
-                ...v,
-                tareas: v.tareas.map((t) => ({ ...t, manoObra: t.manoObra })),
-            },
-            opciones,
-            fechaEmision,
-            fechaVencimiento: v.version === p.versionActual ? p.fechaVencimiento : null,
-            logoBase64,
-            borrador: v.estado === 'borrador',
-        });
-        const buffer = await streamToBuffer(await renderToStream(element as any));
+        const buffer = await renderPdfPresupuesto(p, v, opciones);
         const filename = `Presupuesto_${p.numero}_rev${v.version}.pdf`;
         return new NextResponse(new Uint8Array(buffer), {
             status: 200,

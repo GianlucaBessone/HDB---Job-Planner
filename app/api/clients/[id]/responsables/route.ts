@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { generateInitialPassword, hashPassword } from '@/lib/portalAuth';
+import { CAMPOS_RESPONSABLE, generateInitialPassword, hashPassword } from '@/lib/portalAuth';
 import { logAudit } from '@/lib/audit';
 import { exigirAcceso } from '@/lib/permisosServer';
 
@@ -8,11 +8,15 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
+  // Solo quien gestiona clientes; antes cualquier sesión recibía también el hash de la clave del portal
+  const acceso = await exigirAcceso(req, ['clientes.gestionar'], 'No tenés permiso para gestionar clientes');
+  if (acceso instanceof NextResponse) return acceso;
   try {
     const { id: clientId } = params;
     const responsables = await prisma.clientResponsable.findMany({
       where: { clientId },
-      include: {
+      select: {
+        ...CAMPOS_RESPONSABLE,
         proyectos: {
           include: {
             project: { select: { id: true, nombre: true, codigoProyecto: true } },
@@ -41,6 +45,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
       email,
       cargo,
       portalHabilitado = true,
+      verCuentaCorriente = false,
+      aprobarPresupuestos = false,
       proyectosIds = [],
       generarClave = false,
     } = body;
@@ -76,6 +82,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
         email: email ? email.trim() : null,
         cargo: cargo ? cargo.trim() : null,
         portalHabilitado: Boolean(portalHabilitado),
+        verCuentaCorriente: verCuentaCorriente === true,
+        aprobarPresupuestos: aprobarPresupuestos === true,
       };
 
       if (passwordHash) {
@@ -106,7 +114,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
 
         return tx.clientResponsable.findUnique({
           where: { id: responsableId },
-          include: {
+          select: {
+            ...CAMPOS_RESPONSABLE,
             proyectos: {
               include: { project: { select: { id: true, nombre: true } } },
             },
@@ -123,8 +132,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
         action: 'UPDATE',
         entity: 'CLIENT_RESPONSABLE_PERMISSIONS',
         entityId: responsableId,
-        oldValue: { portalHabilitado: existing.portalHabilitado, proyectosIds: oldProjects },
-        newValue: { portalHabilitado, proyectosIds: newProjects, claveRegenerada: Boolean(passwordHash) },
+        oldValue: { portalHabilitado: existing.portalHabilitado, verCuentaCorriente: existing.verCuentaCorriente, aprobarPresupuestos: existing.aprobarPresupuestos, proyectosIds: oldProjects },
+        newValue: { portalHabilitado, verCuentaCorriente: verCuentaCorriente === true, aprobarPresupuestos: aprobarPresupuestos === true, proyectosIds: newProjects, claveRegenerada: Boolean(passwordHash) },
       });
     } else {
       // Create new
@@ -136,6 +145,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
             email: email ? email.trim() : null,
             cargo: cargo ? cargo.trim() : null,
             portalHabilitado: Boolean(portalHabilitado),
+            verCuentaCorriente: verCuentaCorriente === true,
+            aprobarPresupuestos: aprobarPresupuestos === true,
             passwordHash: passwordHash!,
             mustChangePassword: true,
           },
@@ -153,7 +164,8 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
 
         return tx.clientResponsable.findUnique({
           where: { id: created.id },
-          include: {
+          select: {
+            ...CAMPOS_RESPONSABLE,
             proyectos: {
               include: { project: { select: { id: true, nombre: true } } },
             },
@@ -167,7 +179,7 @@ export async function POST(req: NextRequest, { params: paramsPromise }: { params
         action: 'CREATE',
         entity: 'CLIENT_RESPONSABLE',
         entityId: responsable!.id,
-        newValue: { clientId, nombre: nombre.trim(), portalHabilitado, proyectosIds },
+        newValue: { clientId, nombre: nombre.trim(), portalHabilitado, verCuentaCorriente: verCuentaCorriente === true, aprobarPresupuestos: aprobarPresupuestos === true, proyectosIds },
       });
     }
 

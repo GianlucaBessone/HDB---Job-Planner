@@ -118,3 +118,22 @@ export async function checkResponsibleProjectAccess(responsibleId: string, proje
   });
   return count > 0;
 }
+
+/**
+ * Campos de un responsable que se pueden devolver a la app interna: nunca el hash de la clave del portal.
+ * Usarlo en todo `select` de ClientResponsable que salga en una respuesta.
+ */
+export const CAMPOS_RESPONSABLE = {
+  id: true,
+  clientId: true,
+  nombre: true,
+  email: true,
+  cargo: true,
+  activo: true,
+  portalHabilitado: true,
+  mustChangePassword: true,
+  verCuentaCorriente: true,
+  aprobarPresupuestos: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
