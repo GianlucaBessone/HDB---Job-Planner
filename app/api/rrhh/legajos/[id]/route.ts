@@ -10,12 +10,23 @@ type Ctx = { params: Promise<{ id: string }> };
 
 /** GET /api/rrhh/legajos/[id] — ficha del legajo de una persona (id de Operator). */
 export async function GET(req: Request, { params }: Ctx) {
-    const acceso = await exigirAcceso(req, ['rrhh.legajo_ver', 'rrhh.legajo_gestionar']);
-    if (acceso instanceof NextResponse) return acceso;
     const { id } = await params;
+    // La propia persona ve su legajo (solo lectura, sin las observaciones internas de RRHH)
+    const sesion = await exigirAcceso(req);
+    if (sesion instanceof NextResponse) return sesion;
+    const propio = sesion.userId === id && !sesion.puede('rrhh.legajo_ver') && !sesion.puede('rrhh.legajo_gestionar');
+    if (!propio) {
+        const acceso = await exigirAcceso(req, ['rrhh.legajo_ver', 'rrhh.legajo_gestionar']);
+        if (acceso instanceof NextResponse) return acceso;
+    }
     try {
         const ficha = await fichaLegajo(id);
         if (!ficha) return NextResponse.json({ error: 'La persona no existe' }, { status: 404 });
+        if (propio) {
+            ficha.datos.observaciones = null;
+            ficha.actualizadoPorNombre = null;
+            ficha.documentos = ficha.documentos.map((d) => ({ ...d, observaciones: null }));
+        }
         return NextResponse.json({ ficha }, { headers: SIN_CACHE });
     } catch (error) {
         return respuestaError(error, 'ficha');

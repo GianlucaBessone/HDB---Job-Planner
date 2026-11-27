@@ -135,7 +135,7 @@ export async function vencimientos(acceso: AccesoSesion, desdeDias = -90, hastaD
                     select: { id: true, nombre: true, fechaVencimiento: true, operatorId: true, operator: { select: { nombreCompleto: true } } },
                     take: 500,
                 })
-                .then((r) => r.map((d) => item('legajo', d.id, d.fechaVencimiento!, d.nombre, d.operator.nombreCompleto, `/rrhh/legajo/${d.operatorId}`)))
+                .then((r) => r.map((d) => item('legajo', d.id, d.fechaVencimiento!, d.nombre, d.operator.nombreCompleto, `/personas/${d.operatorId}?tab=legajo`)))
         );
     }
 
