@@ -422,7 +422,7 @@ export default function DetalleOrdenTrabajoPage() {
 
   const isClosed = ot.estado === 'CERRADA';
   const activeCycle = ot.ciclos.find((c: any) => c.estado !== 'FIRMADO') || ot.ciclos[ot.ciclos.length - 1];
-  // Sumar o corregir horas: el responsable de la OT, supervisor o admin (función ot.editar_horas).
+  // Sumar, corregir o eliminar horas: el responsable de la OT, supervisor o admin (función ot.editar_horas).
   const puedeEditarHoras =
     acceso.puede('ot.editar_horas') || (!!sesionUserId && sesionUserId === ot.responsableId);
 
@@ -787,6 +787,7 @@ export default function DetalleOrdenTrabajoPage() {
                                       <Edit2 className="w-3.5 h-3.5" />
                                     </button>
                                     )}
+                                    {puedeEditarHoras && (
                                     <button
                                       onClick={() => setConfirmDeleteHourItemId(op.id)}
                                       className="p-1 text-slate-400 hover:text-rose-500 rounded"
@@ -795,6 +796,7 @@ export default function DetalleOrdenTrabajoPage() {
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
+                                    )}
                                   </td>
                                 )}
                               </tr>

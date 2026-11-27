@@ -159,10 +159,19 @@ export async function DELETE(req: NextRequest, { params: paramsPromise }: { para
 
     const item = await prisma.otCicloOperador.findUnique({
       where: { id: itemId },
-      include: { ciclo: true },
+      include: { ciclo: { include: { ordenTrabajo: { select: { id: true, responsableId: true } } } } },
     });
 
-    if (!item) return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
+    if (!item || item.ciclo.ordenTrabajo.id !== id) {
+      return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
+    }
+    // Eliminar horas: el responsable de la OT, o quien tenga ot.editar_horas (admin y supervisor).
+    if (item.ciclo.ordenTrabajo.responsableId !== acceso.userId && !acceso.puede('ot.editar_horas')) {
+      return NextResponse.json(
+        { error: 'Solo el responsable de la OT, un supervisor o un administrador pueden eliminar horas' },
+        { status: 403 }
+      );
+    }
     if (item.ciclo.estado === 'FIRMADO') {
       return NextResponse.json({ error: 'No se pueden eliminar registros de un ciclo firmado' }, { status: 400 });
     }
