@@ -1,174 +1,76 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { format, formatDistanceToNow, isPast, differenceInHours } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Briefcase, Check, ChevronRight, Columns3, LayoutDashboard, List, ListTodo, Plus,
+    Bell, Timer, Trash2, Users as UsersIcon,
+} from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import ModuleHeader from '@/components/ModuleHeader';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import SearchableSelect from '@/components/SearchableSelect';
-import {
-    ListTodo, Plus, X, Save, Trash2, Clock, Users as UsersIcon,
-    AlertTriangle, Calendar as CalendarIcon, GripVertical,
-    Bell, BellRing, Check, ChevronRight, Filter, Columns3, List,
-    User, FolderKanban, Eye, Edit3, Timer, Flag, Briefcase,
-    BellPlus, Loader2
-} from 'lucide-react';
+import { Badge, EmptyState, LoadingState } from '@/components/ui';
+import { cn } from '@/lib/cn';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
-import { useRef } from 'react';
+import { useAcceso } from '@/lib/store/useAccessStore';
+import { estaAbierta } from '@/lib/tareas/vencimiento';
+import QuickAddTarea, { type BorradorTarea } from '@/components/tareas/QuickAddTarea';
+import TareaFormDialog from '@/components/tareas/TareaFormDialog';
+import TareasDashboard from '@/components/tareas/TareasDashboard';
+import {
+    ESTADOS, PRIORIDADES, columnaDeEstado, compararAbiertas, compararCerradas,
+    getEstadoConfig, getPrioridadConfig, getVencimientoInfo, iniciales,
+    type OperadorOpcion, type ProyectoOpcion, type Tarea,
+} from '@/components/tareas/tipos';
 
-// ── Types ──────────────────────────────────────────────────────────
-interface Tarea {
-    id: string;
-    titulo: string;
-    descripcion?: string;
-    estado: string;
-    prioridad: string;
-    categoria?: string;
-    fechaInicio?: string;
-    fechaVencimiento?: string;
-    fechaCompletada?: string;
-    projectId?: string;
-    project?: { id: string; nombre: string; codigoProyecto?: string };
-    creadorId: string;
-    creadorNombre: string;
-    involucrados: TareaInvolucrado[];
-    recordatorios: TareaRecordatorio[];
-    notas?: string;
-    createdAt: string;
-}
+type Vista = 'dashboard' | 'kanban' | 'lista';
 
-interface TareaInvolucrado {
-    id: string;
-    operatorId: string;
-    operator: { id: string; nombreCompleto: string; role: string };
-    rol: string;
-}
+/** Tarjetas visibles en las columnas de cerradas antes de "Ver más". */
+const LIMITE_CERRADAS = 8;
 
-interface TareaRecordatorio {
-    id: string;
-    tipo: string;
-    fechaDisparo: string;
-    mensaje?: string;
-    cronJobId?: number;
-    cronJobActivo: boolean;
-    disparado: boolean;
-    fechaDisparado?: string;
-}
-
-interface TareaComentario {
-    id: string;
-    tareaId: string;
-    operatorId: string;
-    operator: { id: string; nombreCompleto: string; role: string; };
-    mensaje: string;
-    createdAt: string;
-}
-
-const ESTADOS = [
-    { value: 'pendiente', label: 'Pendiente', color: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300', dot: 'bg-slate-400' },
-    { value: 'en_progreso', label: 'En Progreso', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300', dot: 'bg-blue-500' },
-    { value: 'completada', label: 'Completada', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300', dot: 'bg-emerald-500' },
-    { value: 'cancelada', label: 'Cancelada', color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300', dot: 'bg-rose-400' },
-];
-
-const PRIORIDADES = [
-    { value: 'baja', label: 'Baja', color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-700', icon: '○' },
-    { value: 'media', label: 'Media', color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/30', icon: '◐' },
-    { value: 'alta', label: 'Alta', color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/30', icon: '●' },
-    { value: 'urgente', label: 'Urgente', color: 'text-rose-600', bg: 'bg-rose-50 dark:bg-rose-900/30', icon: '🔴' },
-];
-
-const ROLES_INVOLUCRADO = [
-    { value: 'responsable', label: 'Responsable' },
-    { value: 'colaborador', label: 'Colaborador' },
-    { value: 'observador', label: 'Observador' },
-];
-
-const TIPOS_RECORDATORIO = [
-    { value: 'unico', label: 'Único (una sola vez)' },
-    { value: 'diario', label: 'Diario' },
-    { value: 'semanal', label: 'Semanal' },
-];
-
-// ── Page ───────────────────────────────────────────────────────────
 export default function TareasPage() {
-    const router = useRouter();
+    const acceso = useAcceso();
+    const verTodas = acceso.puede('tareas.ver_todas');
+
     const [tareas, setTareas] = useState<Tarea[]>([]);
-    const [operators, setOperators] = useState<any[]>([]);
-    const [projects, setProjects] = useState<any[]>([]);
+    const [operators, setOperators] = useState<OperadorOpcion[]>([]);
+    const [projects, setProjects] = useState<ProyectoOpcion[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filters, setFilters] = useViewState('tareas-filters', {
-        view: 'kanban' as 'kanban' | 'lista',
+        view: 'kanban' as Vista,
         search: '',
-        filterPrioridad: ''
+        filterPrioridad: '',
+        soloMias: false,
     });
-    const { view, search, filterPrioridad } = filters;
-    const setView = (val: typeof view) => setFilters({ view: val });
-    const setSearch = (val: string) => setFilters({ search: val });
-    const setFilterPrioridad = (val: string) => setFilters({ filterPrioridad: val });
+    const { view, search, filterPrioridad, soloMias } = filters;
 
-    const [showModal, setShowModal] = useState(false);
-    const [isViewMode, setIsViewMode] = useState(false);
-    const [editingTarea, setEditingTarea] = useState<Tarea | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
-
-    // Drag & Drop
-    const [draggedTareaId, setDraggedTareaId] = useState<string | null>(null);
-    const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
-
-    // Chat / Comentarios state
-    const [comentarios, setComentarios] = useState<TareaComentario[]>([]);
-    const [comentarioInput, setComentarioInput] = useState('');
-    const [isComentando, setIsComentando] = useState(false);
-
+    const [dialog, setDialog] = useState<{ open: boolean; tarea: Tarea | null; borrador?: BorradorTarea | null; edit?: boolean }>({ open: false, tarea: null });
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+    const [expandidas, setExpandidas] = useState<Record<string, boolean>>({});
 
-    // Form state
-    const [form, setForm] = useState({
-        titulo: '',
-        descripcion: '',
-        estado: 'pendiente',
-        prioridad: 'media',
-        categoria: '',
-        fechaInicio: '',
-        fechaVencimiento: '',
-        projectId: '',
-        notas: '',
-    });
-    const [formInvolucrados, setFormInvolucrados] = useState<{ operatorId: string; rol: string }[]>([]);
-    const [formRecordatorios, setFormRecordatorios] = useState<{ tipo: string; fechaDisparo: string; mensaje: string }[]>([]);
+    // Drag & drop
+    const [draggedId, setDraggedId] = useState<string | null>(null);
+    const [dragOver, setDragOver] = useState<string | null>(null);
 
     const currentUser = useMemo(() => {
         if (typeof window === 'undefined') return null;
-        const stored = localStorage.getItem('currentUser');
-        if (!stored) return null;
-        try { return JSON.parse(stored); } catch { return null; }
+        try { return JSON.parse(localStorage.getItem('currentUser') || 'null'); } catch { return null; }
     }, []);
 
+    /** Mismo criterio que el servidor (lib/tareas/acceso.ts). */
     const getPermissions = useCallback((tarea: Tarea | null) => {
         if (!tarea || !currentUser) return { canEditFull: true, canChangeStatus: true };
-        const isAdmin = currentUser.role === 'admin';
-        const isCreator = currentUser.id === tarea.creadorId;
         const inv = tarea.involucrados.find(i => i.operatorId === currentUser.id);
-        const isResponsable = inv?.rol === 'responsable';
-        const isColaborador = inv?.rol === 'colaborador';
+        const canEditFull = verTodas || currentUser.id === tarea.creadorId || inv?.rol === 'responsable';
+        return { canEditFull, canChangeStatus: canEditFull || inv?.rol === 'colaborador' };
+    }, [currentUser, verTodas]);
 
-        const canEditFull = isAdmin || isCreator || isResponsable;
-        const canChangeStatus = canEditFull || isColaborador;
-
-        return { canEditFull, canChangeStatus };
-    }, [currentUser]);
-
-    // ── Load Data ──────────────────────────────────────────────────
+    // ── Datos ──────────────────────────────────────────────────────
     const loadTareas = useCallback(async () => {
         if (!currentUser?.id) return;
         try {
-            const url = '/api/tareas';
-            const data = await safeApiRequest(url).then(r => r.json());
+            const data = await safeApiRequest('/api/tareas').then(r => r.json());
             setTareas(Array.isArray(data) ? data : []);
         } catch (e) {
             console.error('[LOAD_TAREAS]', e);
@@ -181,8 +83,15 @@ export default function TareasPage() {
                 safeApiRequest('/api/operators').then(r => r.json()),
                 safeApiRequest('/api/projects').then(r => r.json()),
             ]);
-            setOperators(ops.filter((o: any) => o.activo));
-            setProjects(projs.filter((p: any) => p.activo && p.estado !== 'finalizado'));
+            if (Array.isArray(ops)) {
+                setOperators(ops.filter((o: any) => o.activo)
+                    .map((o: any) => ({ id: o.id, nombreCompleto: o.nombreCompleto }))
+                    .sort((a: OperadorOpcion, b: OperadorOpcion) => a.nombreCompleto.localeCompare(b.nombreCompleto, 'es')));
+            }
+            if (Array.isArray(projs)) {
+                setProjects(projs.filter((p: any) => p.activo && p.estado !== 'finalizado')
+                    .map((p: any) => ({ id: p.id, nombre: p.nombre, codigoProyecto: p.codigoProyecto })));
+            }
         } catch (e) {
             console.error('[LOAD_SUPPORT]', e);
         }
@@ -192,305 +101,88 @@ export default function TareasPage() {
         Promise.all([loadTareas(), loadSupport()]).finally(() => setIsLoading(false));
     }, [loadTareas, loadSupport]);
 
-    // Load comentarios when modal opens
+    // Enlace directo desde una notificación: /tareas?id=...
+    const deepLinkHecho = useRef(false);
     useEffect(() => {
-        if (showModal && editingTarea?.id) {
-            safeApiRequest(`/api/tareas/comentarios?tareaId=${editingTarea.id}&_t=${Date.now()}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (Array.isArray(data)) {
-                        setComentarios(data);
-                        setTimeout(() => {
-                            const c = document.getElementById('chat-container');
-                            if (c) c.scrollTop = c.scrollHeight;
-                        }, 100);
-                    }
-                })
-                .catch(console.error);
-        } else {
-            setComentarios([]);
-            setComentarioInput('');
+        if (deepLinkHecho.current || isLoading || typeof window === 'undefined') return;
+        const id = new URLSearchParams(window.location.search).get('id');
+        if (!id) return;
+        const t = tareas.find(x => x.id === id);
+        if (t) {
+            deepLinkHecho.current = true;
+            setDialog({ open: true, tarea: t });
         }
-    }, [showModal, editingTarea?.id]);
+    }, [isLoading, tareas]);
 
-
-    // ── Filtered tareas ────────────────────────────────────────────
+    // ── Filtros ────────────────────────────────────────────────────
     const filteredTareas = useMemo(() => {
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        const q = normalize(search);
         return tareas.filter(t => {
-            if (search) {
-                const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                const q = normalize(search);
-                const match = normalize(t.titulo).includes(q) ||
-                    (t.descripcion && normalize(t.descripcion).includes(q)) ||
-                    normalize(t.creadorNombre).includes(q) ||
-                    (t.project?.nombre && normalize(t.project.nombre).includes(q)) ||
-                    t.involucrados.some(inv => normalize(inv.operator.nombreCompleto).includes(q));
+            if (q) {
+                const match = normalize(t.titulo).includes(q)
+                    || normalize(t.descripcion || '').includes(q)
+                    || normalize(t.creadorNombre).includes(q)
+                    || normalize(t.categoria || '').includes(q)
+                    || normalize(t.project?.nombre || '').includes(q)
+                    || normalize(t.project?.codigoProyecto || '').includes(q)
+                    || t.involucrados.some(inv => normalize(inv.operator.nombreCompleto).includes(q));
                 if (!match) return false;
             }
             if (filterPrioridad && t.prioridad !== filterPrioridad) return false;
+            if (soloMias && currentUser && t.creadorId !== currentUser.id && !t.involucrados.some(i => i.operatorId === currentUser.id)) return false;
             return true;
         });
-    }, [tareas, search, filterPrioridad]);
+    }, [tareas, search, filterPrioridad, soloMias, currentUser]);
 
-    // ── Kanban columns ─────────────────────────────────────────────
     const kanbanColumns = useMemo(() => {
-        const cols: Record<string, Tarea[]> = {
-            pendiente: [],
-            en_progreso: [],
-            completada: [],
-            cancelada: [],
-        };
-        // Las acciones de calidad (P31) suman "cerrada" y "anulada": van con completadas y canceladas
-        const columna: Record<string, string> = { cerrada: 'completada', anulada: 'cancelada' };
-        filteredTareas.forEach(t => {
-            const c = columna[t.estado] || t.estado;
-            if (cols[c]) cols[c].push(t);
-        });
+        const cols: Record<string, Tarea[]> = { pendiente: [], en_progreso: [], completada: [], cancelada: [] };
+        filteredTareas.forEach(t => { cols[columnaDeEstado(t.estado)]?.push(t); });
+        cols.pendiente.sort(compararAbiertas);
+        cols.en_progreso.sort(compararAbiertas);
+        cols.completada.sort(compararCerradas);
+        cols.cancelada.sort(compararCerradas);
         return cols;
     }, [filteredTareas]);
 
-    // ── Drag & Drop Handlers ───────────────────────────────────────
-    const handleDragStart = (e: React.DragEvent, tareaId: string) => {
-        setDraggedTareaId(tareaId);
-        e.dataTransfer.effectAllowed = 'move';
-    };
+    const listaOrdenada = useMemo(() => [
+        ...filteredTareas.filter(t => estaAbierta(t.estado)).sort(compararAbiertas),
+        ...filteredTareas.filter(t => !estaAbierta(t.estado)).sort(compararCerradas),
+    ], [filteredTareas]);
 
-    const handleDragOver = (e: React.DragEvent, targetStatus: string) => {
-        e.preventDefault();
-        if (!draggedTareaId) return;
-        const dt = tareas.find(t => t.id === draggedTareaId);
-        if (!dt) return;
-        const { canEditFull, canChangeStatus } = getPermissions(dt);
-        
-        let canDrop = false;
-        if (canEditFull) canDrop = true;
-        else if (canChangeStatus && targetStatus !== 'cancelada') canDrop = true;
+    const categorias = useMemo(
+        () => Array.from(new Set(tareas.map(t => t.categoria?.trim()).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b, 'es')),
+        [tareas]
+    );
 
-        if (canDrop) {
-            e.dataTransfer.dropEffect = 'move';
-            if (dragOverColumn !== targetStatus) {
-                setDragOverColumn(targetStatus);
-            }
-        } else {
-            e.dataTransfer.dropEffect = 'none';
-        }
-    };
+    // ── Acciones ───────────────────────────────────────────────────
+    const openNew = (borrador?: BorradorTarea) => setDialog({ open: true, tarea: null, borrador: borrador || null });
+    const openTarea = (t: Tarea, edit = false) => setDialog({ open: true, tarea: t, edit });
 
-    const handleDragLeave = (e: React.DragEvent) => {
-        setDragOverColumn(null);
-    };
-
-    const handleDrop = async (e: React.DragEvent, targetStatus: string) => {
-        e.preventDefault();
-        setDragOverColumn(null);
-        if (!draggedTareaId) return;
-        
-        const dt = tareas.find(t => t.id === draggedTareaId);
-        setDraggedTareaId(null);
-        if (!dt || dt.estado === targetStatus) return;
-
-        const { canEditFull, canChangeStatus } = getPermissions(dt);
-        let canDrop = false;
-        if (canEditFull) canDrop = true;
-        else if (canChangeStatus && targetStatus !== 'cancelada') canDrop = true;
-
-        if (canDrop) {
-            await handleQuickStatusChange(dt, targetStatus);
-        } else {
-            showToast('No tienes permisos para mover a este estado', 'error');
-        }
-    };
-
-    const registerCommand = useCommandStore((state) => state.registerCommand);
-    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
-    const latestActions = useRef({ openNew: () => {} });
-    
-    // Will set openNew below
+    const registerCommand = useCommandStore(s => s.registerCommand);
+    const unregisterCommand = useCommandStore(s => s.unregisterCommand);
+    const openNewRef = useRef(openNew);
+    openNewRef.current = openNew;
     useEffect(() => {
         registerCommand({
             id: 'tareas-new',
             label: 'Nueva Tarea',
             category: 'Contextual',
             keys: ['ctrl', 'n'],
-            action: () => latestActions.current.openNew()
+            action: () => openNewRef.current(),
         });
         return () => unregisterCommand('tareas-new');
     }, [registerCommand, unregisterCommand]);
 
-    // ── Modal Handlers ─────────────────────────────────────────────
-    const openNew = () => {
-        setEditingTarea(null);
-        setIsViewMode(false);
-        setForm({
-            titulo: '',
-            descripcion: '',
-            estado: 'pendiente',
-            prioridad: 'media',
-            categoria: '',
-            fechaInicio: '',
-            fechaVencimiento: '',
-            projectId: '',
-            notas: '',
-        });
-        setFormInvolucrados([]);
-        setFormRecordatorios([]);
-        setShowModal(true);
-    };
-    latestActions.current.openNew = openNew;
-
-    const openEdit = (t: Tarea, forceEdit = false) => {
-        const { canEditFull } = getPermissions(t);
-        setEditingTarea(t);
-        setIsViewMode(!forceEdit || !canEditFull);
-        setForm({
-            titulo: t.titulo,
-            descripcion: t.descripcion || '',
-            estado: t.estado,
-            prioridad: t.prioridad,
-            categoria: t.categoria || '',
-            fechaInicio: t.fechaInicio ? t.fechaInicio.slice(0, 16) : '',
-            fechaVencimiento: t.fechaVencimiento ? t.fechaVencimiento.slice(0, 16) : '',
-            projectId: t.projectId || '',
-            notas: t.notas || '',
-        });
-        setFormInvolucrados(t.involucrados.map(inv => ({ operatorId: inv.operatorId, rol: inv.rol })));
-        setFormRecordatorios([]);
-        setShowModal(true);
-    };
-
-    const handlePostComentario = async () => {
-        if (!comentarioInput.trim() || !editingTarea || !currentUser) return;
-        setIsComentando(true);
-        try {
-            const res = await safeApiRequest('/api/tareas/comentarios', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tareaId: editingTarea.id,
-                    operatorId: currentUser.id,
-                    operatorName: currentUser.nombreCompleto,
-                    mensaje: comentarioInput.trim()
-                })
-            });
-            if (res.ok) {
-                const nuevo = await res.json();
-                setComentarios(prev => [...prev, nuevo]);
-                setComentarioInput('');
-                setTimeout(() => {
-                    const c = document.getElementById('chat-container');
-                    if (c) c.scrollTop = c.scrollHeight;
-                }, 50);
-            } else {
-                showToast('Error al enviar comentario', 'error');
-            }
-        } catch (e) {
-            console.error(e);
-            showToast('Error al enviar comentario', 'error');
-        } finally {
-            setIsComentando(false);
-        }
-    };
-
-    /**
-     * Crea los recordatorios del formulario. La fecha se manda con zona horaria
-     * (el campo datetime-local está en la hora del dispositivo). Devuelve los
-     * mensajes de error de los que no se pudieron programar.
-     */
-    const crearRecordatorios = async (tareaId: string): Promise<string[]> => {
-        const errores: string[] = [];
-        for (const rec of formRecordatorios) {
-            if (!rec.fechaDisparo) continue;
-            const fecha = new Date(rec.fechaDisparo);
-            if (Number.isNaN(fecha.getTime())) { errores.push('fecha inválida'); continue; }
-            try {
-                const r = await safeApiRequest('/api/tareas/recordatorios', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        tareaId,
-                        tipo: rec.tipo,
-                        fechaDisparo: fecha.toISOString(),
-                        mensaje: rec.mensaje || form.titulo,
-                    }),
-                });
-                if (!r.ok) {
-                    const data = await r.json().catch(() => ({}));
-                    errores.push(data.error || `error ${r.status}`);
-                }
-            } catch {
-                errores.push('sin conexión');
-            }
-        }
-        return errores;
-    };
-
-    const avisarGuardado = (mensaje: string, fallidos: string[]) => {
-        if (fallidos.length === 0) {
-            showToast(mensaje, 'success');
-            return;
-        }
-        const cuantos = fallidos.length === 1 ? 'Un recordatorio no se programó' : `${fallidos.length} recordatorios no se programaron`;
-        showToast(`${mensaje}, pero ${cuantos.charAt(0).toLowerCase()}${cuantos.slice(1)}: ${fallidos[0]}`, 'error');
-    };
-
-    const handleSave = async () => {
-        if (!form.titulo.trim()) {
-            showToast('El título es obligatorio', 'error');
-            return;
-        }
-        setIsSaving(true);
-        try {
-            if (editingTarea) {
-                // Update
-                const res = await safeApiRequest('/api/tareas', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: editingTarea.id,
-                        ...form,
-                        involucrados: formInvolucrados,
-                    }),
-                }).then(r => r.json());
-
-                if (res.error) throw new Error(res.error);
-
-                const fallidos = await crearRecordatorios(editingTarea.id);
-                avisarGuardado('Tarea actualizada', fallidos);
-            } else {
-                // Create
-                const res = await safeApiRequest('/api/tareas', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...form,
-                        involucrados: formInvolucrados,
-                    }),
-                }).then(r => r.json());
-
-                if (res.error) throw new Error(res.error);
-
-                const fallidos = await crearRecordatorios(res.id);
-                avisarGuardado('Tarea creada', fallidos);
-            }
-
-            setShowModal(false);
-            await loadTareas();
-        } catch (error: any) {
-            showToast(error.message || 'Error al guardar', 'error');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
     const handleDelete = async (id: string) => {
         try {
-            const params = new URLSearchParams({ id });
-            const res = await safeApiRequest(`/api/tareas?${params.toString()}`, { method: 'DELETE' });
+            const res = await safeApiRequest(`/api/tareas?${new URLSearchParams({ id })}`, { method: 'DELETE' });
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 throw new Error(data.error || 'Error al eliminar');
             }
             showToast('Tarea eliminada', 'success');
+            setDialog({ open: false, tarea: null });
             await loadTareas();
         } catch (e: any) {
             showToast(e?.message || 'Error al eliminar', 'error');
@@ -498,855 +190,414 @@ export default function TareasPage() {
         setConfirmDelete(null);
     };
 
-    const handleQuickStatusChange = async (tarea: Tarea, newEstado: string) => {
-        const oldEstado = tarea.estado;
-        
-        // Optimistic UI Update
-        setTareas(prev => prev.map(t => t.id === tarea.id ? { ...t, estado: newEstado } : t));
-
+    const handleQuickStatusChange = async (tarea: Tarea, nuevo: string) => {
+        if (tarea.estado === nuevo) return;
+        const anterior = tarea;
+        const completada = nuevo === 'completada' ? new Date().toISOString() : undefined;
+        setTareas(prev => prev.map(t => t.id === tarea.id ? { ...t, estado: nuevo, fechaCompletada: completada } : t));
         try {
             const res = await safeApiRequest('/api/tareas', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: tarea.id,
-                    estado: newEstado,
-                }),
+                body: JSON.stringify({ id: tarea.id, estado: nuevo }),
             });
-            
-            if (!res.ok) throw new Error('Failed API request');
-            showToast(`Estado actualizado a "${ESTADOS.find(e => e.value === newEstado)?.label}"`, 'success');
-        } catch (e) {
-            // Revert on failure
-            setTareas(prev => prev.map(t => t.id === tarea.id ? { ...t, estado: oldEstado } : t));
-            showToast('Error al actualizar estado', 'error');
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || 'Error al actualizar estado');
+            }
+            const actualizada = await res.json().catch(() => null);
+            if (actualizada?.id) setTareas(prev => prev.map(t => t.id === tarea.id ? { ...t, ...actualizada } : t));
+            showToast(`Tarea movida a "${getEstadoConfig(nuevo).label}"`, 'success');
+        } catch (e: any) {
+            setTareas(prev => prev.map(t => t.id === tarea.id ? anterior : t));
+            showToast(e?.message || 'Error al actualizar estado', 'error');
         }
     };
 
-    const handleDeleteRecordatorio = async (recId: string) => {
-        try {
-            await safeApiRequest(`/api/tareas/recordatorios?id=${recId}`, { method: 'DELETE' });
-            showToast('Recordatorio eliminado', 'success');
-            await loadTareas();
-        } catch (e) {
-            showToast('Error al eliminar recordatorio', 'error');
-        }
+    const puedeSoltar = (t: Tarea, destino: string) => {
+        const { canEditFull, canChangeStatus } = getPermissions(t);
+        return canEditFull || (canChangeStatus && destino !== 'cancelada');
     };
 
-    // ── Helpers ────────────────────────────────────────────────────
-    const getEstadoConfig = (estado: string) => ESTADOS.find(e => e.value === estado) || ESTADOS[0];
-    const getPrioridadConfig = (prioridad: string) => PRIORIDADES.find(p => p.value === prioridad) || PRIORIDADES[1];
-
-    const getVencimientoInfo = (fecha?: string) => {
-        if (!fecha) return null;
-        const d = new Date(fecha);
-        const hoursLeft = differenceInHours(d, new Date());
-        const isOverdue = isPast(d);
-        const distStr = formatDistanceToNow(d, { locale: es, addSuffix: true });
-
-        if (isOverdue) return { text: `Vencida ${distStr}`, class: 'text-rose-600 dark:text-rose-400 font-bold', urgent: true };
-        if (hoursLeft <= 24) return { text: `Vence ${distStr}`, class: 'text-amber-600 dark:text-amber-400 font-bold', urgent: true };
-        if (hoursLeft <= 72) return { text: `Vence ${distStr}`, class: 'text-amber-500 dark:text-amber-400', urgent: false };
-        return { text: `Vence ${distStr}`, class: 'text-slate-500 dark:text-slate-400', urgent: false };
+    const handleDrop = async (e: React.DragEvent, destino: string) => {
+        e.preventDefault();
+        setDragOver(null);
+        const t = tareas.find(x => x.id === draggedId);
+        setDraggedId(null);
+        if (!t || columnaDeEstado(t.estado) === destino) return;
+        if (!puedeSoltar(t, destino)) {
+            showToast('No tenés permiso para mover la tarea a ese estado', 'error');
+            return;
+        }
+        await handleQuickStatusChange(t, destino);
     };
 
     // ── Render ─────────────────────────────────────────────────────
-    if (isLoading) {
-        return (
-            <div className="min-h-[60vh] flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-            </div>
-        );
-    }
+    if (isLoading) return <LoadingState label="Cargando tareas…" />;
+
+    const abiertas = tareas.filter(t => estaAbierta(t.estado)).length;
 
     return (
-        <div className="w-full space-y-4 md:space-y-6 animate-in fade-in duration-200 pb-20">
+        <div className="w-full space-y-4 md:space-y-5 animate-in fade-in duration-200 pb-20">
             <ModuleHeader
                 title="Tareas"
                 description="Planificación, involucrados y recordatorios"
                 icon={<ListTodo />}
                 searchValue={search}
-                onSearchChange={setSearch}
-                searchPlaceholder="Buscar tareas..."
+                onSearchChange={v => setFilters({ search: v })}
+                searchPlaceholder="Buscar tareas…"
                 actions={[
-                    {
-                        id: 'view-toggle',
-                        label: view === 'kanban' ? 'Lista' : 'Kanban',
-                        icon: view === 'kanban' ? <List /> : <Columns3 />,
-                        onClick: () => setView(view === 'kanban' ? 'lista' : 'kanban'),
-                        variant: 'outline',
-                        hideLabelOnMobile: true,
-                    },
-                    {
-                        id: 'new-tarea',
-                        label: 'Nueva Tarea',
-                        icon: <Plus />,
-                        onClick: openNew,
-                        variant: 'primary',
-                        hideLabelOnMobile: true,
-                    },
+                    { id: 'new-tarea', label: 'Nueva tarea', icon: <Plus />, onClick: () => openNew(), variant: 'primary', hideLabelOnMobile: true },
                 ]}
                 tabs={[
-                    { id: '', label: 'Todas', icon: <ListTodo /> },
-                    { id: 'baja', label: 'Baja', icon: <Flag /> },
-                    { id: 'media', label: 'Media', icon: <Flag /> },
-                    { id: 'alta', label: 'Alta', icon: <Flag /> },
-                    { id: 'urgente', label: 'Urgente', icon: <AlertTriangle /> },
+                    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard /> },
+                    { id: 'kanban', label: 'Kanban', icon: <Columns3 />, count: abiertas },
+                    { id: 'lista', label: 'Lista', icon: <List /> },
                 ]}
-                activeTabId={filterPrioridad}
-                onTabChange={(tabId) => setFilterPrioridad(tabId)}
+                activeTabId={view}
+                onTabChange={id => setFilters({ view: id as Vista })}
+                toolbar={view !== 'dashboard' ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                        <select
+                            value={filterPrioridad}
+                            onChange={e => setFilters({ filterPrioridad: e.target.value })}
+                            aria-label="Filtrar por prioridad"
+                            className="input h-9 w-auto"
+                        >
+                            <option value="">Todas las prioridades</option>
+                            {PRIORIDADES.slice().reverse().map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                        </select>
+                        <label className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-card text-[13px] cursor-pointer select-none">
+                            <input type="checkbox" checked={soloMias} onChange={e => setFilters({ soloMias: e.target.checked })} className="accent-primary" />
+                            Solo mías
+                        </label>
+                    </div>
+                ) : undefined}
             />
 
-            {/* Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {ESTADOS.filter(e => e.value !== 'cancelada').map(e => {
-                    const count = tareas.filter(t => t.estado === e.value).length;
-                    return (
-                        <div key={e.value} className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3 shadow-sm">
-                            <div className={`w-3 h-3 rounded-full ${e.dot}`}></div>
-                            <div>
-                                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{count}</p>
-                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{e.label}</p>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+            <QuickAddTarea
+                operators={operators}
+                onCreated={t => setTareas(prev => [t, ...prev])}
+                onMasDetalles={b => openNew(b)}
+            />
 
-            {/* Kanban View */}
+            {view === 'dashboard' && (
+                <TareasDashboard
+                    tareas={tareas}
+                    onOpen={t => openTarea(t)}
+                    onFiltrarPrioridad={p => setFilters({ view: 'kanban', filterPrioridad: p })}
+                />
+            )}
+
             {view === 'kanban' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {ESTADOS.map(estadoConfig => {
-                        const columnTareas = kanbanColumns[estadoConfig.value] || [];
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
+                    {ESTADOS.map(col => {
+                        const todas = kanbanColumns[col.value] || [];
+                        const cerrada = col.value === 'completada' || col.value === 'cancelada';
+                        const visibles = cerrada && !expandidas[col.value] ? todas.slice(0, LIMITE_CERRADAS) : todas;
+                        const arrastrada = draggedId ? tareas.find(t => t.id === draggedId) : null;
+                        const destinoValido = !!arrastrada && columnaDeEstado(arrastrada.estado) !== col.value && puedeSoltar(arrastrada, col.value);
                         return (
-                            <div 
-                                key={estadoConfig.value} 
-                                className={`space-y-3 rounded-2xl transition-colors ${dragOverColumn === estadoConfig.value ? 'bg-purple-50/50 dark:bg-purple-900/10 ring-2 ring-purple-500/30' : ''}`}
-                                onDragOver={(e) => handleDragOver(e, estadoConfig.value)}
-                                onDragLeave={handleDragLeave}
-                                onDrop={(e) => handleDrop(e, estadoConfig.value)}
+                            <section
+                                key={col.value}
+                                aria-label={col.label}
+                                className={cn(
+                                    'rounded-2xl bg-surface-sunken p-2.5 space-y-2.5 transition-colors min-h-[160px]',
+                                    dragOver === col.value && destinoValido && 'ring-2 ring-brand-400 bg-brand-50/60 dark:bg-brand-900/20'
+                                )}
+                                onDragOver={e => {
+                                    if (!arrastrada) return;
+                                    e.preventDefault();
+                                    e.dataTransfer.dropEffect = destinoValido ? 'move' : 'none';
+                                    if (dragOver !== col.value) setDragOver(col.value);
+                                }}
+                                onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(null); }}
+                                onDrop={e => handleDrop(e, col.value)}
                             >
-                                {/* Column Header */}
-                                <div className="flex items-center justify-between px-1">
+                                <header className="flex items-center justify-between px-1.5 pt-0.5">
                                     <div className="flex items-center gap-2">
-                                        <div className={`w-2.5 h-2.5 rounded-full ${estadoConfig.dot}`}></div>
-                                        <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">{estadoConfig.label}</h3>
+                                        <span className={cn('w-2.5 h-2.5 rounded-full', col.dot)} aria-hidden="true" />
+                                        <h2 className="eyebrow">{col.label}</h2>
                                     </div>
-                                    <span className="text-[11px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">{columnTareas.length}</span>
-                                </div>
-                                {/* Column Cards */}
-                                <div className="space-y-2.5 min-h-[100px]">
-                                    {columnTareas.map(tarea => {
-                                        const { canEditFull, canChangeStatus } = getPermissions(tarea);
-                                        const isDraggable = canEditFull || canChangeStatus;
-                                        return (
-                                            <TareaCard
-                                                key={tarea.id}
-                                                tarea={tarea}
-                                                draggable={isDraggable}
-                                                onDragStart={(e) => handleDragStart(e, tarea.id)}
-                                                onEdit={() => openEdit(tarea)}
-                                                onDelete={() => setConfirmDelete(tarea.id)}
-                                                onStatusChange={(s) => handleQuickStatusChange(tarea, s)}
-                                                canEditFull={canEditFull}
-                                                canChangeStatus={canChangeStatus}
-                                                getEstadoConfig={getEstadoConfig}
-                                                getPrioridadConfig={getPrioridadConfig}
-                                                getVencimientoInfo={getVencimientoInfo}
-                                            />
-                                        );
-                                    })}
-                                    {columnTareas.length === 0 && (
-                                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center">
-                                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Sin tareas</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                                    <span className="text-xs font-semibold tabular-nums bg-card border border-border text-muted-foreground px-2 py-0.5 rounded-full">{todas.length}</span>
+                                </header>
+
+                                {visibles.map(t => {
+                                    const { canEditFull, canChangeStatus } = getPermissions(t);
+                                    return (
+                                        <TareaCard
+                                            key={t.id}
+                                            tarea={t}
+                                            draggable={canChangeStatus}
+                                            arrastrando={draggedId === t.id}
+                                            onDragStart={e => { setDraggedId(t.id); e.dataTransfer.effectAllowed = 'move'; }}
+                                            onDragEnd={() => { setDraggedId(null); setDragOver(null); }}
+                                            onOpen={() => openTarea(t)}
+                                            onDelete={() => setConfirmDelete(t.id)}
+                                            onStatusChange={s => handleQuickStatusChange(t, s)}
+                                            canEditFull={canEditFull}
+                                            canChangeStatus={canChangeStatus}
+                                        />
+                                    );
+                                })}
+
+                                {todas.length > LIMITE_CERRADAS && cerrada && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setExpandidas(p => ({ ...p, [col.value]: !p[col.value] }))}
+                                        className="w-full h-8 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
+                                    >
+                                        {expandidas[col.value] ? 'Ver menos' : `Ver ${todas.length - LIMITE_CERRADAS} más`}
+                                    </button>
+                                )}
+
+                                {todas.length === 0 && (
+                                    <div className="border border-dashed border-border rounded-xl p-6 text-center">
+                                        <p className="text-xs text-muted-foreground">
+                                            {col.value === 'pendiente' ? 'Sin pendientes. Cargá una arriba.' : 'Arrastrá tareas acá'}
+                                        </p>
+                                    </div>
+                                )}
+                            </section>
                         );
                     })}
                 </div>
             )}
 
-            {/* List View */}
             {view === 'lista' && (
-                <div className="space-y-2">
-                    {filteredTareas.length === 0 ? (
-                        <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center">
-                            <ListTodo className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-                            <p className="text-sm font-bold text-slate-400 dark:text-slate-500">No hay tareas</p>
-                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Crea una nueva tarea para comenzar</p>
-                        </div>
-                    ) : (
-                        filteredTareas.map(tarea => {
-                            const { canEditFull, canChangeStatus } = getPermissions(tarea);
+                listaOrdenada.length === 0 ? (
+                    <EmptyState icon={<ListTodo />} title="No hay tareas" description={search || filterPrioridad || soloMias ? 'Probá con otros filtros.' : 'Cargá la primera desde la barra de alta rápida.'} />
+                ) : (
+                    <div className="surface divide-y divide-border overflow-hidden">
+                        {listaOrdenada.map(t => {
+                            const { canEditFull, canChangeStatus } = getPermissions(t);
                             return (
                                 <TareaListRow
-                                    key={tarea.id}
-                                    tarea={tarea}
-                                    onEdit={() => openEdit(tarea)}
-                                    onDelete={() => setConfirmDelete(tarea.id)}
-                                    onStatusChange={(s) => handleQuickStatusChange(tarea, s)}
+                                    key={t.id}
+                                    tarea={t}
+                                    onOpen={() => openTarea(t)}
+                                    onDelete={() => setConfirmDelete(t.id)}
+                                    onStatusChange={s => handleQuickStatusChange(t, s)}
                                     canEditFull={canEditFull}
                                     canChangeStatus={canChangeStatus}
-                                    getEstadoConfig={getEstadoConfig}
-                                    getPrioridadConfig={getPrioridadConfig}
-                                    getVencimientoInfo={getVencimientoInfo}
                                 />
                             );
-                        })
-                    )}
-                </div>
-            )}
-
-            {/* ──── Create/Edit Modal ──── */}
-            {showModal && (
-                <div className="fixed inset-0 z-[200] flex items-start justify-center bg-slate-950/50 animate-in fade-in duration-200 overflow-y-auto p-4 pt-[5vh]" onClick={() => setShowModal(false)}>
-                    <div className="bg-card text-card-foreground w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-2 duration-200 my-4" onClick={e => e.stopPropagation()}>
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between p-5 pb-4 border-b border-slate-100 dark:border-slate-700">
-                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg"><ListTodo className="w-5 h-5 text-purple-600 dark:text-purple-400" /></div>
-                                {editingTarea ? (isViewMode ? 'Detalle de Tarea' : 'Editar Tarea') : 'Nueva Tarea'}
-                            </h2>
-                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                            {/* Title */}
-                            <div className="space-y-1.5">
-                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Título *</label>
-                                <input
-                                    type="text"
-                                    value={form.titulo}
-                                    onChange={e => setForm({ ...form, titulo: e.target.value })}
-                                    disabled={isViewMode}
-                                    className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                    placeholder="¿Qué hay que hacer?"
-                                    autoFocus={!isViewMode}
-                                />
-                            </div>
-
-                            {/* Estado + Prioridad row */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="space-y-1.5">
-                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
-                                    <select
-                                        value={form.estado}
-                                        onChange={e => setForm({ ...form, estado: e.target.value })}
-                                        disabled={isViewMode}
-                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                    >
-                                        {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
-                                    </select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Prioridad</label>
-                                    <select
-                                        value={form.prioridad}
-                                        onChange={e => setForm({ ...form, prioridad: e.target.value })}
-                                        disabled={isViewMode}
-                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                    >
-                                        {PRIORIDADES.map(p => <option key={p.value} value={p.value}>{p.icon} {p.label}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Description */}
-                            <div className="space-y-1.5">
-                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción</label>
-                                <textarea
-                                    value={form.descripcion}
-                                    onChange={e => setForm({ ...form, descripcion: e.target.value })}
-                                    disabled={isViewMode}
-                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-20 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                    placeholder="Detalles de la tarea..."
-                                />
-                            </div>
-
-                            {/* Dates row */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="space-y-1.5">
-                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Inicio</label>
-                                    <input
-                                        type="datetime-local"
-                                        value={form.fechaInicio}
-                                        onChange={e => setForm({ ...form, fechaInicio: e.target.value })}
-                                        disabled={isViewMode}
-                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Vencimiento</label>
-                                    <input
-                                        type="datetime-local"
-                                        value={form.fechaVencimiento}
-                                        onChange={e => setForm({ ...form, fechaVencimiento: e.target.value })}
-                                        disabled={isViewMode}
-                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Project + Category */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="space-y-1.5">
-                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Proyecto (opcional)</label>
-                                    <select
-                                        value={form.projectId}
-                                        onChange={e => setForm({ ...form, projectId: e.target.value })}
-                                        disabled={isViewMode}
-                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                    >
-                                        <option value="">Sin proyecto</option>
-                                        {projects.map((p: any) => (
-                                            <option key={p.id} value={p.id}>{p.codigoProyecto ? `${p.codigoProyecto} | ` : ''}{p.nombre}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Categoría</label>
-                                    <input
-                                        type="text"
-                                        value={form.categoria}
-                                        onChange={e => setForm({ ...form, categoria: e.target.value })}
-                                        disabled={isViewMode}
-                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                        placeholder="ej: Mantenimiento"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* ─── Involucrados ─── */}
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <label className="flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                        <UsersIcon className="w-3.5 h-3.5" /> Involucrados
-                                    </label>
-                                    {!isViewMode && (
-                                        <button
-                                            onClick={() => setFormInvolucrados([...formInvolucrados, { operatorId: '', rol: 'responsable' }])}
-                                            className="text-[12px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 flex items-center gap-1 transition-colors"
-                                        >
-                                            <Plus className="w-3 h-3" /> Agregar
-                                        </button>
-                                    )}
-                                </div>
-                                {formInvolucrados.length === 0 && (
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 italic">Sin involucrados asignados</p>
-                                )}
-                                <div className="space-y-2">
-                                    {formInvolucrados.map((inv, i) => (
-                                        <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-background text-foreground/30 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
-                                            <select
-                                                value={inv.operatorId}
-                                                onChange={e => {
-                                                    const next = [...formInvolucrados];
-                                                    next[i] = { ...next[i], operatorId: e.target.value };
-                                                    setFormInvolucrados(next);
-                                                }}
-                                                disabled={isViewMode}
-                                                className="w-full sm:flex-1 h-10 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
-                                            >
-                                                <option value="">Seleccionar...</option>
-                                                {operators.map((op: any) => (
-                                                    <option key={op.id} value={op.id}>{op.nombreCompleto}</option>
-                                                ))}
-                                            </select>
-                                            <div className="flex flex-1 sm:flex-none items-center gap-2 w-full sm:w-auto">
-                                                <select
-                                                    value={inv.rol}
-                                                    onChange={e => {
-                                                        const next = [...formInvolucrados];
-                                                        next[i] = { ...next[i], rol: e.target.value };
-                                                        setFormInvolucrados(next);
-                                                    }}
-                                                    disabled={isViewMode}
-                                                    className="flex-1 sm:w-32 h-10 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
-                                                >
-                                                    {ROLES_INVOLUCRADO.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                                                </select>
-                                                {!isViewMode && (
-                                                    <button
-                                                        onClick={() => setFormInvolucrados(formInvolucrados.filter((_, idx) => idx !== i))}
-                                                        className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors shrink-0"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* ─── Recordatorios ─── */}
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <label className="flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                        <BellRing className="w-3.5 h-3.5" /> Recordatorios
-                                    </label>
-                                    {!isViewMode && (
-                                        <button
-                                            onClick={() => setFormRecordatorios([...formRecordatorios, { tipo: 'unico', fechaDisparo: '', mensaje: '' }])}
-                                            className="text-[12px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 flex items-center gap-1 transition-colors"
-                                        >
-                                            <BellPlus className="w-3 h-3" /> Agregar
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Existing recordatorios for editing tarea */}
-                                {editingTarea && editingTarea.recordatorios.length > 0 && (
-                                    <div className="space-y-1.5">
-                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Recordatorios activos</p>
-                                        {editingTarea.recordatorios.map(rec => (
-                                            <div key={rec.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-2.5">
-                                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 text-xs">
-                                                    {rec.disparado
-                                                        ? <Check className="w-4 h-4 text-emerald-500" />
-                                                        : <Bell className="w-4 h-4 text-purple-500 animate-pulse" />}
-                                                    <span className="font-bold text-slate-700 dark:text-slate-200">{TIPOS_RECORDATORIO.find(t => t.value === rec.tipo)?.label}</span>
-                                                    <span className="text-slate-400 dark:text-slate-500">—</span>
-                                                    <span className="text-slate-600 dark:text-slate-300">{format(new Date(rec.fechaDisparo), 'dd/MM/yyyy HH:mm', { locale: es })}</span>
-                                                    {rec.disparado && <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded uppercase">Disparado</span>}
-                                                </div>
-                                                {!isViewMode && (
-                                                    <button onClick={() => handleDeleteRecordatorio(rec.id)} className="p-1 text-slate-400 hover:text-rose-500 rounded transition-colors">
-                                                        <X className="w-3.5 h-3.5" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* New recordatorios to create */}
-                                {formRecordatorios.map((rec, i) => (
-                                    <div key={i} className="bg-background text-foreground/30 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
-                                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-                                            <select
-                                                value={rec.tipo}
-                                                onChange={e => {
-                                                    const next = [...formRecordatorios];
-                                                    next[i] = { ...next[i], tipo: e.target.value };
-                                                    setFormRecordatorios(next);
-                                                }}
-                                                disabled={isViewMode}
-                                                className="w-full sm:flex-1 h-10 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
-                                            >
-                                                {TIPOS_RECORDATORIO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                                            </select>
-                                            <div className="flex flex-1 sm:flex-none items-center gap-2 w-full sm:w-auto">
-                                                <input
-                                                    type="datetime-local"
-                                                    value={rec.fechaDisparo}
-                                                    onChange={e => {
-                                                        const next = [...formRecordatorios];
-                                                        next[i] = { ...next[i], fechaDisparo: e.target.value };
-                                                        setFormRecordatorios(next);
-                                                    }}
-                                                    disabled={isViewMode}
-                                                    className="flex-1 h-10 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
-                                                />
-                                                {!isViewMode && (
-                                                    <button
-                                                        onClick={() => setFormRecordatorios(formRecordatorios.filter((_, idx) => idx !== i))}
-                                                        className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg transition-colors shrink-0"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            placeholder="Mensaje del recordatorio (opcional)"
-                                            value={rec.mensaje}
-                                            onChange={e => {
-                                                const next = [...formRecordatorios];
-                                                next[i] = { ...next[i], mensaje: e.target.value };
-                                                setFormRecordatorios(next);
-                                            }}
-                                            disabled={isViewMode}
-                                            className="w-full h-9 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-3 text-xs text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                        />
-                                    </div>
-                                ))}
-
-                                {formRecordatorios.length === 0 && !editingTarea?.recordatorios.length && (
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 italic">Sin recordatorios programados</p>
-                                )}
-                            </div>
-
-                            {/* Notes */}
-                            <div className="space-y-1.5">
-                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Notas</label>
-                                <textarea
-                                    value={form.notas}
-                                    onChange={e => setForm({ ...form, notas: e.target.value })}
-                                    disabled={isViewMode}
-                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-16 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
-                                    placeholder="Notas adicionales..."
-                                />
-                            </div>
-
-                            {/* Chat / Comentarios */}
-                            {editingTarea && (
-                                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-                                    <label className="mb-4 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                                        Chat de Tarea
-                                    </label>
-                                    <div 
-                                        id="chat-container"
-                                        className="bg-muted/50 text-muted-foreground rounded-2xl p-4 h-64 overflow-y-auto mb-4 flex flex-col gap-3 custom-scrollbar"
-                                    >
-                                        {comentarios.length === 0 ? (
-                                            <div className="m-auto text-sm text-slate-400 italic">No hay mensajes aún...</div>
-                                        ) : (
-                                            comentarios.map(c => {
-                                                const isMe = c.operatorId === currentUser?.id;
-                                                return (
-                                                    <div key={c.id} className={`flex flex-col max-w-[85%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}>
-                                                        {!isMe && (
-                                                            <span className="text-[11px] text-slate-500 ml-1 mb-0.5">
-                                                                {c.operator.nombreCompleto} ({c.operator.role})
-                                                            </span>
-                                                        )}
-                                                        <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-primary text-white rounded-tr-sm' : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-tl-sm'}`}>
-                                                            {c.mensaje}
-                                                        </div>
-                                                        <span className="text-[11px] text-slate-400 mt-1 mx-1">
-                                                            {format(new Date(c.createdAt), 'HH:mm - dd/MM')}
-                                                        </span>
-                                                    </div>
-                                                );
-                                            })
-                                        )}
-                                    </div>
-                                    {/* Input Chat */}
-                                    <div className="flex gap-2 h-12">
-                                        <input 
-                                            type="text"
-                                            value={comentarioInput}
-                                            onChange={e => setComentarioInput(e.target.value)}
-                                            onKeyDown={e => {
-                                                if (e.key === 'Enter') {
-                                                    e.preventDefault();
-                                                    handlePostComentario();
-                                                }
-                                            }}
-                                            placeholder="Escribe un mensaje..."
-                                            className="flex-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm outline-none focus:border-blue-500"
-                                        />
-                                        <button 
-                                            onClick={handlePostComentario}
-                                            disabled={isComentando || !comentarioInput.trim()}
-                                            className="px-4 bg-primary text-white rounded-xl hover:bg-primary-hover disabled:opacity-50 transition-colors shrink-0 flex items-center justify-center"
-                                        >
-                                            {isComentando ? <Loader2 className="w-5 h-5 animate-spin" /> : <ChevronRight className="w-5 h-5" />}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="p-5 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                            {isViewMode ? (
-                                <>
-                                    <button
-                                        onClick={() => setShowModal(false)}
-                                        className="px-4 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                                    >
-                                        Cerrar
-                                    </button>
-                                    {(!editingTarea || getPermissions(editingTarea).canEditFull) && (
-                                        <button
-                                            onClick={() => setIsViewMode(false)}
-                                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-hover transition-all"
-                                        >
-                                            <Edit3 className="w-4 h-4" /> Editar
-                                        </button>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <button
-                                        onClick={() => setShowModal(false)}
-                                        className="px-4 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        onClick={handleSave}
-                                        disabled={isSaving}
-                                        className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white text-sm font-bold rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50"
-                                    >
-                                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                        {isSaving ? 'Guardando...' : editingTarea ? 'Guardar Cambios' : 'Crear Tarea'}
-                                    </button>
-                                </>
-                            )}
-                        </div>
+                        })}
                     </div>
-                </div>
+                )
             )}
 
-            {/* Delete Confirm Dialog */}
+            <TareaFormDialog
+                open={dialog.open}
+                onClose={() => setDialog(d => ({ ...d, open: false }))}
+                tarea={dialog.tarea}
+                borrador={dialog.borrador}
+                startInEdit={dialog.edit}
+                canEditFull={getPermissions(dialog.tarea).canEditFull}
+                operators={operators}
+                projects={projects}
+                categorias={categorias}
+                currentUserId={currentUser?.id}
+                onSaved={loadTareas}
+                onDelete={dialog.tarea ? () => setConfirmDelete(dialog.tarea!.id) : undefined}
+            />
+
             <ConfirmDialog
                 isOpen={!!confirmDelete}
                 onCancel={() => setConfirmDelete(null)}
                 onConfirm={() => confirmDelete && handleDelete(confirmDelete)}
-                title="¿Eliminar tarea?"
-                message="Esta acción eliminará la tarea y todos sus recordatorios asociados. Los cron jobs de cron-job.org también serán eliminados."
+                title="¿Eliminar la tarea?"
+                message="Se eliminan la tarea, sus comentarios y sus recordatorios programados."
+                confirmLabel="Eliminar"
+                variant="danger"
             />
-
-            {/* Mobile FAB */}
-            <div className="md:hidden fixed bottom-20 right-4 z-40">
-                <button
-                    onClick={openNew}
-                    className="w-14 h-14 bg-purple-600 text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-purple-700 transition-all"
-                >
-                    <Plus className="w-6 h-6" />
-                </button>
-            </div>
         </div>
     );
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// TAREA CARD — Kanban view
+// Tarjeta del tablero
 // ═════════════════════════════════════════════════════════════════════
 
+function Avatares({ tarea, max, size = 'sm' }: { tarea: Tarea; max: number; size?: 'sm' | 'md' }) {
+    const dim = size === 'sm' ? 'w-6 h-6 text-[11px]' : 'w-7 h-7 text-[11px]';
+    return (
+        <div className="flex -space-x-1.5">
+            {tarea.involucrados.slice(0, max).map(inv => (
+                <span
+                    key={inv.id}
+                    className={cn(dim, 'rounded-full bg-brand-600 text-white font-semibold flex items-center justify-center border-2 border-card')}
+                    title={`${inv.operator.nombreCompleto} (${inv.rol})`}
+                >
+                    {iniciales(inv.operator.nombreCompleto)}
+                </span>
+            ))}
+            {tarea.involucrados.length > max && (
+                <span className={cn(dim, 'rounded-full bg-muted text-muted-foreground font-semibold flex items-center justify-center border-2 border-card')}>
+                    +{tarea.involucrados.length - max}
+                </span>
+            )}
+        </div>
+    );
+}
+
 function TareaCard({
-    tarea,
-    canEditFull,
-    canChangeStatus,
-    draggable,
-    onDragStart,
-    onEdit,
-    onDelete,
-    onStatusChange,
-    getEstadoConfig,
-    getPrioridadConfig,
-    getVencimientoInfo,
+    tarea, canEditFull, canChangeStatus, draggable, arrastrando,
+    onDragStart, onDragEnd, onOpen, onDelete, onStatusChange,
 }: {
     tarea: Tarea;
-    canEditFull?: boolean;
-    canChangeStatus?: boolean;
-    draggable?: boolean;
-    onDragStart?: (e: React.DragEvent) => void;
-    onEdit: () => void;
+    canEditFull: boolean;
+    canChangeStatus: boolean;
+    draggable: boolean;
+    arrastrando: boolean;
+    onDragStart: (e: React.DragEvent) => void;
+    onDragEnd: () => void;
+    onOpen: () => void;
     onDelete: () => void;
     onStatusChange: (s: string) => void;
-    getEstadoConfig: (s: string) => typeof ESTADOS[0];
-    getPrioridadConfig: (s: string) => typeof PRIORIDADES[0];
-    getVencimientoInfo: (f?: string) => { text: string; class: string; urgent: boolean } | null;
 }) {
     const prioridad = getPrioridadConfig(tarea.prioridad);
-    const vencimiento = getVencimientoInfo(tarea.fechaVencimiento);
-    const hasReminders = tarea.recordatorios.length > 0;
-    const activeReminders = tarea.recordatorios.filter(r => !r.disparado && r.cronJobActivo).length;
+    const venc = getVencimientoInfo(tarea);
+    const activos = tarea.recordatorios.filter(r => !r.disparado && r.cronJobActivo).length;
+    const cerrada = !estaAbierta(tarea.estado);
 
     return (
-        <div 
+        <article
             draggable={draggable}
             onDragStart={onDragStart}
-            className={`bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 transition-all duration-200 group ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`} 
-            onClick={onEdit}
+            onDragEnd={onDragEnd}
+            onClick={onOpen}
+            onKeyDown={e => { if (e.key === 'Enter') onOpen(); }}
+            tabIndex={0}
+            aria-label={tarea.titulo}
+            className={cn(
+                'relative bg-card text-card-foreground rounded-xl border border-border p-3 pl-4 shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 transition-all group overflow-hidden focus-visible:outline-2 focus-visible:outline-ring',
+                draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
+                arrastrando && 'opacity-50',
+                venc?.vencida && 'border-danger-200 dark:border-danger-900'
+            )}
         >
-            {/* Top: Priority + Actions */}
-            <div className="flex items-start justify-between mb-2">
-                <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${prioridad.bg} ${prioridad.color}`}>
-                    {prioridad.icon} {prioridad.label}
-                </span>
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+            <span className={cn('absolute left-0 top-0 bottom-0 w-1', prioridad.bar, cerrada && 'opacity-40')} aria-hidden="true" />
+
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+                <Badge tone={cerrada ? 'neutral' : prioridad.tone}>{prioridad.label}</Badge>
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                     {canChangeStatus && tarea.estado === 'pendiente' && (
-                        <button onClick={() => onStatusChange('en_progreso')} className="p-1 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Iniciar">
+                        <button type="button" onClick={() => onStatusChange('en_progreso')} className="p-1 rounded-md text-info-600 hover:bg-info-50 dark:hover:bg-info-900/20" title="Iniciar" aria-label="Iniciar">
                             <ChevronRight className="w-4 h-4" />
                         </button>
                     )}
-                    {canChangeStatus && tarea.estado === 'en_progreso' && (
-                        <button onClick={() => onStatusChange('completada')} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors" title="Completar">
+                    {canChangeStatus && estaAbierta(tarea.estado) && (
+                        <button type="button" onClick={() => onStatusChange('completada')} className="p-1 rounded-md text-success-600 hover:bg-success-50 dark:hover:bg-success-900/20" title="Completar" aria-label="Completar">
                             <Check className="w-4 h-4" />
                         </button>
                     )}
                     {canEditFull && (
-                        <button onClick={onDelete} className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
+                        <button type="button" onClick={onDelete} className="p-1 rounded-md text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20" title="Eliminar" aria-label="Eliminar">
                             <Trash2 className="w-3.5 h-3.5" />
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* Title */}
-            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-snug mb-2 line-clamp-2">{tarea.titulo}</h4>
+            <h3 className={cn('text-sm font-semibold leading-snug line-clamp-2', cerrada && 'text-muted-foreground')}>{tarea.titulo}</h3>
+            {tarea.descripcion && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{tarea.descripcion}</p>}
 
-            {/* Description preview */}
-            {tarea.descripcion && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">{tarea.descripcion}</p>
-            )}
-
-            {/* Project badge */}
-            {tarea.project && (
-                <div className="flex items-center gap-1.5 mb-3">
-                    <Briefcase className="w-3 h-3 text-slate-400" />
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate">{tarea.project.codigoProyecto || tarea.project.nombre}</span>
-                </div>
-            )}
-
-            {/* Vencimiento */}
-            {vencimiento && (
-                <div className={`flex items-center gap-1.5 mb-3 ${vencimiento.class}`}>
-                    <Timer className="w-3 h-3" />
-                    <span className="text-[11px] font-bold">{vencimiento.text}</span>
-                </div>
-            )}
-
-            {/* Bottom: Avatars + Reminder */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700">
-                <div className="flex -space-x-1.5">
-                    {tarea.involucrados.slice(0, 4).map(inv => (
-                        <div
-                            key={inv.id}
-                            className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-[11px] font-bold text-white border-2 border-white dark:border-slate-800 shadow-sm"
-                            title={`${inv.operator.nombreCompleto} (${inv.rol})`}
-                        >
-                            {inv.operator.nombreCompleto.charAt(0).toUpperCase()}
-                        </div>
-                    ))}
-                    {tarea.involucrados.length > 4 && (
-                        <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[11px] font-bold text-slate-600 dark:text-slate-300 border-2 border-white dark:border-slate-800">
-                            +{tarea.involucrados.length - 4}
-                        </div>
+            {(tarea.project || venc) && (
+                <div className="flex flex-col gap-1 mt-2">
+                    {tarea.project && (
+                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                            <Briefcase className="w-3 h-3 shrink-0" /> {tarea.project.codigoProyecto || tarea.project.nombre}
+                        </span>
+                    )}
+                    {venc && (
+                        <span className={cn('flex items-center gap-1.5 text-xs', venc.className)}>
+                            <Timer className="w-3 h-3 shrink-0" /> {venc.text}
+                        </span>
                     )}
                 </div>
-                {hasReminders && (
-                    <div className="flex items-center gap-1 text-purple-500" title={`${activeReminders} recordatorio(s) activo(s)`}>
-                        <Bell className={`w-3.5 h-3.5 ${activeReminders > 0 ? 'animate-pulse' : 'opacity-50'}`} />
-                        {activeReminders > 0 && <span className="text-[11px] font-bold">{activeReminders}</span>}
-                    </div>
-                )}
-            </div>
-        </div>
+            )}
+
+            {(tarea.involucrados.length > 0 || activos > 0) && (
+                <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-border">
+                    <Avatares tarea={tarea} max={4} />
+                    {activos > 0 && (
+                        <span className="flex items-center gap-1 text-xs text-brand-600 dark:text-brand-400" title={`${activos} recordatorio(s) activo(s)`}>
+                            <Bell className="w-3.5 h-3.5" /> {activos}
+                        </span>
+                    )}
+                </div>
+            )}
+        </article>
     );
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// TAREA LIST ROW — List view
+// Fila de la lista
 // ═════════════════════════════════════════════════════════════════════
+
 function TareaListRow({
-    tarea,
-    canEditFull,
-    canChangeStatus,
-    onEdit,
-    onDelete,
-    onStatusChange,
-    getEstadoConfig,
-    getPrioridadConfig,
-    getVencimientoInfo,
+    tarea, canEditFull, canChangeStatus, onOpen, onDelete, onStatusChange,
 }: {
     tarea: Tarea;
-    canEditFull?: boolean;
-    canChangeStatus?: boolean;
-    onEdit: () => void;
+    canEditFull: boolean;
+    canChangeStatus: boolean;
+    onOpen: () => void;
     onDelete: () => void;
     onStatusChange: (s: string) => void;
-    getEstadoConfig: (s: string) => typeof ESTADOS[0];
-    getPrioridadConfig: (s: string) => typeof PRIORIDADES[0];
-    getVencimientoInfo: (f?: string) => { text: string; class: string; urgent: boolean } | null;
 }) {
     const estado = getEstadoConfig(tarea.estado);
     const prioridad = getPrioridadConfig(tarea.prioridad);
-    const vencimiento = getVencimientoInfo(tarea.fechaVencimiento);
-    const activeReminders = tarea.recordatorios.filter(r => !r.disparado && r.cronJobActivo).length;
+    const venc = getVencimientoInfo(tarea);
+    const activos = tarea.recordatorios.filter(r => !r.disparado && r.cronJobActivo).length;
+    const completada = columnaDeEstado(tarea.estado) === 'completada';
+    const cerrada = !estaAbierta(tarea.estado);
 
     return (
-        <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 transition-all group">
-            {/* Quick status toggle */}
-            <div className="shrink-0" onClick={e => e.stopPropagation()}>
-                {tarea.estado === 'completada' ? (
-                    <div className={`w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center transition-colors ${canChangeStatus ? 'cursor-pointer hover:bg-emerald-600' : 'opacity-60 cursor-not-allowed'}`} onClick={() => canChangeStatus && onStatusChange('pendiente')}>
-                        <Check className="w-3.5 h-3.5 text-white" />
-                    </div>
-                ) : (
-                    <div
-                        className={`w-6 h-6 rounded-full border-2 transition-colors ${tarea.estado === 'en_progreso' ? 'border-blue-400 bg-blue-100 dark:bg-blue-900/30' : 'border-slate-300 dark:border-slate-600 hover:border-purple-400'} ${canChangeStatus ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
-                        onClick={() => canChangeStatus && onStatusChange(tarea.estado === 'pendiente' ? 'en_progreso' : 'completada')}
-                    />
+        <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group">
+            <button
+                type="button"
+                disabled={!canChangeStatus}
+                onClick={() => onStatusChange(completada ? 'pendiente' : 'completada')}
+                aria-label={completada ? 'Volver a pendiente' : 'Marcar como completada'}
+                title={completada ? 'Volver a pendiente' : 'Completar'}
+                className={cn(
+                    'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                    completada ? 'bg-success-500 border-success-500 text-white' : tarea.estado === 'en_progreso' ? 'border-info-500 hover:bg-info-50 dark:hover:bg-info-900/20' : 'border-slate-300 dark:border-slate-600 hover:border-success-500'
                 )}
-            </div>
+            >
+                {completada && <Check className="w-3 h-3" />}
+            </button>
 
-            {/* Main content */}
-            <div className="flex-1 min-w-0 cursor-pointer" onClick={onEdit}>
-                <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className={`text-sm font-bold leading-snug truncate ${tarea.estado === 'completada' ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'}`}>
-                        {tarea.titulo}
-                    </h4>
-                    <span className={`text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${prioridad.bg} ${prioridad.color} shrink-0`}>
-                        {prioridad.label}
-                    </span>
-                    <span className={`text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${estado.color} shrink-0`}>
-                        {estado.label}
-                    </span>
-                </div>
-                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                    {tarea.project && (
-                        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                            <Briefcase className="w-3 h-3" /> {tarea.project.codigoProyecto || tarea.project.nombre}
-                        </span>
-                    )}
-                    {vencimiento && (
-                        <span className={`text-[11px] font-bold flex items-center gap-1 ${vencimiento.class}`}>
-                            <Timer className="w-3 h-3" /> {vencimiento.text}
-                        </span>
-                    )}
-                    {tarea.involucrados.length > 0 && (
-                        <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                            <UsersIcon className="w-3 h-3" /> {tarea.involucrados.length}
-                        </span>
-                    )}
-                    {activeReminders > 0 && (
-                        <span className="text-[11px] text-purple-500 flex items-center gap-1">
-                            <Bell className="w-3 h-3 animate-pulse" /> {activeReminders}
-                        </span>
-                    )}
-                </div>
-            </div>
+            <span className={cn('w-1 h-8 rounded-full shrink-0', prioridad.bar, cerrada && 'opacity-40')} aria-hidden="true" />
 
-            {/* Avatars */}
-            <div className="hidden md:flex -space-x-1.5 shrink-0">
-                {tarea.involucrados.slice(0, 3).map(inv => (
-                    <div
-                        key={inv.id}
-                        className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-[11px] font-bold text-white border-2 border-white dark:border-slate-800"
-                        title={inv.operator.nombreCompleto}
-                    >
-                        {inv.operator.nombreCompleto.charAt(0).toUpperCase()}
-                    </div>
-                ))}
-                {tarea.involucrados.length > 3 && (
-                    <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[11px] font-bold text-slate-600 dark:text-slate-300 border-2 border-white dark:border-slate-800">
-                        +{tarea.involucrados.length - 3}
-                    </div>
-                )}
-            </div>
+            <button type="button" onClick={onOpen} className="flex-1 min-w-0 text-left">
+                <span className="flex items-center gap-2 flex-wrap">
+                    <span className={cn('text-sm font-medium truncate', completada && 'line-through text-muted-foreground')}>{tarea.titulo}</span>
+                    <Badge tone={cerrada ? 'neutral' : prioridad.tone}>{prioridad.label}</Badge>
+                    {tarea.estado !== 'pendiente' && <Badge tone={estado.tone} dot>{estado.label}</Badge>}
+                </span>
+                <span className="flex items-center gap-3 mt-1 flex-wrap text-xs text-muted-foreground">
+                    {tarea.project && <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" /> {tarea.project.codigoProyecto || tarea.project.nombre}</span>}
+                    {venc && <span className={cn('flex items-center gap-1', venc.className)}><Timer className="w-3 h-3" /> {venc.text}</span>}
+                    {tarea.involucrados.length > 0 && <span className="flex items-center gap-1 md:hidden"><UsersIcon className="w-3 h-3" /> {tarea.involucrados.length}</span>}
+                    {activos > 0 && <span className="flex items-center gap-1 text-brand-600 dark:text-brand-400"><Bell className="w-3 h-3" /> {activos}</span>}
+                </span>
+            </button>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={onEdit} className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors" title={canEditFull ? 'Editar' : 'Ver detalle'}>
-                    {canEditFull ? <Edit3 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <div className="hidden md:block shrink-0"><Avatares tarea={tarea} max={3} size="md" /></div>
+
+            {canEditFull && (
+                <button
+                    type="button"
+                    onClick={onDelete}
+                    aria-label="Eliminar"
+                    title="Eliminar"
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity shrink-0"
+                >
+                    <Trash2 className="w-4 h-4" />
                 </button>
-                {canEditFull && (
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors" title="Eliminar">
-                        <Trash2 className="w-4 h-4" />
-                    </button>
-                )}
-            </div>
+            )}
         </div>
     );
 }
