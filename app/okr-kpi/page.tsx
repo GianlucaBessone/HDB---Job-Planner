@@ -12,6 +12,8 @@ import GraficosTab from './components/GraficosTab';
 import PlanesAccionTab from './components/PlanesAccionTab';
 import HistoricoTab from './components/HistoricoTab';
 import ModuleHeader from '@/components/ModuleHeader';
+import { useAcceso } from '@/lib/store/useAccessStore';
+import type { FuncionId } from '@/lib/permisos';
 
 type TabId = 'dashboard' | 'okr' | 'kpi' | 'objetivos' | 'graficos' | 'planes' | 'historico';
 
@@ -59,17 +61,20 @@ function OkrKpiPage() {
 
     const role = currentUser?.role?.toLowerCase() || 'operador';
 
-    const tabs: { id: TabId; label: string; roles: string[] }[] = [
-        { id: 'dashboard', label: 'Tablero Estratégico', roles: ['supervisor', 'admin', 'qa'] },
-        { id: 'okr', label: 'OKRs', roles: ['supervisor', 'admin', 'qa'] },
-        { id: 'kpi', label: 'KPIs', roles: ['supervisor', 'admin', 'qa'] },
-        { id: 'objetivos', label: 'Objetivos de calidad', roles: ['supervisor', 'admin', 'qa'] },
-        { id: 'graficos', label: 'Gráficos', roles: ['supervisor', 'admin', 'qa'] },
-        { id: 'planes', label: 'Planes de Acción', roles: ['supervisor', 'admin', 'qa'] },
-        { id: 'historico', label: 'Historial', roles: ['supervisor', 'admin', 'qa'] },
+    // P17: pestañas por función del catálogo (antes, lista de roles)
+    const { puede } = useAcceso();
+    const tabs: { id: TabId; label: string; funcion: FuncionId }[] = [
+        { id: 'dashboard', label: 'Tablero Estratégico', funcion: 'okr.ver' },
+        { id: 'okr', label: 'OKRs', funcion: 'okr.ver' },
+        { id: 'kpi', label: 'KPIs', funcion: 'okr.ver' },
+        { id: 'objetivos', label: 'Objetivos de calidad', funcion: 'okr.ver' },
+        { id: 'graficos', label: 'Gráficos', funcion: 'okr.ver' },
+        { id: 'planes', label: 'Planes de Acción', funcion: 'okr.ver' },
+        { id: 'historico', label: 'Historial', funcion: 'okr.ver' },
     ];
 
-    const allowedTabs = useMemo(() => tabs.filter(t => t.roles.includes(role)), [role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const allowedTabs = useMemo(() => tabs.filter(t => puede(t.funcion)), [puede]);
 
     useEffect(() => {
         if (!allowedTabs.find(t => t.id === activeTab) && allowedTabs.length > 0) {

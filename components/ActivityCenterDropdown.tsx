@@ -11,8 +11,11 @@ import { showToast } from './Toast';
 import { safeApiRequest } from '@/lib/offline';
 import ProjectFinalizeAuthModal from './ProjectFinalizeAuthModal';
 import { useModalScroll } from '@/lib/useModalScroll';
+import { useAcceso } from '@/lib/store/useAccessStore';
 
 export default function ActivityCenterDropdown({ user }: { user: any }) {
+    // P17: aprobar o rechazar correcciones de horas es la función timesheets.gestionar_horas
+    const apruebaHoras = useAcceso().puede('timesheets.gestionar_horas');
     const [notifications, setNotifications] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNotification, setSelectedNotification] = useState<any>(null);
@@ -107,7 +110,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
     };
 
     const handleAcceptModification = async () => {
-        if (!selectedNotification || (user.role === 'operador')) return;
+        if (!selectedNotification || !apruebaHoras) return;
         try {
             const notif = selectedNotification;
             const resData = notif.metadata;
@@ -175,7 +178,7 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
     };
 
     const handleRejectModification = async () => {
-        if (!selectedNotification || (user.role === 'operador')) return;
+        if (!selectedNotification || !apruebaHoras) return;
         try {
             const notif = selectedNotification;
             const resData = notif.metadata;
@@ -425,13 +428,13 @@ export default function ActivityCenterDropdown({ user }: { user: any }) {
                                     </div>
                                 )}
 
-                                {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa') && (
+                                {apruebaHoras && (
                                     <div className="flex gap-3">
                                         <button onClick={handleRejectModification} className="flex-1 py-4 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 transition-colors">Rechazar</button>
                                         <button onClick={handleAcceptModification} className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all">Aprobar</button>
                                     </div>
                                 )}
-                                {user?.role === 'operador' && (
+                                {!apruebaHoras && (
                                     <div className="p-4 bg-background text-foreground rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
                                         <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pendiente de aprobación</p>
                                     </div>
