@@ -288,34 +288,37 @@ model HdbClient {
 }
 
 model TimeEntry {
-  id                      String    @id @default(cuid())
+  id                      String         @id @default(cuid())
   operatorId              String
-  operator                Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  operator                Operator       @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   projectId               String?
-  project                 Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project                 Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // Tarea del proyecto en la que se trabajó (horas reales por tarea); opcional
+  proyectoTareaId         String?
+  proyectoTarea           ProyectoTarea? @relation(fields: [proyectoTareaId], references: [id], onDelete: SetNull)
   fecha                   String // YYYY-MM-DD
   horaIngreso             String? // HH:mm
   horaEgreso              String? // HH:mm
-  horasTrabajadas         Float     @default(0)
-  estadoConfirmado        Boolean   @default(false)
+  horasTrabajadas         Float          @default(0)
+  estadoConfirmado        Boolean        @default(false)
   confirmadoPorSupervisor String?
-  isExtra                 Boolean   @default(false)
-  isDevolucion            Boolean   @default(false)
-  descripcionDevolucion   String?   @db.Text
+  isExtra                 Boolean        @default(false)
+  isDevolucion            Boolean        @default(false)
+  descripcionDevolucion   String?        @db.Text
   causaRegistro           String? // "Falta", "Permiso", "Carpeta Médica", etc. (from ConfigOption CAUSA_REGISTRO)
   // Legacy punch-in fields (kept for data integrity, new punch-ins go to Fichada table)
   deviceId                String?
   latitude                Float?
   longitude               Float?
-  qrValidated             Boolean   @default(false)
+  qrValidated             Boolean        @default(false)
   validationFlags         Json?
-  isSuspicious            Boolean   @default(false)
-  isOfflinePending        Boolean   @default(false)
-  status                  String    @default("AUTO_APPROVED")
-  score                   Int       @default(0)
-  riskLevel               String    @default("OK")
+  isSuspicious            Boolean        @default(false)
+  isOfflinePending        Boolean        @default(false)
+  status                  String         @default("AUTO_APPROVED")
+  score                   Int            @default(0)
+  riskLevel               String         @default("OK")
   approvedById            String?
-  approvedBy              Operator? @relation("TimeEntryApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedBy              Operator?      @relation("TimeEntryApprover", fields: [approvedById], references: [id], onDelete: SetNull)
   approvedAt              DateTime?
 
   createdAt DateTime @default(now())
@@ -324,6 +327,7 @@ model TimeEntry {
   @@index([fecha])
   @@index([projectId])
   @@index([operatorId])
+  @@index([proyectoTareaId])
 }
 
 model Activity {
@@ -4134,20 +4138,21 @@ model PresupuestoServicioSnapshot {
 
 // Tareas del proyecto (precargadas del presupuesto o agregadas en el wizard).
 model ProyectoTarea {
-  id                 String    @id @default(cuid())
+  id                 String      @id @default(cuid())
   projectId          String
-  project            Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project            Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   presupuestoTareaId String?
-  origen             String    @default("manual") // presupuesto | manual
-  orden              Int       @default(0)
+  origen             String      @default("manual") // presupuesto | manual
+  orden              Int         @default(0)
   descripcion        String
   etiqueta           String?
-  horasEstimadas     Float     @default(0)
-  completada         Boolean   @default(false)
+  horasEstimadas     Float       @default(0)
+  completada         Boolean     @default(false)
   completadaEn       DateTime?
   completadaPorId    String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  registros          TimeEntry[]
 
   @@index([projectId])
 }

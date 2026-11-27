@@ -65,7 +65,7 @@ Pestaña en *Costo del proyecto* para proyectos con presupuesto. Compara contra 
 - **Materiales**: lo usado, o lo entregado si no hay usos (igual que *Costo real*).
 - **Monto neto**: valorizado con los precios del presupuesto.
 
-Las horas reales por tarea quedan para la fase 2 (hoy los registros de horas no indican la tarea).
+**Horas reales por tarea** (fase 2): el registro de horas puede indicar la tarea del proyecto (`TimeEntry.proyectoTareaId`); la tabla suma la columna "Reales" y una fila "Sin tarea indicada".
 Los proyectos sin presupuesto no muestran nada nuevo y sus KPI no cambian.
 
 ## Permisos y auditoría

@@ -345,3 +345,14 @@ Las pantallas que todavía comparaban el rol a mano ahora usan las funciones de 
 | Pestañas de Calidad, OKR y KPI, Herramientas | Lista de roles por pestaña | `calidad.ver`, `okr.ver`, `herramientas.gestionar`; las pestañas para todos quedan para quien abre la vista |
 
 Quedan comparaciones de rol que no son permisos: filtrar qué personas listar (por ejemplo, operadores en la agenda) y el color de la etiqueta del rol. Sin cambios de base de datos.
+
+### Horas reales por tarea (faltante 10, fase 2 de presupuestos de servicio)
+
+Antes el presupuestado vs. real quedaba a nivel proyecto: los registros de horas no indicaban la tarea.
+
+- **Registro de horas**: al elegir un proyecto con tareas aparece **Tarea (opcional)** con las tareas del proyecto. La lista muestra "Tarea: …" debajo del proyecto.
+- **API** (`/api/time-entries`): `proyectoTareaId` opcional; la tarea tiene que ser del proyecto del registro (si no, 400). Al editar se conserva; si cambia el proyecto o pasa a causa, se borra.
+- **Presupuestado vs. real**: la tabla "Horas por tarea" suma la columna **Reales** (horas trabajadas de los registros con esa tarea, sin devoluciones ni el doble de las extra) y una fila "Sin tarea indicada" con el resto. Si las reales superan las presupuestadas, se marcan en rojo.
+- **Tareas del proyecto** (panel del presupuesto en la ficha): cada tarea muestra sus horas reales.
+- `Project.horasConsumidas` no cambia (sigue contando extras doble, como el dashboard).
+- Migración `20261127_horas_por_tarea` (aditiva: una columna opcional). Los registros existentes quedan "sin tarea".

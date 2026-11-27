@@ -76,7 +76,7 @@ export default function ProyectoPresupuestoPanel({ projectId, presupuesto, fecha
                             <li key={t.id}>
                                 <label className="flex items-start gap-2 text-sm cursor-pointer">
                                     <input type="checkbox" className="mt-0.5 w-4 h-4" checked={t.completada} disabled={!puedeEditar} onChange={(e) => marcar(t, e.target.checked)} />
-                                    <span className={t.completada ? 'line-through text-slate-500' : ''}>{t.descripcion} <span className="text-xs text-slate-500 dark:text-slate-400">· {horasTxt(t.horasEstimadas)}</span></span>
+                                    <span className={t.completada ? 'line-through text-slate-500' : ''}>{t.descripcion} <span className="text-xs text-slate-500 dark:text-slate-400">· {horasTxt(t.horasEstimadas)}{(t.horasReales ?? 0) > 0 && <> · <span className={t.horasEstimadas > 0 && t.horasReales > t.horasEstimadas ? 'text-danger-600 font-medium' : ''}>{horasTxt(t.horasReales)} reales</span></>}</span></span>
                                 </label>
                             </li>
                         ))}
