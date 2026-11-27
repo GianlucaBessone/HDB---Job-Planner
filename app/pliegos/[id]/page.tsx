@@ -8,6 +8,7 @@ import ModuleHeader from '@/components/ModuleHeader';
 import { showToast } from '@/components/Toast';
 import { Button, ConfirmDialogBase, EmptyState, ErrorState, LoadingState, Select } from '@/components/ui';
 import PliegoVista, { type AnalisisVista } from '@/components/pliegos/PliegoVista';
+import PresupuestoDesdePliego from '@/components/pliegos/PresupuestoDesdePliego';
 import type { TareaPliego } from '@/components/pliegos/TareaItem';
 import { apiJson, EstadoPliegoBadge, formatFechaHora } from '@/components/pliegos/shared';
 import { formatTamanio } from '@/lib/pliegos';
@@ -196,6 +197,8 @@ export default function PliegoDetallePage() {
 
             {a ? (
                 <>
+                    {/* P36: del pliego al presupuesto (sobre la versión vigente) */}
+                    {!a.soloLectura && !enCurso && <PresupuestoDesdePliego pliegoId={id} titulo={pliego.titulo} version={a.version} />}
                     <PliegoVista key={a.id} analisis={a} onTareaCambio={onTareaCambio} />
                     <p className="text-xs text-muted-foreground mt-6">
                         Análisis v{a.version} · {a.modelo} · pedido por {a.creadoPorNombre} · {formatFechaHora(a.createdAt)}.

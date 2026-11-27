@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
-import { Calculator, Save, Send, CheckCircle2, XCircle, GitBranch, Copy, Trash2, FolderPlus, FolderOpen } from 'lucide-react';
+import { Calculator, Save, Send, CheckCircle2, XCircle, GitBranch, Copy, Trash2, FolderPlus, FolderOpen, FileSearch } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import { ConfirmDialogBase, ErrorState, LoadingState, Tabs } from '@/components/ui';
 import { showToast } from '@/components/Toast';
@@ -118,6 +118,8 @@ export default function PresupuestoDetallePage() {
         if (p.proyecto) acciones.push({ id: 'proyecto', label: `Ver ${p.proyecto.codigoProyecto || 'proyecto'}`, icon: <FolderOpen className="w-4 h-4" />, onClick: () => router.push(`/projects/ficha/${p.proyecto.id}`), variant: 'outline' });
         else if (puedeConvertir) acciones.push({ id: 'convertir', label: 'Convertir en proyecto', icon: <FolderPlus className="w-4 h-4" />, onClick: () => router.push(`/projects/nuevo?presupuestoId=${p.id}`), variant: 'primary' });
     }
+    // Origen (P36): el pliego del que se armó
+    if (p.pliego) acciones.push({ id: 'pliego', label: `Pliego ${p.pliego.codigo}`, icon: <FileSearch className="w-4 h-4" />, onClick: () => router.push(`/pliegos/${p.pliego.id}`), variant: 'ghost', hideLabelOnMobile: true });
     // La acción primaria va siempre última.
     acciones.sort((a, b) => Number(a.variant === 'primary') - Number(b.variant === 'primary'));
 
