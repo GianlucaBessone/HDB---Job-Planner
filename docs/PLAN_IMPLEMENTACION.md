@@ -356,3 +356,23 @@ Antes el presupuestado vs. real quedaba a nivel proyecto: los registros de horas
 - **Tareas del proyecto** (panel del presupuesto en la ficha): cada tarea muestra sus horas reales.
 - `Project.horasConsumidas` no cambia (sigue contando extras doble, como el dashboard).
 - Migración `20261127_horas_por_tarea` (aditiva: una columna opcional). Los registros existentes quedan "sin tarea". **Aplicada en producción el 27/11/2026.**
+
+### Solicitudes y aprobaciones (faltante 3, F8)
+
+Antes un pedido de autorización era un aviso con botones: sin estado, el solicitante no sabía qué pasó y el cambio lo aplicaba el navegador de quien aprobaba. Ahora es una **solicitud** (`Solicitud`, `lib/solicitudes.ts`):
+
+1. Se crea con tipo, objeto, motivo y el cambio propuesto (`POST /api/solicitudes`). Llega a quienes tienen la función para aprobarla (rol + permisos especiales), con aviso.
+2. Mi trabajo → **Solicitudes** (`/solicitudes`): **Para aprobar**, **Mis solicitudes** y **Resueltas**. Inicio muestra las que esperan tu aprobación y tus solicitudes resueltas en la semana.
+3. Se aprueba o se rechaza (con motivo obligatorio). Al aprobar una corrección o eliminación de horas, el **servidor** aplica el cambio con la misma lógica que la edición directa (`lib/registroHoras.ts`, compartida con `/api/time-entries`): horas consumidas del proyecto y auditoría incluidas. Si no se puede aplicar, vuelve a pendiente.
+4. Una finalización de proyecto se aprueba **finalizando el proyecto** (tiene su propio checklist): al finalizar, sus solicitudes pendientes quedan aprobadas. El solicitante recibe un aviso y ve el estado.
+
+| Tipo | Lo pide | Lo aprueba |
+|---|---|---|
+| Corregir registro de horas | El dueño de un registro ya confirmado (Registro de horas) | `timesheets.gestionar_horas` |
+| Eliminar registro de horas | Ídem | `timesheets.gestionar_horas` |
+| Finalizar proyecto | Quien no tiene `proyectos.finalizar` (ficha del proyecto) | `proyectos.finalizar` |
+
+- Nadie resuelve su propia solicitud; no se repite una pendiente sobre lo mismo; el solicitante puede cancelarla mientras está pendiente.
+- Los avisos viejos `TIME_MODIFICATION_REQUEST` y `PROJECT_FINALIZE_REQUEST` pendientes se siguen pudiendo resolver desde la campana.
+- Pendiente para más adelante: precio fuera de lista (hoy PIN de supervisor en el punto de venta) y gastos fuera de política.
+- Migración `20261127_solicitudes` (aditiva: tabla nueva).

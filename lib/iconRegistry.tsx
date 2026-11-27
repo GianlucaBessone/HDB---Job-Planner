@@ -6,7 +6,7 @@ import {
     BookOpen, Sparkles, Bell, Lightbulb, LifeBuoy, ListTodo,
     Target, Gauge, Receipt, FileBadge, HardHat, Shield,
     ShoppingCart, Boxes, Warehouse, CreditCard, Plane, Luggage, FileSearch,
-    Calculator, Wallet, Database, Table, Briefcase, FileText, Fingerprint, IdCard,
+    Calculator, Wallet, Database, Table, Briefcase, FileText, Fingerprint, IdCard, ClipboardCheck,
     type LucideIcon
 } from 'lucide-react';
 
@@ -57,6 +57,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
     FileText,
     Fingerprint,
     IdCard,
+    ClipboardCheck,
 };
 
 export function getIcon(name: string): LucideIcon {

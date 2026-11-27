@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAcceso } from '@/lib/permisosServer';
 import { hoyISO } from '@/lib/viajes';
+import { pendientesDeAprobar } from '@/lib/solicitudes';
 import type { BloqueAgenda, MiDiaRespuesta, PendienteInicio } from '@/lib/inicio';
 
 export const dynamic = 'force-dynamic';
@@ -93,9 +94,17 @@ export async function GET(req: Request) {
     }
     agenda.sort((a, b) => (a.inicio || '').localeCompare(b.inicio || ''));
 
+    // Solicitudes (F8): las que esperan tu aprobación y las tuyas resueltas en la última semana
+    const [solicitudesPorAprobar, misResueltas] = await Promise.all([
+        seguro(pendientesDeAprobar(acceso), 0),
+        seguro(prisma.solicitud.count({ where: { solicitanteId: userId, estado: { in: ['aprobada', 'rechazada'] }, resueltoAt: { gte: new Date(Date.now() - 7 * 86_400_000) } } }), 0),
+    ]);
+
     const pendientes: PendienteInicio[] = [];
     const agregar = (p: PendienteInicio) => { if (p.cantidad > 0) pendientes.push(p); };
 
+    agregar({ id: 'solicitudes', titulo: 'Solicitudes para aprobar', detalle: 'Correcciones de horas y finalizaciones de proyecto pedidas', cantidad: solicitudesPorAprobar, href: '/solicitudes', tono: 'warning' });
+    agregar({ id: 'solicitudes_resueltas', titulo: 'Tus solicitudes resueltas', detalle: 'Aprobadas o rechazadas en la última semana', cantidad: misResueltas, href: '/solicitudes?vista=mias', tono: 'info' });
     agregar({ id: 'fichadas', titulo: 'Fichadas a aprobar', detalle: 'Fichadas con alertas que esperan validación', cantidad: fichadasPendientes, href: '/aprobaciones', tono: 'warning' });
     agregar({ id: 'tareas_vencidas', titulo: 'Tareas vencidas', detalle: 'Tareas tuyas que pasaron su fecha', cantidad: tareasVencidas, href: '/tareas', tono: 'danger' });
     agregar({ id: 'tareas_hoy', titulo: 'Tareas para hoy', detalle: 'Vencen antes de que termine el día', cantidad: tareasHoy, href: '/tareas', tono: 'warning' });
