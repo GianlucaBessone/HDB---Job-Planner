@@ -11,5 +11,8 @@ reales de cada una.
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 27/11/2026 (13:28 UTC)**, antes del merge. 2016 registros de horas, todos sin tarea; 0 tareas de proyecto.
+
+
 1. `psql "$DATABASE_URL" -f prisma/sql/20261127_horas_por_tarea/up.sql`
 2. Mergear el PR.

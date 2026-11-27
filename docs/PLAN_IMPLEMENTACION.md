@@ -355,4 +355,4 @@ Antes el presupuestado vs. real quedaba a nivel proyecto: los registros de horas
 - **Presupuestado vs. real**: la tabla "Horas por tarea" suma la columna **Reales** (horas trabajadas de los registros con esa tarea, sin devoluciones ni el doble de las extra) y una fila "Sin tarea indicada" con el resto. Si las reales superan las presupuestadas, se marcan en rojo.
 - **Tareas del proyecto** (panel del presupuesto en la ficha): cada tarea muestra sus horas reales.
 - `Project.horasConsumidas` no cambia (sigue contando extras doble, como el dashboard).
-- Migración `20261127_horas_por_tarea` (aditiva: una columna opcional). Los registros existentes quedan "sin tarea".
+- Migración `20261127_horas_por_tarea` (aditiva: una columna opcional). Los registros existentes quedan "sin tarea". **Aplicada en producción el 27/11/2026.**
