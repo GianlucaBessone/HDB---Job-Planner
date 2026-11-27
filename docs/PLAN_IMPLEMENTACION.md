@@ -387,3 +387,15 @@ Antes 31 pantallas armaban su título a mano (h1/h2 sueltos, varios tamaños, al
 - **Ventas**: `VentasNavTabs` dibuja el encabezado de la sección (Gestión comercial, Presupuestos de productos, Almacén y stock, Cuentas corrientes) con `titulo`/`descripcion` para las subpantallas (Proveedores, Importación masiva, Nuevo/Editar producto). Los títulos chicos que repetían el nombre dentro de las tarjetas se quitaron.
 - Quedan con diseño propio, a propósito: Inicio ("Mi día"), Fichado, Punto de venta (`sinEncabezado`) y el formulario público de ideas y reclamos.
 - `ModuleHeader` marca el encabezado con `data-module-header` (sirve para controlar en pruebas que cada pantalla tenga uno).
+
+### P33 · Acciones masivas en tareas, personas y órdenes
+
+Además de Fichadas a aprobar (fase 2), ahora se puede elegir varios elementos y aplicar una acción de una vez. Una barra común (`BarraSeleccion` + `useSeleccion` en `components/ui`) muestra cuántos hay elegidos y las acciones; `lib/lote.ts` (`enLote`, `avisarLote`) las aplica **con la misma API que la acción individual**, de a una, así valen los mismos permisos, validaciones y auditoría. Si alguna falla, sigue con las demás y avisa cuántas no se cambiaron y por qué.
+
+| Pantalla | Se eligen | Acciones |
+|---|---|---|
+| Tareas (vista Lista) | Las que podés cambiar de estado | Completar, cambiar estado, cambiar prioridad, cambiar vencimiento |
+| Usuarios y accesos | Con `usuarios.gestionar`; uno mismo no (desactivarse en lote cortaría la sesión) | Activar, desactivar, marcar de vacaciones, volvieron de vacaciones |
+| Órdenes de trabajo (lista) | Abiertas o pausadas de la página | Pausar, reanudar (queda en el historial de estados con el motivo "cambio en lote"), reasignar el responsable |
+
+Sin cambios de base de datos.

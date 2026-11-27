@@ -1,5 +1,7 @@
 'use client';
 import ModuleHeader from '@/components/ModuleHeader';
+import { BarraSeleccion, useSeleccion } from '@/components/ui';
+import { avisarLote, enLote } from '@/lib/lote';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -200,6 +202,29 @@ export default function OperatorsPage() {
             setOperators(prev => prev.map(op => op.id === id ? { ...op, activo: currentStatus } : op));
             showToast(await mensajeError(res, 'No se pudo cambiar el estado'), 'error');
         }
+    };
+
+    // ── Acciones masivas (P33) ─────────────────────────────────────
+    const sinAcentos = (str: string) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const seleccion = useSeleccion();
+    const [aplicandoLote, setAplicandoLote] = useState(false);
+    // Uno mismo no entra en la selección: desactivarse en lote dejaría la sesión sin acceso.
+    const seleccionables: string[] = gestionaUsuarios
+        ? operators.filter(op => sinAcentos(op.nombreCompleto).includes(sinAcentos(searchTerm)) && op.id !== currentUser?.id).map(op => op.id)
+        : [];
+    const claveSeleccionables = seleccionables.join(',');
+    const { recortar } = seleccion;
+    useEffect(() => { recortar(claveSeleccionables ? claveSeleccionables.split(',') : []); }, [claveSeleccionables]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const aplicarLote = async (cambios: { activo?: boolean; enVacaciones?: boolean }, hecho: string | [string, string]) => {
+        const ids = Array.from(seleccion.ids);
+        if (ids.length === 0) return;
+        setAplicandoLote(true);
+        const r = await enLote(ids, id => safeApiRequest(`/api/operators?id=${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }));
+        setAplicandoLote(false);
+        avisarLote(r, ['persona', 'personas'], hecho);
+        seleccion.limpiar();
+        await loadData(true);
     };
 
     const handleDeleteClick = (id: string) => {
@@ -528,6 +553,29 @@ export default function OperatorsPage() {
                 </div>
             )}
 
+            {!isLoading && (
+                <BarraSeleccion
+                    total={seleccionables.length}
+                    seleccionadas={seleccion.cantidad}
+                    onTodas={() => seleccion.poner(seleccionables)}
+                    onNinguna={seleccion.limpiar}
+                    unidad={['persona', 'personas']}
+                >
+                    <button type="button" className="btn btn-secondary btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ activo: true }, ['activada', 'activadas'])}>
+                        <CheckCircle2 aria-hidden="true" /> Activar
+                    </button>
+                    <button type="button" className="btn btn-secondary btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ activo: false }, ['desactivada', 'desactivadas'])}>
+                        <XCircle aria-hidden="true" /> Desactivar
+                    </button>
+                    <button type="button" className="btn btn-secondary btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ enVacaciones: true }, ['marcada de vacaciones', 'marcadas de vacaciones'])}>
+                        De vacaciones
+                    </button>
+                    <button type="button" className="btn btn-ghost btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ enVacaciones: false }, 'de vuelta de vacaciones')}>
+                        Volvieron de vacaciones
+                    </button>
+                </BarraSeleccion>
+            )}
+
             <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-3"}>
                 {isLoading ? (
                     Array(6).fill(0).map((_, i) => (
@@ -539,8 +587,18 @@ export default function OperatorsPage() {
                             const tags = op.etiquetas || [];
                             if (viewMode === 'list') {
                                 return (
-                                    <div key={op.id} className="bg-card text-card-foreground px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between hover:border-primary/30 transition-all group">
+                                    <div key={op.id} className={`bg-card text-card-foreground px-4 md:px-6 py-3 md:py-4 rounded-2xl border shadow-sm flex items-center justify-between hover:border-primary/30 transition-all group ${seleccion.tiene(op.id) ? 'border-brand-300 dark:border-brand-700' : 'border-slate-200 dark:border-slate-700'}`}>
                                         <div className="flex items-center gap-4 min-w-0">
+                                            {gestionaUsuarios && (
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 accent-primary shrink-0 disabled:opacity-30"
+                                                    aria-label={`Seleccionar a ${op.nombreCompleto}`}
+                                                    checked={seleccion.tiene(op.id)}
+                                                    disabled={op.id === currentUser?.id}
+                                                    onChange={() => seleccion.alternar(op.id)}
+                                                />
+                                            )}
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${op.activo ? 'bg-primary/10 text-primary' : 'bg-muted text-slate-400 dark:text-slate-500'}`}>
                                                 <UsersIcon className="w-5 h-5" />
                                             </div>
@@ -605,8 +663,20 @@ export default function OperatorsPage() {
                             return (
                                 <div key={op.id} className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm group hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
                                     <div className="flex justify-between items-start mb-4 relative z-10">
+                                        <div className="flex items-center gap-3">
+                                        {gestionaUsuarios && (
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 accent-primary shrink-0 disabled:opacity-30"
+                                                aria-label={`Seleccionar a ${op.nombreCompleto}`}
+                                                checked={seleccion.tiene(op.id)}
+                                                disabled={op.id === currentUser?.id}
+                                                onChange={() => seleccion.alternar(op.id)}
+                                            />
+                                        )}
                                         <div className={`p-3 rounded-2xl transition-all duration-300 ${op.activo ? 'bg-background text-foreground group-hover:bg-primary group-hover:text-white' : 'bg-muted text-slate-400 dark:text-slate-500'}`}>
                                             <UsersIcon className="w-6 h-6" />
+                                        </div>
                                         </div>
                                         <div className="flex gap-0.5">
                                             <button

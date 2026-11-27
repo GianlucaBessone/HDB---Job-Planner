@@ -13,4 +13,5 @@ export { Tabs, SegmentedControl } from './Tabs';
 export type { TabItem } from './Tabs';
 export { Pagination } from './Pagination';
 export { Tooltip } from './Tooltip';
+export { BarraSeleccion, useSeleccion } from './BarraSeleccion';
 export { default as PageHeader } from '../ModuleHeader';
