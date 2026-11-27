@@ -478,29 +478,24 @@ export default function TimesheetsPage() {
                 descripcionDevolucion: a?.isDevolucion ? a?.descripcionDevolucion : null
             };
 
-            // El solicitante lo toma la API de la sesión (createdBy). Sin metadata = pedido de eliminación.
-            const res = await safeApiRequest('/api/activities', {
+            // Solicitud con estado (F8): llega a la bandeja de quien gestiona horas; al aprobarla, el servidor aplica el cambio
+            const res = await safeApiRequest('/api/solicitudes', {
                 method: 'POST',
                 body: JSON.stringify({
-                    forSupervisors: true,
-                    title: `Solicitud para ${actionText} registro`,
-                    message: `El operador ${currentUser.nombreCompleto} solicita ${actionText} su registro de horas del ${formatDate(pendingAction.entry.fecha)} (${pendingAction.entry.causaRegistro ? `Causa: ${pendingAction.entry.causaRegistro}` : (pendingAction.entry.project?.nombre || 'Sin proyecto')}).\nMotivo: ${requestMessage}`,
-                    type: 'TIME_MODIFICATION_REQUEST',
-                    priority: 'HIGH',
-                    category: 'System',
-                    entityType: 'timeEntry',
-                    entityId: pendingAction.entry.id,
-                    metadata
+                    tipo: isDelete ? 'horas_eliminar' : 'horas_modificar',
+                    entidadId: pendingAction.entry.id,
+                    motivo: requestMessage,
+                    ...(metadata ? { cambios: metadata } : {}),
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
 
             if (!res.ok) {
                 const err = await res.json().catch(() => null);
-                throw new Error(err?.error || 'Error al crear notificación interna');
+                throw new Error(err?.error || 'No se pudo enviar la solicitud');
             }
 
-            showToast('Solicitud enviada a los supervisores exitosamente.', 'success');
+            showToast('Solicitud enviada: seguí su estado en Solicitudes', 'success');
             setIsRequestModalOpen(false);
             setRequestMessage('');
             setPendingAction(null);

@@ -220,6 +220,10 @@ model Operator {
   legajo           LegajoPersonal?
   documentosLegajo DocumentoPersonal[]
 
+  // Solicitudes y aprobaciones
+  solicitudesHechas    Solicitud[] @relation("SolicitudSolicitante")
+  solicitudesResueltas Solicitud[] @relation("SolicitudResolutor")
+
   // Proyectos: operadores asignados desde el wizard de creación
   proyectoAsignaciones ProyectoAsignacion[]
 }
@@ -4312,4 +4316,31 @@ model DocumentoPersonal {
 
   @@index([operatorId])
   @@index([fechaVencimiento])
+}
+
+// ─── Solicitudes y aprobaciones (auditoría, faltante / F8) ──────────────────────────────────────────────
+// Un pedido de autorización con tipo, objeto y motivo. Aparece en la bandeja de quien tiene la función para
+// aprobarlo; al aprobarlo se aplica el cambio (o se abre la pantalla donde se hace) y el solicitante ve el estado.
+model Solicitud {
+  id             String    @id @default(cuid())
+  tipo           String // horas_modificar | horas_eliminar | proyecto_finalizar
+  estado         String    @default("pendiente") // pendiente | aprobada | rechazada | cancelada
+  entidadTipo    String // timeEntry | project
+  entidadId      String
+  resumen        String // Qué se pide, legible ("Modificar registro del 26/11 en Tablero general")
+  motivo         String    @db.Text
+  datos          Json? // Cambio propuesto (p. ej. horarios nuevos)
+  funcionAprobar String // Función del catálogo que puede resolverla (timesheets.gestionar_horas…)
+  solicitanteId  String
+  solicitante    Operator  @relation("SolicitudSolicitante", fields: [solicitanteId], references: [id], onDelete: Cascade)
+  resueltoPorId  String?
+  resueltoPor    Operator? @relation("SolicitudResolutor", fields: [resueltoPorId], references: [id], onDelete: SetNull)
+  resueltoAt     DateTime?
+  comentario     String?   @db.Text // Del que resuelve (obligatorio al rechazar)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([estado, funcionAprobar])
+  @@index([solicitanteId])
+  @@index([entidadTipo, entidadId])
 }

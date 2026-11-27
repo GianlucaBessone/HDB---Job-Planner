@@ -482,25 +482,17 @@ function Finalizar({ proyecto, puedeFinalizar, onFinalizado }: { proyecto: Proye
     const pedir = async () => {
         setEnviando(true);
         try {
-            const res = await safeApiRequest('/api/activities', {
+            // Solicitud con estado (F8): queda aprobada cuando alguien con permiso finaliza el proyecto
+            const res = await safeApiRequest('/api/solicitudes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    forSupervisors: true,
-                    title: 'Pedido de finalización de proyecto',
-                    message: `Se pide finalizar el proyecto "${proyecto.nombre}". Revisá el avance para autorizar el cierre.`,
-                    type: 'PROJECT_FINALIZE_REQUEST',
-                    priority: 'HIGH',
-                    category: 'Projects',
-                    entityType: 'project',
-                    entityId: proyecto.id,
-                }),
+                body: JSON.stringify({ tipo: 'proyecto_finalizar', entidadId: proyecto.id, motivo: `Pedido de cierre del proyecto "${proyecto.nombre}". Revisar el avance para autorizar el cierre.` }),
             });
             if (!res.ok) {
                 const data = await res.json().catch(() => null);
                 return showToast(data?.error || 'No se pudo enviar el pedido', 'error');
             }
-            showToast('Pedido enviado a los supervisores', 'success');
+            showToast('Solicitud enviada: seguí su estado en Solicitudes', 'success');
         } catch {
             showToast('Error de conexión', 'error');
         } finally {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { exigirAcceso } from '@/lib/permisosServer';
+import { aprobarFinalizacionesDe } from '@/lib/solicitudes';
 import { logAudit } from '@/lib/audit';
 
 const bodySchema = z.object({
@@ -11,7 +12,7 @@ const bodySchema = z.object({
 
 /**
  * Finaliza el proyecto. Pide `proyectos.finalizar`: quien no la tiene pide el cierre a un
- * supervisor (aviso PROJECT_FINALIZE_REQUEST). Usuario y permisos salen de la sesión.
+ * supervisor (solicitud proyecto_finalizar). Usuario y permisos salen de la sesión.
  */
 export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
@@ -75,6 +76,9 @@ export async function POST(req: Request, { params: paramsPromise }: { params: Pr
                 pendientes: pendingItems.map(p => ({ tag: p.tag, description: p.description })),
             },
         });
+
+        // Los pedidos de finalización pendientes quedan aprobados (y se avisa a quien los pidió)
+        await aprobarFinalizacionesDe(id, acceso).catch((e) => console.error('No se pudieron cerrar las solicitudes de finalización:', e));
 
         return NextResponse.json({ success: true });
     } catch (error) {

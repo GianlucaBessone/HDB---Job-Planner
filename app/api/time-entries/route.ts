@@ -6,6 +6,7 @@ import { logAudit } from '@/lib/audit';
 import { exigirAcceso } from '@/lib/permisosServer';
 
 import { calculateHours } from '@/lib/timeUtils';
+import { actualizarRegistro, eliminarRegistro, ErrorRegistro, tareaDelProyecto } from '@/lib/registroHoras';
 
 export async function GET(req: Request) {
     try {
@@ -86,17 +87,6 @@ const putSchema = z.object({
     descripcionDevolucion: textoSchema,
 });
 
-/**
- * Horas reales por tarea: la tarea tiene que ser del proyecto del registro. Devuelve el id válido, null o un error.
- */
-async function tareaDelProyecto(proyectoTareaId: string | null | undefined, projectId: string | null): Promise<string | null | NextResponse> {
-    if (!proyectoTareaId) return null;
-    if (!projectId) return NextResponse.json({ error: 'Una tarea solo se indica en un registro de proyecto.' }, { status: 400 });
-    const t = await prisma.proyectoTarea.findFirst({ where: { id: proyectoTareaId, projectId }, select: { id: true } });
-    if (!t) return NextResponse.json({ error: 'La tarea no es de ese proyecto.' }, { status: 400 });
-    return t.id;
-}
-
 function datosInvalidos(error: z.ZodError) {
     return NextResponse.json({ error: error.issues[0]?.message || 'Datos inválidos' }, { status: 400 });
 }
@@ -135,8 +125,13 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
             }
 
-            const tareaId = await tareaDelProyecto(proyectoTareaId, projectId || null);
-            if (tareaId instanceof NextResponse) return tareaId;
+            let tareaId: string | null;
+            try {
+                tareaId = await tareaDelProyecto(proyectoTareaId, projectId || null);
+            } catch (e) {
+                if (e instanceof ErrorRegistro) return NextResponse.json({ error: e.message }, { status: e.status });
+                throw e;
+            }
 
             let horasTrabajadas = 0;
             if (horaIngreso && horaEgreso) {
@@ -224,97 +219,16 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: 'No tienes permisos para editar un día ya confirmado.' }, { status: 403 });
         }
 
-        const oldProjectId = existing.projectId;
-        // Handle causa mode: if causaRegistro is being set, clear projectId
-        const newCausa = causaRegistro !== undefined ? causaRegistro : existing.causaRegistro;
-        const newProjectId = newCausa ? null : (projectId !== undefined ? projectId : oldProjectId);
-        // La tarea: la enviada o la que tenía, siempre que siga siendo del proyecto (si cambia el proyecto, se borra)
-        const tareaPedida = proyectoTareaId !== undefined ? proyectoTareaId : newProjectId === oldProjectId ? existing.proyectoTareaId : null;
-        const newTareaId = await tareaDelProyecto(tareaPedida, newProjectId);
-        if (newTareaId instanceof NextResponse) return newTareaId;
-
-        let horasTrabajadas = existing.horasTrabajadas;
-        let newHoraIngreso = horaIngreso !== undefined ? horaIngreso : existing.horaIngreso;
-        let newHoraEgreso = horaEgreso !== undefined ? horaEgreso : existing.horaEgreso;
-
-        if (newHoraIngreso && newHoraEgreso) {
-            horasTrabajadas = calculateHours(newHoraIngreso, newHoraEgreso);
-        }
-
-        // When DEVOLUCIÓN, force isExtra to false
-        const newIsDevolucion = isDevolucion !== undefined ? isDevolucion : existing.isDevolucion;
-        const finalIsExtraForUpdate = newIsDevolucion ? false : (isExtra !== undefined ? isExtra : existing.isExtra);
-
-        const updated = await prisma.timeEntry.update({
-            where: { id },
-            data: {
-                projectId: newProjectId,
-                proyectoTareaId: newTareaId,
-                causaRegistro: newCausa || null,
-                fecha: fecha !== undefined ? fecha : existing.fecha,
-                horaIngreso: newHoraIngreso,
-                horaEgreso: newHoraEgreso,
-                horasTrabajadas,
-                isExtra: finalIsExtraForUpdate,
-                isDevolucion: newIsDevolucion,
-                descripcionDevolucion: newIsDevolucion ? ((descripcionDevolucion !== undefined ? descripcionDevolucion?.trim() : existing.descripcionDevolucion) || null) : null,
-                estadoConfirmado: estadoConfirmado !== undefined ? estadoConfirmado : existing.estadoConfirmado,
-                // Solo cambia quién confirmó cuando se confirma o desconfirma; editar no lo borra
-                confirmadoPorSupervisor: estadoConfirmado === undefined
-                    ? existing.confirmadoPorSupervisor
-                    : (estadoConfirmado ? acceso.userId : null)
-            }
-        });
-
-        // Overtime hours (isExtra) count double for project consumption
-        const oldIsExtra = existing.isExtra;
-        const newIsExtra = finalIsExtraForUpdate;
-        const oldIsDevolucion = existing.isDevolucion;
-
-        // Only adjust project hours when projects are involved
-        // DEVOLUCIÓN hours are NOT counted towards project consumption
-        if (oldProjectId && newProjectId && oldProjectId === newProjectId) {
-            // Same project: compute delta considering overtime multiplier
-            const oldProjectImpact = oldIsDevolucion ? 0 : (oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas));
-            const newProjectImpact = newIsDevolucion ? 0 : (newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas));
-            const deltaHours = newProjectImpact - oldProjectImpact;
-            if (deltaHours !== 0) {
-                await prisma.project.update({
-                    where: { id: oldProjectId },
-                    data: { horasConsumidas: { increment: deltaHours } }
-                });
-            }
-        } else {
-            // Project changed or switched to/from causa
-            if (oldProjectId && existing.horasTrabajadas > 0 && !oldIsDevolucion) {
-                const oldProjectImpact = oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
-                await prisma.project.update({
-                    where: { id: oldProjectId },
-                    data: { horasConsumidas: { decrement: oldProjectImpact } }
-                });
-            }
-            if (newProjectId && horasTrabajadas > 0 && !newIsDevolucion) {
-                const newProjectImpact = newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
-                await prisma.project.update({
-                    where: { id: newProjectId },
-                    data: { horasConsumidas: { increment: newProjectImpact } }
-                });
-            }
-        }
-
-        // Audit
-        await logAudit({
-            userId: acceso.userId,
-            userName: acceso.nombre,
-            action: 'UPDATE',
-            entity: 'TIME_ENTRY',
-            entityId: id,
-            oldValue: existing,
-            newValue: updated,
-        });
+        // Edición, horas consumidas del proyecto y auditoría: lib/registroHoras.ts (lo comparte la aprobación de solicitudes)
+        const updated = await actualizarRegistro(
+            existing,
+            { projectId, proyectoTareaId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion },
+            { id: acceso.userId, nombre: acceso.nombre }
+        );
 
         return NextResponse.json(updated);
     } catch (error: any) {
+        if (error instanceof ErrorRegistro) return NextResponse.json({ error: error.message }, { status: error.status });
         console.error("PUT Error [Detailed]: ", error, error?.stack);
         return NextResponse.json({ error: error?.message || 'Failed to update time entry' }, { status: 500 });
     }
@@ -342,26 +256,7 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: 'No tienes permisos para eliminar un día ya confirmado.' }, { status: 403 });
         }
 
-        await prisma.timeEntry.delete({ where: { id } });
-
-        // Only decrement project hours if linked to a project (not a causa) and not DEVOLUCIÓN
-        if (existing.horasTrabajadas > 0 && existing.projectId && !existing.isDevolucion) {
-            const projectHoursImpact = existing.isExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
-            await prisma.project.update({
-                where: { id: existing.projectId },
-                data: { horasConsumidas: { decrement: projectHoursImpact } }
-            });
-        }
-
-        // Audit
-        await logAudit({
-            userId: acceso.userId,
-            userName: acceso.nombre,
-            action: 'DELETE',
-            entity: 'TIME_ENTRY',
-            entityId: id,
-            oldValue: existing,
-        });
+        await eliminarRegistro(existing, { id: acceso.userId, nombre: acceso.nombre });
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
