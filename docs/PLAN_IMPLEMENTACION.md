@@ -375,4 +375,4 @@ Antes un pedido de autorización era un aviso con botones: sin estado, el solici
 - Nadie resuelve su propia solicitud; no se repite una pendiente sobre lo mismo; el solicitante puede cancelarla mientras está pendiente.
 - Los avisos viejos `TIME_MODIFICATION_REQUEST` y `PROJECT_FINALIZE_REQUEST` pendientes se siguen pudiendo resolver desde la campana.
 - Pendiente para más adelante: precio fuera de lista (hoy PIN de supervisor en el punto de venta) y gastos fuera de política.
-- Migración `20261127_solicitudes` (aditiva: tabla nueva).
+- Migración `20261127_solicitudes` (aditiva: tabla nueva). **Aplicada en producción el 27/11/2026.**

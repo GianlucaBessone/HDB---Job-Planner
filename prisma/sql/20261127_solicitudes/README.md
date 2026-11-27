@@ -13,5 +13,8 @@ se siguen pudiendo resolver desde la campana).
 
 ## Despliegue
 
+> **Estado: aplicada en producción el 27/11/2026 (16:06 UTC)**, antes del merge. Tabla, 2 claves foráneas y 3 índices creados.
+
+
 1. `psql "$DATABASE_URL" -f prisma/sql/20261127_solicitudes/up.sql`
 2. Mergear el PR.
