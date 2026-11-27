@@ -1,5 +1,6 @@
 'use client';
 
+import { showToast } from '@/components/Toast';
 import React, { useEffect, useState, useCallback } from 'react';
 import { Plus, Activity, Edit2, X, TrendingUp, AlertTriangle, CheckCircle2, XCircle, Send } from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
@@ -63,7 +64,7 @@ export default function KpiTab({ user, isActive = true, soloSgi = false }: { use
             const res = await fetch(`/api/okr-kpi/kpi/${kpiId}/sincronizar`, { method: 'POST' });
             if (res.ok) { fetchData(); } else { 
                 const err = await res.json();
-                alert(`Error al sincronizar el indicador con el Dataset: ${err.error || 'Desconocido'}`); 
+                showToast(`Error al sincronizar el indicador con el Dataset: ${err.error || 'Desconocido'}`, 'error'); 
             }
         } catch (err) { console.error(err); } finally { setSyncingId(null); }
     };

@@ -14,4 +14,5 @@ export type { TabItem } from './Tabs';
 export { Pagination } from './Pagination';
 export { Tooltip } from './Tooltip';
 export { BarraSeleccion, useSeleccion } from './BarraSeleccion';
+export { useConfirmar } from './useConfirmar';
 export { default as PageHeader } from '../ModuleHeader';

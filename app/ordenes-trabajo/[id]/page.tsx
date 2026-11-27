@@ -1,5 +1,7 @@
 'use client';
 
+import { ESTADO_OT_INFO, estadoDe } from '@/lib/estados';
+import { Badge } from '@/components/ui';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -478,19 +480,7 @@ export default function DetalleOrdenTrabajoPage() {
                 </span>
               )}
 
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                  ot.estado === 'ABIERTA'
-                    ? 'bg-blue-500/10 text-blue-600 border border-blue-500/20'
-                    : ot.estado === 'PAUSADA'
-                    ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                    : ot.estado === 'PENDIENTE_FIRMA'
-                    ? 'bg-purple-500/10 text-purple-600 border border-purple-500/20'
-                    : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
-                }`}
-              >
-                {ot.estado}
-              </span>
+              <Badge tone={estadoDe(ESTADO_OT_INFO, ot.estado).tone} dot>{estadoDe(ESTADO_OT_INFO, ot.estado).label}</Badge>
 
               {ot.tipoCierre && (
                 <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">

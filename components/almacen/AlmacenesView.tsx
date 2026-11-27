@@ -1,5 +1,6 @@
 'use client';
 
+import { useConfirmar } from '@/components/ui/useConfirmar';
 import React, { useState, useEffect } from 'react';
 import {
   Warehouse,
@@ -44,6 +45,7 @@ interface AlmacenItem {
 }
 
 export default function AlmacenesView() {
+  const [confirmar, dialogoConfirmar] = useConfirmar();
   const [almacenes, setAlmacenes] = useState<AlmacenItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAlmacen, setSelectedAlmacen] = useState<AlmacenItem | null>(null);
@@ -156,7 +158,7 @@ export default function AlmacenesView() {
   };
 
   const handleDeactivateAlmacen = async (alm: AlmacenItem) => {
-    if (!confirm(`¿Desea desactivar el almacén "${alm.nombre}"?`)) return;
+    if (!(await confirmar({ title: `¿Desactivar el almacén "${alm.nombre}"?`, confirmLabel: 'Desactivar', tone: 'warning' }))) return;
 
     try {
       const res = await fetch(`/api/almacen/almacenes/${alm.id}`, { method: 'DELETE' });
@@ -228,6 +230,7 @@ export default function AlmacenesView() {
   return (
     <div className="space-y-4">
       {/* Encabezado y Creación */}
+      {dialogoConfirmar}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">

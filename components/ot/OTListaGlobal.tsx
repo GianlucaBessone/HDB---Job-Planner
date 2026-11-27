@@ -1,5 +1,6 @@
 'use client';
 
+import { ESTADO_OT_INFO } from '@/lib/estados';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { FileText, PauseCircle, PlayCircle } from 'lucide-react';
@@ -14,10 +15,10 @@ import { useAcceso } from '@/lib/store/useAccessStore';
 const POR_PAGINA = 30;
 
 const ESTADOS: { value: string; label: string; tone: BadgeTone }[] = [
-    { value: 'ABIERTA', label: 'Abierta', tone: 'info' },
-    { value: 'PAUSADA', label: 'Pausada', tone: 'warning' },
-    { value: 'PENDIENTE_FIRMA', label: 'Pendiente de firma', tone: 'brand' },
-    { value: 'CERRADA', label: 'Cerrada', tone: 'success' },
+    { value: 'ABIERTA', ...ESTADO_OT_INFO.ABIERTA },
+    { value: 'PAUSADA', ...ESTADO_OT_INFO.PAUSADA },
+    { value: 'PENDIENTE_FIRMA', ...ESTADO_OT_INFO.PENDIENTE_FIRMA },
+    { value: 'CERRADA', ...ESTADO_OT_INFO.CERRADA },
 ];
 
 interface OTFila {

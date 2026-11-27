@@ -51,7 +51,7 @@ export default function ToastContainer() {
                     {toast.type === 'error' && <AlertCircle className="w-[18px] h-[18px] mt-px text-danger-600 dark:text-danger-400 shrink-0" aria-hidden="true" />}
                     {toast.type === 'info' && <Info className="w-[18px] h-[18px] mt-px text-info-600 dark:text-info-400 shrink-0" aria-hidden="true" />}
 
-                    <p className="text-[13px] font-medium flex-1 leading-snug pt-px">{toast.message}</p>
+                    <p className="text-[13px] font-medium flex-1 leading-snug pt-px whitespace-pre-line">{toast.message}</p>
 
                     <button
                         onClick={() => {

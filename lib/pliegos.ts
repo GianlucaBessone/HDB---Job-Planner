@@ -1,5 +1,6 @@
 // Análisis de Pliegos: constantes, etiquetas y contrato del análisis.
 // Se importa desde cliente y servidor (sin Prisma ni APIs de Node).
+import { FASES } from '@/lib/estados';
 import { z } from 'zod';
 import type { BadgeTone } from '@/components/ui/Badge';
 
@@ -18,11 +19,12 @@ export const PLIEGO_ESTADO_LABEL: Record<PliegoEstado, string> = {
     analizado: 'Analizado',
     error: 'Error de análisis',
 };
+// Colores del vocabulario común (lib/estados.ts)
 export const PLIEGO_ESTADO_TONE: Record<PliegoEstado, BadgeTone> = {
-    borrador: 'neutral',
-    analizando: 'info',
-    analizado: 'success',
-    error: 'danger',
+    borrador: FASES.borrador.tone,
+    analizando: FASES.en_curso.tone,
+    analizado: FASES.cerrado.tone,
+    error: FASES.error.tone,
 };
 
 /** Un análisis que lleva más que esto "analizando" se considera colgado y se puede reintentar. */

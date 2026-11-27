@@ -1,5 +1,6 @@
 'use client';
 
+import { useConfirmar } from '@/components/ui/useConfirmar';
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Download, Upload, Save, ArrowLeft, Trash2, FileSpreadsheet, Loader2 } from 'lucide-react';
@@ -39,6 +40,7 @@ const HEADERS = [
 ];
 
 export default function ImportarGastos() {
+  const [confirmar, dialogoConfirmar] = useConfirmar();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -160,8 +162,13 @@ export default function ImportarGastos() {
     const validRows = data.filter(r => r.proveedorCuit && r.proveedorRazonSocial && r.numeroComprobante);
 
     if (validRows.length !== data.length) {
-      const confirm = window.confirm(`Hay ${data.length - validRows.length} fila(s) incompletas (sin CUIT, Razón Social o Número). Serán ignoradas. ¿Continuar?`);
-      if (!confirm) {
+      const seguir = await confirmar({
+        title: 'Hay filas incompletas',
+        message: `${data.length - validRows.length} fila(s) sin CUIT, razón social o número se van a ignorar.`,
+        confirmLabel: 'Guardar el resto',
+        tone: 'warning',
+      });
+      if (!seguir) {
         setSaving(false);
         return;
       }
@@ -208,6 +215,7 @@ export default function ImportarGastos() {
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
+      {dialogoConfirmar}
       <ModuleHeader 
         title="Importar Gastos" 
         description="Carga masiva de facturas mediante planilla Excel"

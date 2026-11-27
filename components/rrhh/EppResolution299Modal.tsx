@@ -1,5 +1,6 @@
 'use client';
 
+import { showToast } from '@/components/Toast';
 import React, { useState } from 'react';
 import { 
     Printer, 
@@ -81,7 +82,7 @@ export default function EppResolution299Modal({
     const handlePrint = () => {
         const printWindow = window.open('', '_blank', 'width=1100,height=800');
         if (!printWindow) {
-            alert('Por favor permita las ventanas emergentes (popups) para generar la impresión.');
+            showToast('Por favor permita las ventanas emergentes (popups) para generar la impresión.', 'error');
             return;
         }
 

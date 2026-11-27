@@ -399,3 +399,15 @@ Además de Fichadas a aprobar (fase 2), ahora se puede elegir varios elementos y
 | Órdenes de trabajo (lista) | Abiertas o pausadas de la página | Pausar, reanudar (queda en el historial de estados con el motivo "cambio en lote"), reasignar el responsable |
 
 Sin cambios de base de datos.
+
+### P34 · Vocabulario de estados y confirmación únicos
+
+**Estados.** Los valores guardados no cambian (`ABIERTA`, `en_progreso`, `enviado`…); lo que se unifica es cómo se ven. `lib/estados.ts` define once **fases** comunes (borrador, pendiente, en curso, pausado, en revisión, aprobado, cerrado, vencido, rechazado, error, cancelado), cada una con su color y su nombre en masculino y femenino. Cada módulo asigna sus estados a una fase y solo cambia el nombre cuando necesita una palabra más precisa ("Pendiente de firma", "Por rendir", "Convertida en venta").
+
+- Usan el vocabulario: órdenes de trabajo (lista y detalle, que tenía colores propios y mostraba `PENDIENTE_FIRMA` en crudo), tareas ("En progreso" pasa a "En curso"), compras, solicitudes, presupuestos de servicio y sus versiones, presupuestos de productos, viajes y pliegos.
+- Cambios visibles de color: cancelado/anulado es neutro en todos lados (antes rojo en tareas, compras y viajes); lo que espera a otra persona (firma, aprobación, respuesta del cliente, rendición) es amarillo; aprobado es verde.
+- Sin tocar: tickets de soporte y acciones de calidad (CAPA), que guardan el texto del estado.
+
+**Confirmaciones.** Los tres componentes (`components/ConfirmDialog.tsx`, `components/ConfirmModal.tsx`, `components/ui/ConfirmModal.tsx`) ya dibujaban el mismo `ConfirmDialogBase`. Quedaban `window.confirm` sueltos: ahora usan `useConfirmar()` (`components/ui/useConfirmar.tsx`, `await confirmar({...})`), en importación de gastos, certificados (Capacitación y tablero de operadores) y almacenes. Los `alert()` (17) pasan a avisos (`showToast`), que ahora respetan saltos de línea.
+
+Sin cambios de base de datos.

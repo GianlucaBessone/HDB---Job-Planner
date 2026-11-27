@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirmar } from '@/components/ui/useConfirmar';
 import { useState, useEffect, useRef } from "react";
 import { useViewState } from "@/lib/hooks/useViewState";
 import { useCommandStore } from "@/lib/store/useCommandStore";
@@ -33,6 +34,7 @@ import ModuleHeader from "@/components/ModuleHeader";
 import SignatureButton from "@/components/SignatureButton";
 
 export default function CapacitacionPage() {
+  const [confirmar, dialogoConfirmar] = useConfirmar();
   const [user, setUser] = useState<any>(null);
   const [trainings, setTrainings] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
@@ -316,12 +318,7 @@ export default function CapacitacionPage() {
   };
 
   const handleDeleteCertificate = async (id: string) => {
-    if (
-      !confirm(
-        "¿Seguro que desea eliminar este certificado? Esta acción no se puede deshacer.",
-      )
-    )
-      return;
+    if (!(await confirmar({ title: '¿Eliminar el certificado?', message: 'Esta acción no se puede deshacer.', confirmLabel: 'Eliminar' }))) return;
 
     try {
       const res = await safeApiRequest(`/api/qms/certificados?id=${id}`, {
@@ -403,6 +400,7 @@ export default function CapacitacionPage() {
   if (viewMode !== "list" && selectedTraining) {
     return (
       <div className="max-w-3xl mx-auto space-y-6 px-4 py-6">
+        {dialogoConfirmar}
         {/* Header */}
         <div className="flex items-center gap-3">
           <button
@@ -717,6 +715,7 @@ export default function CapacitacionPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      {dialogoConfirmar}
       <ModuleHeader
         title="Mi formación"
         description="HDB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional"

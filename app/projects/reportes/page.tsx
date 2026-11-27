@@ -1,5 +1,6 @@
 'use client';
 
+import { showToast } from '@/components/Toast';
 import { useState } from 'react';
 import ProjectsHeader from '@/components/projects/ProjectsHeader';
 import { PieChart, Download, Loader2 } from 'lucide-react';
@@ -58,7 +59,7 @@ export default function ReportesPage() {
 
         } catch (e) {
             console.error('Export error:', e);
-            alert('Hubo un error al generar el reporte.');
+            showToast('Hubo un error al generar el reporte.', 'error');
         } finally {
             setIsExporting(false);
         }

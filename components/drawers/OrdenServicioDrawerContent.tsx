@@ -286,7 +286,7 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
 
         const win = window.open('', '_blank');
         if (!win) {
-            alert('Por favor, permite los popups para imprimir.');
+            showToast('Por favor, permite los popups para imprimir.', 'error');
             return;
         }
 
