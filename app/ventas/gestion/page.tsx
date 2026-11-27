@@ -581,12 +581,6 @@ export default function VentasGestionPage() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           {/* Left: Title & Count */}
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <Boxes className="w-4 h-4" />
-            </div>
-            <h1 className="text-sm md:text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              Gestión Comercial
-            </h1>
             <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
               {total} {total === 1 ? 'producto' : 'productos'}
             </span>

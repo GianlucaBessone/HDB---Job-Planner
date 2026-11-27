@@ -1,3 +1,4 @@
+import { useConfirmar } from '@/components/ui/useConfirmar';
 import { useState, useEffect } from 'react';
 import { safeApiRequest } from '@/lib/offline';
 import {
@@ -42,6 +43,7 @@ const SCORE_CONFIG_ITEMS: { key: keyof ScoreConfig; label: string; description: 
 ];
 
 export default function OperadoresTab() {
+    const [confirmar, dialogoConfirmar] = useConfirmar();
     const [scoreboard, setScoreboard] = useState<any[]>([]);
     const [selectedOperator, setSelectedOperator] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -271,7 +273,7 @@ export default function OperadoresTab() {
     // Delete certificate
     const handleDeleteCertificate = async (certificateId: string) => {
         if (!selectedOperator) return;
-        if (!confirm('¿Está seguro de que desea eliminar este certificado? Esta acción eliminará también la habilidad sugerida asociada.')) return;
+        if (!(await confirmar({ title: '¿Eliminar el certificado?', message: 'También se elimina la habilidad sugerida asociada.', confirmLabel: 'Eliminar' }))) return;
 
         try {
             const res = await safeApiRequest(`/api/qms/certificados?id=${certificateId}`, {
@@ -499,6 +501,7 @@ export default function OperadoresTab() {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-400">
+            {dialogoConfirmar}
             {/* Header section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">

@@ -1,5 +1,6 @@
 'use client';
 
+import { showToast } from '@/components/Toast';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
@@ -209,7 +210,7 @@ export default function PublicToolAuditPage() {
 
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
-            alert('Por favor habilita las ventanas emergentes (popups) para imprimir.');
+            showToast('Por favor habilita las ventanas emergentes (popups) para imprimir.', 'error');
             return;
         }
 
@@ -770,7 +771,7 @@ function PublicDetailScannerModal({ onScan, onClose }: { onScan: (text: string) 
             ).catch((err) => {
                 console.error('Scanner error', err);
                 if (!isCancelled) {
-                    alert('No se pudo acceder a la cámara. Por favor permite el acceso para escanear.');
+                    showToast('No se pudo acceder a la cámara. Por favor permite el acceso para escanear.', 'error');
                     onClose();
                 }
             });

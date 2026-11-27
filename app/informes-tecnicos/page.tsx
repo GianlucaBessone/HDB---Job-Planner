@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
@@ -77,14 +78,12 @@ export default function InformesTecnicosContent() {
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                        <FileText className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Informes Técnicos
-                    </h2>
-                    <p className="text-sm text-slate-500 font-medium">Relevamientos, diagnósticos y mantenimientos.</p>
-                </div>
+            <ModuleHeader
+                title="Informes técnicos"
+                description="Relevamientos, diagnósticos y mantenimientos."
+                icon={<FileText className="w-5 h-5" />}
+                toolbar={
+                    <>
                 <Link
                     href="/informes-tecnicos/nuevo"
                     className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold text-sm hover:bg-primary-hover transition-all"
@@ -92,7 +91,9 @@ export default function InformesTecnicosContent() {
                     <Plus className="w-5 h-5" />
                     Nuevo Informe
                 </Link>
-            </div>
+                    </>
+                }
+            />
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">

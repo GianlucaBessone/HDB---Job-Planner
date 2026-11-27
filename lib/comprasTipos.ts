@@ -1,3 +1,4 @@
+import { estadoComun, type EstadoVista } from '@/lib/estados';
 /**
  * Tipos y etiquetas de compras y recepción, sin dependencias de servidor (los usan las pantallas).
  */
@@ -5,12 +6,12 @@
 export const ESTADOS_ORDEN_COMPRA = ['borrador', 'enviada', 'parcial', 'recibida', 'cancelada'] as const;
 export type EstadoOrdenCompra = (typeof ESTADOS_ORDEN_COMPRA)[number];
 
-export const ESTADO_OC_INFO: Record<EstadoOrdenCompra, { label: string; tone: 'neutral' | 'info' | 'warning' | 'success' | 'danger' }> = {
-    borrador: { label: 'Borrador', tone: 'neutral' },
-    enviada: { label: 'Enviada', tone: 'info' },
-    parcial: { label: 'Recibida en parte', tone: 'warning' },
-    recibida: { label: 'Recibida', tone: 'success' },
-    cancelada: { label: 'Cancelada', tone: 'danger' },
+export const ESTADO_OC_INFO: Record<EstadoOrdenCompra, EstadoVista> = {
+    borrador: estadoComun('borrador', { genero: 'f' }),
+    enviada: estadoComun('en_curso', { genero: 'f', etiqueta: 'Enviada' }),
+    parcial: estadoComun('en_curso', { genero: 'f', etiqueta: 'Recibida en parte' }),
+    recibida: estadoComun('cerrado', { genero: 'f', etiqueta: 'Recibida' }),
+    cancelada: estadoComun('cancelado', { genero: 'f' }),
 };
 
 /** Estados en los que todavía se espera mercadería. */

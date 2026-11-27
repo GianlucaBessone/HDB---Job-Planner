@@ -376,3 +376,38 @@ Antes un pedido de autorización era un aviso con botones: sin estado, el solici
 - Los avisos viejos `TIME_MODIFICATION_REQUEST` y `PROJECT_FINALIZE_REQUEST` pendientes se siguen pudiendo resolver desde la campana.
 - Pendiente para más adelante: precio fuera de lista (hoy PIN de supervisor en el punto de venta) y gastos fuera de política.
 - Migración `20261127_solicitudes` (aditiva: tabla nueva). **Aplicada en producción el 27/11/2026.**
+
+## Mejoras chicas
+
+### P43 · ModuleHeader en todas las pantallas
+
+Antes 31 pantallas armaban su título a mano (h1/h2 sueltos, varios tamaños, algunas sin título visible). Ahora todas usan `ModuleHeader` como único h1, con ícono, descripción y acciones a la derecha.
+
+- Convertidas: Aprobaciones, Consumo de IA, Auditoría de cambios, Clientes, Datasets, Demoras del cliente, Diccionario de datos, Sugerencias y mejoras, Herramientas y carros, Informes técnicos (lista y nuevo), Fichadas en curso, Notificaciones, Usuarios y accesos, Órdenes de servicio (con pestañas Activas/Historial) y Generar orden de servicio, Nueva orden de trabajo, Agenda del equipo, Provisión de materiales, Registro de horas, Verificación de firmas.
+- **Ventas**: `VentasNavTabs` dibuja el encabezado de la sección (Gestión comercial, Presupuestos de productos, Almacén y stock, Cuentas corrientes) con `titulo`/`descripcion` para las subpantallas (Proveedores, Importación masiva, Nuevo/Editar producto). Los títulos chicos que repetían el nombre dentro de las tarjetas se quitaron.
+- Quedan con diseño propio, a propósito: Inicio ("Mi día"), Fichado, Punto de venta (`sinEncabezado`) y el formulario público de ideas y reclamos.
+- `ModuleHeader` marca el encabezado con `data-module-header` (sirve para controlar en pruebas que cada pantalla tenga uno).
+
+### P33 · Acciones masivas en tareas, personas y órdenes
+
+Además de Fichadas a aprobar (fase 2), ahora se puede elegir varios elementos y aplicar una acción de una vez. Una barra común (`BarraSeleccion` + `useSeleccion` en `components/ui`) muestra cuántos hay elegidos y las acciones; `lib/lote.ts` (`enLote`, `avisarLote`) las aplica **con la misma API que la acción individual**, de a una, así valen los mismos permisos, validaciones y auditoría. Si alguna falla, sigue con las demás y avisa cuántas no se cambiaron y por qué.
+
+| Pantalla | Se eligen | Acciones |
+|---|---|---|
+| Tareas (vista Lista) | Las que podés cambiar de estado | Completar, cambiar estado, cambiar prioridad, cambiar vencimiento |
+| Usuarios y accesos | Con `usuarios.gestionar`; uno mismo no (desactivarse en lote cortaría la sesión) | Activar, desactivar, marcar de vacaciones, volvieron de vacaciones |
+| Órdenes de trabajo (lista) | Abiertas o pausadas de la página | Pausar, reanudar (queda en el historial de estados con el motivo "cambio en lote"), reasignar el responsable |
+
+Sin cambios de base de datos.
+
+### P34 · Vocabulario de estados y confirmación únicos
+
+**Estados.** Los valores guardados no cambian (`ABIERTA`, `en_progreso`, `enviado`…); lo que se unifica es cómo se ven. `lib/estados.ts` define once **fases** comunes (borrador, pendiente, en curso, pausado, en revisión, aprobado, cerrado, vencido, rechazado, error, cancelado), cada una con su color y su nombre en masculino y femenino. Cada módulo asigna sus estados a una fase y solo cambia el nombre cuando necesita una palabra más precisa ("Pendiente de firma", "Por rendir", "Convertida en venta").
+
+- Usan el vocabulario: órdenes de trabajo (lista y detalle, que tenía colores propios y mostraba `PENDIENTE_FIRMA` en crudo), tareas ("En progreso" pasa a "En curso"), compras, solicitudes, presupuestos de servicio y sus versiones, presupuestos de productos, viajes y pliegos.
+- Cambios visibles de color: cancelado/anulado es neutro en todos lados (antes rojo en tareas, compras y viajes); lo que espera a otra persona (firma, aprobación, respuesta del cliente, rendición) es amarillo; aprobado es verde.
+- Sin tocar: tickets de soporte y acciones de calidad (CAPA), que guardan el texto del estado.
+
+**Confirmaciones.** Los tres componentes (`components/ConfirmDialog.tsx`, `components/ConfirmModal.tsx`, `components/ui/ConfirmModal.tsx`) ya dibujaban el mismo `ConfirmDialogBase`. Quedaban `window.confirm` sueltos: ahora usan `useConfirmar()` (`components/ui/useConfirmar.tsx`, `await confirmar({...})`), en importación de gastos, certificados (Capacitación y tablero de operadores) y almacenes. Los `alert()` (17) pasan a avisos (`showToast`), que ahora respetan saltos de línea.
+
+Sin cambios de base de datos.

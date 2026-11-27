@@ -1,3 +1,4 @@
+import { estadoComun, type EstadoVista } from '@/lib/estados';
 /**
  * Presupuestos de servicio: cálculos puros (sin base de datos ni React).
  *
@@ -22,20 +23,21 @@ export const MODO_LABEL: Record<ModoManoObra, string> = {
 export type EstadoPresupuesto = 'borrador' | 'enviado' | 'aceptado' | 'rechazado' | 'vencido';
 export type EstadoVersion = 'borrador' | 'enviada' | 'reemplazada' | 'aceptada' | 'rechazada';
 
-export const ESTADOS_PRESUPUESTO: Record<EstadoPresupuesto, { label: string; tone: 'neutral' | 'info' | 'success' | 'danger' | 'warning' }> = {
-    borrador: { label: 'Borrador', tone: 'neutral' },
-    enviado: { label: 'Enviado', tone: 'info' },
-    aceptado: { label: 'Aceptado', tone: 'success' },
-    rechazado: { label: 'Rechazado', tone: 'danger' },
-    vencido: { label: 'Vencido', tone: 'warning' },
+// Nombres y colores del vocabulario común (lib/estados.ts); "enviado" espera al cliente
+export const ESTADOS_PRESUPUESTO: Record<EstadoPresupuesto, EstadoVista> = {
+    borrador: estadoComun('borrador'),
+    enviado: estadoComun('en_revision', { etiqueta: 'Enviado' }),
+    aceptado: estadoComun('aprobado', { etiqueta: 'Aceptado' }),
+    rechazado: estadoComun('rechazado'),
+    vencido: estadoComun('vencido'),
 };
 
-export const ESTADOS_VERSION: Record<EstadoVersion, { label: string; tone: 'neutral' | 'info' | 'success' | 'danger' | 'warning' }> = {
-    borrador: { label: 'Borrador', tone: 'neutral' },
-    enviada: { label: 'Enviada', tone: 'info' },
-    reemplazada: { label: 'Reemplazada', tone: 'neutral' },
-    aceptada: { label: 'Aceptada', tone: 'success' },
-    rechazada: { label: 'Rechazada', tone: 'danger' },
+export const ESTADOS_VERSION: Record<EstadoVersion, EstadoVista> = {
+    borrador: estadoComun('borrador', { genero: 'f' }),
+    enviada: estadoComun('en_revision', { genero: 'f', etiqueta: 'Enviada' }),
+    reemplazada: estadoComun('cancelado', { genero: 'f', etiqueta: 'Reemplazada' }),
+    aceptada: estadoComun('aprobado', { genero: 'f', etiqueta: 'Aceptada' }),
+    rechazada: estadoComun('rechazado', { genero: 'f' }),
 };
 
 export interface LineaManoObraInput {

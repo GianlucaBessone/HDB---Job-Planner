@@ -1,3 +1,4 @@
+import { estadoComun } from '@/lib/estados';
 import { differenceInHours, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { BadgeTone } from '@/components/ui';
@@ -54,10 +55,11 @@ export interface ProyectoOpcion {
 }
 
 export const ESTADOS = [
-    { value: 'pendiente', label: 'Pendiente', tone: 'neutral' as BadgeTone, dot: 'bg-slate-400' },
-    { value: 'en_progreso', label: 'En progreso', tone: 'info' as BadgeTone, dot: 'bg-info-500' },
-    { value: 'completada', label: 'Completada', tone: 'success' as BadgeTone, dot: 'bg-success-500' },
-    { value: 'cancelada', label: 'Cancelada', tone: 'danger' as BadgeTone, dot: 'bg-danger-400' },
+    // Nombres y colores del vocabulario común (lib/estados.ts)
+    { value: 'pendiente', ...estadoComun('pendiente', { genero: 'f' }), dot: 'bg-slate-400' },
+    { value: 'en_progreso', ...estadoComun('en_curso', { genero: 'f' }), dot: 'bg-info-500' },
+    { value: 'completada', ...estadoComun('cerrado', { genero: 'f', etiqueta: 'Completada' }), dot: 'bg-success-500' },
+    { value: 'cancelada', ...estadoComun('cancelado', { genero: 'f' }), dot: 'bg-slate-300' },
 ];
 
 /** Orden = posición en el deslizante (0 = baja … 3 = urgente). */

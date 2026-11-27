@@ -1,12 +1,14 @@
+import { estadoComun } from '@/lib/estados';
 import type { BadgeTone } from '@/components/ui';
 
+// Nombres y colores del vocabulario común (lib/estados.ts); "vigente" espera la respuesta del cliente
 const ESTADOS: Record<string, { label: string; tone: BadgeTone }> = {
-    VIGENTE: { label: 'Vigente', tone: 'info' },
-    VENCIDA: { label: 'Vencida', tone: 'warning' },
-    APROBADA: { label: 'Aprobada', tone: 'brand' },
-    CONVERTIDA: { label: 'Convertida en venta', tone: 'success' },
-    RECHAZADA: { label: 'Rechazada', tone: 'danger' },
-    ANULADA: { label: 'Anulada', tone: 'neutral' },
+    VIGENTE: estadoComun('en_revision', { genero: 'f', etiqueta: 'Vigente' }),
+    VENCIDA: estadoComun('vencido', { genero: 'f' }),
+    APROBADA: estadoComun('aprobado', { genero: 'f' }),
+    CONVERTIDA: estadoComun('cerrado', { genero: 'f', etiqueta: 'Convertida en venta' }),
+    RECHAZADA: estadoComun('rechazado', { genero: 'f' }),
+    ANULADA: estadoComun('cancelado', { genero: 'f', etiqueta: 'Anulada' }),
 };
 
 /** Estado visible de una cotización: una vigente con fecha pasada se muestra como vencida. */

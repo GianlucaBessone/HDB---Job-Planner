@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect } from 'react';
 import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity, FileSpreadsheet, Briefcase, UserX, ToggleLeft, ToggleRight, ClipboardCheck } from 'lucide-react';
 import { canUseControlHorario } from '@/lib/viewAccess';
@@ -661,15 +662,13 @@ export default function TimesheetsPage() {
     return (
         <div className="w-full space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <div className="space-y-1">
-                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                        <Clock className="text-indigo-500 w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Registro de horas
-                        <HelpContextual slug="registro-tiempos-ausencias" />
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Gestión de jornadas de los operadores e ingresos por proyecto</p>
-                </div>
+            <ModuleHeader
+                title="Registro de horas"
+                description="Gestión de jornadas de los operadores e ingresos por proyecto"
+                icon={<Clock className="w-5 h-5" />}
+                helpSlug="registro-tiempos-ausencias"
+                toolbar={
+                    <>
                 <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                     {canUseControlHorario(currentUser?.role, permisosEspeciales) && (
                         <Link href="/timesheets/control-horario" className="btn btn-secondary w-full md:w-auto justify-center">
@@ -685,7 +684,9 @@ export default function TimesheetsPage() {
                         Carga Manual
                     </button>
                 </div>
-            </div>
+                    </>
+                }
+            />
 
             {/* Past Entries / Reports Content */}
             <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative">

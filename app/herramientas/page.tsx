@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useViewState } from '@/lib/hooks/useViewState';
@@ -164,17 +165,11 @@ function HerramientasPage() {
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <div className="space-y-1">
-                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                        <Wrench className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Herramientas y Carros
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">
-                        Gestión unificada de herramientas, carros, retiros y verificación
-                    </p>
-                </div>
-            </div>
+            <ModuleHeader
+                title="Herramientas y carros"
+                description="Gestión unificada de herramientas, carros, retiros y verificación"
+                icon={<Wrench className="w-5 h-5" />}
+            />
 
             {/* Tab Navigation */}
             <div className="flex gap-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm overflow-x-auto">

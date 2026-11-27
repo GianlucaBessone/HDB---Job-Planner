@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
     Database, Plus, Play, Activity, Edit2, Code, LayoutDashboard, 
@@ -172,15 +173,12 @@ export default function DatasetsCliente({ user }: { user: any }) {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <Database className="text-indigo-600 dark:text-indigo-400 w-5 h-5 text-brand-600 dark:text-brand-300" /> Datasets
-                    </h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Motor de extracción de datos, agregaciones y consultas SQL/Visuales para KPIs y Gráficos.
-                    </p>
-                </div>
+            <ModuleHeader
+                title="Datasets"
+                description="Motor de extracción de datos, agregaciones y consultas SQL/Visuales para KPIs y Gráficos."
+                icon={<Database className="w-5 h-5" />}
+                toolbar={
+                    <>
                 <div className="flex items-center gap-2.5">
                     <button
                         type="button"
@@ -198,7 +196,9 @@ export default function DatasetsCliente({ user }: { user: any }) {
                         <Plus className="w-4 h-4" /> Nuevo Dataset
                     </button>
                 </div>
-            </div>
+                    </>
+                }
+            />
 
             {/* Quick Metrics Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

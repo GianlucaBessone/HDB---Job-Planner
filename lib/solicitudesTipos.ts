@@ -1,3 +1,4 @@
+import { estadoComun, type EstadoVista } from '@/lib/estados';
 /**
  * Tipos y etiquetas de solicitudes y aprobaciones (sin dependencias de servidor; los usan las pantallas).
  */
@@ -14,11 +15,11 @@ export const TIPO_SOLICITUD_INFO: Record<TipoSolicitud, { label: string; funcion
 export const ESTADOS_SOLICITUD = ['pendiente', 'aprobada', 'rechazada', 'cancelada'] as const;
 export type EstadoSolicitud = (typeof ESTADOS_SOLICITUD)[number];
 
-export const ESTADO_SOLICITUD_INFO: Record<EstadoSolicitud, { label: string; tone: 'warning' | 'success' | 'danger' | 'neutral' }> = {
-    pendiente: { label: 'Pendiente', tone: 'warning' },
-    aprobada: { label: 'Aprobada', tone: 'success' },
-    rechazada: { label: 'Rechazada', tone: 'danger' },
-    cancelada: { label: 'Cancelada', tone: 'neutral' },
+export const ESTADO_SOLICITUD_INFO: Record<EstadoSolicitud, EstadoVista> = {
+    pendiente: estadoComun('en_revision', { genero: 'f', etiqueta: 'Pendiente' }),
+    aprobada: estadoComun('aprobado', { genero: 'f' }),
+    rechazada: estadoComun('rechazado', { genero: 'f' }),
+    cancelada: estadoComun('cancelado', { genero: 'f' }),
 };
 
 export interface SolicitudVista {

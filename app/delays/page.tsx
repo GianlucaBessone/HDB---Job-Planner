@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useMemo } from 'react';
 import {
     Clock,
@@ -307,14 +308,12 @@ export default function DelaysPage() {
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <div className="space-y-1">
-                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                        <Timer className="text-amber-500 w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Demoras del Cliente
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Registro de tiempos externos para análisis de causa raíz</p>
-                </div>
+            <ModuleHeader
+                title="Demoras del cliente"
+                description="Registro de tiempos externos para análisis de causa raíz"
+                icon={<Timer className="w-5 h-5" />}
+                toolbar={
+                    <>
                 <button
                     onClick={() => {
                         setEditingDelayId(null);
@@ -325,7 +324,9 @@ export default function DelaysPage() {
                 >
                     <Plus className="w-4 h-4" /> Registrar Demora
                 </button>
-            </div>
+                    </>
+                }
+            />
 
             {/* Info Box */}
             <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4 md:p-5 flex items-center gap-4 text-amber-800">

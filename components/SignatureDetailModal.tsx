@@ -1,3 +1,4 @@
+import { showToast } from '@/components/Toast';
 import React from 'react';
 import { X, CheckCircle2, XCircle, AlertTriangle, HelpCircle } from 'lucide-react';
 
@@ -45,7 +46,7 @@ export default function SignatureDetailModal({ isOpen, onClose, signature: initi
                 .then(data => {
                     if (data.error) {
                         console.error("Signature verification error:", data.error);
-                        alert(data.error);
+                        showToast(data.error, 'error');
                         onClose();
                     } else {
                         setSignature(data);

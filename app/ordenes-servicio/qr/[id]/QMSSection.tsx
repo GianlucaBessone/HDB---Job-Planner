@@ -1,3 +1,4 @@
+import { showToast } from '@/components/Toast';
 import { useState, useEffect, useRef } from 'react';
 import { safeApiRequest } from '@/lib/offline';
 import { formatDateInline } from '@/lib/formatDate';
@@ -136,13 +137,13 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
             const data = await res.json();
             if (res.ok && data.success) {
                 onUpdate();
-                alert('¡Resumen técnico y observaciones autogenerados con éxito por Gemini!');
+                showToast('¡Resumen técnico y observaciones autogenerados con éxito por Gemini!', 'success');
             } else {
-                alert(data.error || 'Error al generar observaciones.');
+                showToast(data.error || 'Error al generar observaciones.', 'error');
             }
         } catch (err) {
             console.error(err);
-            alert('Error de red al conectar con el servicio de generación de observaciones.');
+            showToast('Error de red al conectar con el servicio de generación de observaciones.', 'error');
         } finally {
             setGeneratingObs(false);
         }
@@ -270,7 +271,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
         try {
             const operatorId = os.operadores[0]?.operadorId;
             const operatorNombre = os.operadores[0]?.operador?.nombreCompleto;
-            if (!operatorId) return alert('No hay operador asignado para esta OS');
+            if (!operatorId) return showToast('No hay operador asignado para esta OS', 'error');
 
             const res = await safeApiRequest(`/api/ordenes-servicio/${os.id}/qms`, {
                 method: 'PUT',
@@ -294,7 +295,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                 onUpdate();
             } else {
                 const err = await res.json();
-                alert(err.error || 'Error al guardar verificación');
+                showToast(err.error || 'Error al guardar verificación', 'error');
             }
         } catch (e) {
             console.error(e);
@@ -332,11 +333,11 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
             if (res.ok && data.success) {
                 setAnalysisResult(data.analysis);
             } else {
-                alert(data.error || 'Error al analizar la imagen.');
+                showToast(data.error || 'Error al analizar la imagen.', 'error');
             }
         } catch (err) {
             console.error('Error de red al analizar la imagen:', err);
-            alert('Error de red al conectar con el servicio de análisis de imágenes.');
+            showToast('Error de red al conectar con el servicio de análisis de imágenes.', 'error');
         } finally {
             setAnalyzingImage(false);
         }

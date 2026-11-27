@@ -17,6 +17,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import ModuleHeader from '@/components/ModuleHeader';
 import SearchableCombobox from '@/components/ui/SearchableCombobox';
 
 export default function NuevaOrdenTrabajoPage() {
@@ -185,37 +186,20 @@ export default function NuevaOrdenTrabajoPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Back Navigation */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/ordenes-trabajo"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver al listado</span>
-        </Link>
-        <span className="text-[11px] font-mono text-slate-400">
-          Ciclo de Vida: Alta → Horas → Materiales → Firma
-        </span>
-      </div>
+      <ModuleHeader
+        title="Nueva orden de trabajo"
+        description="Complete los datos iniciales. El número correlativo anual (ej: OT-2026-0001) y el primer ciclo se generarán automáticamente."
+        icon={<FileText className="w-5 h-5" />}
+        toolbar={
+          <Link href="/ordenes-trabajo" className="btn btn-ghost btn-sm">
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Volver al listado
+          </Link>
+        }
+      />
 
       {/* Main Form container */}
       <div className="max-w-5xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Header Title */}
-          <div>
-            <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider mb-1">
-              <FileText className="w-4 h-4" />
-              <span>Alta Operativa</span>
-            </div>
-            <h1 className="text-title text-slate-900 dark:text-slate-100">
-              Nueva Orden de Trabajo
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Complete los datos iniciales. El número correlativo anual (ej: OT-2026-0001) y el primer ciclo se generarán automáticamente.
-            </p>
-          </div>
-
           {/* Continuation Alert if present */}
           {otPreviaId && (
             <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 text-xs flex items-center gap-2.5">

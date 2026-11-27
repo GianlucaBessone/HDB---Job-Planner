@@ -1,6 +1,7 @@
 // Viajes y viáticos: catálogos y cálculos compartidos por la API y la UI.
 // Ver docs/viajes/INFORME-IMPLEMENTACION.md
 
+import { FASES } from '@/lib/estados';
 import type { BadgeTone } from '@/components/ui/Badge';
 
 export const VIAJE_GESTORES = ['admin', 'qa', 'supervisor'];
@@ -22,12 +23,13 @@ export const VIAJE_ESTADO_LABEL: Record<ViajeEstado, string> = {
     cancelado: 'Cancelado',
 };
 
+// Colores del vocabulario común (lib/estados.ts); "por rendir" espera la rendición
 export const VIAJE_ESTADO_TONE: Record<ViajeEstado, BadgeTone> = {
-    planificado: 'neutral',
-    en_curso: 'info',
-    finalizado: 'warning',
-    cerrado: 'success',
-    cancelado: 'danger',
+    planificado: FASES.pendiente.tone,
+    en_curso: FASES.en_curso.tone,
+    finalizado: FASES.en_revision.tone,
+    cerrado: FASES.cerrado.tone,
+    cancelado: FASES.cancelado.tone,
 };
 
 /** El responsable puede cargar, editar y borrar gastos, y extender la estadía. */

@@ -596,7 +596,6 @@ export default function CotizacionesPage() {
 
     return (
         <div className="flex flex-col h-full w-full min-h-0 max-h-full overflow-hidden gap-2">
-            <h1 className="sr-only">Presupuestos de productos</h1>
             <VentasNavTabs currentTab="cotizaciones" className="mb-0 shrink-0" />
             <TiposPresupuesto actual="productos" className="shrink-0" />
 

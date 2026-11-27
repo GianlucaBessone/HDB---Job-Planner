@@ -1,5 +1,6 @@
 'use client';
 
+import { showToast } from '@/components/Toast';
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle, use } from 'react';
 import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, AlertTriangle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile, Download, Sparkles } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
@@ -577,7 +578,7 @@ export default function OSPublicPage({ params: paramsPromise }: { params: Promis
     const openFirmaModal = () => {
         const errors = checkQmsBlocks();
         if (errors.length > 0) {
-            alert('No se puede firmar la orden. Existen requisitos de calidad (QMS) pendientes:\n\n- ' + errors.join('\n- ') + '\n\nPor favor, dirígete a la pestaña "Calidad" de la Orden de Servicio y completalos.');
+            showToast('No se puede firmar la orden. Existen requisitos de calidad (QMS) pendientes:\n\n- ' + errors.join('\n- ') + '\n\nPor favor, dirígete a la pestaña "Calidad" de la Orden de Servicio y completalos.', 'error');
             return;
         }
         setFirmaNombre('');

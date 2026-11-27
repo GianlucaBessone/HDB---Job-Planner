@@ -9,7 +9,8 @@ import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import ModuleHeader from '@/components/ModuleHeader';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { Badge, EmptyState, LoadingState } from '@/components/ui';
+import { Badge, BarraSeleccion, EmptyState, LoadingState, useSeleccion } from '@/components/ui';
+import { avisarLote, enLote } from '@/lib/lote';
 import { cn } from '@/lib/cn';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
@@ -48,6 +49,8 @@ export default function TareasPage() {
     const [dialog, setDialog] = useState<{ open: boolean; tarea: Tarea | null; borrador?: BorradorTarea | null; edit?: boolean }>({ open: false, tarea: null });
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>({});
+    const seleccion = useSeleccion();
+    const [aplicandoLote, setAplicandoLote] = useState(false);
 
     // Drag & drop
     const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -214,6 +217,29 @@ export default function TareasPage() {
         }
     };
 
+    // ── Acciones masivas (P33, vista Lista) ───────────────────────
+    const seleccionables = useMemo(
+        () => (view === 'lista' ? listaOrdenada.filter(t => getPermissions(t).canChangeStatus).map(t => t.id) : []),
+        [view, listaOrdenada, getPermissions]
+    );
+    const { recortar } = seleccion;
+    useEffect(() => { recortar(seleccionables); }, [seleccionables]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const aplicarLote = async (cambios: Record<string, unknown>, hecho: string | [string, string]) => {
+        const ids = Array.from(seleccion.ids);
+        if (ids.length === 0) return;
+        setAplicandoLote(true);
+        const r = await enLote(ids, id => safeApiRequest('/api/tareas', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, ...cambios }),
+        }));
+        setAplicandoLote(false);
+        avisarLote(r, ['tarea', 'tareas'], hecho);
+        seleccion.limpiar();
+        await loadTareas();
+    };
+
     const puedeSoltar = (t: Tarea, destino: string) => {
         const { canEditFull, canChangeStatus } = getPermissions(t);
         return canEditFull || (canChangeStatus && destino !== 'cancelada');
@@ -368,12 +394,57 @@ export default function TareasPage() {
                 listaOrdenada.length === 0 ? (
                     <EmptyState icon={<ListTodo />} title="No hay tareas" description={search || filterPrioridad || soloMias ? 'Probá con otros filtros.' : 'Cargá la primera desde la barra de alta rápida.'} />
                 ) : (
+                    <div className="space-y-2">
+                    <BarraSeleccion
+                        total={seleccionables.length}
+                        seleccionadas={seleccion.cantidad}
+                        onTodas={() => seleccion.poner(seleccionables)}
+                        onNinguna={seleccion.limpiar}
+                        unidad={['tarea', 'tareas']}
+                    >
+                        <button type="button" className="btn btn-primary btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ estado: 'completada' }, ['completada', 'completadas'])}>
+                            <Check aria-hidden="true" /> {aplicandoLote ? 'Aplicando…' : 'Completar'}
+                        </button>
+                        <select
+                            aria-label="Cambiar el estado de las seleccionadas"
+                            className="input h-8 w-auto text-[13px]"
+                            value=""
+                            disabled={aplicandoLote}
+                            onChange={e => e.target.value && aplicarLote({ estado: e.target.value }, [`movida a "${getEstadoConfig(e.target.value).label}"`, `movidas a "${getEstadoConfig(e.target.value).label}"`])}
+                        >
+                            <option value="">Estado…</option>
+                            {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
+                        </select>
+                        <select
+                            aria-label="Cambiar la prioridad de las seleccionadas"
+                            className="input h-8 w-auto text-[13px]"
+                            value=""
+                            disabled={aplicandoLote}
+                            onChange={e => e.target.value && aplicarLote({ prioridad: e.target.value }, `con prioridad ${getPrioridadConfig(e.target.value).label.toLowerCase()}`)}
+                        >
+                            <option value="">Prioridad…</option>
+                            {PRIORIDADES.slice().reverse().map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                        </select>
+                        <label className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                            Vence
+                            <input
+                                type="date"
+                                aria-label="Cambiar el vencimiento de las seleccionadas"
+                                className="input h-8 w-auto text-[13px]"
+                                value=""
+                                disabled={aplicandoLote}
+                                onChange={e => e.target.value && aplicarLote({ fechaVencimiento: new Date(`${e.target.value}T23:59`).toISOString() }, `con vencimiento ${e.target.value.split('-').reverse().join('/')}`)}
+                            />
+                        </label>
+                    </BarraSeleccion>
                     <div className="surface divide-y divide-border overflow-hidden">
                         {listaOrdenada.map(t => {
                             const { canEditFull, canChangeStatus } = getPermissions(t);
                             return (
                                 <TareaListRow
                                     key={t.id}
+                                    seleccionada={seleccion.tiene(t.id)}
+                                    onSeleccionar={canChangeStatus ? () => seleccion.alternar(t.id) : undefined}
                                     tarea={t}
                                     onOpen={() => openTarea(t)}
                                     onDelete={() => setConfirmDelete(t.id)}
@@ -383,6 +454,7 @@ export default function TareasPage() {
                                 />
                             );
                         })}
+                    </div>
                     </div>
                 )
             )}
@@ -537,9 +609,12 @@ function TareaCard({
 // ═════════════════════════════════════════════════════════════════════
 
 function TareaListRow({
-    tarea, canEditFull, canChangeStatus, onOpen, onDelete, onStatusChange,
+    tarea, canEditFull, canChangeStatus, onOpen, onDelete, onStatusChange, seleccionada, onSeleccionar,
 }: {
     tarea: Tarea;
+    seleccionada: boolean;
+    /** Sin función, la tarea no se puede elegir (no podés cambiarle el estado). */
+    onSeleccionar?: () => void;
     canEditFull: boolean;
     canChangeStatus: boolean;
     onOpen: () => void;
@@ -554,7 +629,15 @@ function TareaListRow({
     const cerrada = !estaAbierta(tarea.estado);
 
     return (
-        <div className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group">
+        <div className={cn('flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group', seleccionada && 'bg-brand-50/60 dark:bg-brand-950/30')}>
+            <input
+                type="checkbox"
+                className="w-4 h-4 accent-primary shrink-0 disabled:opacity-30"
+                aria-label={`Seleccionar "${tarea.titulo}"`}
+                checked={seleccionada}
+                disabled={!onSeleccionar}
+                onChange={() => onSeleccionar?.()}
+            />
             <button
                 type="button"
                 disabled={!canChangeStatus}

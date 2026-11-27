@@ -423,7 +423,7 @@ export default function ImportarProductosPage() {
   return (
     <div className="flex flex-col space-y-2 max-w-7xl mx-auto w-full pb-16">
       {/* 4-Area Navigation Tabs */}
-      <VentasNavTabs currentTab="gestion" />
+      <VentasNavTabs currentTab="gestion" titulo="Importación masiva de productos" descripcion="Alta y actualización de productos desde una planilla" />
 
       {/* Main Full-Screen ERP Import Container */}
       <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[620px]">
@@ -443,12 +443,6 @@ export default function ImportarProductosPage() {
             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
             <div className="flex items-center gap-2">
-              <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <FileSpreadsheet className="w-4 h-4" />
-              </div>
-              <h1 className="text-sm md:text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                Importación Masiva de Productos
-              </h1>
               {fileName && (
                 <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                   {fileName}

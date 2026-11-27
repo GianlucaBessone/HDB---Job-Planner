@@ -1,5 +1,7 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
+
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatWhatsAppMessage } from '@/lib/whatsappFormatter';
@@ -363,13 +365,7 @@ export default function PlanningPage() {
     return (
         <div className="w-full space-y-4 md:space-y-8 animate-in fade-in duration-200 pb-20">
             {/* Page Title */}
-            <div className="space-y-1">
-                <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                    <CalendarIcon className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                    Agenda del equipo
-                </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Gestiona y organiza el cronograma de trabajo</p>
-            </div>
+            <ModuleHeader title="Agenda del equipo" description="Gestiona y organiza el cronograma de trabajo" icon={<CalendarIcon className="w-5 h-5" />} />
 
             {/* Header / Date Selector — compact on mobile */}
             <div className="bg-card text-card-foreground p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none">

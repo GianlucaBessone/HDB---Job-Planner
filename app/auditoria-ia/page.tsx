@@ -1,5 +1,6 @@
 'use client';
 
+import ModuleHeader from '@/components/ModuleHeader';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useViewState } from '@/lib/hooks/useViewState';
@@ -183,17 +184,12 @@ export default function AiAuditPage() {
     return (
         <div className="space-y-8 animate-in fade-in duration-200 pb-20">
             {/* Header banner */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-1">
-                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                        <Sparkles className="animate-pulse w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Consumo de IA
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium italic">
-                        Control de consumo de tokens, costos estimados de la IA y registro histórico de consultas.
-                    </p>
-                </div>
-
+            <ModuleHeader
+                title="Consumo de IA"
+                description="Control de consumo de tokens, costos estimados de la IA y registro histórico de consultas."
+                icon={<Sparkles className="w-5 h-5" />}
+                toolbar={
+                    <>
                 <div className="flex gap-2">
                     <button
                         onClick={fetchData}
@@ -203,7 +199,9 @@ export default function AiAuditPage() {
                         Sincronizar
                     </button>
                 </div>
-            </div>
+                    </>
+                }
+            />
 
             {/* Metrics Dashboard */}
             {stats && (

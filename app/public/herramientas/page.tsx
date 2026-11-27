@@ -1,5 +1,6 @@
 'use client';
 
+import { showToast } from '@/components/Toast';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
@@ -208,7 +209,7 @@ function PublicScannerModal({ onScan, onClose }: { onScan: (text: string) => voi
             ).catch((err) => {
                 console.error('Scanner error', err);
                 if (!isCancelled) {
-                    alert('No se pudo acceder a la cámara. Por favor permite el acceso para escanear.');
+                    showToast('No se pudo acceder a la cámara. Por favor permite el acceso para escanear.', 'error');
                     onClose();
                 }
             });

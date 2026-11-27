@@ -1,4 +1,7 @@
 'use client';
+import ModuleHeader from '@/components/ModuleHeader';
+import { BarraSeleccion, useSeleccion } from '@/components/ui';
+import { avisarLote, enLote } from '@/lib/lote';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -201,6 +204,29 @@ export default function OperatorsPage() {
         }
     };
 
+    // ── Acciones masivas (P33) ─────────────────────────────────────
+    const sinAcentos = (str: string) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const seleccion = useSeleccion();
+    const [aplicandoLote, setAplicandoLote] = useState(false);
+    // Uno mismo no entra en la selección: desactivarse en lote dejaría la sesión sin acceso.
+    const seleccionables: string[] = gestionaUsuarios
+        ? operators.filter(op => sinAcentos(op.nombreCompleto).includes(sinAcentos(searchTerm)) && op.id !== currentUser?.id).map(op => op.id)
+        : [];
+    const claveSeleccionables = seleccionables.join(',');
+    const { recortar } = seleccion;
+    useEffect(() => { recortar(claveSeleccionables ? claveSeleccionables.split(',') : []); }, [claveSeleccionables]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const aplicarLote = async (cambios: { activo?: boolean; enVacaciones?: boolean }, hecho: string | [string, string]) => {
+        const ids = Array.from(seleccion.ids);
+        if (ids.length === 0) return;
+        setAplicandoLote(true);
+        const r = await enLote(ids, id => safeApiRequest(`/api/operators?id=${id}`, { method: 'PATCH', body: JSON.stringify(cambios) }));
+        setAplicandoLote(false);
+        avisarLote(r, ['persona', 'personas'], hecho);
+        seleccion.limpiar();
+        await loadData(true);
+    };
+
     const handleDeleteClick = (id: string) => {
         setOperatorToDelete(id);
         setIsConfirmOpen(true);
@@ -291,33 +317,17 @@ export default function OperatorsPage() {
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <div className="space-y-1">
-                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
-                        <UsersIcon className="w-5 h-5 text-brand-600 dark:text-brand-300" />
-                        Usuarios y accesos
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Controla el equipo técnico disponible</p>
-                </div>
-                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                    {gestionaUsuarios && (
-                        <button
-                            onClick={handleResetAllClick}
-                            className="flex items-center gap-2 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all w-full md:w-auto justify-center text-sm"
-                        >
-                            <RefreshCcw className="w-4 h-4" />
-                            <span className="hidden md:inline">Resetear Dispositivos</span>
-                        </button>
-                    )}
-                    <button
-                        onClick={openCreate}
-                        className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold hover:bg-primary-hover transition-all w-full md:w-auto justify-center text-sm"
-                    >
-                        <UserPlus className="w-4 h-4" />
-                        Nuevo Operador
-                    </button>
-                </div>
-            </div>
+            <ModuleHeader
+                title="Usuarios y accesos"
+                description="Controla el equipo técnico disponible"
+                icon={<UsersIcon className="w-5 h-5" />}
+                actions={[
+                    ...(gestionaUsuarios
+                        ? [{ id: 'reset', label: 'Resetear dispositivos', icon: <RefreshCcw className="w-4 h-4" />, onClick: handleResetAllClick, variant: 'secondary' as const }]
+                        : []),
+                    { id: 'nuevo', label: 'Nuevo operador', icon: <UserPlus className="w-4 h-4" />, onClick: openCreate, variant: 'primary' as const },
+                ]}
+            />
 
             <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1 group">
@@ -543,6 +553,29 @@ export default function OperatorsPage() {
                 </div>
             )}
 
+            {!isLoading && (
+                <BarraSeleccion
+                    total={seleccionables.length}
+                    seleccionadas={seleccion.cantidad}
+                    onTodas={() => seleccion.poner(seleccionables)}
+                    onNinguna={seleccion.limpiar}
+                    unidad={['persona', 'personas']}
+                >
+                    <button type="button" className="btn btn-secondary btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ activo: true }, ['activada', 'activadas'])}>
+                        <CheckCircle2 aria-hidden="true" /> Activar
+                    </button>
+                    <button type="button" className="btn btn-secondary btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ activo: false }, ['desactivada', 'desactivadas'])}>
+                        <XCircle aria-hidden="true" /> Desactivar
+                    </button>
+                    <button type="button" className="btn btn-secondary btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ enVacaciones: true }, ['marcada de vacaciones', 'marcadas de vacaciones'])}>
+                        De vacaciones
+                    </button>
+                    <button type="button" className="btn btn-ghost btn-sm" disabled={aplicandoLote} onClick={() => aplicarLote({ enVacaciones: false }, 'de vuelta de vacaciones')}>
+                        Volvieron de vacaciones
+                    </button>
+                </BarraSeleccion>
+            )}
+
             <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-3"}>
                 {isLoading ? (
                     Array(6).fill(0).map((_, i) => (
@@ -554,8 +587,18 @@ export default function OperatorsPage() {
                             const tags = op.etiquetas || [];
                             if (viewMode === 'list') {
                                 return (
-                                    <div key={op.id} className="bg-card text-card-foreground px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between hover:border-primary/30 transition-all group">
+                                    <div key={op.id} className={`bg-card text-card-foreground px-4 md:px-6 py-3 md:py-4 rounded-2xl border shadow-sm flex items-center justify-between hover:border-primary/30 transition-all group ${seleccion.tiene(op.id) ? 'border-brand-300 dark:border-brand-700' : 'border-slate-200 dark:border-slate-700'}`}>
                                         <div className="flex items-center gap-4 min-w-0">
+                                            {gestionaUsuarios && (
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 accent-primary shrink-0 disabled:opacity-30"
+                                                    aria-label={`Seleccionar a ${op.nombreCompleto}`}
+                                                    checked={seleccion.tiene(op.id)}
+                                                    disabled={op.id === currentUser?.id}
+                                                    onChange={() => seleccion.alternar(op.id)}
+                                                />
+                                            )}
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${op.activo ? 'bg-primary/10 text-primary' : 'bg-muted text-slate-400 dark:text-slate-500'}`}>
                                                 <UsersIcon className="w-5 h-5" />
                                             </div>
@@ -620,8 +663,20 @@ export default function OperatorsPage() {
                             return (
                                 <div key={op.id} className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm group hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
                                     <div className="flex justify-between items-start mb-4 relative z-10">
+                                        <div className="flex items-center gap-3">
+                                        {gestionaUsuarios && (
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 accent-primary shrink-0 disabled:opacity-30"
+                                                aria-label={`Seleccionar a ${op.nombreCompleto}`}
+                                                checked={seleccion.tiene(op.id)}
+                                                disabled={op.id === currentUser?.id}
+                                                onChange={() => seleccion.alternar(op.id)}
+                                            />
+                                        )}
                                         <div className={`p-3 rounded-2xl transition-all duration-300 ${op.activo ? 'bg-background text-foreground group-hover:bg-primary group-hover:text-white' : 'bg-muted text-slate-400 dark:text-slate-500'}`}>
                                             <UsersIcon className="w-6 h-6" />
+                                        </div>
                                         </div>
                                         <div className="flex gap-0.5">
                                             <button
